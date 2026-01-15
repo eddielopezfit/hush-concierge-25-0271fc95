@@ -1,17 +1,11 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Scissors, Hand, Sparkles, Eye, Heart, Mic, MessageSquare, X, Phone, Check } from "lucide-react";
+import { Scissors, Hand, Sparkles, Eye, Heart, Mic, MessageSquare, Phone, Check, ArrowLeft } from "lucide-react";
+import { LunaModal, useLunaModal, type LunaContext } from "./LunaModal";
 
 type Step = 1 | 2 | 3 | "result";
 
 interface Selection {
-  services: string[];
-  goal: string | null;
-  timing: string | null;
-}
-
-interface LunaContext {
-  source: string;
   services: string[];
   goal: string | null;
   timing: string | null;
@@ -65,7 +59,7 @@ export const ExperienceFinderSection = () => {
     goal: null,
     timing: null,
   });
-  const [showTextChatModal, setShowTextChatModal] = useState(false);
+  const { isOpen, context, openModal, closeModal } = useLunaModal();
 
   const toggleService = (serviceId: string) => {
     setSelection((prev) => ({
@@ -88,12 +82,32 @@ export const ExperienceFinderSection = () => {
 
   const handleGoalSelect = (goalId: string) => {
     setSelection((prev) => ({ ...prev, goal: goalId }));
-    setTimeout(() => setCurrentStep(3), 300);
+  };
+
+  const handleContinueToStep3 = () => {
+    if (selection.goal) {
+      setCurrentStep(3);
+    }
   };
 
   const handleTimingSelect = (timingId: string) => {
     setSelection((prev) => ({ ...prev, timing: timingId }));
-    setTimeout(() => setCurrentStep("result"), 300);
+  };
+
+  const handleContinueToResult = () => {
+    if (selection.timing) {
+      setCurrentStep("result");
+    }
+  };
+
+  const handleBack = () => {
+    if (currentStep === 2) {
+      setCurrentStep(1);
+    } else if (currentStep === 3) {
+      setCurrentStep(2);
+    } else if (currentStep === "result") {
+      setCurrentStep(3);
+    }
   };
 
   const handleReset = () => {
@@ -108,37 +122,8 @@ export const ExperienceFinderSection = () => {
     timing: selection.timing,
   });
 
-  const launchLuna = (mode: "voice" | "text", context: LunaContext) => {
-    console.log("Launching Luna", { mode, context });
-    
-    if (mode === "voice") {
-      // Scroll to Luna section and trigger voice widget
-      const lunaSection = document.getElementById("luna");
-      if (lunaSection) {
-        lunaSection.scrollIntoView({ behavior: "smooth" });
-        // Store context for Luna to pick up
-        sessionStorage.setItem("lunaContext", JSON.stringify(context));
-      }
-    } else {
-      // Text chat - show modal fallback for now
-      setShowTextChatModal(true);
-    }
-  };
-
-  const handleSpeakWithLuna = () => {
-    launchLuna("voice", buildContext());
-  };
-
-  const handleChatWithLuna = () => {
-    launchLuna("text", buildContext());
-  };
-
-  const scrollToCallback = () => {
-    setShowTextChatModal(false);
-    const callbackSection = document.getElementById("callback");
-    if (callbackSection) {
-      callbackSection.scrollIntoView({ behavior: "smooth" });
-    }
+  const handleOpenLunaModal = () => {
+    openModal(buildContext());
   };
 
   const getStepTitle = () => {
@@ -157,6 +142,13 @@ export const ExperienceFinderSection = () => {
   const getStepNumber = () => {
     if (currentStep === "result") return 3;
     return currentStep;
+  };
+
+  const canContinue = () => {
+    if (currentStep === 1) return selection.services.length > 0;
+    if (currentStep === 2) return selection.goal !== null;
+    if (currentStep === 3) return selection.timing !== null;
+    return false;
   };
 
   return (
@@ -217,7 +209,7 @@ export const ExperienceFinderSection = () => {
           )}
 
           {/* Step Content */}
-          <div className="min-h-[450px] flex items-center justify-center">
+          <div className="min-h-[450px] flex items-center justify-center pb-24 md:pb-0">
             <AnimatePresence mode="wait">
               {currentStep === 1 && (
                 <motion.div
@@ -247,7 +239,7 @@ export const ExperienceFinderSection = () => {
                           key={cat.id}
                           variants={itemVariants}
                           onClick={() => toggleService(cat.id)}
-                          className={`group relative p-6 md:p-8 rounded-lg text-center transition-all duration-300 border ${
+                          className={`group relative p-6 md:p-8 rounded-lg text-center transition-all duration-300 border focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2 ${
                             isSelected
                               ? "border-gold bg-gold/10 shadow-[0_0_30px_-5px_hsl(43_45%_58%/0.4)]"
                               : "border-charcoal-light bg-card hover:border-gold/50"
@@ -290,12 +282,12 @@ export const ExperienceFinderSection = () => {
                     })}
                   </motion.div>
 
-                  {/* Action buttons */}
+                  {/* Desktop action buttons */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.4 }}
-                    className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10"
+                    className="hidden md:flex flex-col sm:flex-row items-center justify-center gap-4 mt-10"
                   >
                     <motion.button
                       onClick={handleContinueToStep2}
@@ -334,9 +326,12 @@ export const ExperienceFinderSection = () => {
                   exit="exit"
                   className="w-full"
                 >
-                  <h3 className="font-display text-2xl md:text-3xl text-cream text-center mb-10">
+                  <h3 className="font-display text-2xl md:text-3xl text-cream text-center mb-3">
                     {getStepTitle()}
                   </h3>
+                  <p className="font-body text-sm text-muted-foreground text-center mb-10">
+                    Choose your primary goal.
+                  </p>
                   <motion.div
                     variants={containerVariants}
                     initial="hidden"
@@ -348,7 +343,7 @@ export const ExperienceFinderSection = () => {
                         key={goal.id}
                         variants={itemVariants}
                         onClick={() => handleGoalSelect(goal.id)}
-                        className={`group p-6 md:p-8 rounded-lg text-center transition-all duration-300 border ${
+                        className={`group p-6 md:p-8 rounded-lg text-center transition-all duration-300 border focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2 ${
                           selection.goal === goal.id
                             ? "border-gold bg-gold/10 shadow-[0_0_30px_-5px_hsl(43_45%_58%/0.4)]"
                             : "border-charcoal-light bg-card hover:border-gold/50"
@@ -367,6 +362,35 @@ export const ExperienceFinderSection = () => {
                         </span>
                       </motion.button>
                     ))}
+                  </motion.div>
+
+                  {/* Desktop action buttons */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="hidden md:flex items-center justify-center gap-4 mt-10"
+                  >
+                    <motion.button
+                      onClick={handleBack}
+                      className="flex items-center gap-2 font-body text-sm text-muted-foreground hover:text-gold transition-colors"
+                      whileHover={{ x: -3 }}
+                    >
+                      <ArrowLeft className="w-4 h-4" />
+                      Back
+                    </motion.button>
+                    
+                    <motion.button
+                      onClick={handleContinueToStep3}
+                      disabled={!selection.goal}
+                      className={`btn-gold py-4 px-10 min-w-[180px] transition-all duration-300 ${
+                        !selection.goal ? "opacity-40 cursor-not-allowed" : ""
+                      }`}
+                      whileHover={selection.goal ? { scale: 1.02 } : {}}
+                      whileTap={selection.goal ? { scale: 0.98 } : {}}
+                    >
+                      Continue
+                    </motion.button>
                   </motion.div>
                 </motion.div>
               )}
@@ -394,7 +418,7 @@ export const ExperienceFinderSection = () => {
                         key={timing.id}
                         variants={itemVariants}
                         onClick={() => handleTimingSelect(timing.id)}
-                        className={`group p-6 md:p-8 rounded-lg text-center transition-all duration-300 border ${
+                        className={`group p-6 md:p-8 rounded-lg text-center transition-all duration-300 border focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2 ${
                           selection.timing === timing.id
                             ? "border-gold bg-gold/10 shadow-[0_0_30px_-5px_hsl(43_45%_58%/0.4)]"
                             : "border-charcoal-light bg-card hover:border-gold/50"
@@ -413,6 +437,35 @@ export const ExperienceFinderSection = () => {
                         </span>
                       </motion.button>
                     ))}
+                  </motion.div>
+
+                  {/* Desktop action buttons */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="hidden md:flex items-center justify-center gap-4 mt-10"
+                  >
+                    <motion.button
+                      onClick={handleBack}
+                      className="flex items-center gap-2 font-body text-sm text-muted-foreground hover:text-gold transition-colors"
+                      whileHover={{ x: -3 }}
+                    >
+                      <ArrowLeft className="w-4 h-4" />
+                      Back
+                    </motion.button>
+                    
+                    <motion.button
+                      onClick={handleContinueToResult}
+                      disabled={!selection.timing}
+                      className={`btn-gold py-4 px-10 min-w-[180px] transition-all duration-300 ${
+                        !selection.timing ? "opacity-40 cursor-not-allowed" : ""
+                      }`}
+                      whileHover={selection.timing ? { scale: 1.02 } : {}}
+                      whileTap={selection.timing ? { scale: 0.98 } : {}}
+                    >
+                      Continue
+                    </motion.button>
                   </motion.div>
                 </motion.div>
               )}
@@ -446,7 +499,7 @@ export const ExperienceFinderSection = () => {
 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
                       <motion.button
-                        onClick={handleSpeakWithLuna}
+                        onClick={handleOpenLunaModal}
                         className="btn-gold py-4 px-8 flex items-center justify-center gap-3"
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
@@ -456,7 +509,7 @@ export const ExperienceFinderSection = () => {
                       </motion.button>
                       
                       <motion.button
-                        onClick={handleChatWithLuna}
+                        onClick={handleOpenLunaModal}
                         className="btn-outline-gold py-4 px-8 flex items-center justify-center gap-3"
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
@@ -466,87 +519,85 @@ export const ExperienceFinderSection = () => {
                       </motion.button>
                     </div>
 
-                    <button
-                      onClick={handleReset}
-                      className="mt-8 font-body text-sm text-muted-foreground hover:text-gold transition-colors underline underline-offset-4"
-                    >
-                      Start over
-                    </button>
+                    <div className="flex items-center justify-center gap-4 mt-8">
+                      <motion.button
+                        onClick={handleBack}
+                        className="flex items-center gap-2 font-body text-sm text-muted-foreground hover:text-gold transition-colors"
+                        whileHover={{ x: -3 }}
+                      >
+                        <ArrowLeft className="w-4 h-4" />
+                        Back
+                      </motion.button>
+                      <span className="text-charcoal-light">|</span>
+                      <button
+                        onClick={handleReset}
+                        className="font-body text-sm text-muted-foreground hover:text-gold transition-colors underline underline-offset-4"
+                      >
+                        Start over
+                      </button>
+                    </div>
                   </motion.div>
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
         </div>
-      </section>
 
-      {/* Text Chat Modal (Fallback) */}
-      <AnimatePresence>
-        {showTextChatModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-background/80 backdrop-blur-sm"
-            onClick={() => setShowTextChatModal(false)}
-          >
+        {/* Sticky Mobile CTA */}
+        <AnimatePresence>
+          {currentStep !== "result" && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              initial={{ y: 100, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 100, opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="relative w-full max-w-md p-8 md:p-10 rounded-xl border border-gold/30 bg-card shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
+              className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background via-background to-background/80 border-t border-charcoal-light z-40 md:hidden"
             >
-              <button
-                onClick={() => setShowTextChatModal(false)}
-                className="absolute top-4 right-4 text-muted-foreground hover:text-cream transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              <div className="text-center">
-                <div className="w-14 h-14 mx-auto mb-6 rounded-full bg-gold/20 flex items-center justify-center">
-                  <MessageSquare className="w-7 h-7 text-gold" />
-                </div>
-                
-                <h3 className="font-display text-2xl text-cream mb-4">
-                  Text chat is being prepared
-                </h3>
-                
-                <p className="font-body text-muted-foreground mb-8">
-                  For now, speak with Luna or request a callback from our front desk.
-                </p>
-
-                <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-3 max-w-lg mx-auto">
+                {currentStep !== 1 && (
                   <motion.button
-                    onClick={() => {
-                      setShowTextChatModal(false);
-                      handleSpeakWithLuna();
-                    }}
-                    className="btn-gold py-3 px-6 flex items-center justify-center gap-2 w-full"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    onClick={handleBack}
+                    className="flex-shrink-0 w-12 h-12 rounded-lg bg-charcoal-light flex items-center justify-center text-muted-foreground hover:text-gold transition-colors"
+                    whileTap={{ scale: 0.95 }}
                   >
-                    <Mic className="w-4 h-4" />
-                    <span>Speak with Luna</span>
+                    <ArrowLeft className="w-5 h-5" />
                   </motion.button>
-                  
+                )}
+                
+                <motion.button
+                  onClick={() => {
+                    if (currentStep === 1) handleContinueToStep2();
+                    else if (currentStep === 2) handleContinueToStep3();
+                    else if (currentStep === 3) handleContinueToResult();
+                  }}
+                  disabled={!canContinue()}
+                  className={`flex-1 btn-gold py-4 px-6 text-center transition-all duration-300 ${
+                    !canContinue() ? "opacity-40 cursor-not-allowed" : ""
+                  }`}
+                  whileTap={canContinue() ? { scale: 0.98 } : {}}
+                >
+                  Continue
+                </motion.button>
+
+                {currentStep === 1 && selection.services.length > 0 && (
                   <motion.button
-                    onClick={scrollToCallback}
-                    className="btn-outline-gold py-3 px-6 flex items-center justify-center gap-2 w-full"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    onClick={handleClearServices}
+                    className="flex-shrink-0 w-12 h-12 rounded-lg bg-charcoal-light flex items-center justify-center text-muted-foreground hover:text-gold transition-colors font-body text-xs"
+                    whileTap={{ scale: 0.95 }}
                   >
-                    <Phone className="w-4 h-4" />
-                    <span>Request a Callback</span>
+                    Clear
                   </motion.button>
-                </div>
+                )}
               </div>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>
+      </section>
+
+      {/* Luna Modal */}
+      <LunaModal isOpen={isOpen} onClose={closeModal} context={context} />
     </>
   );
 };
