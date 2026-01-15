@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import { Phone, Menu, X } from "lucide-react";
+import { Phone, Menu, X, PhoneCall } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const navLinks = [
   { label: "Services", href: "#services" },
@@ -38,7 +39,7 @@ export const Navigation = () => {
         </a>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-8">
+        <nav className="hidden md:flex items-center gap-6">
           {navLinks.map((link) => (
             <a
               key={link.label}
@@ -49,10 +50,16 @@ export const Navigation = () => {
             </a>
           ))}
           <a
-            href="tel:+15203276753"
-            className="flex items-center gap-2 text-sm text-gold border border-gold/30 px-4 py-2 rounded hover:bg-gold/10 transition-colors"
+            href="#callback"
+            className="font-body text-sm text-cream/80 hover:text-gold transition-colors tracking-wide"
           >
-            <Phone className="w-4 h-4" />
+            Request Callback
+          </a>
+          <a
+            href="tel:+15203276753"
+            className="flex items-center gap-2 bg-gold hover:bg-gold/90 text-background font-body text-sm px-5 py-2.5 rounded transition-all duration-300"
+          >
+            <PhoneCall className="w-4 h-4" />
             (520) 327-6753
           </a>
         </nav>
@@ -86,11 +93,18 @@ export const Navigation = () => {
               </a>
             ))}
             <a
-              href="tel:+15203276753"
-              className="flex items-center gap-2 text-gold border border-gold/30 px-6 py-3 rounded"
+              href="#callback"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="font-body text-lg text-cream/80 hover:text-gold transition-colors"
             >
-              <Phone className="w-4 h-4" />
-              (520) 327-6753
+              Request Callback
+            </a>
+            <a
+              href="tel:+15203276753"
+              className="flex items-center gap-2 bg-gold text-background font-body px-6 py-3 rounded"
+            >
+              <PhoneCall className="w-5 h-5" />
+              Call (520) 327-6753
             </a>
           </nav>
         </motion.div>
