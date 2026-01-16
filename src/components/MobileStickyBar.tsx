@@ -8,7 +8,7 @@ export const MobileStickyBar = () => {
   const handleSpeakWithLuna = () => {
     const lunaContext: LunaContext = {
       source: "Mobile Sticky Bar",
-      services: [],
+      categories: [],
       goal: null,
       timing: null,
     };

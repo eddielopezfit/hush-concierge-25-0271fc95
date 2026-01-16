@@ -78,7 +78,7 @@ export const ArtistsSection = () => {
     setSelectedArtist(null);
     const lunaContext: LunaContext = {
       source: "Meet the Artists",
-      services: [artist.specialty.toLowerCase()],
+      categories: [artist.specialty.toLowerCase() as any],
       goal: null,
       timing: null
     };
