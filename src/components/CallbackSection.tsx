@@ -61,7 +61,7 @@ export const CallbackSection = () => {
   };
 
   return (
-    <section id="callback" className="py-24 md:py-32 bg-background relative overflow-hidden">
+    <section id="callback" className="py-24 md:py-32 pb-32 md:pb-32 bg-background relative overflow-hidden">
       {/* Subtle background accent */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-gold rounded-full blur-3xl" />

@@ -12,10 +12,11 @@ import { AboutSection } from "@/components/AboutSection";
 import { TestimonialsSection } from "@/components/TestimonialsSection";
 import { CallbackSection } from "@/components/CallbackSection";
 import { FooterSection } from "@/components/FooterSection";
+import { MobileStickyBar } from "@/components/MobileStickyBar";
 
 const Index = () => {
   return (
-    <main className="bg-background min-h-screen overflow-x-hidden">
+    <main className="bg-background min-h-screen overflow-x-hidden pb-24 md:pb-0">
       <Navigation />
       <HeroSection />
       <MeetLunaSection />
@@ -30,6 +31,7 @@ const Index = () => {
       <TestimonialsSection />
       <CallbackSection />
       <FooterSection />
+      <MobileStickyBar />
     </main>
   );
 };
