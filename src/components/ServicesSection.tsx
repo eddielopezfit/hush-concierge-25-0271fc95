@@ -1,6 +1,9 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Scissors, Sparkles, Heart, Eye, Hand } from "lucide-react";
 import { LunaModal, useLunaModal, type LunaContext } from "./LunaModal";
+import { ServiceMenuModal } from "./ServiceMenuModal";
+import { servicesMenuData, getCategoryById } from "@/data/servicesMenuData";
 
 const services = [
   {
@@ -20,7 +23,7 @@ const services = [
   {
     icon: Sparkles,
     id: "skincare",
-    title: "Skincare",
+    title: "Skincare & Spray Tan",
     description: "Clinical expertise meets indulgent relaxation. Reveal your luminous best.",
     image: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80"
   },
@@ -61,8 +64,11 @@ const cardVariants = {
 
 export const ServicesSection = () => {
   const { isOpen, context, openModal, closeModal } = useLunaModal();
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [isMenuModalOpen, setIsMenuModalOpen] = useState(false);
 
-  const handleLetLunaGuide = (service: typeof services[0]) => {
+  const handleLetLunaGuide = (service: typeof services[0], e: React.MouseEvent) => {
+    e.stopPropagation();
     const lunaContext: LunaContext = {
       source: `Service: ${service.title}`,
       services: [service.id],
@@ -70,6 +76,20 @@ export const ServicesSection = () => {
       timing: null,
     };
     openModal(lunaContext);
+  };
+
+  const handleViewMenu = (serviceId: string) => {
+    setSelectedCategory(serviceId);
+    setIsMenuModalOpen(true);
+  };
+
+  const handleCardClick = (serviceId: string) => {
+    handleViewMenu(serviceId);
+  };
+
+  const getPricePreview = (serviceId: string): string => {
+    const category = getCategoryById(serviceId);
+    return category?.pricePreview || "";
   };
 
   return (
@@ -102,7 +122,8 @@ export const ServicesSection = () => {
               <motion.div
                 key={service.title}
                 variants={cardVariants}
-                className="group card-luxury rounded-lg overflow-hidden"
+                onClick={() => handleCardClick(service.id)}
+                className="group card-luxury rounded-lg overflow-hidden cursor-pointer"
               >
                 {/* Image */}
                 <div className="relative h-48 overflow-hidden">
@@ -119,17 +140,34 @@ export const ServicesSection = () => {
 
                 {/* Content */}
                 <div className="p-6">
-                  <h3 className="font-display text-2xl text-cream mb-3 group-hover:text-gold transition-colors">
+                  <h3 className="font-display text-2xl text-cream mb-2 group-hover:text-gold transition-colors">
                     {service.title}
                   </h3>
+                  
+                  {/* Price Preview */}
+                  <p className="font-body text-sm text-gold/80 mb-3">
+                    {getPricePreview(service.id)}
+                  </p>
+                  
                   <p className="font-body text-muted-foreground text-sm leading-relaxed mb-6">
                     {service.description}
                   </p>
+                  
                   <button 
-                    onClick={() => handleLetLunaGuide(service)}
+                    onClick={(e) => handleLetLunaGuide(service, e)}
                     className="btn-outline-gold text-xs py-3 px-6 w-full group-hover:bg-gold/10 focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2"
                   >
                     Let Luna Guide You
+                  </button>
+                  
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleViewMenu(service.id);
+                    }}
+                    className="mt-3 font-body text-sm text-muted-foreground hover:text-gold transition-colors underline underline-offset-4 w-full text-center block"
+                  >
+                    View full menu
                   </button>
                 </div>
               </motion.div>
@@ -140,6 +178,13 @@ export const ServicesSection = () => {
 
       {/* Luna Modal */}
       <LunaModal isOpen={isOpen} onClose={closeModal} context={context} />
+
+      {/* Service Menu Modal */}
+      <ServiceMenuModal
+        isOpen={isMenuModalOpen}
+        onClose={() => setIsMenuModalOpen(false)}
+        category={selectedCategory ? getCategoryById(selectedCategory) || null : null}
+      />
     </>
   );
 };
