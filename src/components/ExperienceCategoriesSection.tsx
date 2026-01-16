@@ -54,7 +54,7 @@ export const ExperienceCategoriesSection = () => {
   const handleSubcategoryClick = (category: Category, subcategory: string) => {
     const lunaContext: LunaContext = {
       source: "Choose Your Experience",
-      services: [category.name.toLowerCase()],
+      categories: [category.name.toLowerCase() as any],
       goal: subcategory,
       timing: null
     };

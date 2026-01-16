@@ -42,7 +42,7 @@ export const GuidesSection = () => {
   const handleBeginWithLuna = (guide: typeof guides[0]) => {
     const lunaContext: LunaContext = {
       source: `Journey: ${guide.title}`,
-      services: guide.service ? [guide.service] : [],
+      categories: guide.service ? [guide.service as any] : [],
       goal: null,
       timing: null,
     };

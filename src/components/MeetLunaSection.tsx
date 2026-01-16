@@ -9,7 +9,7 @@ export const MeetLunaSection = () => {
   const handleChatWithLuna = () => {
     const lunaContext: LunaContext = {
       source: "Meet Luna Section",
-      services: [],
+      categories: [],
       goal: null,
       timing: null,
     };
