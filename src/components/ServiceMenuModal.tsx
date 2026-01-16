@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Mic, MessageSquare, Phone, ChevronDown } from "lucide-react";
+import { X, Mic, MessageSquare, Phone } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   Accordion,
@@ -8,7 +8,9 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { ServiceCategory } from "@/data/servicesMenuData";
-import { LunaModal, useLunaModal, type LunaContext } from "./LunaModal";
+import { LunaModal, useLunaModal } from "./LunaModal";
+import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
+import { setConciergeContext } from "@/lib/conciergeStore";
 
 interface ServiceMenuModalProps {
   isOpen: boolean;
@@ -41,28 +43,35 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
     }
   }, [category]);
 
-  const handleSpeakWithLuna = () => {
-    if (!category) return;
-    const lunaContext: LunaContext = {
+  const buildCategoryContext = (): ConciergeContext => {
+    if (!category) {
+      return {
+        source: "Service Menu",
+        categories: [],
+        goal: null,
+        timing: null,
+      };
+    }
+    return {
       source: `Service Menu: ${category.title}`,
-      services: [category.id],
+      categories: [category.id as ServiceCategoryId],
       goal: null,
       timing: null,
     };
+  };
+
+  const handleSpeakWithLuna = () => {
+    const ctx = buildCategoryContext();
+    setConciergeContext(ctx);
     onClose();
-    setTimeout(() => openModal(lunaContext), 100);
+    setTimeout(() => openModal(ctx), 100);
   };
 
   const handleChatWithLuna = () => {
-    if (!category) return;
-    const lunaContext: LunaContext = {
-      source: `Service Menu: ${category.title}`,
-      services: [category.id],
-      goal: null,
-      timing: null,
-    };
+    const ctx = buildCategoryContext();
+    setConciergeContext(ctx);
     onClose();
-    setTimeout(() => openModal(lunaContext), 100);
+    setTimeout(() => openModal(ctx), 100);
   };
 
   if (!category) return null;

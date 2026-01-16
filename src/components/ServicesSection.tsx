@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Scissors, Sparkles, Heart, Eye, Hand } from "lucide-react";
-import { LunaModal, useLunaModal, type LunaContext } from "./LunaModal";
+import { LunaModal, useLunaModal } from "./LunaModal";
 import { ServiceMenuModal } from "./ServiceMenuModal";
 import { servicesMenuData, getCategoryById } from "@/data/servicesMenuData";
+import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
+import { setConciergeContext } from "@/lib/conciergeStore";
 
 const services = [
   {
@@ -69,16 +71,18 @@ export const ServicesSection = () => {
 
   const handleLetLunaGuide = (service: typeof services[0], e: React.MouseEvent) => {
     e.stopPropagation();
-    const lunaContext: LunaContext = {
+    const lunaContext: ConciergeContext = {
       source: `Service: ${service.title}`,
-      services: [service.id],
+      categories: [service.id as ServiceCategoryId],
       goal: null,
       timing: null,
     };
+    setConciergeContext(lunaContext);
     openModal(lunaContext);
   };
 
-  const handleViewMenu = (serviceId: string) => {
+  const handleViewMenu = (serviceId: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     setSelectedCategory(serviceId);
     setIsMenuModalOpen(true);
   };
@@ -161,10 +165,7 @@ export const ServicesSection = () => {
                   </button>
                   
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleViewMenu(service.id);
-                    }}
+                    onClick={(e) => handleViewMenu(service.id, e)}
                     className="mt-3 font-body text-sm text-muted-foreground hover:text-gold transition-colors underline underline-offset-4 w-full text-center block"
                   >
                     View full menu

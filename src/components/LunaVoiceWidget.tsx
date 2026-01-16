@@ -2,6 +2,7 @@ import { useConversation } from "@elevenlabs/react";
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mic, MicOff, Volume2 } from "lucide-react";
+import { getConciergeContext, buildLunaFirstMessage } from "@/lib/conciergeStore";
 
 const LUNA_AGENT_ID = "agent_1301kf1rtamae0p8w88ns874akzk";
 
@@ -21,9 +22,25 @@ export const LunaVoiceWidget = () => {
       await navigator.mediaDevices.getUserMedia({ audio: true });
       setHasPermission(true);
 
-      await conversation.startSession({
+      // Read context from store and build personalized first message
+      const ctx = getConciergeContext();
+      const firstMessage = buildLunaFirstMessage(ctx);
+
+      // Build session options with optional overrides
+      const sessionOptions: any = {
         agentId: LUNA_AGENT_ID,
-      } as any);
+      };
+
+      // Only add overrides if we have a custom first message
+      if (firstMessage) {
+        sessionOptions.overrides = {
+          agent: {
+            firstMessage: firstMessage,
+          },
+        };
+      }
+
+      await conversation.startSession(sessionOptions);
     } catch (error) {
       console.error("Failed to start conversation:", error);
     } finally {
