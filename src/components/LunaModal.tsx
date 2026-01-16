@@ -1,18 +1,13 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Mic, MessageSquare, Phone, Sparkles } from "lucide-react";
-import { useEffect } from "react";
-
-export interface LunaContext {
-  source: string;
-  services: string[];
-  goal: string | null;
-  timing: string | null;
-}
+import { useEffect, useState, useCallback } from "react";
+import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
+import { setConciergeContext } from "@/lib/conciergeStore";
 
 interface LunaModalProps {
   isOpen: boolean;
   onClose: () => void;
-  context?: LunaContext;
+  context?: ConciergeContext;
 }
 
 const serviceLabels: Record<string, string> = {
@@ -54,7 +49,7 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
     onClose();
     // Store context for Luna to pick up
     if (context) {
-      sessionStorage.setItem("lunaContext", JSON.stringify(context));
+      setConciergeContext(context);
     }
     // Scroll to Luna section
     const lunaSection = document.getElementById("luna");
@@ -68,7 +63,7 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
     // This will be replaced when text chat is implemented
     onClose();
     if (context) {
-      sessionStorage.setItem("lunaContext", JSON.stringify(context));
+      setConciergeContext(context);
     }
     // Show text chat placeholder - for now, open callback as fallback
     setTimeout(() => {
@@ -106,15 +101,18 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
     
     const parts: string[] = [];
     
-    if (context.services.length > 0) {
-      const serviceNames = context.services.map(s => serviceLabels[s] || s);
+    // Categories
+    if (context.categories && context.categories.length > 0) {
+      const serviceNames = context.categories.map(s => serviceLabels[s] || s);
       parts.push(serviceNames.join(", "));
     }
     
+    // Goal
     if (context.goal) {
       parts.push(goalLabels[context.goal] || context.goal);
     }
     
+    // Timing
     if (context.timing) {
       parts.push(timingLabels[context.timing] || context.timing);
     }
@@ -122,7 +120,17 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
     return parts.length > 0 ? parts.join(" • ") : null;
   };
 
+  const getViewingContext = () => {
+    if (!context?.category || !context?.group || !context?.item) return null;
+    
+    const categoryLabel = serviceLabels[context.category] || context.category;
+    const priceStr = context.price ? ` (${context.price})` : "";
+    
+    return `${categoryLabel} > ${context.group} > ${context.item}${priceStr}`;
+  };
+
   const contextSummary = getContextSummary();
+  const viewingContext = getViewingContext();
 
   return (
     <AnimatePresence>
@@ -173,10 +181,26 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.15 }}
-                  className="font-body text-gold text-sm md:text-base mb-6 px-4"
+                  className="font-body text-gold text-sm md:text-base mb-2 px-4"
                 >
                   Selected: {contextSummary}
                 </motion.p>
+              )}
+
+              {/* Viewing Context (for service menu deep links) */}
+              {viewingContext && (
+                <motion.p 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="font-body text-gold/70 text-xs md:text-sm mb-4 px-4"
+                >
+                  Viewing: {viewingContext}
+                </motion.p>
+              )}
+
+              {!contextSummary && !viewingContext && (
+                <div className="mb-6" />
               )}
 
               <p className="font-body text-muted-foreground mb-8 max-w-sm mx-auto">
@@ -223,14 +247,15 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
   );
 };
 
-// Custom hook for managing Luna modal state
-import { useState, useCallback } from "react";
+// Re-export LunaContext type for backwards compatibility
+export type { ConciergeContext as LunaContext };
 
+// Custom hook for managing Luna modal state
 export const useLunaModal = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [context, setContext] = useState<LunaContext | undefined>(undefined);
+  const [context, setContext] = useState<ConciergeContext | undefined>(undefined);
 
-  const openModal = useCallback((newContext?: LunaContext) => {
+  const openModal = useCallback((newContext?: ConciergeContext) => {
     setContext(newContext);
     setIsOpen(true);
   }, []);

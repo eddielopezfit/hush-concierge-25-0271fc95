@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Scissors, Hand, Sparkles, Eye, Heart, Mic, MessageSquare, Phone, Check, ArrowLeft } from "lucide-react";
-import { LunaModal, useLunaModal, type LunaContext } from "./LunaModal";
+import { LunaModal, useLunaModal } from "./LunaModal";
+import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
+import { setConciergeContext } from "@/lib/conciergeStore";
 
 type Step = 1 | 2 | 3 | "result";
 
@@ -84,6 +86,16 @@ export const ExperienceFinderSection = () => {
     setSelection((prev) => ({ ...prev, goal: goalId }));
   };
 
+  // Auto-advance to Step 3 after goal selection (350ms delay)
+  useEffect(() => {
+    if (currentStep === 2 && selection.goal) {
+      const timer = setTimeout(() => {
+        setCurrentStep(3);
+      }, 350);
+      return () => clearTimeout(timer);
+    }
+  }, [currentStep, selection.goal]);
+
   const handleTimingSelect = (timingId: string) => {
     setSelection((prev) => ({ ...prev, timing: timingId }));
   };
@@ -103,29 +115,51 @@ export const ExperienceFinderSection = () => {
     setCurrentStep(1);
   };
 
-  const buildContext = (): LunaContext => ({
+  const buildContext = (): ConciergeContext => ({
     source: "Experience Finder",
-    services: selection.services,
+    categories: selection.services as ServiceCategoryId[],
     goal: selection.goal,
     timing: selection.timing,
   });
 
   const handleOpenLunaModal = () => {
-    openModal(buildContext());
+    const ctx = buildContext();
+    setConciergeContext(ctx);
+    openModal(ctx);
   };
 
   const handleSpeakWithLunaStep2 = () => {
-    const lunaContext: LunaContext = {
+    const ctx: ConciergeContext = {
       source: "Experience Finder",
-      services: selection.services,
+      categories: selection.services as ServiceCategoryId[],
       goal: selection.goal,
       timing: null,
     };
-    openModal(lunaContext);
+    setConciergeContext(ctx);
+    openModal(ctx);
+  };
+
+  const handleChatWithLunaStep2 = () => {
+    const ctx: ConciergeContext = {
+      source: "Experience Finder",
+      categories: selection.services as ServiceCategoryId[],
+      goal: selection.goal,
+      timing: null,
+    };
+    setConciergeContext(ctx);
+    openModal(ctx);
   };
 
   const handleSpeakWithLunaStep3 = () => {
-    openModal(buildContext());
+    const ctx = buildContext();
+    setConciergeContext(ctx);
+    openModal(ctx);
+  };
+
+  const handleChatWithLunaStep3 = () => {
+    const ctx = buildContext();
+    setConciergeContext(ctx);
+    openModal(ctx);
   };
 
   const getStepTitle = () => {
@@ -136,6 +170,19 @@ export const ExperienceFinderSection = () => {
         return "What's your goal today?";
       case 3:
         return "How soon?";
+      default:
+        return "";
+    }
+  };
+
+  const getStepSubtitle = () => {
+    switch (currentStep) {
+      case 1:
+        return "Select one or more.";
+      case 2:
+        return "Choose a goal, then choose voice or chat.";
+      case 3:
+        return "Choose a timeframe, then speak or chat with Luna.";
       default:
         return "";
     }
@@ -219,7 +266,7 @@ export const ExperienceFinderSection = () => {
                     {getStepTitle()}
                   </h3>
                   <p className="font-body text-sm text-muted-foreground text-center mb-10">
-                    Select one or more.
+                    {getStepSubtitle()}
                   </p>
                   <motion.div
                     variants={containerVariants}
@@ -357,7 +404,7 @@ export const ExperienceFinderSection = () => {
                     {getStepTitle()}
                   </h3>
                   <p className="font-body text-sm text-muted-foreground text-center mb-10">
-                    Choose your primary goal.
+                    {getStepSubtitle()}
                   </p>
                   <motion.div
                     variants={containerVariants}
@@ -422,7 +469,7 @@ export const ExperienceFinderSection = () => {
                       </motion.button>
                       
                       <motion.button
-                        onClick={handleSpeakWithLunaStep2}
+                        onClick={handleChatWithLunaStep2}
                         disabled={!selection.goal}
                         className={`btn-outline-gold py-4 px-8 flex items-center justify-center gap-3 transition-all duration-300 ${
                           !selection.goal ? "opacity-40 cursor-not-allowed" : ""
@@ -434,17 +481,6 @@ export const ExperienceFinderSection = () => {
                         <span>Chat with Luna</span>
                       </motion.button>
                     </div>
-                    
-                    {selection.goal && (
-                      <motion.button
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        onClick={() => setCurrentStep(3)}
-                        className="font-body text-sm text-muted-foreground hover:text-gold transition-colors underline underline-offset-4"
-                      >
-                        Or add more details
-                      </motion.button>
-                    )}
                   </motion.div>
 
                   {/* Mobile action buttons */}
@@ -467,7 +503,7 @@ export const ExperienceFinderSection = () => {
                     </motion.button>
                     
                     <motion.button
-                      onClick={handleSpeakWithLunaStep2}
+                      onClick={handleChatWithLunaStep2}
                       disabled={!selection.goal}
                       className={`btn-outline-gold py-4 px-8 w-full max-w-xs flex items-center justify-center gap-3 transition-all duration-300 ${
                         !selection.goal ? "opacity-40 cursor-not-allowed" : ""
@@ -478,29 +514,13 @@ export const ExperienceFinderSection = () => {
                       <span>Chat with Luna</span>
                     </motion.button>
                     
-                    <div className="flex items-center gap-4 mt-2">
-                      <motion.button
-                        onClick={handleBack}
-                        className="flex items-center gap-2 font-body text-sm text-muted-foreground hover:text-gold transition-colors"
-                      >
-                        <ArrowLeft className="w-4 h-4" />
-                        Back
-                      </motion.button>
-                      
-                      {selection.goal && (
-                        <>
-                          <span className="text-charcoal-light">|</span>
-                          <motion.button
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            onClick={() => setCurrentStep(3)}
-                            className="font-body text-sm text-muted-foreground hover:text-gold transition-colors underline underline-offset-4"
-                          >
-                            Add more details
-                          </motion.button>
-                        </>
-                      )}
-                    </div>
+                    <motion.button
+                      onClick={handleBack}
+                      className="flex items-center gap-2 font-body text-sm text-muted-foreground hover:text-gold transition-colors mt-2"
+                    >
+                      <ArrowLeft className="w-4 h-4" />
+                      Back
+                    </motion.button>
                   </motion.div>
                 </motion.div>
               )}
@@ -514,9 +534,12 @@ export const ExperienceFinderSection = () => {
                   exit="exit"
                   className="w-full"
                 >
-                  <h3 className="font-display text-2xl md:text-3xl text-cream text-center mb-10">
+                  <h3 className="font-display text-2xl md:text-3xl text-cream text-center mb-3">
                     {getStepTitle()}
                   </h3>
+                  <p className="font-body text-sm text-muted-foreground text-center mb-10">
+                    {getStepSubtitle()}
+                  </p>
                   <motion.div
                     variants={containerVariants}
                     initial="hidden"
@@ -579,7 +602,7 @@ export const ExperienceFinderSection = () => {
                     </motion.button>
                     
                     <motion.button
-                      onClick={handleSpeakWithLunaStep3}
+                      onClick={handleChatWithLunaStep3}
                       disabled={!selection.timing}
                       className={`btn-outline-gold py-4 px-8 flex items-center justify-center gap-3 transition-all duration-300 ${
                         !selection.timing ? "opacity-40 cursor-not-allowed" : ""
@@ -612,7 +635,7 @@ export const ExperienceFinderSection = () => {
                     </motion.button>
                     
                     <motion.button
-                      onClick={handleSpeakWithLunaStep3}
+                      onClick={handleChatWithLunaStep3}
                       disabled={!selection.timing}
                       className={`btn-outline-gold py-4 px-8 w-full max-w-xs flex items-center justify-center gap-3 transition-all duration-300 ${
                         !selection.timing ? "opacity-40 cursor-not-allowed" : ""
