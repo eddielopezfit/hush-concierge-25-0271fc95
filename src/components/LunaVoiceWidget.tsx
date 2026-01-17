@@ -102,20 +102,14 @@ export const LunaVoiceWidget = () => {
       console.log("Mic permission granted");
       setHasPermission(true);
 
-      // Read context from store and build personalized first message
+      // Read context from store for later use (when agent supports overrides)
       const ctx = getConciergeContext();
-      const dynamicMessage = buildLunaFirstMessage(ctx);
+      console.log("ConciergeContext loaded (not injected - agent doesn't support overrides):", ctx);
 
       console.log("Starting ElevenLabs session with agent:", LUNA_AGENT_ID);
-      console.log("FirstMessage:", dynamicMessage);
 
       await conversation.startSession({
         agentId: LUNA_AGENT_ID,
-        overrides: {
-          agent: {
-            firstMessage: dynamicMessage,
-          },
-        },
       } as any);
     } catch (err) {
       console.error("Voice start failed:", err);
