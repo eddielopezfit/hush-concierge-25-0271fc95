@@ -76,6 +76,7 @@ const buildLunaFirstMessage = (ctx: ConciergeContext | null): string => {
 export const LunaVoiceWidget = () => {
   const [isConnecting, setIsConnecting] = useState(false);
   const [hasPermission, setHasPermission] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const conversation = useConversation({
     onConnect: () => console.log("Connected to Luna"),
@@ -84,14 +85,21 @@ export const LunaVoiceWidget = () => {
   });
 
   const startConversation = useCallback(async () => {
+    console.log("Speak start: clicked");
+    setError(null);
     setIsConnecting(true);
     try {
+      console.log("Requesting mic permission...");
       await navigator.mediaDevices.getUserMedia({ audio: true });
+      console.log("Mic permission granted");
       setHasPermission(true);
 
       // Read context from store and build personalized first message
       const ctx = getConciergeContext();
       const dynamicMessage = buildLunaFirstMessage(ctx);
+
+      console.log("Starting ElevenLabs session with agent:", LUNA_AGENT_ID);
+      console.log("FirstMessage:", dynamicMessage);
 
       await conversation.startSession({
         agentId: LUNA_AGENT_ID,
@@ -101,8 +109,9 @@ export const LunaVoiceWidget = () => {
           },
         },
       } as any);
-    } catch (error) {
-      console.error("Failed to start conversation:", error);
+    } catch (err) {
+      console.error("Voice start failed:", err);
+      setError(String(err));
     } finally {
       setIsConnecting(false);
     }
@@ -196,6 +205,11 @@ export const LunaVoiceWidget = () => {
           >
             End conversation
           </button>
+        )}
+        {error && (
+          <p className="mt-2 text-sm text-red-400 max-w-xs mx-auto break-words">
+            Error: {error}
+          </p>
         )}
       </motion.div>
     </div>
