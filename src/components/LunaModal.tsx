@@ -46,6 +46,7 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
   }, [isOpen]);
 
   const handleSpeakWithLuna = () => {
+    console.log("Speak with Luna CTA clicked (LunaModal)");
     onClose();
     // Store context for Luna to pick up
     if (context) {
@@ -54,7 +55,10 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
     // Scroll to Luna section
     const lunaSection = document.getElementById("luna");
     if (lunaSection) {
+      console.log("Scrolling to #luna section");
       lunaSection.scrollIntoView({ behavior: "smooth" });
+    } else {
+      console.warn("Luna section (#luna) not found in DOM");
     }
   };
 
