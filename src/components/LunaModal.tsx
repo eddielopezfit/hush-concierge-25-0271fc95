@@ -47,11 +47,15 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
 
   const handleSpeakWithLuna = () => {
     console.log("Speak with Luna CTA clicked (LunaModal)");
-    onClose();
+    
     // Store context for Luna to pick up
     if (context) {
       setConciergeContext(context);
     }
+    
+    // Close modal first
+    onClose();
+    
     // Scroll to Luna section
     const lunaSection = document.getElementById("luna");
     if (lunaSection) {
@@ -60,6 +64,12 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
     } else {
       console.warn("Luna section (#luna) not found in DOM");
     }
+    
+    // Dispatch custom event to trigger voice start
+    console.log("Dispatching luna:start-voice event");
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent("luna:start-voice"));
+    }, 300); // Small delay to allow scroll and modal close
   };
 
   const handleChatWithLuna = () => {

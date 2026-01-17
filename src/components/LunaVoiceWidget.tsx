@@ -1,5 +1,5 @@
 import { useConversation } from "@elevenlabs/react";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mic, MicOff, Volume2 } from "lucide-react";
 import { getConciergeContext } from "@/lib/conciergeStore";
@@ -77,6 +77,7 @@ export const LunaVoiceWidget = () => {
   const [isConnecting, setIsConnecting] = useState(false);
   const [hasPermission, setHasPermission] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const isStartingRef = useRef(false);
 
   const conversation = useConversation({
     onConnect: () => console.log("Connected to Luna"),
@@ -85,6 +86,13 @@ export const LunaVoiceWidget = () => {
   });
 
   const startConversation = useCallback(async () => {
+    // Prevent double-starts
+    if (isStartingRef.current || conversation.status === "connected") {
+      console.log("Start blocked: already connecting or connected");
+      return;
+    }
+    
+    isStartingRef.current = true;
     console.log("Speak start: clicked");
     setError(null);
     setIsConnecting(true);
@@ -114,8 +122,22 @@ export const LunaVoiceWidget = () => {
       setError(String(err));
     } finally {
       setIsConnecting(false);
+      isStartingRef.current = false;
     }
   }, [conversation]);
+
+  // Listen for global event to auto-start voice
+  useEffect(() => {
+    const handleLunaStartVoice = () => {
+      console.log("luna:start-voice event received");
+      startConversation();
+    };
+
+    window.addEventListener("luna:start-voice", handleLunaStartVoice);
+    return () => {
+      window.removeEventListener("luna:start-voice", handleLunaStartVoice);
+    };
+  }, [startConversation]);
 
   const stopConversation = useCallback(async () => {
     await conversation.endSession();
