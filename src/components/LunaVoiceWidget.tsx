@@ -2,9 +2,76 @@ import { useConversation } from "@elevenlabs/react";
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mic, MicOff, Volume2 } from "lucide-react";
-import { getConciergeContext, buildLunaFirstMessage } from "@/lib/conciergeStore";
+import { getConciergeContext } from "@/lib/conciergeStore";
+import type { ConciergeContext } from "@/types/concierge";
 
-const LUNA_AGENT_ID = "agent_1301kf1rtamae0p8w88ns874akzk";
+const LUNA_AGENT_ID = "agent_4001kf4kgx87fjysr38whwpghj86";
+
+const DEFAULT_GREETING = "Welcome to Hush Salon & Day Spa. I'm Luna, your digital concierge. How may I guide you today?";
+
+const buildLunaFirstMessage = (ctx: ConciergeContext | null): string => {
+  if (!ctx) return DEFAULT_GREETING;
+
+  const hasCategories = ctx.categories && ctx.categories.length > 0;
+  const hasGoal = ctx.goal !== null && ctx.goal !== undefined;
+  const hasTiming = ctx.timing !== null && ctx.timing !== undefined;
+
+  // If no meaningful context, use default greeting
+  if (!hasCategories && !hasGoal && !hasTiming) {
+    return DEFAULT_GREETING;
+  }
+
+  const parts: string[] = ["Welcome."];
+
+  // Categories - Title Case, proper joining
+  if (hasCategories) {
+    const categoryLabels: Record<string, string> = {
+      hair: "Hair",
+      nails: "Nails",
+      lashes: "Lashes",
+      skincare: "Skincare",
+      massage: "Massage",
+    };
+    const names = ctx.categories.map(c => categoryLabels[c] || c);
+
+    let categoryString: string;
+    if (names.length === 1) {
+      categoryString = names[0];
+    } else if (names.length === 2) {
+      categoryString = `${names[0]} and ${names[1]}`;
+    } else {
+      categoryString = `${names.slice(0, -1).join(", ")}, and ${names[names.length - 1]}`;
+    }
+
+    parts.push(`I see you're interested in ${categoryString}.`);
+  }
+
+  // Goal - natural phrasing
+  if (hasGoal) {
+    const goalLabels: Record<string, string> = {
+      refresh: "Refresh",
+      relax: "Relax",
+      transform: "Transform",
+      event: "Get event-ready",
+    };
+    parts.push(`Your goal is ${goalLabels[ctx.goal!] || ctx.goal}.`);
+  }
+
+  // Timing - natural phrasing
+  if (hasTiming) {
+    const timingLabels: Record<string, string> = {
+      today: "Today",
+      week: "This week",
+      planning: "Planning ahead",
+      browsing: "Just browsing",
+    };
+    parts.push(`You're looking to book ${timingLabels[ctx.timing!] || ctx.timing}.`);
+  }
+
+  parts.push("Let me guide you through the best next step.");
+
+  return parts.join(" ");
+};
 
 export const LunaVoiceWidget = () => {
   const [isConnecting, setIsConnecting] = useState(false);
@@ -24,23 +91,16 @@ export const LunaVoiceWidget = () => {
 
       // Read context from store and build personalized first message
       const ctx = getConciergeContext();
-      const firstMessage = buildLunaFirstMessage(ctx);
+      const dynamicMessage = buildLunaFirstMessage(ctx);
 
-      // Build session options with optional overrides
-      const sessionOptions: any = {
+      await conversation.startSession({
         agentId: LUNA_AGENT_ID,
-      };
-
-      // Only add overrides if we have a custom first message
-      if (firstMessage) {
-        sessionOptions.overrides = {
+        overrides: {
           agent: {
-            firstMessage: firstMessage,
+            firstMessage: dynamicMessage,
           },
-        };
-      }
-
-      await conversation.startSession(sessionOptions);
+        },
+      } as any);
     } catch (error) {
       console.error("Failed to start conversation:", error);
     } finally {
