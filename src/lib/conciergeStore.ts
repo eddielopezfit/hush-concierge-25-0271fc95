@@ -96,3 +96,64 @@ export const buildLunaFirstMessage = (ctx: ConciergeContext | null): string | un
   
   return `Welcome! ${parts.join(". ")}. Let me help you find the perfect experience.`;
 };
+
+/**
+ * Build dynamic variables for ElevenLabs session
+ * Returns formatted strings for selected_categories, selected_goal, selected_timing, and luna_context_summary
+ */
+export const buildDynamicVariables = (ctx: ConciergeContext | null): Record<string, string> => {
+  const categoryLabels: Record<string, string> = {
+    hair: "Hair",
+    nails: "Nails",
+    lashes: "Lashes",
+    skincare: "Skincare",
+    massage: "Massage",
+  };
+  
+  const goalLabels: Record<string, string> = {
+    refresh: "Quick Refresh",
+    relax: "Relaxation",
+    transform: "Full Transformation",
+    event: "Event Ready",
+  };
+  
+  const timingLabels: Record<string, string> = {
+    today: "Today",
+    week: "This Week",
+    planning: "Planning Ahead",
+    browsing: "Just Browsing",
+  };
+
+  // Format categories with "and" for 2+ items
+  let selectedCategories = "";
+  if (ctx?.categories && ctx.categories.length > 0) {
+    const names = ctx.categories.map(c => categoryLabels[c] || c);
+    if (names.length === 1) {
+      selectedCategories = names[0];
+    } else if (names.length === 2) {
+      selectedCategories = `${names[0]} and ${names[1]}`;
+    } else {
+      selectedCategories = `${names.slice(0, -1).join(", ")}, and ${names[names.length - 1]}`;
+    }
+  }
+
+  const selectedGoal = ctx?.goal ? (goalLabels[ctx.goal] || ctx.goal) : "";
+  const selectedTiming = ctx?.timing ? (timingLabels[ctx.timing] || ctx.timing) : "";
+
+  // Build summary - only include non-empty parts
+  const summaryParts: string[] = [];
+  if (selectedCategories) summaryParts.push(selectedCategories);
+  if (selectedGoal) summaryParts.push(selectedGoal);
+  if (selectedTiming) summaryParts.push(selectedTiming);
+  
+  const lunaContextSummary = summaryParts.length > 0 
+    ? `Selected: ${summaryParts.join(" • ")}`
+    : "";
+
+  return {
+    selected_categories: selectedCategories,
+    selected_goal: selectedGoal,
+    selected_timing: selectedTiming,
+    luna_context_summary: lunaContextSummary,
+  };
+};

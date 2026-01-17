@@ -2,7 +2,7 @@ import { useConversation } from "@elevenlabs/react";
 import { useState, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mic, Volume2 } from "lucide-react";
-import { getConciergeContext } from "@/lib/conciergeStore";
+import { getConciergeContext, buildDynamicVariables } from "@/lib/conciergeStore";
 import { 
   requestVoiceStart, 
   endVoiceSession, 
@@ -25,16 +25,14 @@ export const LunaVoiceWidget = ({ isPrimary = false }: LunaVoiceWidgetProps) => 
 
   const conversation = useConversation({
     onConnect: () => {
-      console.log("[LunaVoiceWidget] Connected to Luna");
+      console.log("[Luna] Connected");
     },
     onDisconnect: () => {
-      console.log("[LunaVoiceWidget] Disconnected from Luna");
-      // Clear the voice lock when session ends
+      console.log("[Luna] Disconnected");
       endVoiceSession();
     },
     onError: (error) => {
-      console.error("[LunaVoiceWidget] Luna error:", error);
-      // Clear lock on error
+      console.error("[Luna] Error:", error);
       endVoiceSession();
     },
   });
@@ -61,29 +59,28 @@ export const LunaVoiceWidget = ({ isPrimary = false }: LunaVoiceWidgetProps) => 
   const startConversation = useCallback(async () => {
     // Prevent double-starts
     if (isStartingRef.current || conversation.status === "connected") {
-      console.log("[LunaVoiceWidget] Start blocked: already connecting or connected");
       return;
     }
     
     isStartingRef.current = true;
-    console.log("[LunaVoiceWidget] Starting conversation...");
+    console.log("Luna voice start requested");
     setError(null);
     setIsConnecting(true);
     
     try {
-      console.log("[LunaVoiceWidget] Requesting mic permission...");
       await navigator.mediaDevices.getUserMedia({ audio: true });
-      console.log("[LunaVoiceWidget] Mic permission granted");
       setHasPermission(true);
 
-      // Read context from store for later use (when agent supports overrides)
+      // Build dynamic variables from concierge context
       const ctx = getConciergeContext();
-      console.log("[LunaVoiceWidget] ConciergeContext loaded:", ctx);
+      const dynamicVariables = buildDynamicVariables(ctx);
+      console.log("Dynamic vars:", dynamicVariables);
 
-      console.log("[LunaVoiceWidget] Starting ElevenLabs session with agent:", LUNA_AGENT_ID);
+      console.log("Starting ElevenLabs session");
 
       await conversation.startSession({
         agentId: LUNA_AGENT_ID,
+        dynamicVariables,
       } as any);
       
       console.log("[LunaVoiceWidget] Session started successfully");
@@ -99,7 +96,7 @@ export const LunaVoiceWidget = ({ isPrimary = false }: LunaVoiceWidgetProps) => 
   }, [conversation]);
 
   const stopConversation = useCallback(async () => {
-    console.log("[LunaVoiceWidget] Stopping conversation...");
+    console.log("Ending existing Luna session");
     await conversation.endSession();
     endVoiceSession();
   }, [conversation]);
@@ -108,9 +105,7 @@ export const LunaVoiceWidget = ({ isPrimary = false }: LunaVoiceWidgetProps) => 
   useEffect(() => {
     if (!isPrimary) return;
 
-    const handleVoiceStartRequest = (event: Event) => {
-      const customEvent = event as CustomEvent;
-      console.log("[LunaVoiceWidget PRIMARY] Received voice-start-request from:", customEvent.detail?.source);
+    const handleVoiceStartRequest = () => {
       startConversation();
     };
 
