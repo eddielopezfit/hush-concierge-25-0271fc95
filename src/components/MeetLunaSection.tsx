@@ -54,13 +54,13 @@ export const MeetLunaSection = () => {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="flex flex-col md:flex-row items-center justify-center gap-12"
           >
-            {/* Voice Option */}
+            {/* Voice Option - PRIMARY WIDGET */}
             <div className="flex flex-col items-center gap-6 p-8 card-luxury rounded-lg w-full md:w-auto">
               <div className="flex items-center gap-3 text-gold mb-2">
                 <Mic className="w-5 h-5" />
                 <span className="font-body text-sm uppercase tracking-widest">Voice</span>
               </div>
-              <LunaVoiceWidget />
+              <LunaVoiceWidget isPrimary />
             </div>
 
             {/* Divider */}

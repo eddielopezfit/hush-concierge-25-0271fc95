@@ -3,6 +3,7 @@ import { X, Mic, MessageSquare, Phone, Sparkles } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
 import { setConciergeContext } from "@/lib/conciergeStore";
+import { requestVoiceStart, getVoiceActive, subscribeToVoiceState } from "@/lib/lunaVoiceBus";
 
 interface LunaModalProps {
   isOpen: boolean;
@@ -33,6 +34,22 @@ const timingLabels: Record<string, string> = {
 };
 
 export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
+  const [voiceAlreadyActive, setVoiceAlreadyActive] = useState(false);
+
+  // Track voice state
+  useEffect(() => {
+    if (!isOpen) return;
+    
+    // Check initial state
+    setVoiceAlreadyActive(getVoiceActive());
+    
+    const unsubscribe = subscribeToVoiceState((active) => {
+      setVoiceAlreadyActive(active);
+    });
+    
+    return unsubscribe;
+  }, [isOpen]);
+
   // Lock body scroll when modal is open
   useEffect(() => {
     if (isOpen) {
@@ -46,7 +63,7 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
   }, [isOpen]);
 
   const handleSpeakWithLuna = () => {
-    console.log("Speak with Luna CTA clicked (LunaModal)");
+    console.log("[LunaModal] Speak with Luna CTA clicked");
     
     // Store context for Luna to pick up
     if (context) {
@@ -56,20 +73,20 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
     // Close modal first
     onClose();
     
-    // Scroll to Luna section
-    const lunaSection = document.getElementById("luna");
-    if (lunaSection) {
-      console.log("Scrolling to #luna section");
-      lunaSection.scrollIntoView({ behavior: "smooth" });
-    } else {
-      console.warn("Luna section (#luna) not found in DOM");
-    }
+    // Request voice start via the bus
+    const granted = requestVoiceStart("modal");
+    console.log("[LunaModal] Voice start request granted:", granted);
     
-    // Dispatch custom event to trigger voice start
-    console.log("Dispatching luna:start-voice event");
+    // Always scroll to Luna section
     setTimeout(() => {
-      window.dispatchEvent(new CustomEvent("luna:start-voice"));
-    }, 300); // Small delay to allow scroll and modal close
+      const lunaSection = document.getElementById("luna");
+      if (lunaSection) {
+        console.log("[LunaModal] Scrolling to #luna section");
+        lunaSection.scrollIntoView({ behavior: "smooth" });
+      } else {
+        console.warn("[LunaModal] Luna section (#luna) not found in DOM");
+      }
+    }, 100);
   };
 
   const handleChatWithLuna = () => {
@@ -221,16 +238,29 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
                 Choose how you'd like to connect with Luna, your personal concierge.
               </p>
 
+              {/* Already Active Notice */}
+              {voiceAlreadyActive && (
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-gold text-sm mb-4"
+                >
+                  Luna is already speaking below.
+                </motion.p>
+              )}
+
               {/* CTA Buttons */}
               <div className="flex flex-col gap-3">
                 <motion.button
                   onClick={handleSpeakWithLuna}
-                  className="btn-gold py-4 px-6 flex items-center justify-center gap-3 w-full"
+                  className={`btn-gold py-4 px-6 flex items-center justify-center gap-3 w-full ${
+                    voiceAlreadyActive ? "opacity-70" : ""
+                  }`}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
                   <Mic className="w-5 h-5" />
-                  <span>Speak with Luna</span>
+                  <span>{voiceAlreadyActive ? "Go to Luna" : "Speak with Luna"}</span>
                 </motion.button>
 
                 <motion.button
