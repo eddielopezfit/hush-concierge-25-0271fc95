@@ -62,6 +62,7 @@ export const ExperienceFinderSection = () => {
     goal: null,
     timing: null,
   });
+  const [recommendation, setRecommendation] = useState<LunaRecommendation | null>(null);
   const { isOpen, context, openModal, closeModal } = useLunaModal();
 
   const toggleService = (serviceId: string) => {
