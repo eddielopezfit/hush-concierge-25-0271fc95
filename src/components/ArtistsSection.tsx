@@ -4,6 +4,7 @@ import { X, Sparkles } from "lucide-react";
 import { useLuna } from "@/contexts/LunaContext";
 import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
 import { teamMembers, photoMap, getFounders, getTeam, TeamMember } from "@/data/teamData";
+import { trackArtistClick } from "@/lib/journeyTracker";
 
 const ArtistAvatar = ({ artist }: { artist: TeamMember }) => {
   const photo = photoMap[artist.id];
