@@ -271,6 +271,12 @@ export const CallbackSection = () => {
                 </p>
               )}
 
+              {submitError && (
+                <p className="font-body text-xs text-destructive">
+                  Something went wrong. Please try again or call us at (520) 327-6753.
+                </p>
+              )}
+
               {/* Consent text */}
               <p className="font-body text-xs text-cream/40 text-center max-w-lg mt-2">
                 By submitting this form, you agree to be contacted by Hush Salon & Day Spa 

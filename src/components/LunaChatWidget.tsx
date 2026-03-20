@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, X, Minus, Mic, Send } from "lucide-react";
+import { getConciergeContext } from "@/lib/conciergeStore";
+import { generateChatResponse } from "@/lib/lunaBrain";
+import { saveLead } from "@/lib/saveSession";
 
 interface ChatMessage {
   id: string;
@@ -61,7 +64,19 @@ export const LunaChatWidget = () => {
     setIsOpen(true);
     setShowBadge(false);
     if (messages.length === 0) {
-      setMessages([{ id: "greeting", role: "luna", content: LUNA_GREETING }]);
+      // Check if there's context to personalize the greeting
+      const ctx = getConciergeContext();
+      if (ctx && ctx.categories && ctx.categories.length > 0) {
+        const categoryLabels: Record<string, string> = { hair: "Hair", nails: "Nails", lashes: "Lashes", skincare: "Skincare", massage: "Massage" };
+        const names = ctx.categories.map(c => categoryLabels[c] || c).join(" and ");
+        setMessages([{
+          id: "greeting",
+          role: "luna",
+          content: `Hi, I'm Luna — Hush's digital concierge. I see you're interested in ${names}. I can help with recommendations, pricing, or booking. What would you like to know?`,
+        }]);
+      } else {
+        setMessages([{ id: "greeting", role: "luna", content: LUNA_GREETING }]);
+      }
     }
   };
 
@@ -93,19 +108,10 @@ export const LunaChatWidget = () => {
     const newCount = userMessageCount + 1;
     setUserMessageCount(newCount);
 
-    // Simple response logic
-    const lower = msg.toLowerCase();
-    if (lower.includes("service") || lower.includes("explore")) {
-      addLunaResponse("We offer Hair, Nails, Skincare & Spray Tan, Lashes, and Massage. Would you like details on any of these, or shall I help you find the perfect service?");
-    } else if (lower.includes("book") || lower.includes("appointment")) {
-      addLunaResponse("I'd love to help you get booked! You can call our front desk at (520) 327-6753, or share your name and phone number and we'll reach out to you.");
-    } else if (lower.includes("hour") || lower.includes("open")) {
-      addLunaResponse("We're open Tuesday through Saturday starting at 9 AM. We're closed on Sundays and Mondays. Would you like to schedule a visit?");
-    } else if (lower.includes("where") || lower.includes("address") || lower.includes("location")) {
-      addLunaResponse("We're located at 4635 E Fort Lowell Rd, Tucson, AZ 85712. Would you like directions?");
-    } else {
-      addLunaResponse("Thank you for reaching out! I can help with service info, booking, or answering any questions about Hush. What would you like to know?");
-    }
+    // Use Luna Brain for intelligent responses
+    const ctx = getConciergeContext();
+    const response = generateChatResponse(msg, ctx);
+    addLunaResponse(response);
 
     // Lead capture after 3 messages
     if (newCount >= 3 && !leadCaptured) {
@@ -120,7 +126,7 @@ export const LunaChatWidget = () => {
     }
   };
 
-  const handleLeadSubmit = () => {
+  const handleLeadSubmit = async () => {
     if (!leadName.trim() || !leadPhone.trim()) return;
     setLeadCaptured(true);
     setMessages(prev => prev.filter(m => !m.isForm));
@@ -129,6 +135,17 @@ export const LunaChatWidget = () => {
       role: "user",
       content: `${leadName} — ${leadPhone}`,
     }]);
+
+    // Save lead to database
+    const ctx = getConciergeContext();
+    await saveLead({
+      name: leadName,
+      phone: leadPhone,
+      category: ctx?.categories?.join(", ") || undefined,
+      goal: ctx?.goal || undefined,
+      timing: ctx?.timing || undefined,
+    });
+
     addLunaResponse("Perfect — someone from our team will reach out to confirm your appointment. You can also call us directly at (520) 327-6753.", 800);
   };
 
