@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Phone, CheckCircle, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { saveLead } from "@/lib/saveSession";
 
 const serviceOptions = [
   { value: "hair", label: "Hair" },
