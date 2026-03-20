@@ -55,9 +55,30 @@ export const LunaChatWidget = () => {
     return () => clearTimeout(timer);
   }, [hasAutoOpened, isOpen, hasInteracted]);
 
+  // Proactive engagement — check every 15s after 30s on page
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const interval = setInterval(() => {
+        if (isOpen || proactiveMessage) return;
+        const suggestion = getProactiveSuggestion();
+        if (suggestion) {
+          setProactiveMessage(suggestion.message);
+          setShowBadge(true);
+          clearInterval(interval);
+        }
+      }, 15000);
+      return () => clearInterval(interval);
+    }, 30000);
+    return () => clearTimeout(timer);
+  }, [isOpen, proactiveMessage]);
+
   const handleOpen = () => {
     setIsOpen(true);
     setShowBadge(false);
+    if (proactiveMessage) {
+      setActiveTab("chat");
+      setProactiveMessage(null);
+    }
   };
 
   const handleClose = () => setIsOpen(false);
