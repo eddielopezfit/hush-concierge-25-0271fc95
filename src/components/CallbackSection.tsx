@@ -35,14 +35,29 @@ export const CallbackSection = () => {
 
   const isFormValid = formData.fullName.trim().length > 0 && formData.phone.trim().length > 0;
 
+  const [submitError, setSubmitError] = useState(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isFormValid) return;
 
     setIsSubmitting(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    setSubmitError(false);
+
+    const success = await saveLead({
+      name: formData.fullName,
+      phone: formData.phone,
+      email: formData.email || undefined,
+      category: formData.interestedIn.join(", ") || undefined,
+      timing: formData.timing || undefined,
+    });
+
     setIsSubmitting(false);
-    setIsSubmitted(true);
+    if (success) {
+      setIsSubmitted(true);
+    } else {
+      setSubmitError(true);
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
