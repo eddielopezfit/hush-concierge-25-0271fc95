@@ -87,6 +87,27 @@ export const LunaChatWidget = () => {
 
   return (
     <>
+      {/* Proactive Suggestion Tooltip */}
+      <AnimatePresence>
+        {!isOpen && proactiveMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.9 }}
+            className="fixed bottom-20 right-6 z-[9999] max-w-[280px] p-3 rounded-xl bg-card border border-primary/20 shadow-[var(--shadow-elegant)] cursor-pointer"
+            onClick={handleOpen}
+          >
+            <p className="text-xs font-body text-foreground/90 leading-relaxed">{proactiveMessage}</p>
+            <button
+              onClick={(e) => { e.stopPropagation(); setProactiveMessage(null); setShowBadge(false); }}
+              className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Collapsed Bubble */}
       <AnimatePresence>
         {!isOpen && (
