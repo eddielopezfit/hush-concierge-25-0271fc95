@@ -142,6 +142,9 @@ export const ExperienceFinderSection = () => {
       timing: null,
     };
     setConciergeContext(ctx);
+    const rec = generateRecommendation(ctx);
+    setRecommendation(rec);
+    saveSession(ctx);
     openModal(ctx);
   };
 
@@ -153,18 +156,27 @@ export const ExperienceFinderSection = () => {
       timing: null,
     };
     setConciergeContext(ctx);
+    const rec = generateRecommendation(ctx);
+    setRecommendation(rec);
+    saveSession(ctx);
     openModal(ctx);
   };
 
   const handleSpeakWithLunaStep3 = () => {
     const ctx = buildContext();
     setConciergeContext(ctx);
+    const rec = generateRecommendation(ctx);
+    setRecommendation(rec);
+    saveSession(ctx);
     openModal(ctx);
   };
 
   const handleChatWithLunaStep3 = () => {
     const ctx = buildContext();
     setConciergeContext(ctx);
+    const rec = generateRecommendation(ctx);
+    setRecommendation(rec);
+    saveSession(ctx);
     openModal(ctx);
   };
 
