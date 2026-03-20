@@ -1,114 +1,126 @@
 
 
-# Hush AI Concierge — Phase 1: Make It Real
+# Hush Hub — UI/UX Audit & Blue Ocean Assessment
 
-## Overview
+## Is This a Blue Ocean Hub?
 
-Phase 1 addresses the most critical gap: making every user-facing action produce a real outcome. The callback form already saves to `leads` — but there's no dedicated `callback_requests` table with status tracking, the BookingSection buttons are dead, testimonials are fictional, and artist context injection has a bug. This plan covers Weeks 1-2 of the roadmap.
+**Partially — but not yet.** The foundation is strong: an AI concierge (Luna) guiding service discovery is genuinely differentiated. No competitor salon has this. But right now, the execution has gaps that prevent it from feeling like a category-defining experience.
 
----
+**What makes it Blue Ocean today:**
+- AI-first service discovery (Experience Finder + Luna voice/chat)
+- Structured concierge panel with 5 tabs (Find My Look, Explore, Artists, My Plan, Chat)
+- Context-aware recommendations that follow the user across entry points
+- Real team data with photos, specialties, and matching logic
 
-## What Already Works (No Changes Needed)
-
-- **CallbackSection.tsx** — Already wired to Supabase via `saveLead()`. Saves to `leads` table with error handling, TCPA consent, and success state. This is functional.
-- **FooterSection.tsx** — Social links (Instagram, Facebook), Get Directions, phone, hours — all already real and correct.
-- **ArtistsSection.tsx** — Real team roster with 16 photos already imported. Monogram fallbacks for 5 members without photos.
-- **LunaVoiceWidget.tsx** — ElevenLabs integration with dynamic variables. Working.
-- **saveSession.ts / conciergeLabels.ts** — Normalization layer already in place.
+**What holds it back from true Blue Ocean:**
 
 ---
 
-## What Needs Fixing
+## Critical UX Issues to Fix
 
-### 1. Create `callback_requests` Table (New Supabase Migration)
+### 1. Too Many Sections — Scroll Fatigue
+The homepage has **13 sections**. A user scrolling top-to-bottom sees:
+Hero → Experience Finder → How It Works → Services → Artists → Portfolio → Guides → Testimonials → Community → About → Booking → Callback → Footer
 
-The existing `leads` table works for basic lead capture, but the roadmap calls for a richer `callback_requests` table with status tracking, source context, and concierge context snapshots. This enables the salon to manage callbacks as a pipeline.
+**Problem:** By the time they reach Booking (section 11), they've scrolled past 10 sections of content. The conversion paths are buried. The "Guides" and "How It Works" sections say similar things. Portfolio is all "Coming Soon" placeholders — it adds no value right now.
 
-**Database migration:**
-- Create `callback_requests` table with: `id`, `full_name`, `phone`, `email`, `interested_in`, `timing`, `message`, `source`, `concierge_context` (jsonb), `status` (default 'new'), `created_at`
-- RLS: anon INSERT allowed, authenticated SELECT/UPDATE for future admin
+**Fix:** Consolidate to 8-9 sections. Remove or collapse:
+- **Portfolio** — remove entirely until real transformation photos exist. "Coming Soon" x6 hurts credibility.
+- **Guides** — merge into the Experience Finder or the Services section as contextual entry points, not a standalone section.
+- **How Luna Works** — can be reduced to a compact inline explainer within the Experience Finder section rather than a full standalone section.
 
-**Update CallbackSection.tsx:**
-- Change `saveLead()` call to insert into `callback_requests` instead
-- Include `message`, `source: 'callback_form'`, and full `concierge_context` snapshot
-- Keep existing `leads` insert as well (backward compatibility) or migrate fully
+### 2. Duplicate LunaModal Instances (8 copies)
+Every section that has a "Speak with Luna" button creates its own `useLunaModal()` hook and renders its own `<LunaModal />`. This means 8+ modal instances in the DOM simultaneously:
+- ExperienceFinderSection
+- ServicesSection
+- ArtistsSection
+- GuidesSection
+- BookingSection
+- MobileStickyBar
+- MeetLunaSection (if exists)
+- ServiceMenuModal
 
-### 2. Wire Dead Buttons in BookingSection.tsx
+**Fix:** Create a global `LunaProvider` context. Render ONE `<LunaModal />` at the app level. All sections call `useLuna().openModal(ctx)`.
 
-The three cards ("Talk to Luna", "Chat with Luna", "Call the Front Desk") have no `onClick` handlers on the first two buttons.
+### 3. No Active Nav State
+The navigation has 4 links (Services, Team, About, Contact) but no visual indication of where the user is on the page. On a 13-section page, this is disorienting.
 
-**Changes:**
-- Import `LunaModal`, `useLunaModal`, and `ConciergeContext`
-- Add `onClick` to "Speak with Luna" button — opens LunaModal with `source: "Booking Section"`
-- Add `onClick` to "Start a Chat" button — scrolls to `#callback` section (same as current LunaModal chat behavior) or opens LunaModal in chat mode
-- Render `<LunaModal>` in the component
+**Fix:** Add IntersectionObserver-based active state. Highlight the current section's nav link in gold.
 
-### 3. Replace Fictional Testimonials
+### 4. Community Section Has No CTA
+"Ask Luna or the front desk about joining the Inner Circle" — but there's no button, no form, no action. This section takes up full viewport space but converts nothing.
 
-**TestimonialsSection.tsx:**
-- Replace 3 fake testimonials with verified real reviews:
-  - Andrea Mitchell (Facebook) — Whitney blonde review
-  - Cara B Foster (Facebook) — Michelle color correction
-  - Megan Petersen (Google, Jan 2026) — Allison hair review
-- Update stats line from "500+ five-star reviews" to "4.7 stars on Google · 315+ Facebook reviews"
+**Fix:** Either add a real sign-up mechanism (email capture for the Inner Circle) or remove the section until the loyalty program is real.
 
-### 4. Fix Artist Context Injection
+### 5. Chat Widget Auto-Opens at 12 Seconds
+The `LunaChatWidget` auto-opens after 12 seconds regardless of user behavior. This is aggressive — especially when the user may already be engaged with the Experience Finder.
 
-**ArtistsSection.tsx line 121:**
-- `categories: [artist.department.toLowerCase() as any]` — this passes "founders", "front desk", "esthetics" etc. which are not valid `ServiceCategoryId` values
-- Fix: map department strings to valid category IDs ("Esthetics" → "skincare", "Founders" → "hair", "Front Desk" → skip/null)
+**Fix:** Only auto-open if the user has NOT interacted with any Luna entry point (Experience Finder, voice, any CTA). If they're already in a flow, suppress the auto-open.
 
-### 5. Create Shared Data Files
+### 6. Booking Section Redundancy
+The Booking section offers 3 paths: Talk to Luna, Chat with Luna, Call. But "Chat with Luna" just scrolls to the callback form — it doesn't open the chat widget. This is misleading.
 
-**Create `src/data/teamData.ts`:**
-- Extract the `artists` array from `ArtistsSection.tsx` into a shared data file
-- Add `TeamMember` interface with full attributes: `id`, `name`, `department`, `role`, `photo`, `specialty`, `specialties`, `bestFor`, `serviceIds`, `instagram`, `directPhone`, `isPrimaryBooking`
-- Both `ArtistsSection.tsx` and `luna/ArtistsTab.tsx` import from here (single source of truth)
+**Fix:** "Chat with Luna" should open the `LunaChatWidget` panel, not scroll to the callback form. The callback form is for phone-based leads, not chat.
 
-**Create `src/data/categoryData.ts`:**
-- Extract shared category definitions (IDs, labels, icons, goals, timings) from `ExperienceFinderSection.tsx`
-- Import in: `ExperienceFinderSection`, `CallbackSection`, `ExperienceCategoriesSection`, `LunaModal`
-- Eliminates 4 local re-definitions of the same category list
+### 7. Callback Form "Interested In" Allows Multi-Select but Looks Like Pills
+The pill-toggle UI for service selection is good, but there's no visual limit or guidance. Users might select all 7 options, which is meaningless data.
 
-### 6. Add `preferredArtist` to ConciergeContext
-
-**`src/types/concierge.ts`:**
-- Add `preferredArtist?: string` and `preferredArtistId?: string`
-- Update `ArtistsSection.tsx` to set these fields instead of using `sessionStorage`
-- Update `conciergeStore.ts` merge logic to include these fields
-
-### 7. Upgrade `luna_context_summary` to Natural Language
-
-**`src/lib/conciergeStore.ts`:**
-- The `buildDynamicVariables` function currently produces `"Selected: Hair • Refresh • Today"` — this violates the requirement for natural language
-- Change to: `"You're exploring Hair services, aiming to refresh, and looking to book today."`
-- Already specified in a prior prompt but the current code still uses `"Selected: ..."` format
+**Fix:** Cap at 3 selections with a "Select up to 3" label, or change the logic so selecting "Multiple Services" clears individual selections.
 
 ---
 
-## Files Changed Summary
+## Structural Optimization Plan
 
-| File | Action |
-|---|---|
-| **Supabase migration** | Create `callback_requests` table |
-| `CallbackSection.tsx` | Insert into `callback_requests` with full context |
-| `BookingSection.tsx` | Wire dead buttons to LunaModal |
-| `TestimonialsSection.tsx` | Replace with 3 real verified reviews |
-| `ArtistsSection.tsx` | Fix department→category mapping, import from teamData |
-| **New:** `src/data/teamData.ts` | Single source of truth for team roster |
-| **New:** `src/data/categoryData.ts` | Shared category/goal/timing definitions |
-| `src/types/concierge.ts` | Add `preferredArtist` fields |
-| `src/lib/conciergeStore.ts` | Fix `luna_context_summary` to natural language |
-| `luna/ArtistsTab.tsx` | Import from shared teamData |
+### Proposed Section Order (9 sections, down from 13):
+
+```text
+1. Hero (keep)
+2. Experience Finder (keep, absorb "How It Works" as inline context)
+3. Services (keep)
+4. Artists (keep)
+5. Testimonials (keep, add review count + CTA)
+6. About / The Hush Story (keep)
+7. Community / Inner Circle (keep ONLY if adding email capture CTA)
+8. Booking + Callback (merge into one conversion section)
+9. Footer
+```
+
+### Key Changes:
+- **Remove Portfolio** — empty placeholders damage trust
+- **Merge Guides into Experience Finder** — the guide cards become "suggested starting points" within the finder
+- **Merge How Luna Works into Experience Finder** — show the 3 steps as a compact header above the wizard
+- **Merge Booking + Callback** — one section with 3 columns: Voice (Luna), Chat (opens widget), Call/Callback (form + phone)
+
+### Global LunaModal Refactor:
+- Create `src/contexts/LunaContext.tsx` with a single provider
+- Wrap app in `<LunaProvider>`
+- Remove all 8 local `useLunaModal()` + `<LunaModal />` instances
+- Every CTA calls `useLuna().openModal(ctx)`
+
+### Active Nav State:
+- Add IntersectionObserver in `Navigation.tsx`
+- Track `#services`, `#artists`, `#about`, `#contact` visibility
+- Apply gold text color to active link
+
+### Smart Auto-Open Logic:
+- Track `hasInteractedWithLuna` in a ref
+- Set to `true` when user clicks any Luna CTA, uses Experience Finder, or opens the widget manually
+- Only auto-open at 12s if `hasInteractedWithLuna === false`
 
 ---
 
-## What This Does NOT Include (Phase 2+)
+## Summary
 
-- Recommendation engine rebuild (`recommendationEngine.ts`)
-- Global LunaContext provider (removing local LunaModal instances)
-- Enriched service data model
-- Supabase intelligence schema (analytics_events, conversation_logs)
-- Text chat via edge function
-- Conversational flows (bridal, color correction)
+| Area | Current State | Optimization |
+|---|---|---|
+| Section count | 13 (too many) | 9 (focused) |
+| LunaModal instances | 8 duplicates | 1 global |
+| Portfolio | 6x "Coming Soon" | Remove until real |
+| Nav active state | None | IntersectionObserver |
+| Chat auto-open | Always at 12s | Conditional on engagement |
+| Booking + Callback | 2 separate sections | Merge into 1 |
+| Community CTA | No action | Add email capture or remove |
+| Guides | Standalone section | Merge into Experience Finder |
+
+This plan focuses on reducing friction, eliminating dead weight, and making every section earn its place. The Blue Ocean differentiation (AI concierge) is already built — the optimization is about clearing the path so users actually experience it.
 
