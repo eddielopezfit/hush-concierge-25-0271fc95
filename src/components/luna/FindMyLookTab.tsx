@@ -4,8 +4,7 @@ import { ChevronLeft, Sparkles, ArrowRight } from "lucide-react";
 import { generateRecommendation, LunaRecommendation } from "@/lib/lunaBrain";
 import { setConciergeContext } from "@/lib/conciergeStore";
 import { saveSession } from "@/lib/saveSession";
-import { categoryLabels, goalLabels, timingLabels, ServiceCategoryId } from "@/lib/conciergeLabels";
-import { ConciergeContext } from "@/types/concierge";
+import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
 
 const categories: { id: ServiceCategoryId; label: string; emoji: string }[] = [
   { id: "hair", label: "Hair", emoji: "✂️" },
