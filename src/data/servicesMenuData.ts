@@ -37,7 +37,7 @@ export const servicesMenuData: ServiceCategory[] = [
         items: [
           { name: "Women's", price: "$60+" },
           { name: "Men's", price: "$35+" },
-          { name: "Children 12 and Younger", price: "$35+" },
+          { name: "Children 12 & Under", price: "$35+" },
           { name: "Bang Trim", price: "$18+" },
           { name: "Beard Trim", price: "$18+" },
         ],
@@ -136,9 +136,9 @@ export const servicesMenuData: ServiceCategory[] = [
     ],
     notes: ["Please allow 24 hrs. for cancellations."],
     directContacts: [
-      { name: "Kelli", phone: "(520) 488-7149" },
       { name: "Anita", phone: "(520) 591-0208" },
-      { name: "Jacky", phone: "(520) 501-6861" },
+      { name: "Kelly", phone: "(520) 488-7149" },
+      { name: "Jackie", phone: "(520) 501-6861" },
     ],
   },
   {
@@ -162,7 +162,7 @@ export const servicesMenuData: ServiceCategory[] = [
       },
     ],
     directContacts: [
-      { name: "Allison", phone: "520-250-6606" },
+      { name: "Allison", phone: "(520) 250-6606" },
     ],
   },
   {
@@ -175,16 +175,16 @@ export const servicesMenuData: ServiceCategory[] = [
         name: "Skincare & Spray Tan Services",
         items: [
           { name: "Signature Facial", price: "$95" },
-          { name: "Dermaplane/Hydrafacial/Microdermabrasion Facials", price: "$115" },
+          { name: "Dermaplane / Hydrafacial / Microdermabrasion Facials", price: "$115" },
           { name: "Microneedling", price: "$299" },
           { name: "Brow Wax", price: "$20" },
           { name: "Airbrush Spray Tan", price: "$35" },
-          { name: "Other waxing services", price: "Available" },
+          { name: "Other waxing services", price: "Call for pricing" },
         ],
       },
     ],
     directContacts: [
-      { name: "Patty", phone: "520-870-6048" },
+      { name: "Patty", phone: "(520) 870-6048" },
     ],
   },
   {
@@ -203,11 +203,11 @@ export const servicesMenuData: ServiceCategory[] = [
       },
     ],
     notes: [
-      "When you book, name your stylist for a 20% discount.",
+      "Name your stylist when booking for a 20% discount.",
       "Please allow 24 hrs. for cancellations.",
     ],
     directContacts: [
-      { name: "Tammi", phone: "(520) 370-3018" },
+      { name: "Tammy", phone: "(520) 370-3018" },
     ],
   },
 ];

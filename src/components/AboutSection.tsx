@@ -24,24 +24,24 @@ export const AboutSection = () => {
             
             <div className="space-y-6 font-body text-cream/80 leading-relaxed">
               <p className="text-lg">
-                Since 2002, Hush Salon & Day Spa has been Tucson's sanctuary of 
-                beauty, wellness, and authentic care.
+                Since 2002, Sheri Turner, Danielle Colucci, and Kathy Crawford have 
+                built more than a salon — they've built a sanctuary.
               </p>
               <p>
-                What began as a vision shared by three passionate founders has 
-                grown into a beloved institution—yet remarkably, all three 
-                original founders remain active today, their commitment as 
-                unwavering as it was over two decades ago.
+                For over 23 years, these three co-founders have stood side by side, 
+                turning every cut, color, and experience into something that lasts. 
+                Locally owned, fiercely independent, and powered by a team that treats 
+                every guest like family.
               </p>
               <p>
-                Locally owned. Fiercely independent. Built on relationships that 
-                span generations of families and friendships.
+                All three founders remain active to this day — their passion as strong 
+                as the day they opened our doors.
               </p>
             </div>
 
             <div className="mt-10 flex flex-wrap gap-8">
               <div className="text-center">
-                <div className="font-display text-4xl text-gold mb-1">20+</div>
+                <div className="font-display text-4xl text-gold mb-1">23+</div>
                 <div className="text-sm text-muted-foreground uppercase tracking-wider">Years</div>
               </div>
               <div className="text-center">
