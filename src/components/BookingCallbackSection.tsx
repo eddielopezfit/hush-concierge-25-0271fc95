@@ -45,6 +45,11 @@ export const BookingCallbackSection = () => {
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    // Capture first name for Luna context
+    if (field === "fullName" && value.trim()) {
+      const firstName = value.trim().split(" ")[0];
+      try { sessionStorage.setItem("hush_guest_first_name", firstName); } catch {}
+    }
   };
 
   const toggleService = (value: string) => {

@@ -146,11 +146,36 @@ export const buildDynamicVariables = (ctx: ConciergeContext | null): Record<stri
     finalSummary = (lunaContextSummary ? lunaContextSummary + " " : "") + recParts.join(". ") + ".";
   }
 
+  // ── Discrete fields for individual variable slots ────────────────────────
+  // service_category: first selected category, human-readable
+  const serviceCategory = ctx?.categories && ctx.categories.length > 0
+    ? (categoryLabels[ctx.categories[0]] || ctx.categories[0])
+    : "";
+
+  // service_name: specific item selected (e.g. "Brazilian Blowout Smoothing Treatment")
+  const serviceName = ctx?.item || ctx?.group || "";
+
+  // source_entry: where the user triggered Luna from
+  const sourceEntry = ctx?.source || "";
+
+  // first_name: captured from form if available
+  const firstName = (() => {
+    try {
+      return sessionStorage.getItem("hush_guest_first_name") || "";
+    } catch { return ""; }
+  })();
+
   return {
+    // Legacy / summary
     selected_categories: selectedCategories,
     selected_goal: selectedGoal,
     selected_timing: selectedTiming,
     preferred_artist: preferredArtist,
     luna_context_summary: finalSummary,
+    // New discrete variables — match ElevenLabs agent variable names exactly
+    service_category: serviceCategory,
+    service_name: serviceName,
+    source_entry: sourceEntry,
+    first_name: firstName,
   };
 };

@@ -39,7 +39,7 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
     }
   }, [category]);
 
-  const buildCategoryContext = (): ConciergeContext => {
+  const buildCategoryContext = (groupName?: string, itemName?: string, itemPrice?: string): ConciergeContext => {
     if (!category) {
       return { source: "Service Menu", categories: [], goal: null, timing: null };
     }
@@ -48,6 +48,9 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
       categories: [category.id as ServiceCategoryId],
       goal: null,
       timing: null,
+      group: groupName || null,
+      item: itemName || null,
+      price: itemPrice || null,
     };
   };
 

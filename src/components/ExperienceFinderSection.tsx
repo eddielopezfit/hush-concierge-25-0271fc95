@@ -121,6 +121,11 @@ export const ExperienceFinderSection = () => {
     categories: selection.services as ServiceCategoryId[],
     goal: selection.goal,
     timing: includeTiming ? selection.timing : null,
+    group: null,
+    item: null,
+    price: null,
+    preferredArtist: null,
+    preferredArtistId: null,
   });
 
   const handleLunaAction = (includeTiming: boolean = true) => {
