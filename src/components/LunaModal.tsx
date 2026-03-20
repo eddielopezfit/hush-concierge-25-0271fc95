@@ -5,7 +5,7 @@ import { ConciergeContext } from "@/types/concierge";
 import { setConciergeContext } from "@/lib/conciergeStore";
 import { requestVoiceStart, getVoiceActive, subscribeToVoiceState } from "@/lib/lunaVoiceBus";
 import { generateRecommendation, LunaRecommendation } from "@/lib/lunaBrain";
-import { goalLabels, timingLabels } from "@/lib/conciergeLabels";
+import { categoryLabels, goalLabels, timingLabels } from "@/lib/conciergeLabels";
 
 interface LunaModalProps {
   isOpen: boolean;
