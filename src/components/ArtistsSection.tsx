@@ -3,6 +3,43 @@ import { useState } from "react";
 import { X, Sparkles } from "lucide-react";
 import { LunaModal, useLunaModal, LunaContext } from "./LunaModal";
 
+// Artist photo imports
+import imgAllisonGriessel from "@/assets/artists/Allison_Griessel.jpg";
+import imgAnaMoreno from "@/assets/artists/Ana_Moreno.jpg";
+import imgAnitaApodaca from "@/assets/artists/Anita_Apodaca.jpg";
+import imgCharlyCamano from "@/assets/artists/Charly_Camano.png";
+import imgJackie from "@/assets/artists/Jackie.jpg";
+import imgKathyCharette from "@/assets/artists/Kathy_Charette.jpg";
+import imgKellyVishnevetsky from "@/assets/artists/Kelly_Vishnevetsky.jpg";
+import imgKendellBarraza from "@/assets/artists/Kendell_Barraza.jpg";
+import imgLori from "@/assets/artists/Lori.jpg";
+import imgMelissaBrunty from "@/assets/artists/Melissa_Brunty.jpg";
+import imgMichelleYrigolla from "@/assets/artists/Michelle_Yrigolla.jpg";
+import imgPatty from "@/assets/artists/Patty.jpg";
+import imgPriscilla from "@/assets/artists/Priscilla.jpg";
+import imgSilviyaWarren from "@/assets/artists/Silviya_Warren.jpg";
+import imgWhitneyHernandez from "@/assets/artists/Whitney_Hernandez.jpg";
+import imgZaidaDelgado from "@/assets/artists/Zaida_Delgado.jpg";
+
+const photoMap: Record<string, string> = {
+  h1: imgCharlyCamano,
+  h2: imgMichelleYrigolla,
+  h3: imgSilviyaWarren,
+  h4: imgWhitneyHernandez,
+  h5: imgKathyCharette,
+  h6: imgAllisonGriessel,
+  h7: imgMelissaBrunty,
+  h8: imgAnaMoreno,
+  h9: imgPriscilla,
+  h10: imgZaidaDelgado,
+  fd1: imgKendellBarraza,
+  e1: imgPatty,
+  e2: imgLori,
+  n1: imgAnitaApodaca,
+  n2: imgKellyVishnevetsky,
+  n3: imgJackie,
+};
+
 interface Artist {
   id: string;
   name: string;
@@ -45,14 +82,28 @@ const artists: Artist[] = [
   { id: "l1", name: "Allison", specialty: "Lash Specialist", description: "Custom lash design enhancing natural eye shape.", specialties: ["Classic Lashes", "Volume Lashes", "Lash Lifts"], bestFor: "Natural to dramatic lash looks", department: "Lashes" },
 ];
 
-const MonogramAvatar = ({ name, badge }: { name: string; badge?: string }) => {
-  const initial = name.charAt(0).toUpperCase();
+const ArtistAvatar = ({ artist }: { artist: Artist }) => {
+  const photo = photoMap[artist.id];
+  if (photo) {
+    return (
+      <div className="w-full h-full relative">
+        <img src={photo} alt={artist.name} className="w-full h-full object-cover" loading="lazy" />
+        {artist.badge && (
+          <span className="absolute top-3 left-3 text-[10px] font-body uppercase tracking-wider bg-gold/15 text-gold border border-gold/25 px-2 py-0.5 rounded-full backdrop-blur-sm">
+            {artist.badge}
+          </span>
+        )}
+      </div>
+    );
+  }
+  // Fallback monogram
+  const initial = artist.name.charAt(0).toUpperCase();
   return (
     <div className="w-full h-full bg-secondary flex items-center justify-center relative">
       <span className="font-display text-5xl md:text-6xl text-gold select-none">{initial}</span>
-      {badge && (
+      {artist.badge && (
         <span className="absolute top-3 left-3 text-[10px] font-body uppercase tracking-wider bg-gold/15 text-gold border border-gold/25 px-2 py-0.5 rounded-full">
-          {badge}
+          {artist.badge}
         </span>
       )}
     </div>
@@ -110,7 +161,7 @@ export const ArtistsSection = () => {
                 onClick={() => setSelectedArtist(artist)}
               >
                 <div className="relative aspect-[3/4] rounded-lg overflow-hidden border border-gold/25 hover:border-gold/50 transition-all duration-500 group-hover:shadow-[0_0_25px_-5px_hsl(38_50%_55%/0.2)]">
-                  <MonogramAvatar name={artist.name} badge={artist.badge} />
+                  <ArtistAvatar artist={artist} />
                   <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-3">
                     <h3 className="font-display text-lg md:text-xl text-cream mb-1 leading-tight">
@@ -138,7 +189,7 @@ export const ArtistsSection = () => {
                 onClick={() => setSelectedArtist(artist)}
               >
                 <div className="relative aspect-[3/4] rounded-lg overflow-hidden border border-border hover:border-gold/30 transition-all duration-500 group-hover:shadow-[0_0_25px_-5px_hsl(38_50%_55%/0.2)]">
-                  <MonogramAvatar name={artist.name} />
+                  <ArtistAvatar artist={artist} />
                   <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-3">
                     <h3 className="font-display text-base md:text-lg text-cream mb-1 leading-tight">
@@ -183,7 +234,7 @@ export const ArtistsSection = () => {
 
               <div className="flex flex-col items-center text-center">
                 <div className="w-28 h-28 md:w-32 md:h-32 rounded-full overflow-hidden border-2 border-gold/30 mb-5 shadow-[0_0_25px_-5px_hsl(38_50%_55%/0.25)]">
-                  <MonogramAvatar name={selectedArtist.name} badge={selectedArtist.badge} />
+                  <ArtistAvatar artist={selectedArtist} />
                 </div>
 
                 <h3 className="font-display text-3xl text-cream mb-1">
@@ -196,7 +247,6 @@ export const ArtistsSection = () => {
                   {selectedArtist.description}
                 </p>
 
-                {/* Best For */}
                 {selectedArtist.bestFor && (
                   <div className="w-full bg-gold/8 border border-gold/15 rounded-lg p-3 mb-4">
                     <p className="font-body text-xs text-gold uppercase tracking-wider mb-1">Best for</p>

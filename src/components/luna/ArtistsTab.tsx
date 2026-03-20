@@ -1,6 +1,26 @@
 import { motion } from "framer-motion";
-
 import { useState } from "react";
+
+import imgCharlyCamano from "@/assets/artists/Charly_Camano.png";
+import imgMichelleYrigolla from "@/assets/artists/Michelle_Yrigolla.jpg";
+import imgSilviyaWarren from "@/assets/artists/Silviya_Warren.jpg";
+import imgWhitneyHernandez from "@/assets/artists/Whitney_Hernandez.jpg";
+import imgMelissaBrunty from "@/assets/artists/Melissa_Brunty.jpg";
+import imgAnaMoreno from "@/assets/artists/Ana_Moreno.jpg";
+import imgAnitaApodaca from "@/assets/artists/Anita_Apodaca.jpg";
+import imgPatty from "@/assets/artists/Patty.jpg";
+import imgLori from "@/assets/artists/Lori.jpg";
+
+const photoMap: Record<string, string> = {
+  h1: imgCharlyCamano,
+  h2: imgMichelleYrigolla,
+  h3: imgSilviyaWarren,
+  h4: imgWhitneyHernandez,
+  h7: imgMelissaBrunty,
+  h8: imgAnaMoreno,
+  n1: imgAnitaApodaca,
+  e1: imgPatty,
+};
 
 interface ArtistCard {
   id: string;
@@ -65,12 +85,26 @@ export const ArtistsTab = ({ onSwitchTab }: ArtistsTabProps) => {
             transition={{ delay: i * 0.03 }}
             className="rounded-lg border border-border bg-card p-3 space-y-2"
           >
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="font-display text-sm text-foreground">{artist.name}</p>
-                <p className="text-[10px] font-body text-primary">{artist.specialty}</p>
+            <div className="flex items-start gap-3">
+              {/* Artist thumbnail */}
+              <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 border border-border">
+                {photoMap[artist.id] ? (
+                  <img src={photoMap[artist.id]} alt={artist.name} className="w-full h-full object-cover" loading="lazy" />
+                ) : (
+                  <div className="w-full h-full bg-secondary flex items-center justify-center">
+                    <span className="font-display text-lg text-gold">{artist.name.charAt(0)}</span>
+                  </div>
+                )}
               </div>
-              <span className="text-[10px] font-body text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{artist.department}</span>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="font-display text-sm text-foreground">{artist.name}</p>
+                    <p className="text-[10px] font-body text-primary">{artist.specialty}</p>
+                  </div>
+                  <span className="text-[10px] font-body text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{artist.department}</span>
+                </div>
+              </div>
             </div>
             <p className="text-xs text-muted-foreground font-body">Best for: {artist.bestFor}</p>
             <div className="flex gap-2">
