@@ -8,6 +8,9 @@ let voiceActive = false;
 // Storage key for cross-tab fallback
 const LUNA_VOICE_STATE_KEY = "hush_luna_voice_active";
 
+// Clear stale state on page load (voice can't survive a reload)
+try { sessionStorage.removeItem(LUNA_VOICE_STATE_KEY); } catch { /* ignore */ }
+
 /**
  * Check if a voice session is currently active
  */

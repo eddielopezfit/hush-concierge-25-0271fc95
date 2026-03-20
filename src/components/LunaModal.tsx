@@ -64,15 +64,9 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
     const granted = requestVoiceStart("modal");
     console.log("[LunaModal] Voice start request granted:", granted);
     
-    // Always scroll to Luna section
+    // Scroll to hero where primary voice widget lives
     setTimeout(() => {
-      const lunaSection = document.getElementById("luna");
-      if (lunaSection) {
-        console.log("[LunaModal] Scrolling to #luna section");
-        lunaSection.scrollIntoView({ behavior: "smooth" });
-      } else {
-        console.warn("[LunaModal] Luna section (#luna) not found in DOM");
-      }
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }, 100);
   };
 
