@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
-import { Heart, Gift, Crown } from "lucide-react";
+import { Heart, Gift, Crown, Mail } from "lucide-react";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const perks = [
   {
@@ -20,6 +22,29 @@ const perks = [
 ];
 
 export const CommunitySection = () => {
+  const [email, setEmail] = useState("");
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleJoin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+    setIsSubmitting(true);
+
+    try {
+      await supabase.from('leads' as any).insert({
+        email: email.trim(),
+        category: "inner-circle",
+        goal: "loyalty",
+      });
+    } catch (err) {
+      console.debug("[CommunitySection] Lead capture failed:", err);
+    }
+
+    setIsSubmitting(false);
+    setIsSubmitted(true);
+  };
+
   return (
     <section className="py-20 md:py-24 px-6 bg-background relative overflow-hidden">
       <div
@@ -75,8 +100,40 @@ export const CommunitySection = () => {
           transition={{ delay: 0.3 }}
           className="text-center"
         >
-          <p className="font-body text-sm text-cream/50 mb-4">
-            Ask Luna or the front desk about joining the Inner Circle.
+          {!isSubmitted ? (
+            <form onSubmit={handleJoin} className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-md mx-auto">
+              <div className="relative flex-1 w-full">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Your email"
+                  className="w-full h-12 pl-10 pr-4 rounded-lg bg-background/50 border border-gold/15 text-cream placeholder:text-cream/35 font-body text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/15 transition-all"
+                />
+              </div>
+              <motion.button
+                type="submit"
+                disabled={isSubmitting}
+                className="btn-gold py-3 px-6 whitespace-nowrap text-sm"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                {isSubmitting ? "Joining..." : "Join the Inner Circle"}
+              </motion.button>
+            </form>
+          ) : (
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="font-body text-gold text-sm"
+            >
+              You're in! We'll be in touch with exclusive perks soon.
+            </motion.p>
+          )}
+          <p className="font-body text-xs text-cream/35 mt-3">
+            No spam. Just insider access.
           </p>
         </motion.div>
       </div>

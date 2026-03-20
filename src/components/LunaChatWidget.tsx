@@ -6,6 +6,7 @@ import { ExploreTab } from "./luna/ExploreTab";
 import { ArtistsTab } from "./luna/ArtistsTab";
 import { MyPlanTab } from "./luna/MyPlanTab";
 import { ChatTab } from "./luna/ChatTab";
+import { useLuna } from "@/contexts/LunaContext";
 
 type TabId = "find" | "explore" | "artists" | "plan" | "chat";
 
@@ -22,6 +23,16 @@ export const LunaChatWidget = () => {
   const [showBadge, setShowBadge] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>("find");
   const [hasAutoOpened, setHasAutoOpened] = useState(false);
+  const { hasInteracted, chatWidgetRequested, clearChatWidgetRequest } = useLuna();
+
+  // Respond to external "open chat widget" requests
+  useEffect(() => {
+    if (chatWidgetRequested) {
+      setIsOpen(true);
+      setActiveTab("chat");
+      clearChatWidgetRequest();
+    }
+  }, [chatWidgetRequested, clearChatWidgetRequest]);
 
   // Show notification badge after 8s
   useEffect(() => {
@@ -31,16 +42,16 @@ export const LunaChatWidget = () => {
     return () => clearTimeout(timer);
   }, [isOpen]);
 
-  // Auto-open after 12s
+  // Auto-open after 12s — only if user hasn't interacted with any Luna CTA
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (!hasAutoOpened && !isOpen) {
+      if (!hasAutoOpened && !isOpen && !hasInteracted) {
         setIsOpen(true);
         setHasAutoOpened(true);
       }
     }, 12000);
     return () => clearTimeout(timer);
-  }, [hasAutoOpened, isOpen]);
+  }, [hasAutoOpened, isOpen, hasInteracted]);
 
   const handleOpen = () => {
     setIsOpen(true);

@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Scissors, Sparkles, Heart, Eye, Hand } from "lucide-react";
-import { LunaModal, useLunaModal } from "./LunaModal";
 import { ServiceMenuModal } from "./ServiceMenuModal";
 import { getCategoryById } from "@/data/servicesMenuData";
 import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
 import { setConciergeContext } from "@/lib/conciergeStore";
+import { useLuna } from "@/contexts/LunaContext";
 
 const services = [
   {
@@ -47,23 +47,16 @@ const services = [
 
 const containerVariants = {
   hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.15 },
-  },
+  visible: { opacity: 1, transition: { staggerChildren: 0.15 } },
 };
 
 const cardVariants = {
   hidden: { opacity: 0, y: 40 },
-  visible: { 
-    opacity: 1, 
-    y: 0,
-    transition: { duration: 0.6, ease: "easeOut" as const }
-  },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" as const } },
 };
 
 export const ServicesSection = () => {
-  const { isOpen, context, openModal, closeModal } = useLunaModal();
+  const { openModal } = useLuna();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isMenuModalOpen, setIsMenuModalOpen] = useState(false);
 
@@ -143,22 +136,18 @@ export const ServicesSection = () => {
                   <h3 className="font-display text-2xl text-cream mb-2 group-hover:text-gold transition-colors">
                     {service.title}
                   </h3>
-                  
                   <p className="font-body text-sm text-gold/70 mb-3">
                     {getPricePreview(service.id)}
                   </p>
-                  
                   <p className="font-body text-muted-foreground text-sm leading-relaxed mb-5">
                     {service.description}
                   </p>
-                  
-                  <button 
+                  <button
                     onClick={(e) => handleLetLunaGuide(service, e)}
                     className="btn-outline-gold text-xs py-3 px-6 w-full group-hover:bg-gold/8 focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2"
                   >
                     Ask Luna About This
                   </button>
-                  
                   <button
                     onClick={(e) => handleViewMenu(service.id, e)}
                     className="mt-3 font-body text-sm text-muted-foreground hover:text-gold transition-colors underline underline-offset-4 w-full text-center block"
@@ -172,7 +161,6 @@ export const ServicesSection = () => {
         </div>
       </section>
 
-      <LunaModal isOpen={isOpen} onClose={closeModal} context={context} />
       <ServiceMenuModal
         isOpen={isMenuModalOpen}
         onClose={() => setIsMenuModalOpen(false)}
