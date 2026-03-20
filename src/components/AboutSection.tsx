@@ -64,9 +64,9 @@ export const AboutSection = () => {
           >
             <div className="relative rounded-lg overflow-hidden glow-gold-subtle">
               <img
-                src="https://images.unsplash.com/photo-1633681926022-84c23e8cb2d6?auto=format&fit=crop&w=800&q=80"
-                alt="Hush Salon Interior"
-                className="w-full h-[500px] object-cover"
+                src={foundersPhoto}
+                alt="Hush Salon Founders — Sheri Turner, Danielle Colucci, and Kathy Crawford"
+                className="w-full h-[500px] object-cover object-top"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
               <div className="absolute bottom-6 left-6 right-6">
