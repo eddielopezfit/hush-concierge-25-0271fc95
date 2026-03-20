@@ -6,7 +6,7 @@ export async function saveSession(context: ConciergeContext): Promise<string | n
   try {
     const { data, error } = await supabase
       .from("sessions")
-      .insert([{ context: context as unknown as Record<string, unknown> }])
+      .insert([{ context: JSON.parse(JSON.stringify(context)) as Json }])
       .select("id")
       .single();
 
