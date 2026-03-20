@@ -4,21 +4,11 @@ import { Phone, CheckCircle, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { saveLead } from "@/lib/saveSession";
+import { supabase } from "@/integrations/supabase/client";
+import { getConciergeContext } from "@/lib/conciergeStore";
+import { callbackServiceOptions as serviceOptions } from "@/data/categoryData";
 
-const serviceOptions = [
-  { value: "hair", label: "Hair" },
-  { value: "nails", label: "Nails" },
-  { value: "skincare", label: "Skincare" },
-  { value: "lashes", label: "Lashes" },
-  { value: "massage", label: "Massage" },
-  { value: "multiple", label: "Multiple Services" },
-];
-
-const timingOptions = [
-  { value: "today", label: "Today" },
-  { value: "week", label: "This week" },
-  { value: "planning", label: "Planning ahead" },
-];
+import { callbackTimingOptions as timingOptions } from "@/data/categoryData";
 
 export const CallbackSection = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -50,6 +40,22 @@ export const CallbackSection = () => {
       category: formData.interestedIn.join(", ") || undefined,
       timing: formData.timing || undefined,
     });
+
+    // Also insert into callback_requests with richer context
+    try {
+      await supabase.from('callback_requests' as any).insert({
+        full_name: formData.fullName.trim(),
+        phone: formData.phone.trim(),
+        email: formData.email.trim() || null,
+        interested_in: formData.interestedIn.join(", ") || null,
+        timing: formData.timing || null,
+        message: formData.message.trim() || null,
+        source: 'callback_form',
+        concierge_context: getConciergeContext() || {},
+      });
+    } catch (err) {
+      console.debug("[CallbackSection] callback_requests insert failed:", err);
+    }
 
     setIsSubmitting(false);
     if (success) {

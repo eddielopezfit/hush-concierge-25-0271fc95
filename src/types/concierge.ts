@@ -9,4 +9,6 @@ export interface ConciergeContext {
   group?: string | null;
   item?: string | null;
   price?: string | null;
+  preferredArtist?: string | null;
+  preferredArtistId?: string | null;
 }

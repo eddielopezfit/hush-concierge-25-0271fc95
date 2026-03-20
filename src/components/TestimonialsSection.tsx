@@ -3,19 +3,19 @@ import { Star, Quote } from "lucide-react";
 
 const testimonials = [
   {
-    text: "Hush is my sanctuary. After 15 years, I couldn't imagine trusting anyone else with my hair.",
-    author: "Michelle R.",
-    service: "Hair Client · 15 years"
+    text: "Whitney is the best with blondes!! I asked for 'beige' hair, not golden, not ashy. And she nailed it.",
+    author: "Andrea Mitchell",
+    service: "Facebook Review"
   },
   {
-    text: "The attention to detail is extraordinary. Every visit feels like I'm being completely taken care of.",
-    author: "Sarah T.",
-    service: "Spa Guest · 8 years"
+    text: "Once Michelle took me back to her station we started talking about it and she reassured me it would look great... I'm glad I've found my new hair salon!",
+    author: "Cara B Foster",
+    service: "Facebook Review"
   },
   {
-    text: "From the moment you walk in, you feel the difference. This isn't just a salon — it's where I go to feel like myself again.",
-    author: "Jennifer L.",
-    service: "Loyal Guest Since 2005"
+    text: "Allison G is magical. I've gotten nonstop compliments on my hair since seeing her.",
+    author: "Megan Petersen",
+    service: "Google Review · Jan 2026"
   },
 ];
 
@@ -39,7 +39,7 @@ export const TestimonialsSection = () => {
             ))}
           </div>
           <p className="font-body text-muted-foreground">
-            500+ five-star reviews — and counting
+            4.7 stars on Google · 315+ Facebook reviews
           </p>
         </motion.div>
 

@@ -1,88 +1,11 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { X, Sparkles } from "lucide-react";
-import { LunaModal, useLunaModal, LunaContext } from "./LunaModal";
+import { LunaModal, useLunaModal } from "./LunaModal";
+import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
+import { teamMembers, photoMap, getFounders, getTeam, TeamMember } from "@/data/teamData";
 
-// Artist photo imports
-import imgAllisonGriessel from "@/assets/artists/Allison_Griessel.jpg";
-import imgAnaMoreno from "@/assets/artists/Ana_Moreno.jpg";
-import imgAnitaApodaca from "@/assets/artists/Anita_Apodaca.jpg";
-import imgCharlyCamano from "@/assets/artists/Charly_Camano.png";
-import imgJackie from "@/assets/artists/Jackie.jpg";
-import imgKathyCharette from "@/assets/artists/Kathy_Charette.jpg";
-import imgKellyVishnevetsky from "@/assets/artists/Kelly_Vishnevetsky.jpg";
-import imgKendellBarraza from "@/assets/artists/Kendell_Barraza.jpg";
-import imgLori from "@/assets/artists/Lori.jpg";
-import imgMelissaBrunty from "@/assets/artists/Melissa_Brunty.jpg";
-import imgMichelleYrigolla from "@/assets/artists/Michelle_Yrigolla.jpg";
-import imgPatty from "@/assets/artists/Patty.jpg";
-import imgPriscilla from "@/assets/artists/Priscilla.jpg";
-import imgSilviyaWarren from "@/assets/artists/Silviya_Warren.jpg";
-import imgWhitneyHernandez from "@/assets/artists/Whitney_Hernandez.jpg";
-import imgZaidaDelgado from "@/assets/artists/Zaida_Delgado.jpg";
-
-const photoMap: Record<string, string> = {
-  h1: imgCharlyCamano,
-  h2: imgMichelleYrigolla,
-  h3: imgSilviyaWarren,
-  h4: imgWhitneyHernandez,
-  h5: imgKathyCharette,
-  h6: imgAllisonGriessel,
-  h7: imgMelissaBrunty,
-  h8: imgAnaMoreno,
-  h9: imgPriscilla,
-  h10: imgZaidaDelgado,
-  fd1: imgKendellBarraza,
-  e1: imgPatty,
-  e2: imgLori,
-  n1: imgAnitaApodaca,
-  n2: imgKellyVishnevetsky,
-  n3: imgJackie,
-};
-
-interface Artist {
-  id: string;
-  name: string;
-  specialty: string;
-  description: string;
-  specialties: string[];
-  bestFor?: string;
-  badge?: string;
-  department: string;
-}
-
-const artists: Artist[] = [
-  // Founders
-  { id: "f1", name: "Sheri Turner", specialty: "Co-Founder", description: "Visionary co-founder leading Hush since 2002. Still behind the chair and deeply involved every day.", specialties: ["Leadership", "Vision"], bestFor: "Guests who value the original Hush experience", badge: "Founding", department: "Founders" },
-  { id: "f2", name: "Danielle Colucci", specialty: "Co-Founder", description: "Co-founder driven by community and creativity. She set the standard for what Hush feels like.", specialties: ["Leadership", "Community"], bestFor: "Guests looking for warmth and expertise", badge: "Founding", department: "Founders" },
-  { id: "f3", name: "Kathy Crawford", specialty: "Co-Founder", description: "Co-founder dedicated to guest care. She ensures every visit meets the Hush standard.", specialties: ["Leadership", "Client Care"], bestFor: "Guests who want personalized attention", badge: "Founding", department: "Founders" },
-  // Hair Stylists
-  { id: "h1", name: "Charly Camano", specialty: "Color & Waves", description: "Expert in color techniques and textured waves.", specialties: ["Color", "Waves", "Styling"], bestFor: "Lived-in color and beachy texture", department: "Hair" },
-  { id: "h2", name: "Michelle Yrigolla", specialty: "Master Stylist & Color Educator", description: "Master stylist, color educator, and extensions specialist.", specialties: ["Color Education", "Extensions", "Master Styling"], bestFor: "Complex color and extensions", department: "Hair" },
-  { id: "h3", name: "Silviya Warren", specialty: "High Fashion Color", description: "Specializing in bold, editorial color work.", specialties: ["Fashion Color", "Artistic Color"], bestFor: "Bold transformations and vivid color", department: "Hair" },
-  { id: "h4", name: "Whitney Hernandez", specialty: "Dimensional Blondes & Updos", description: "Creating luminous blondes and stunning updo artistry.", specialties: ["Blondes", "Updos", "Dimensional Color"], bestFor: "Blonding, events, and bridal", department: "Hair" },
-  { id: "h5", name: "Kathy Charette", specialty: "Cuts & Color", description: "Precision cuts paired with beautiful color.", specialties: ["Haircuts", "Color"], bestFor: "Clean cuts and reliable color", department: "Hair" },
-  { id: "h6", name: "Allison Griessel", specialty: "Creative Color", description: "Pushing boundaries with creative color techniques.", specialties: ["Creative Color", "Esthetics"], bestFor: "Creative and unconventional looks", department: "Hair" },
-  { id: "h7", name: "Melissa Brunty", specialty: "Extensions & Long Hair", description: "Seamless extensions and long hair transformations.", specialties: ["Extensions", "Long Hair"], bestFor: "Length, volume, and extensions", department: "Hair" },
-  { id: "h8", name: "Ana Moreno", specialty: "Color, Cuts & Styling", description: "Versatile stylist skilled in color, cuts, and finishing.", specialties: ["Color", "Cuts", "Styling"], bestFor: "Versatile everyday looks", department: "Hair" },
-  { id: "h9", name: "Priscilla", specialty: "Color & Cuts", description: "Reliable artistry in color and precision cutting.", specialties: ["Color", "Cuts"], bestFor: "Dependable quality every visit", department: "Hair" },
-  { id: "h10", name: "Zaida Delgado", specialty: "Bold Transformations", description: "Fearless approach to dramatic hair transformations.", specialties: ["Transformations", "Bold Color"], bestFor: "Dramatic makeovers", department: "Hair" },
-  // Front Desk
-  { id: "fd1", name: "Kendell Barraza", specialty: "Guest Experience", description: "Your first point of contact and concierge guide.", specialties: ["Guest Services", "Scheduling"], bestFor: "Booking help and questions", department: "Front Desk" },
-  // Esthetics
-  { id: "e1", name: "Patty", specialty: "Facials & Skincare", description: "Results-driven skincare and facial treatments.", specialties: ["Facials", "Skincare", "Spray Tan"], bestFor: "Clear skin and custom facials", department: "Esthetics" },
-  { id: "e2", name: "Lori", specialty: "Facials & Skincare", description: "Dedicated to healthy, glowing skin.", specialties: ["Facials", "Skincare"], bestFor: "Gentle, nurturing skin care", department: "Esthetics" },
-  // Nail Technicians
-  { id: "n1", name: "Anita Apodaca", specialty: "Nail Tech & Educator", description: "Nail artistry educator with a passion for nail art.", specialties: ["Nail Art", "Education", "Extensions"], bestFor: "Creative nail designs", department: "Nails" },
-  { id: "n2", name: "Kelly Vishnevetsky", specialty: "Pedicures & Extensions", description: "Expert in pedicures and nail extensions.", specialties: ["Pedicures", "Extensions"], bestFor: "Pedicures and nail extensions", department: "Nails" },
-  { id: "n3", name: "Jackie", specialty: "Nail Art & Extensions", description: "Creative nail art and extension specialist.", specialties: ["Nail Art", "Extensions"], bestFor: "Trendy nail art", department: "Nails" },
-  // Massage
-  { id: "m1", name: "Tammy", specialty: "Massage Therapist", description: "Therapeutic touch that restores balance and renews spirit.", specialties: ["Massage", "Relaxation", "Therapeutic"], bestFor: "Deep relaxation and recovery", department: "Massage" },
-  // Lashes
-  { id: "l1", name: "Allison", specialty: "Lash Specialist", description: "Custom lash design enhancing natural eye shape.", specialties: ["Classic Lashes", "Volume Lashes", "Lash Lifts"], bestFor: "Natural to dramatic lash looks", department: "Lashes" },
-];
-
-const ArtistAvatar = ({ artist }: { artist: Artist }) => {
+const ArtistAvatar = ({ artist }: { artist: TeamMember }) => {
   const photo = photoMap[artist.id];
   if (photo) {
     return (
@@ -96,7 +19,6 @@ const ArtistAvatar = ({ artist }: { artist: Artist }) => {
       </div>
     );
   }
-  // Fallback monogram
   const initial = artist.name.charAt(0).toUpperCase();
   return (
     <div className="w-full h-full bg-secondary flex items-center justify-center relative">
@@ -111,23 +33,25 @@ const ArtistAvatar = ({ artist }: { artist: Artist }) => {
 };
 
 export const ArtistsSection = () => {
-  const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
+  const [selectedArtist, setSelectedArtist] = useState<TeamMember | null>(null);
   const { isOpen, context, openModal, closeModal } = useLunaModal();
 
-  const handleBeginWithLuna = (artist: Artist) => {
+  const handleBeginWithLuna = (artist: TeamMember) => {
     setSelectedArtist(null);
-    const lunaContext: LunaContext = {
+    const categories: ServiceCategoryId[] = artist.serviceCategory ? [artist.serviceCategory] : [];
+    const lunaContext: ConciergeContext = {
       source: "Meet the Team",
-      categories: [artist.department.toLowerCase() as any],
+      categories,
       goal: null,
-      timing: null
+      timing: null,
+      preferredArtist: artist.name,
+      preferredArtistId: artist.id,
     };
-    sessionStorage.setItem("selectedArtist", artist.name);
     openModal(lunaContext);
   };
 
-  const founders = artists.filter(a => a.department === "Founders");
-  const team = artists.filter(a => a.department !== "Founders");
+  const founders = getFounders();
+  const team = getTeam();
 
   return (
     <>
@@ -241,7 +165,7 @@ export const ArtistsSection = () => {
                   {selectedArtist.name}
                 </h3>
                 
-                <p className="font-body text-gold text-sm mb-3">{selectedArtist.department}</p>
+                <p className="font-body text-gold text-sm mb-3">{selectedArtist.department === "founders" ? "Co-Founder" : selectedArtist.department.charAt(0).toUpperCase() + selectedArtist.department.slice(1)}</p>
 
                 <p className="font-body text-muted-foreground mb-4 max-w-xs">
                   {selectedArtist.description}
@@ -255,12 +179,12 @@ export const ArtistsSection = () => {
                 )}
 
                 <div className="flex flex-wrap justify-center gap-2 mb-6">
-                  {selectedArtist.specialties.map((specialty) => (
+                  {selectedArtist.specialties.map((s) => (
                     <span
-                      key={specialty}
+                      key={s}
                       className="text-xs font-body text-gold bg-gold/8 border border-gold/15 px-3 py-1.5 rounded-full"
                     >
-                      {specialty}
+                      {s}
                     </span>
                   ))}
                 </div>
