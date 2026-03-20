@@ -41,6 +41,22 @@ export const CallbackSection = () => {
       timing: formData.timing || undefined,
     });
 
+    // Also insert into callback_requests with richer context
+    try {
+      await supabase.from('callback_requests' as any).insert({
+        full_name: formData.fullName.trim(),
+        phone: formData.phone.trim(),
+        email: formData.email.trim() || null,
+        interested_in: formData.interestedIn.join(", ") || null,
+        timing: formData.timing || null,
+        message: formData.message.trim() || null,
+        source: 'callback_form',
+        concierge_context: getConciergeContext() || {},
+      });
+    } catch (err) {
+      console.debug("[CallbackSection] callback_requests insert failed:", err);
+    }
+
     setIsSubmitting(false);
     if (success) {
       setIsSubmitted(true);
