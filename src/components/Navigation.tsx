@@ -1,17 +1,19 @@
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Phone, Menu, X, PhoneCall } from "lucide-react";
 
 const navLinks = [
   { label: "Services", href: "#services" },
   { label: "Team", href: "#artists" },
   { label: "About", href: "#about" },
-  { label: "Contact", href: "#contact" },
+  { label: "Contact", href: "#callback" },
 ];
 
 export const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState<string | null>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -21,14 +23,43 @@ export const Navigation = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // IntersectionObserver for active nav state
+  useEffect(() => {
+    const sectionIds = ["services", "artists", "about", "callback"];
+
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.filter(e => e.isIntersecting);
+        if (visible.length > 0) {
+          // Pick the one with highest intersection ratio
+          const best = visible.reduce((a, b) => a.intersectionRatio > b.intersectionRatio ? a : b);
+          setActiveSection(`#${best.target.id}`);
+        }
+      },
+      { threshold: 0.3, rootMargin: "-80px 0px -20% 0px" }
+    );
+
+    const timer = setTimeout(() => {
+      sectionIds.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) observerRef.current?.observe(el);
+      });
+    }, 500);
+
+    return () => {
+      clearTimeout(timer);
+      observerRef.current?.disconnect();
+    };
+  }, []);
+
   return (
     <motion.header
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        isScrolled 
-          ? "bg-background/95 backdrop-blur-md border-b border-border" 
+        isScrolled
+          ? "bg-background/95 backdrop-blur-md border-b border-border"
           : "bg-transparent"
       }`}
     >
@@ -42,14 +73,22 @@ export const Navigation = () => {
             <a
               key={link.label}
               href={link.href}
-              className="font-body text-sm text-cream/70 hover:text-gold transition-colors tracking-wide"
+              className={`font-body text-sm tracking-wide transition-colors ${
+                activeSection === link.href
+                  ? "text-gold"
+                  : "text-cream/70 hover:text-gold"
+              }`}
             >
               {link.label}
             </a>
           ))}
           <a
             href="#callback"
-            className="font-body text-sm text-cream/70 hover:text-gold transition-colors tracking-wide"
+            className={`font-body text-sm tracking-wide transition-colors ${
+              activeSection === "#callback"
+                ? "text-gold"
+                : "text-cream/70 hover:text-gold"
+            }`}
           >
             Request Callback
           </a>
@@ -83,7 +122,9 @@ export const Navigation = () => {
                 key={link.label}
                 href={link.href}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="font-body text-lg text-cream/70 hover:text-gold transition-colors"
+                className={`font-body text-lg transition-colors ${
+                  activeSection === link.href ? "text-gold" : "text-cream/70 hover:text-gold"
+                }`}
               >
                 {link.label}
               </a>
