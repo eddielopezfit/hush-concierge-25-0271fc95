@@ -1,16 +1,8 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { Phone, CheckCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Phone, CheckCircle, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 const serviceOptions = [
   { value: "hair", label: "Hair" },
@@ -18,8 +10,8 @@ const serviceOptions = [
   { value: "skincare", label: "Skincare" },
   { value: "lashes", label: "Lashes" },
   { value: "massage", label: "Massage" },
-  { value: "bridal", label: "Bridal / Group" },
-  { value: "not-sure", label: "Not sure yet" },
+  { value: "massage-therapy", label: "Massage Therapy" },
+  { value: "multiple", label: "Multiple Services" },
 ];
 
 const timingOptions = [
@@ -35,23 +27,19 @@ export const CallbackSection = () => {
     fullName: "",
     phone: "",
     email: "",
-    interestedIn: "",
+    interestedIn: [] as string[],
     timing: "",
     message: "",
   });
 
+  const isFormValid = formData.fullName.trim().length > 0 && formData.phone.trim().length > 0;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.fullName.trim() || !formData.phone.trim()) {
-      return;
-    }
-    
+    if (!isFormValid) return;
+
     setIsSubmitting(true);
-    
-    // Simulate submission delay
     await new Promise(resolve => setTimeout(resolve, 1000));
-    
     setIsSubmitting(false);
     setIsSubmitted(true);
   };
@@ -60,8 +48,27 @@ export const CallbackSection = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const toggleService = (value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      interestedIn: prev.interestedIn.includes(value)
+        ? prev.interestedIn.filter(s => s !== value)
+        : [...prev.interestedIn, value],
+    }));
+  };
+
+  const handleScrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const isFieldValid = (field: string) => {
+    const value = formData[field as keyof typeof formData];
+    if (typeof value === "string") return value.trim().length > 0;
+    return false;
+  };
+
   return (
-    <section id="callback" className="py-24 md:py-32 pb-32 md:pb-32 bg-background relative overflow-hidden">
+    <section id="callback" className="py-20 md:py-24 pb-32 md:pb-32 bg-background relative overflow-hidden">
       {/* Subtle background accent */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-gold rounded-full blur-3xl" />
@@ -99,15 +106,22 @@ export const CallbackSection = () => {
                 <label className="font-body text-sm text-cream/80 block">
                   Full Name <span className="text-gold">*</span>
                 </label>
-                <Input
-                  type="text"
-                  required
-                  value={formData.fullName}
-                  onChange={(e) => handleInputChange("fullName", e.target.value)}
-                  placeholder="Your name"
-                  className="bg-background/50 border-gold/20 text-cream placeholder:text-cream/40 h-12 text-base focus:border-gold/50 focus:ring-gold/20"
-                  maxLength={100}
-                />
+                <div className="relative">
+                  <Input
+                    type="text"
+                    required
+                    value={formData.fullName}
+                    onChange={(e) => handleInputChange("fullName", e.target.value)}
+                    placeholder="Your name"
+                    className={`bg-background/50 border-gold/20 text-cream placeholder:text-cream/40 h-12 text-base transition-all duration-300 pr-10 ${
+                      isFieldValid("fullName") ? "border-gold/50 shadow-[0_0_10px_hsl(43_45%_58%/0.15)]" : "focus:border-gold/50 focus:ring-gold/20"
+                    }`}
+                    maxLength={100}
+                  />
+                  {isFieldValid("fullName") && (
+                    <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gold" />
+                  )}
+                </div>
               </div>
 
               {/* Mobile Phone */}
@@ -115,15 +129,22 @@ export const CallbackSection = () => {
                 <label className="font-body text-sm text-cream/80 block">
                   Mobile Phone <span className="text-gold">*</span>
                 </label>
-                <Input
-                  type="tel"
-                  required
-                  value={formData.phone}
-                  onChange={(e) => handleInputChange("phone", e.target.value)}
-                  placeholder="(520) 000-0000"
-                  className="bg-background/50 border-gold/20 text-cream placeholder:text-cream/40 h-12 text-base focus:border-gold/50 focus:ring-gold/20"
-                  maxLength={20}
-                />
+                <div className="relative">
+                  <Input
+                    type="tel"
+                    required
+                    value={formData.phone}
+                    onChange={(e) => handleInputChange("phone", e.target.value)}
+                    placeholder="(520) 000-0000"
+                    className={`bg-background/50 border-gold/20 text-cream placeholder:text-cream/40 h-12 text-base transition-all duration-300 pr-10 ${
+                      isFieldValid("phone") ? "border-gold/50 shadow-[0_0_10px_hsl(43_45%_58%/0.15)]" : "focus:border-gold/50 focus:ring-gold/20"
+                    }`}
+                    maxLength={20}
+                  />
+                  {isFieldValid("phone") && (
+                    <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gold" />
+                  )}
+                </div>
               </div>
 
               {/* Email */}
@@ -141,30 +162,27 @@ export const CallbackSection = () => {
                 />
               </div>
 
-              {/* Interested In */}
-              <div className="space-y-2">
+              {/* Interested In - Pill toggles */}
+              <div className="space-y-2 md:col-span-2">
                 <label className="font-body text-sm text-cream/80 block">
                   Interested In
                 </label>
-                <Select
-                  value={formData.interestedIn}
-                  onValueChange={(value) => handleInputChange("interestedIn", value)}
-                >
-                  <SelectTrigger className="bg-background/50 border-gold/20 text-cream h-12 text-base focus:border-gold/50 focus:ring-gold/20">
-                    <SelectValue placeholder="Select a service" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-charcoal border-gold/20 z-50">
-                    {serviceOptions.map((option) => (
-                      <SelectItem
-                        key={option.value}
-                        value={option.value}
-                        className="text-cream hover:bg-gold/10 focus:bg-gold/10 focus:text-cream cursor-pointer"
-                      >
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex flex-wrap gap-3">
+                  {serviceOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => toggleService(option.value)}
+                      className={`px-5 py-3 rounded-lg border text-sm font-body transition-all duration-300 ${
+                        formData.interestedIn.includes(option.value)
+                          ? "bg-gold/20 border-gold text-gold"
+                          : "bg-background/30 border-gold/20 text-cream/70 hover:border-gold/40 hover:text-cream"
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* How Soon */}
@@ -206,22 +224,42 @@ export const CallbackSection = () => {
             </div>
 
             {/* Submit Button */}
-            <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
-              <Button
-                type="submit"
-                disabled={isSubmitting || !formData.fullName.trim() || !formData.phone.trim()}
-                className="w-full sm:w-auto bg-gold hover:bg-gold/90 text-background font-body text-base px-10 py-6 rounded-lg transition-all duration-300 disabled:opacity-50"
-              >
-                {isSubmitting ? "Submitting..." : "Request Callback"}
-              </Button>
-              <span className="text-cream/50 text-sm">or</span>
-              <a
-                href="tel:+15203276753"
-                className="flex items-center gap-2 text-gold hover:text-gold/80 font-body transition-colors"
-              >
-                <Phone className="w-4 h-4" />
-                Call Now: (520) 327-6753
-              </a>
+            <div className="flex flex-col items-center gap-4">
+              <div className="flex flex-col sm:flex-row gap-4 items-center justify-center w-full">
+                <motion.button
+                  type="submit"
+                  disabled={isSubmitting || !isFormValid}
+                  className={`w-full sm:w-auto font-body text-base px-10 py-4 rounded-lg transition-all duration-300 ${
+                    isFormValid
+                      ? "bg-gold hover:bg-gold/90 text-background shadow-[0_0_20px_hsl(43_45%_58%/0.3)]"
+                      : "bg-muted text-muted-foreground cursor-not-allowed"
+                  }`}
+                  whileHover={isFormValid ? { scale: 1.02 } : {}}
+                  whileTap={isFormValid ? { scale: 0.98 } : {}}
+                >
+                  {isSubmitting ? "Submitting..." : "Request Callback"}
+                </motion.button>
+                <span className="text-cream/50 text-sm">or</span>
+                <a
+                  href="tel:+15203276753"
+                  className="flex items-center gap-2 text-gold hover:text-gold/80 font-body transition-colors"
+                >
+                  <Phone className="w-4 h-4" />
+                  Call Now: (520) 327-6753
+                </a>
+              </div>
+              
+              {!isFormValid && (
+                <p className="font-body text-xs text-muted-foreground">
+                  Please fill in your name and phone number to continue
+                </p>
+              )}
+
+              {/* Consent text */}
+              <p className="font-body text-xs text-cream/40 text-center max-w-lg mt-2">
+                By submitting this form, you agree to be contacted by Hush Salon & Day Spa 
+                at the number provided. Standard message rates may apply.
+              </p>
             </div>
           </motion.form>
         ) : (
@@ -240,23 +278,18 @@ export const CallbackSection = () => {
               <CheckCircle className="w-8 h-8 text-gold" />
             </motion.div>
             <h3 className="font-display text-2xl md:text-3xl text-gold-gradient mb-4">
-              Thank You
+              We'll be in touch soon.
             </h3>
             <p className="font-body text-cream/70 text-lg max-w-md mx-auto mb-8">
-              The front desk will reach out as soon as possible during business hours.
+              A member of our team will call you within 1 business day. You can also call us directly at{" "}
+              <a href="tel:+15203276753" className="text-gold hover:underline">(520) 327-6753</a>.
             </p>
-            <div className="pt-6 border-t border-gold/10">
-              <p className="font-body text-cream/50 text-sm mb-3">
-                Need immediate assistance?
-              </p>
-              <a
-                href="tel:+15203276753"
-                className="inline-flex items-center gap-2 text-gold hover:text-gold/80 font-body text-lg transition-colors"
-              >
-                <Phone className="w-5 h-5" />
-                Call (520) 327-6753
-              </a>
-            </div>
+            <button
+              onClick={handleScrollToTop}
+              className="btn-outline-gold"
+            >
+              Return to Home
+            </button>
           </motion.div>
         )}
       </div>

@@ -1,8 +1,17 @@
 import { motion } from "framer-motion";
 import { LunaVoiceWidget } from "./LunaVoiceWidget";
 import heroImage from "@/assets/hero-salon.jpg";
+import { requestVoiceStart } from "@/lib/lunaVoiceBus";
 
 export const HeroSection = () => {
+  const handleHeroMicClick = () => {
+    // Scroll to Luna section as fallback / primary behavior
+    const lunaSection = document.getElementById("luna");
+    if (lunaSection) {
+      lunaSection.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image */}
@@ -12,7 +21,6 @@ export const HeroSection = () => {
           alt="Hush Salon Interior"
           className="w-full h-full object-cover"
         />
-        {/* Overlay */}
         <div className="absolute inset-0 video-overlay" />
       </div>
 
@@ -47,11 +55,16 @@ export const HeroSection = () => {
           transition={{ duration: 1, delay: 0.6, ease: "easeOut" }}
           className="flex flex-col items-center gap-8"
         >
-          {/* Luna Voice Widget - NOT primary, will delegate to MeetLunaSection */}
-          <LunaVoiceWidget />
+          {/* Hero Mic Button with pulse ring */}
+          <div className="relative group" title="Tap to speak with Luna">
+            {/* Pulse ring animation */}
+            <div className="absolute inset-0 rounded-full animate-hero-pulse" />
+            <div className="absolute inset-0 rounded-full animate-hero-pulse-delayed" />
+            <LunaVoiceWidget />
+          </div>
 
           <p className="text-sm text-muted-foreground uppercase tracking-widest">
-            Speak with Luna to begin your experience
+            Tap to speak with Luna
           </p>
         </motion.div>
       </div>
