@@ -8,11 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getConciergeContext } from "@/lib/conciergeStore";
 import { callbackServiceOptions as serviceOptions } from "@/data/categoryData";
 
-const timingOptions = [
-  { value: "today", label: "Today" },
-  { value: "week", label: "This week" },
-  { value: "planning", label: "Planning ahead" },
-];
+import { callbackTimingOptions as timingOptions } from "@/data/categoryData";
 
 export const CallbackSection = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
