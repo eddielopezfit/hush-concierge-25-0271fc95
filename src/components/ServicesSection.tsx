@@ -98,7 +98,7 @@ export const ServicesSection = () => {
 
   return (
     <>
-      <section id="services" className="py-32 px-6 bg-gradient-to-b from-background to-card">
+      <section id="services" className="py-20 md:py-24 px-6 bg-gradient-to-b from-background to-card">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 40 }}

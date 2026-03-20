@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 
 export const AboutSection = () => {
   return (
-    <section id="about" className="py-32 px-6 relative overflow-hidden">
+    <section id="about" className="py-20 md:py-24 px-6 relative overflow-hidden">
       {/* Subtle Background Glow */}
       <div 
         className="absolute top-0 right-0 w-[600px] h-[600px] opacity-20 pointer-events-none blur-3xl"

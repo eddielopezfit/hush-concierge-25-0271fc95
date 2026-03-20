@@ -18,7 +18,7 @@ export const MeetLunaSection = () => {
 
   return (
     <>
-      <section id="luna" className="py-32 px-6 relative overflow-hidden">
+      <section id="luna" className="py-20 md:py-24 px-6 relative overflow-hidden">
         {/* Subtle Glow Background */}
         <div 
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] opacity-30 pointer-events-none"

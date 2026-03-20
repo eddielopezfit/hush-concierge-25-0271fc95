@@ -195,7 +195,7 @@ export const ExperienceFinderSection = () => {
 
   return (
     <>
-      <section className="py-32 px-6 bg-gradient-to-b from-card to-background relative overflow-hidden">
+      <section className="py-20 md:py-24 px-6 bg-gradient-to-b from-card to-background relative overflow-hidden">
         {/* Subtle background accents */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gold/5 rounded-full blur-3xl" />

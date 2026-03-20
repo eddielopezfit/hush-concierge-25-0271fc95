@@ -51,7 +51,7 @@ export const GuidesSection = () => {
 
   return (
     <>
-      <section className="py-32 px-6 relative">
+      <section className="py-16 md:py-20 px-6 relative">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-5">
           <div 
