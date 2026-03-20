@@ -106,20 +106,22 @@ export const buildDynamicVariables = (ctx: ConciergeContext | null): Record<stri
     summaryParts.push(`The guest is interested in ${selectedCategories}`);
   }
   if (selectedGoal) {
+    // Keys must match goalLabels output exactly: "Refresh", "Relax", "Transform", "Event-ready"
     const goalPhraseMap: Record<string, string> = {
-      "Quick Refresh": "looking for a quick refresh",
-      "Relaxation": "wanting to relax and unwind",
-      "Full Transformation": "ready for a full transformation",
-      "Event Ready": "getting ready for a special event",
+      "Refresh": "looking for a quick refresh",
+      "Relax": "wanting to relax and unwind",
+      "Transform": "ready for a full transformation",
+      "Event-ready": "getting ready for a special event",
     };
-    summaryParts.push(goalPhraseMap[selectedGoal] || `goal: ${selectedGoal.toLowerCase()}`);
+    summaryParts.push(goalPhraseMap[selectedGoal] || `wanting ${selectedGoal.toLowerCase()}`);
   }
   if (selectedTiming) {
+    // Keys must match timingLabels output: "Today", "This week", "Planning ahead", "Just browsing"
     const timingPhraseMap: Record<string, string> = {
       "Today": "hoping to come in today",
-      "This Week": "looking to book this week",
-      "Planning Ahead": "planning ahead for a future visit",
-      "Just Browsing": "just exploring options for now",
+      "This week": "looking to book this week",
+      "Planning ahead": "planning ahead for a future visit",
+      "Just browsing": "just exploring options for now",
     };
     summaryParts.push(timingPhraseMap[selectedTiming] || `timing: ${selectedTiming.toLowerCase()}`);
   }
