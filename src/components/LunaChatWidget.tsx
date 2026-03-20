@@ -7,6 +7,7 @@ import { ArtistsTab } from "./luna/ArtistsTab";
 import { MyPlanTab } from "./luna/MyPlanTab";
 import { ChatTab } from "./luna/ChatTab";
 import { useLuna } from "@/contexts/LunaContext";
+import { getProactiveSuggestion } from "@/lib/journeyTracker";
 
 type TabId = "find" | "explore" | "artists" | "plan" | "chat";
 
