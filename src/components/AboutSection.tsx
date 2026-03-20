@@ -3,10 +3,9 @@ import { motion } from "framer-motion";
 export const AboutSection = () => {
   return (
     <section id="about" className="py-20 md:py-24 px-6 relative overflow-hidden">
-      {/* Subtle Background Glow */}
       <div 
-        className="absolute top-0 right-0 w-[600px] h-[600px] opacity-20 pointer-events-none blur-3xl"
-        style={{ background: "radial-gradient(circle, hsl(43 45% 58% / 0.3), transparent 70%)" }}
+        className="absolute top-0 right-0 w-[600px] h-[600px] opacity-15 pointer-events-none blur-3xl"
+        style={{ background: "radial-gradient(circle, hsl(38 50% 55% / 0.25), transparent 70%)" }}
       />
 
       <div className="max-w-5xl mx-auto relative z-10">
@@ -19,23 +18,22 @@ export const AboutSection = () => {
             transition={{ duration: 0.8 }}
           >
             <h2 className="font-display text-4xl md:text-5xl font-semibold text-cream mb-8">
-              The <span className="text-gold-gradient">Hush</span> Legacy
+              The <span className="text-gold-gradient">Hush</span> Story
             </h2>
             
-            <div className="space-y-6 font-body text-cream/80 leading-relaxed">
+            <div className="space-y-5 font-body text-cream/75 leading-relaxed">
               <p className="text-lg">
-                Since 2002, Sheri Turner, Danielle Colucci, and Kathy Crawford have 
-                built more than a salon — they've built a sanctuary.
+                In 2002, Sheri Turner, Danielle Colucci, and Kathy Crawford opened 
+                Hush with a simple idea: build a place where people feel taken care of.
               </p>
               <p>
-                For over 23 years, these three co-founders have stood side by side, 
-                turning every cut, color, and experience into something that lasts. 
-                Locally owned, fiercely independent, and powered by a team that treats 
-                every guest like family.
+                23 years later, all three founders are still here — still behind the chair, 
+                still setting the standard, still building relationships that last. 
+                That consistency is rare. And it's what makes Hush different.
               </p>
               <p>
-                All three founders remain active to this day — their passion as strong 
-                as the day they opened our doors.
+                Locally owned, fiercely independent, and powered by a team that genuinely 
+                loves what they do. This is beauty with heart.
               </p>
             </div>
 
@@ -46,16 +44,16 @@ export const AboutSection = () => {
               </div>
               <div className="text-center">
                 <div className="font-display text-4xl text-gold mb-1">3</div>
-                <div className="text-sm text-muted-foreground uppercase tracking-wider">Founders Still Active</div>
+                <div className="text-sm text-muted-foreground uppercase tracking-wider">Founders Active</div>
               </div>
               <div className="text-center">
-                <div className="font-display text-4xl text-gold mb-1">∞</div>
-                <div className="text-sm text-muted-foreground uppercase tracking-wider">Commitment</div>
+                <div className="font-display text-4xl text-gold mb-1">20+</div>
+                <div className="text-sm text-muted-foreground uppercase tracking-wider">Team Members</div>
               </div>
             </div>
           </motion.div>
 
-          {/* Image */}
+          {/* Image placeholder — designed for real salon photo */}
           <motion.div
             initial={{ opacity: 0, x: 40 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -71,9 +69,10 @@ export const AboutSection = () => {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
               <div className="absolute bottom-6 left-6 right-6">
-                <p className="font-display text-2xl text-cream italic">
-                  "Beauty, professionalism, and trust."
+                <p className="font-display text-xl text-cream italic">
+                  "We built Hush to be the place we'd want to go."
                 </p>
+                <p className="font-body text-sm text-gold/70 mt-2">— The Founders</p>
               </div>
             </div>
           </motion.div>

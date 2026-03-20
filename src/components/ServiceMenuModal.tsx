@@ -98,11 +98,11 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="flex-shrink-0 p-6 md:p-8 border-b border-charcoal-light">
+              <div className="flex-shrink-0 p-6 md:p-8 border-b border-secondary">
                 {/* Close Button */}
                 <button
                   onClick={onClose}
-                  className="absolute top-4 right-4 w-10 h-10 rounded-full bg-charcoal-light flex items-center justify-center text-muted-foreground hover:text-cream hover:bg-gold/20 transition-all z-10"
+                  className="absolute top-4 right-4 w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-muted-foreground hover:text-cream hover:bg-gold/20 transition-all z-10"
                   aria-label="Close modal"
                 >
                   <X className="w-5 h-5" />
@@ -136,7 +136,7 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
                     <AccordionItem
                       key={group.name}
                       value={group.name}
-                      className="border border-charcoal-light rounded-lg overflow-hidden bg-background/30"
+                      className="border border-secondary rounded-lg overflow-hidden bg-background/30"
                     >
                       <AccordionTrigger className="px-4 py-4 hover:no-underline hover:bg-gold/5 transition-colors [&[data-state=open]]:bg-gold/5">
                         <span className="font-display text-lg text-cream text-left">
@@ -148,7 +148,7 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
                           {group.items.map((item, idx) => (
                             <div
                               key={`${item.name}-${idx}`}
-                              className="flex justify-between items-center py-3 min-h-[48px] border-b border-charcoal-light/50 last:border-0"
+                              className="flex justify-between items-center py-3 min-h-[48px] border-b border-secondary/50 last:border-0"
                             >
                               <span className="font-body text-cream/90 text-sm md:text-base pr-4">
                                 {item.name}
@@ -172,7 +172,7 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
 
                 {/* Notes Section */}
                 {category.notes && category.notes.length > 0 && (
-                  <div className="mt-6 p-4 bg-charcoal-light/30 rounded-lg border border-charcoal-light/50">
+                  <div className="mt-6 p-4 bg-secondary/30 rounded-lg border border-secondary/50">
                     {category.notes.map((note, idx) => (
                       <p key={idx} className="font-body text-sm text-cream/60 italic">
                         {note}
@@ -183,7 +183,7 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
 
                 {/* Direct Booking Contacts */}
                 {category.directContacts && category.directContacts.length > 0 && (
-                  <div className="mt-6 pt-6 border-t border-charcoal-light/50">
+                  <div className="mt-6 pt-6 border-t border-secondary/50">
                     <h4 className="font-body text-xs text-muted-foreground uppercase tracking-wide mb-4">
                       Direct Booking Contacts
                     </h4>
@@ -210,7 +210,7 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
               </div>
 
               {/* Sticky Footer */}
-              <div className="flex-shrink-0 p-6 md:p-8 border-t border-charcoal-light bg-card">
+              <div className="flex-shrink-0 p-6 md:p-8 border-t border-secondary bg-card">
                 <div className="flex flex-col sm:flex-row gap-3">
                   <motion.button
                     onClick={handleSpeakWithLuna}

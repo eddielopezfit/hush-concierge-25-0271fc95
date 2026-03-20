@@ -165,13 +165,13 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
-            className="relative w-full max-w-lg p-8 md:p-10 rounded-xl border border-gold/30 bg-card shadow-[0_0_60px_-15px_hsl(43_45%_58%/0.3)]"
+            className="relative w-full max-w-lg p-8 md:p-10 rounded-xl border border-gold/25 bg-card shadow-[0_0_50px_-15px_hsl(38_50%_55%/0.25)]"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close Button */}
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-charcoal-light flex items-center justify-center text-muted-foreground hover:text-cream hover:bg-gold/20 transition-all"
+              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-muted-foreground hover:text-cream hover:bg-gold/15 transition-all"
               aria-label="Close modal"
             >
               <X className="w-5 h-5" />
