@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { ConciergeContext } from "@/types/concierge";
+import type { Json } from "@/integrations/supabase/types";
 
 export async function saveSession(context: ConciergeContext): Promise<string | null> {
   try {
