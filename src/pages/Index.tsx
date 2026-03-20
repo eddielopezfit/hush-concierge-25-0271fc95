@@ -3,6 +3,7 @@ import { HeroSection } from "@/components/HeroSection";
 import { ExperienceFinderSection } from "@/components/ExperienceFinderSection";
 import { ServicesSection } from "@/components/ServicesSection";
 import { ArtistsSection } from "@/components/ArtistsSection";
+import { PortfolioSection } from "@/components/PortfolioSection";
 import { TestimonialsSection } from "@/components/TestimonialsSection";
 import { AboutSection } from "@/components/AboutSection";
 import { CommunitySection } from "@/components/CommunitySection";
