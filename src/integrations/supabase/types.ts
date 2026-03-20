@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      callback_requests: {
+        Row: {
+          concierge_context: Json | null
+          created_at: string | null
+          email: string | null
+          full_name: string
+          id: string
+          interested_in: string | null
+          message: string | null
+          phone: string
+          source: string | null
+          status: string | null
+          timing: string | null
+        }
+        Insert: {
+          concierge_context?: Json | null
+          created_at?: string | null
+          email?: string | null
+          full_name: string
+          id?: string
+          interested_in?: string | null
+          message?: string | null
+          phone: string
+          source?: string | null
+          status?: string | null
+          timing?: string | null
+        }
+        Update: {
+          concierge_context?: Json | null
+          created_at?: string | null
+          email?: string | null
+          full_name?: string
+          id?: string
+          interested_in?: string | null
+          message?: string | null
+          phone?: string
+          source?: string | null
+          status?: string | null
+          timing?: string | null
+        }
+        Relationships: []
+      }
       leads: {
         Row: {
           category: string | null
