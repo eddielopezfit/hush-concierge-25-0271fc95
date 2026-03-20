@@ -4,15 +4,9 @@ import { Phone, CheckCircle, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { saveLead } from "@/lib/saveSession";
-
-const serviceOptions = [
-  { value: "hair", label: "Hair" },
-  { value: "nails", label: "Nails" },
-  { value: "skincare", label: "Skincare" },
-  { value: "lashes", label: "Lashes" },
-  { value: "massage", label: "Massage" },
-  { value: "multiple", label: "Multiple Services" },
-];
+import { supabase } from "@/integrations/supabase/client";
+import { getConciergeContext } from "@/lib/conciergeStore";
+import { callbackServiceOptions as serviceOptions } from "@/data/categoryData";
 
 const timingOptions = [
   { value: "today", label: "Today" },
