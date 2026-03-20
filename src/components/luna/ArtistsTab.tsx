@@ -1,49 +1,17 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
-
-import imgCharlyCamano from "@/assets/artists/Charly_Camano.png";
-import imgMichelleYrigolla from "@/assets/artists/Michelle_Yrigolla.jpg";
-import imgSilviyaWarren from "@/assets/artists/Silviya_Warren.jpg";
-import imgWhitneyHernandez from "@/assets/artists/Whitney_Hernandez.jpg";
-import imgMelissaBrunty from "@/assets/artists/Melissa_Brunty.jpg";
-import imgAnaMoreno from "@/assets/artists/Ana_Moreno.jpg";
-import imgAnitaApodaca from "@/assets/artists/Anita_Apodaca.jpg";
-import imgPatty from "@/assets/artists/Patty.jpg";
-import imgLori from "@/assets/artists/Lori.jpg";
-
-const photoMap: Record<string, string> = {
-  h1: imgCharlyCamano,
-  h2: imgMichelleYrigolla,
-  h3: imgSilviyaWarren,
-  h4: imgWhitneyHernandez,
-  h7: imgMelissaBrunty,
-  h8: imgAnaMoreno,
-  n1: imgAnitaApodaca,
-  e1: imgPatty,
-};
-
-interface ArtistCard {
-  id: string;
-  name: string;
-  specialty: string;
-  bestFor: string;
-  department: string;
-}
-
-const artistData: ArtistCard[] = [
-  { id: "h2", name: "Michelle Yrigolla", specialty: "Master Stylist & Color Educator", bestFor: "Complex color and extensions", department: "Hair" },
-  { id: "h3", name: "Silviya Warren", specialty: "High Fashion Color", bestFor: "Bold transformations and vivid color", department: "Hair" },
-  { id: "h4", name: "Whitney Hernandez", specialty: "Dimensional Blondes & Updos", bestFor: "Blonding, events, and bridal", department: "Hair" },
-  { id: "h1", name: "Charly Camano", specialty: "Color & Waves", bestFor: "Lived-in color and beachy texture", department: "Hair" },
-  { id: "h7", name: "Melissa Brunty", specialty: "Extensions & Long Hair", bestFor: "Length, volume, and extensions", department: "Hair" },
-  { id: "h8", name: "Ana Moreno", specialty: "Color, Cuts & Styling", bestFor: "Versatile everyday looks", department: "Hair" },
-  { id: "n1", name: "Anita Apodaca", specialty: "Nail Tech & Educator", bestFor: "Creative nail designs", department: "Nails" },
-  { id: "e1", name: "Patty", specialty: "Facials & Skincare", bestFor: "Clear skin and custom facials", department: "Skincare" },
-  { id: "m1", name: "Tammy", specialty: "Massage Therapist", bestFor: "Deep relaxation and recovery", department: "Massage" },
-  { id: "l1", name: "Allison", specialty: "Lash Specialist", bestFor: "Natural to dramatic lash looks", department: "Lashes" },
-];
+import { teamMembers, photoMap, getBookableArtists, departmentLabels, TeamMember } from "@/data/teamData";
 
 const departments = ["All", "Hair", "Nails", "Skincare", "Lashes", "Massage"];
+
+const departmentFilterMap: Record<string, string> = {
+  "All": "All",
+  "Hair": "hair",
+  "Nails": "nails",
+  "Skincare": "skincare",
+  "Lashes": "lashes",
+  "Massage": "massage",
+};
 
 interface ArtistsTabProps {
   onSwitchTab: (tab: string) => void;
@@ -52,7 +20,10 @@ interface ArtistsTabProps {
 export const ArtistsTab = ({ onSwitchTab }: ArtistsTabProps) => {
   const [filter, setFilter] = useState("All");
 
-  const filtered = filter === "All" ? artistData : artistData.filter(a => a.department === filter);
+  const bookable = getBookableArtists();
+  const filtered = filter === "All"
+    ? bookable
+    : bookable.filter(a => a.department === departmentFilterMap[filter]);
 
   return (
     <div className="flex flex-col h-full">
@@ -77,58 +48,60 @@ export const ArtistsTab = ({ onSwitchTab }: ArtistsTabProps) => {
 
       {/* Artist list */}
       <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-2">
-        {filtered.map((artist, i) => (
-          <motion.div
-            key={artist.id}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.03 }}
-            className="rounded-lg border border-border bg-card p-3 space-y-2"
-          >
-            <div className="flex items-start gap-3">
-              {/* Artist thumbnail */}
-              <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 border border-border">
-                {photoMap[artist.id] ? (
-                  <img src={photoMap[artist.id]} alt={artist.name} className="w-full h-full object-cover" loading="lazy" />
-                ) : (
-                  <div className="w-full h-full bg-secondary flex items-center justify-center">
-                    <span className="font-display text-lg text-gold">{artist.name.charAt(0)}</span>
+        {filtered.map((artist, i) => {
+          const deptLabel = departmentLabels[artist.department] || artist.department;
+          return (
+            <motion.div
+              key={artist.id}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.03 }}
+              className="rounded-lg border border-border bg-card p-3 space-y-2"
+            >
+              <div className="flex items-start gap-3">
+                <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 border border-border">
+                  {photoMap[artist.id] ? (
+                    <img src={photoMap[artist.id]} alt={artist.name} className="w-full h-full object-cover" loading="lazy" />
+                  ) : (
+                    <div className="w-full h-full bg-secondary flex items-center justify-center">
+                      <span className="font-display text-lg text-gold">{artist.name.charAt(0)}</span>
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="font-display text-sm text-foreground">{artist.name}</p>
+                      <p className="text-[10px] font-body text-primary">{artist.specialty}</p>
+                    </div>
+                    <span className="text-[10px] font-body text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{deptLabel}</span>
                   </div>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="font-display text-sm text-foreground">{artist.name}</p>
-                    <p className="text-[10px] font-body text-primary">{artist.specialty}</p>
-                  </div>
-                  <span className="text-[10px] font-body text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{artist.department}</span>
                 </div>
               </div>
-            </div>
-            <p className="text-xs text-muted-foreground font-body">Best for: {artist.bestFor}</p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => {
-                  const callbackSection = document.getElementById("callback");
-                  if (callbackSection) callbackSection.scrollIntoView({ behavior: "smooth" });
-                }}
-                className="flex-1 text-xs font-body py-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
-              >
-                Book
-              </button>
-              <button
-                onClick={() => {
-                  const artistsSection = document.getElementById("artists");
-                  if (artistsSection) artistsSection.scrollIntoView({ behavior: "smooth" });
-                }}
-                className="flex-1 text-xs font-body py-2 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-primary/30 transition-colors"
-              >
-                Full Profile
-              </button>
-            </div>
-          </motion.div>
-        ))}
+              <p className="text-xs text-muted-foreground font-body">Best for: {artist.bestFor}</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    const callbackSection = document.getElementById("callback");
+                    if (callbackSection) callbackSection.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="flex-1 text-xs font-body py-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                >
+                  Book
+                </button>
+                <button
+                  onClick={() => {
+                    const artistsSection = document.getElementById("artists");
+                    if (artistsSection) artistsSection.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="flex-1 text-xs font-body py-2 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-primary/30 transition-colors"
+                >
+                  Full Profile
+                </button>
+              </div>
+            </motion.div>
+          );
+        })}
       </div>
     </div>
   );

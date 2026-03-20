@@ -44,53 +44,52 @@ export const mergeConciergeContext = (partial: Partial<ConciergeContext>): Conci
     group: partial.group !== undefined ? partial.group : (existing?.group ?? null),
     item: partial.item !== undefined ? partial.item : (existing?.item ?? null),
     price: partial.price !== undefined ? partial.price : (existing?.price ?? null),
+    preferredArtist: partial.preferredArtist !== undefined ? partial.preferredArtist : (existing?.preferredArtist ?? null),
+    preferredArtistId: partial.preferredArtistId !== undefined ? partial.preferredArtistId : (existing?.preferredArtistId ?? null),
   };
   setConciergeContext(merged);
   return merged;
 };
 
 // Helper to build a first message for Luna based on context
-// Only includes fields that exist - never says "null"
 export const buildLunaFirstMessage = (ctx: ConciergeContext | null): string | undefined => {
   if (!ctx) return undefined;
   
   const parts: string[] = [];
   
-  // Categories
   if (ctx.categories && ctx.categories.length > 0) {
     const names = formatCategoryList(ctx.categories);
     parts.push(`I see you're interested in ${names}`);
   }
   
-  // Specific service item
   if (ctx.group && ctx.item) {
     parts.push(`specifically ${ctx.item} from our ${ctx.group} menu`);
   }
   
-  // Goal
   if (ctx.goal) {
     const label = goalLabels[ctx.goal] || ctx.goal;
     parts.push(`Your goal is to ${label.toLowerCase()}`);
   }
   
-  // Timing
   if (ctx.timing) {
     const label = timingLabels[ctx.timing] || ctx.timing;
     parts.push(`and you're looking to book ${label.toLowerCase()}`);
   }
+
+  if (ctx.preferredArtist) {
+    parts.push(`You're interested in working with ${ctx.preferredArtist}`);
+  }
   
-  // If no meaningful context, return undefined to use default greeting
   if (parts.length === 0) return undefined;
   
   return `Welcome! ${parts.join(". ")}. Let me help you find the perfect experience.`;
 };
 
 /**
- * Build dynamic variables for ElevenLabs session
- * Uses shared label maps from conciergeLabels.
+ * Build dynamic variables for ElevenLabs session.
+ * Uses natural language for luna_context_summary.
  */
 export const buildDynamicVariables = (ctx: ConciergeContext | null): Record<string, string> => {
-  // Format categories with proper conjunction
   let selectedCategories = "";
   if (ctx?.categories && ctx.categories.length > 0) {
     selectedCategories = formatCategoryList(ctx.categories);
@@ -98,21 +97,32 @@ export const buildDynamicVariables = (ctx: ConciergeContext | null): Record<stri
 
   const selectedGoal = ctx?.goal ? (goalLabels[ctx.goal] || ctx.goal) : "";
   const selectedTiming = ctx?.timing ? (timingLabels[ctx.timing] || ctx.timing) : "";
+  const preferredArtist = ctx?.preferredArtist || "";
 
-  // Build summary - only include non-empty parts
+  // Build natural language summary
   const summaryParts: string[] = [];
-  if (selectedCategories) summaryParts.push(selectedCategories);
-  if (selectedGoal) summaryParts.push(selectedGoal);
-  if (selectedTiming) summaryParts.push(selectedTiming);
+  if (selectedCategories) {
+    summaryParts.push(`You're exploring ${selectedCategories} services`);
+  }
+  if (selectedGoal) {
+    summaryParts.push(`aiming to ${selectedGoal.toLowerCase()}`);
+  }
+  if (selectedTiming) {
+    summaryParts.push(`looking to book ${selectedTiming.toLowerCase()}`);
+  }
+  if (preferredArtist) {
+    summaryParts.push(`interested in working with ${preferredArtist}`);
+  }
   
   const lunaContextSummary = summaryParts.length > 0 
-    ? `Selected: ${summaryParts.join(" • ")}`
+    ? summaryParts.join(", ") + "."
     : "";
 
   return {
     selected_categories: selectedCategories,
     selected_goal: selectedGoal,
     selected_timing: selectedTiming,
+    preferred_artist: preferredArtist,
     luna_context_summary: lunaContextSummary,
   };
 };
