@@ -1,38 +1,17 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Mic, MessageSquare, Phone, Sparkles, Star } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
-import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
+import { ConciergeContext } from "@/types/concierge";
 import { setConciergeContext } from "@/lib/conciergeStore";
 import { requestVoiceStart, getVoiceActive, subscribeToVoiceState } from "@/lib/lunaVoiceBus";
 import { generateRecommendation, LunaRecommendation } from "@/lib/lunaBrain";
+import { categoryLabels, goalLabels, timingLabels } from "@/lib/conciergeLabels";
 
 interface LunaModalProps {
   isOpen: boolean;
   onClose: () => void;
   context?: ConciergeContext;
 }
-
-const serviceLabels: Record<string, string> = {
-  hair: "Hair",
-  nails: "Nails",
-  skincare: "Skincare",
-  lashes: "Lashes",
-  massage: "Massage",
-};
-
-const goalLabels: Record<string, string> = {
-  refresh: "Refresh",
-  relax: "Relax",
-  transform: "Transform",
-  event: "Event-ready",
-};
-
-const timingLabels: Record<string, string> = {
-  today: "Today",
-  week: "This week",
-  planning: "Planning ahead",
-  browsing: "Just browsing",
-};
 
 export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
   const [voiceAlreadyActive, setVoiceAlreadyActive] = useState(false);
@@ -142,7 +121,7 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
     
     // Categories
     if (context.categories && context.categories.length > 0) {
-      const serviceNames = context.categories.map(s => serviceLabels[s] || s);
+      const serviceNames = context.categories.map(s => categoryLabels[s] || s);
       parts.push(serviceNames.join(", "));
     }
     
@@ -162,7 +141,7 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
   const getViewingContext = () => {
     if (!context?.category || !context?.group || !context?.item) return null;
     
-    const categoryLabel = serviceLabels[context.category] || context.category;
+    const categoryLabel = categoryLabels[context.category] || context.category;
     const priceStr = context.price ? ` (${context.price})` : "";
     
     return `${categoryLabel} > ${context.group} > ${context.item}${priceStr}`;

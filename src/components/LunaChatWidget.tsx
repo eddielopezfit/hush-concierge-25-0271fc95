@@ -4,6 +4,7 @@ import { MessageCircle, X, Minus, Mic, Send } from "lucide-react";
 import { getConciergeContext } from "@/lib/conciergeStore";
 import { generateChatResponse } from "@/lib/lunaBrain";
 import { saveLead } from "@/lib/saveSession";
+import { formatCategoryList } from "@/lib/conciergeLabels";
 
 interface ChatMessage {
   id: string;
@@ -67,8 +68,7 @@ export const LunaChatWidget = () => {
       // Check if there's context to personalize the greeting
       const ctx = getConciergeContext();
       if (ctx && ctx.categories && ctx.categories.length > 0) {
-        const categoryLabels: Record<string, string> = { hair: "Hair", nails: "Nails", lashes: "Lashes", skincare: "Skincare", massage: "Massage" };
-        const names = ctx.categories.map(c => categoryLabels[c] || c).join(" and ");
+        const names = formatCategoryList(ctx.categories);
         setMessages([{
           id: "greeting",
           role: "luna",

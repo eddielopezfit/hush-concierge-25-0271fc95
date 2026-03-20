@@ -17,7 +17,7 @@ const serviceOptions = [
 
 const timingOptions = [
   { value: "today", label: "Today" },
-  { value: "this-week", label: "This week" },
+  { value: "week", label: "This week" },
   { value: "planning", label: "Planning ahead" },
 ];
 
