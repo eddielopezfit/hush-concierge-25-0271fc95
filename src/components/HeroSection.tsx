@@ -1,15 +1,12 @@
 import { motion } from "framer-motion";
 import { LunaVoiceWidget } from "./LunaVoiceWidget";
+import { ArrowDown, Sparkles } from "lucide-react";
 import heroImage from "@/assets/hero-salon.jpg";
-import { requestVoiceStart } from "@/lib/lunaVoiceBus";
 
 export const HeroSection = () => {
-  const handleHeroMicClick = () => {
-    // Scroll to Luna section as fallback / primary behavior
-    const lunaSection = document.getElementById("luna");
-    if (lunaSection) {
-      lunaSection.scrollIntoView({ behavior: "smooth" });
-    }
+  const handleDiscoverClick = () => {
+    const finder = document.getElementById("experience-finder");
+    if (finder) finder.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
@@ -31,11 +28,11 @@ export const HeroSection = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, ease: "easeOut" }}
         >
-          <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-semibold tracking-tight mb-6 text-cream">
+          <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-semibold tracking-tight mb-4 text-cream">
             Welcome to{" "}
             <span className="text-gold-gradient">Hush</span>
           </h1>
-          <p className="font-display text-2xl md:text-3xl text-cream/80 mb-4 italic">
+          <p className="font-display text-xl md:text-2xl text-cream/70 mb-2 italic">
             Salon & Day Spa
           </p>
         </motion.div>
@@ -44,29 +41,46 @@ export const HeroSection = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
-          className="font-body text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-12 tracking-wide"
+          className="font-body text-base md:text-lg text-muted-foreground max-w-xl mx-auto mb-10 tracking-wide"
         >
-          A refined digital concierge experience begins here.
+          Tucson's trusted beauty destination for 23+ years.
+          <br className="hidden md:block" />
+          Real stylists. Real transformations. Your next level of confidence.
         </motion.p>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.6, ease: "easeOut" }}
-          className="flex flex-col items-center gap-8"
+          className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8"
         >
-          {/* Hero Mic Button with pulse ring */}
+          {/* Primary CTA — guided discovery */}
+          <motion.button
+            onClick={handleDiscoverClick}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="btn-gold py-4 px-10 flex items-center gap-3"
+          >
+            <Sparkles className="w-5 h-5" />
+            Find Your Experience
+          </motion.button>
+
+          {/* Secondary CTA — Luna voice */}
           <div className="relative group" title="Tap to speak with Luna">
-            {/* Pulse ring animation */}
             <div className="absolute inset-0 rounded-full animate-hero-pulse" />
             <div className="absolute inset-0 rounded-full animate-hero-pulse-delayed" />
             <LunaVoiceWidget />
           </div>
-
-          <p className="text-sm text-muted-foreground uppercase tracking-widest">
-            Tap to speak with Luna
-          </p>
         </motion.div>
+
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1, duration: 0.6 }}
+          className="text-xs text-muted-foreground uppercase tracking-widest"
+        >
+          or tap the mic to speak with Luna
+        </motion.p>
       </div>
 
       {/* Scroll Indicator */}
@@ -77,11 +91,11 @@ export const HeroSection = () => {
         className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10"
       >
         <motion.div
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          className="w-6 h-10 border border-gold/30 rounded-full flex justify-center pt-2"
+          animate={{ y: [0, 8, 0] }}
+          transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+          className="flex flex-col items-center gap-2"
         >
-          <motion.div className="w-1 h-2 bg-gold rounded-full" />
+          <ArrowDown className="w-5 h-5 text-gold/40" />
         </motion.div>
       </motion.div>
     </section>

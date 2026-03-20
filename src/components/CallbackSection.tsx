@@ -11,7 +11,6 @@ const serviceOptions = [
   { value: "skincare", label: "Skincare" },
   { value: "lashes", label: "Lashes" },
   { value: "massage", label: "Massage" },
-  { value: "massage-therapy", label: "Massage Therapy" },
   { value: "multiple", label: "Multiple Services" },
 ];
 
@@ -85,8 +84,7 @@ export const CallbackSection = () => {
 
   return (
     <section id="callback" className="py-20 md:py-24 pb-32 md:pb-32 bg-background relative overflow-hidden">
-      {/* Subtle background accent */}
-      <div className="absolute inset-0 opacity-5">
+      <div className="absolute inset-0 opacity-[0.03]">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-gold rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-gold rounded-full blur-3xl" />
       </div>
@@ -100,10 +98,10 @@ export const CallbackSection = () => {
           className="text-center mb-12"
         >
           <h2 className="font-display text-3xl md:text-5xl text-gold-gradient mb-4">
-            Request a Concierge Callback
+            Request a Callback
           </h2>
-          <p className="font-body text-cream/70 text-lg max-w-2xl mx-auto">
-            Share your details below and our front desk will reach out to assist you personally.
+          <p className="font-body text-cream/60 text-base max-w-lg mx-auto">
+            Drop your info and our front desk will reach out to help you personally.
           </p>
         </motion.div>
 
@@ -114,12 +112,11 @@ export const CallbackSection = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.2 }}
             onSubmit={handleSubmit}
-            className="bg-charcoal/50 backdrop-blur-sm border border-gold/10 rounded-2xl p-8 md:p-12"
+            className="bg-charcoal/50 backdrop-blur-sm border border-gold/8 rounded-2xl p-8 md:p-12"
           >
             <div className="grid md:grid-cols-2 gap-6 mb-6">
-              {/* Full Name */}
               <div className="space-y-2">
-                <label className="font-body text-sm text-cream/80 block">
+                <label className="font-body text-sm text-cream/75 block">
                   Full Name <span className="text-gold">*</span>
                 </label>
                 <div className="relative">
@@ -129,8 +126,8 @@ export const CallbackSection = () => {
                     value={formData.fullName}
                     onChange={(e) => handleInputChange("fullName", e.target.value)}
                     placeholder="Your name"
-                    className={`bg-background/50 border-gold/20 text-cream placeholder:text-cream/40 h-12 text-base transition-all duration-300 pr-10 ${
-                      isFieldValid("fullName") ? "border-gold/50 shadow-[0_0_10px_hsl(43_45%_58%/0.15)]" : "focus:border-gold/50 focus:ring-gold/20"
+                    className={`bg-background/50 border-gold/15 text-cream placeholder:text-cream/35 h-12 text-base transition-all duration-300 pr-10 ${
+                      isFieldValid("fullName") ? "border-gold/40 shadow-[0_0_8px_hsl(38_50%_55%/0.1)]" : "focus:border-gold/40 focus:ring-gold/15"
                     }`}
                     maxLength={100}
                   />
@@ -140,9 +137,8 @@ export const CallbackSection = () => {
                 </div>
               </div>
 
-              {/* Mobile Phone */}
               <div className="space-y-2">
-                <label className="font-body text-sm text-cream/80 block">
+                <label className="font-body text-sm text-cream/75 block">
                   Mobile Phone <span className="text-gold">*</span>
                 </label>
                 <div className="relative">
@@ -152,8 +148,8 @@ export const CallbackSection = () => {
                     value={formData.phone}
                     onChange={(e) => handleInputChange("phone", e.target.value)}
                     placeholder="(520) 000-0000"
-                    className={`bg-background/50 border-gold/20 text-cream placeholder:text-cream/40 h-12 text-base transition-all duration-300 pr-10 ${
-                      isFieldValid("phone") ? "border-gold/50 shadow-[0_0_10px_hsl(43_45%_58%/0.15)]" : "focus:border-gold/50 focus:ring-gold/20"
+                    className={`bg-background/50 border-gold/15 text-cream placeholder:text-cream/35 h-12 text-base transition-all duration-300 pr-10 ${
+                      isFieldValid("phone") ? "border-gold/40 shadow-[0_0_8px_hsl(38_50%_55%/0.1)]" : "focus:border-gold/40 focus:ring-gold/15"
                     }`}
                     maxLength={20}
                   />
@@ -163,24 +159,22 @@ export const CallbackSection = () => {
                 </div>
               </div>
 
-              {/* Email */}
               <div className="space-y-2">
-                <label className="font-body text-sm text-cream/80 block">
-                  Email <span className="text-cream/40">(optional)</span>
+                <label className="font-body text-sm text-cream/75 block">
+                  Email <span className="text-cream/35">(optional)</span>
                 </label>
                 <Input
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleInputChange("email", e.target.value)}
                   placeholder="you@email.com"
-                  className="bg-background/50 border-gold/20 text-cream placeholder:text-cream/40 h-12 text-base focus:border-gold/50 focus:ring-gold/20"
+                  className="bg-background/50 border-gold/15 text-cream placeholder:text-cream/35 h-12 text-base focus:border-gold/40 focus:ring-gold/15"
                   maxLength={255}
                 />
               </div>
 
-              {/* Interested In - Pill toggles */}
               <div className="space-y-2 md:col-span-2">
-                <label className="font-body text-sm text-cream/80 block">
+                <label className="font-body text-sm text-cream/75 block">
                   Interested In
                 </label>
                 <div className="flex flex-wrap gap-3">
@@ -191,8 +185,8 @@ export const CallbackSection = () => {
                       onClick={() => toggleService(option.value)}
                       className={`px-5 py-3 rounded-lg border text-sm font-body transition-all duration-300 ${
                         formData.interestedIn.includes(option.value)
-                          ? "bg-gold/20 border-gold text-gold"
-                          : "bg-background/30 border-gold/20 text-cream/70 hover:border-gold/40 hover:text-cream"
+                          ? "bg-gold/15 border-gold text-gold"
+                          : "bg-background/30 border-gold/15 text-cream/60 hover:border-gold/30 hover:text-cream"
                       }`}
                     >
                       {option.label}
@@ -201,9 +195,8 @@ export const CallbackSection = () => {
                 </div>
               </div>
 
-              {/* How Soon */}
               <div className="space-y-2 md:col-span-2">
-                <label className="font-body text-sm text-cream/80 block">
+                <label className="font-body text-sm text-cream/75 block">
                   How soon are you looking to book?
                 </label>
                 <div className="flex flex-wrap gap-3">
@@ -214,8 +207,8 @@ export const CallbackSection = () => {
                       onClick={() => handleInputChange("timing", option.value)}
                       className={`px-5 py-3 rounded-lg border text-sm font-body transition-all duration-300 ${
                         formData.timing === option.value
-                          ? "bg-gold/20 border-gold text-gold"
-                          : "bg-background/30 border-gold/20 text-cream/70 hover:border-gold/40 hover:text-cream"
+                          ? "bg-gold/15 border-gold text-gold"
+                          : "bg-background/30 border-gold/15 text-cream/60 hover:border-gold/30 hover:text-cream"
                       }`}
                     >
                       {option.label}
@@ -225,21 +218,19 @@ export const CallbackSection = () => {
               </div>
             </div>
 
-            {/* Message */}
             <div className="space-y-2 mb-8">
-              <label className="font-body text-sm text-cream/80 block">
-                Message <span className="text-cream/40">(optional)</span>
+              <label className="font-body text-sm text-cream/75 block">
+                Message <span className="text-cream/35">(optional)</span>
               </label>
               <Textarea
                 value={formData.message}
                 onChange={(e) => handleInputChange("message", e.target.value)}
-                placeholder="Tell us about your ideal experience..."
-                className="bg-background/50 border-gold/20 text-cream placeholder:text-cream/40 min-h-[120px] text-base resize-none focus:border-gold/50 focus:ring-gold/20"
+                placeholder="Tell us what you have in mind..."
+                className="bg-background/50 border-gold/15 text-cream placeholder:text-cream/35 min-h-[120px] text-base resize-none focus:border-gold/40 focus:ring-gold/15"
                 maxLength={1000}
               />
             </div>
 
-            {/* Submit Button */}
             <div className="flex flex-col items-center gap-4">
               <div className="flex flex-col sm:flex-row gap-4 items-center justify-center w-full">
                 <motion.button
@@ -247,7 +238,7 @@ export const CallbackSection = () => {
                   disabled={isSubmitting || !isFormValid}
                   className={`w-full sm:w-auto font-body text-base px-10 py-4 rounded-lg transition-all duration-300 ${
                     isFormValid
-                      ? "bg-gold hover:bg-gold/90 text-background shadow-[0_0_20px_hsl(43_45%_58%/0.3)]"
+                      ? "bg-gold hover:bg-gold/90 text-background shadow-[0_0_18px_hsl(38_50%_55%/0.25)]"
                       : "bg-muted text-muted-foreground cursor-not-allowed"
                   }`}
                   whileHover={isFormValid ? { scale: 1.02 } : {}}
@@ -255,7 +246,7 @@ export const CallbackSection = () => {
                 >
                   {isSubmitting ? "Submitting..." : "Request Callback"}
                 </motion.button>
-                <span className="text-cream/50 text-sm">or</span>
+                <span className="text-cream/40 text-sm">or</span>
                 <a
                   href="tel:+15203276753"
                   className="flex items-center gap-2 text-gold hover:text-gold/80 font-body transition-colors"
@@ -267,7 +258,7 @@ export const CallbackSection = () => {
               
               {!isFormValid && (
                 <p className="font-body text-xs text-muted-foreground">
-                  Please fill in your name and phone number to continue
+                  Name and phone number required
                 </p>
               )}
 
@@ -277,10 +268,9 @@ export const CallbackSection = () => {
                 </p>
               )}
 
-              {/* Consent text */}
-              <p className="font-body text-xs text-cream/40 text-center max-w-lg mt-2">
-                By submitting this form, you agree to be contacted by Hush Salon & Day Spa 
-                at the number provided. Standard message rates may apply.
+              <p className="font-body text-xs text-cream/35 text-center max-w-lg mt-2">
+                By submitting, you agree to be contacted by Hush Salon & Day Spa. 
+                Standard message rates may apply.
               </p>
             </div>
           </motion.form>
@@ -289,28 +279,28 @@ export const CallbackSection = () => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
-            className="bg-charcoal/50 backdrop-blur-sm border border-gold/20 rounded-2xl p-12 md:p-16 text-center"
+            className="bg-charcoal/50 backdrop-blur-sm border border-gold/15 rounded-2xl p-12 md:p-16 text-center"
           >
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-              className="w-16 h-16 mx-auto mb-6 rounded-full bg-gold/20 flex items-center justify-center"
+              className="w-16 h-16 mx-auto mb-6 rounded-full bg-gold/15 flex items-center justify-center"
             >
               <CheckCircle className="w-8 h-8 text-gold" />
             </motion.div>
             <h3 className="font-display text-2xl md:text-3xl text-gold-gradient mb-4">
               We'll be in touch soon.
             </h3>
-            <p className="font-body text-cream/70 text-lg max-w-md mx-auto mb-8">
-              A member of our team will call you within 1 business day. You can also call us directly at{" "}
+            <p className="font-body text-cream/60 text-base max-w-md mx-auto mb-8">
+              Someone from our team will call you within 1 business day. You can also reach us at{" "}
               <a href="tel:+15203276753" className="text-gold hover:underline">(520) 327-6753</a>.
             </p>
             <button
               onClick={handleScrollToTop}
               className="btn-outline-gold"
             >
-              Return to Home
+              Back to Home
             </button>
           </motion.div>
         )}

@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Mic, Phone, MapPin, Clock, Instagram, Facebook } from "lucide-react";
+import { Phone, MapPin, Clock, Instagram, Facebook } from "lucide-react";
 import { useState } from "react";
 
 export const FooterSection = () => {
@@ -7,47 +7,6 @@ export const FooterSection = () => {
 
   return (
     <footer id="contact" className="relative overflow-hidden">
-      {/* CTA Section */}
-      <section className="py-24 px-6 relative">
-        <div 
-          className="absolute inset-0 opacity-30 pointer-events-none"
-          style={{ background: "var(--gradient-glow)" }}
-        />
-        
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.8 }}
-          className="max-w-3xl mx-auto text-center relative z-10"
-        >
-          <h2 className="font-display text-4xl md:text-6xl font-semibold text-cream mb-8">
-            Begin Your <span className="text-gold-gradient">Experience</span>
-          </h2>
-          
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="btn-luna flex items-center gap-3"
-            >
-              <Mic className="w-5 h-5" />
-              Speak with Luna
-            </motion.button>
-            
-            <motion.a
-              href="tel:+15203276753"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="btn-outline-gold flex items-center gap-3"
-            >
-              <Phone className="w-5 h-5" />
-              Call Front Desk
-            </motion.a>
-          </div>
-        </motion.div>
-      </section>
-
       {/* Footer Content */}
       <div className="border-t border-border py-16 px-6">
         <div className="max-w-6xl mx-auto">
@@ -59,7 +18,7 @@ export const FooterSection = () => {
               </h3>
               <p className="font-body text-muted-foreground text-sm leading-relaxed">
                 Salon & Day Spa<br />
-                Tucson's sanctuary of beauty since 2002.
+                Tucson's trusted beauty destination since 2002.
               </p>
             </div>
 
@@ -106,7 +65,7 @@ export const FooterSection = () => {
                   href="https://www.instagram.com/hushsalonaz" 
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-full border border-gold/30 flex items-center justify-center hover:bg-gold/10 transition-colors"
+                  className="w-10 h-10 rounded-full border border-gold/25 flex items-center justify-center hover:bg-gold/10 transition-colors"
                 >
                   <Instagram className="w-5 h-5 text-gold" />
                 </a>
@@ -114,13 +73,13 @@ export const FooterSection = () => {
                   href="https://www.facebook.com/profile.php?id=100063717333500" 
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-full border border-gold/30 flex items-center justify-center hover:bg-gold/10 transition-colors"
+                  className="w-10 h-10 rounded-full border border-gold/25 flex items-center justify-center hover:bg-gold/10 transition-colors"
                 >
                   <Facebook className="w-5 h-5 text-gold" />
                 </a>
               </div>
               <p className="mt-4 text-sm text-muted-foreground font-body">
-                Follow us for beauty inspiration and exclusive offers.
+                Follow us for real transformations and behind-the-scenes looks.
               </p>
             </div>
           </div>
@@ -139,7 +98,7 @@ export const FooterSection = () => {
               </button>
             </div>
             <p className="text-sm text-muted-foreground font-body">
-              Powered by <span className="text-gold">Luna AI Concierge</span>
+              Powered by <span className="text-gold">Luna</span>
             </p>
           </div>
         </div>
@@ -152,7 +111,7 @@ export const FooterSection = () => {
           onClick={() => setShowPrivacy(false)}
         >
           <div 
-            className="relative w-full max-w-lg p-8 rounded-xl border border-gold/30 bg-card"
+            className="relative w-full max-w-lg p-8 rounded-xl border border-gold/25 bg-card"
             onClick={(e) => e.stopPropagation()}
           >
             <button

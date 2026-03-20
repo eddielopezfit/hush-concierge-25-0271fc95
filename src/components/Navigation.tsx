@@ -1,10 +1,10 @@
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Phone, Menu, X, PhoneCall } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 const navLinks = [
   { label: "Services", href: "#services" },
+  { label: "Team", href: "#artists" },
   { label: "About", href: "#about" },
   { label: "Contact", href: "#contact" },
 ];
@@ -33,38 +33,35 @@ export const Navigation = () => {
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-        {/* Logo */}
-        <a href="#" className="font-display text-2xl md:text-3xl text-gold-gradient">
+        <a href="#" className="font-display text-2xl md:text-3xl text-gold-gradient font-semibold">
           Hush
         </a>
 
-        {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-6">
           {navLinks.map((link) => (
             <a
               key={link.label}
               href={link.href}
-              className="font-body text-sm text-cream/80 hover:text-gold transition-colors tracking-wide"
+              className="font-body text-sm text-cream/70 hover:text-gold transition-colors tracking-wide"
             >
               {link.label}
             </a>
           ))}
           <a
             href="#callback"
-            className="font-body text-sm text-cream/80 hover:text-gold transition-colors tracking-wide"
+            className="font-body text-sm text-cream/70 hover:text-gold transition-colors tracking-wide"
           >
             Request Callback
           </a>
           <a
             href="tel:+15203276753"
-            className="flex items-center gap-2 bg-gold hover:bg-gold/90 text-background font-body text-sm px-5 py-2.5 rounded transition-all duration-300"
+            className="flex items-center gap-2 bg-gold hover:bg-gold/90 text-background font-body text-sm px-5 py-2.5 rounded-lg transition-all duration-300"
           >
             <PhoneCall className="w-4 h-4" />
             (520) 327-6753
           </a>
         </nav>
 
-        {/* Mobile Menu Button */}
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           className="md:hidden text-cream"
@@ -73,7 +70,6 @@ export const Navigation = () => {
         </button>
       </div>
 
-      {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <motion.div
           initial={{ opacity: 0, height: 0 }}
@@ -87,7 +83,7 @@ export const Navigation = () => {
                 key={link.label}
                 href={link.href}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="font-body text-lg text-cream/80 hover:text-gold transition-colors"
+                className="font-body text-lg text-cream/70 hover:text-gold transition-colors"
               >
                 {link.label}
               </a>
@@ -95,13 +91,13 @@ export const Navigation = () => {
             <a
               href="#callback"
               onClick={() => setIsMobileMenuOpen(false)}
-              className="font-body text-lg text-cream/80 hover:text-gold transition-colors"
+              className="font-body text-lg text-cream/70 hover:text-gold transition-colors"
             >
               Request Callback
             </a>
             <a
               href="tel:+15203276753"
-              className="flex items-center gap-2 bg-gold text-background font-body px-6 py-3 rounded"
+              className="flex items-center gap-2 bg-gold text-background font-body px-6 py-3 rounded-lg"
             >
               <PhoneCall className="w-5 h-5" />
               Call (520) 327-6753
