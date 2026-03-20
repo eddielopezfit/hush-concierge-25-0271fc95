@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Scissors, Hand, Sparkles, Eye, Heart, Mic, MessageSquare, Phone, Check, ArrowLeft } from "lucide-react";
+import { Scissors, Hand, Sparkles, Eye, Heart, Mic, MessageSquare, Phone, Check, ArrowLeft, Star } from "lucide-react";
 import { LunaModal, useLunaModal } from "./LunaModal";
 import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
 import { setConciergeContext } from "@/lib/conciergeStore";
-
+import { generateRecommendation, LunaRecommendation } from "@/lib/lunaBrain";
+import { saveSession } from "@/lib/saveSession";
 type Step = 1 | 2 | 3 | "result";
 
 interface Selection {
@@ -61,6 +62,7 @@ export const ExperienceFinderSection = () => {
     goal: null,
     timing: null,
   });
+  const [recommendation, setRecommendation] = useState<LunaRecommendation | null>(null);
   const { isOpen, context, openModal, closeModal } = useLunaModal();
 
   const toggleService = (serviceId: string) => {
@@ -125,6 +127,10 @@ export const ExperienceFinderSection = () => {
   const handleOpenLunaModal = () => {
     const ctx = buildContext();
     setConciergeContext(ctx);
+    // Generate recommendation and save session
+    const rec = generateRecommendation(ctx);
+    setRecommendation(rec);
+    saveSession(ctx);
     openModal(ctx);
   };
 
@@ -136,6 +142,9 @@ export const ExperienceFinderSection = () => {
       timing: null,
     };
     setConciergeContext(ctx);
+    const rec = generateRecommendation(ctx);
+    setRecommendation(rec);
+    saveSession(ctx);
     openModal(ctx);
   };
 
@@ -147,18 +156,27 @@ export const ExperienceFinderSection = () => {
       timing: null,
     };
     setConciergeContext(ctx);
+    const rec = generateRecommendation(ctx);
+    setRecommendation(rec);
+    saveSession(ctx);
     openModal(ctx);
   };
 
   const handleSpeakWithLunaStep3 = () => {
     const ctx = buildContext();
     setConciergeContext(ctx);
+    const rec = generateRecommendation(ctx);
+    setRecommendation(rec);
+    saveSession(ctx);
     openModal(ctx);
   };
 
   const handleChatWithLunaStep3 = () => {
     const ctx = buildContext();
     setConciergeContext(ctx);
+    const rec = generateRecommendation(ctx);
+    setRecommendation(rec);
+    saveSession(ctx);
     openModal(ctx);
   };
 
@@ -679,10 +697,44 @@ export const ExperienceFinderSection = () => {
                     <h3 className="font-display text-3xl md:text-4xl text-cream mb-4">
                       Perfect — Luna can guide you from here.
                     </h3>
+
+                    {/* Recommendation Card */}
+                    {recommendation && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                        className="mb-8 p-5 rounded-lg border border-gold/20 bg-background/50 text-left max-w-md mx-auto"
+                      >
+                        <div className="flex items-center gap-2 mb-3">
+                          <Star className="w-4 h-4 text-gold" />
+                          <span className="font-body text-xs text-gold uppercase tracking-wider">Luna's Recommendation</span>
+                        </div>
+                        <p className="font-display text-lg text-cream mb-1">{recommendation.recommendedService}</p>
+                        {recommendation.priceRange && (
+                          <p className="font-body text-sm text-gold/80 mb-2">{recommendation.priceRange}</p>
+                        )}
+                        {recommendation.recommendedArtist && (
+                          <p className="font-body text-sm text-cream/60 mb-3">Suggested artist: {recommendation.recommendedArtist}</p>
+                        )}
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2 py-0.5 rounded text-xs font-body ${
+                            recommendation.urgency === "high" ? "bg-crimson/20 text-crimson" :
+                            recommendation.urgency === "medium" ? "bg-gold/20 text-gold" :
+                            "bg-cream/10 text-cream/60"
+                          }`}>
+                            {recommendation.urgency === "high" ? "Book Now" : recommendation.urgency === "medium" ? "This Week" : "Take Your Time"}
+                          </span>
+                        </div>
+                        <p className="font-body text-sm text-cream/50 mt-3">{recommendation.nextStep}</p>
+                      </motion.div>
+                    )}
                     
-                    <p className="font-body text-muted-foreground text-lg mb-10 max-w-md mx-auto">
-                      Based on what you selected, Luna will recommend the best next step and help you book.
-                    </p>
+                    {!recommendation && (
+                      <p className="font-body text-muted-foreground text-lg mb-10 max-w-md mx-auto">
+                        Based on what you selected, Luna will recommend the best next step and help you book.
+                      </p>
+                    )}
 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
                       <motion.button

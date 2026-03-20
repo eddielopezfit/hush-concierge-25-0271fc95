@@ -1,0 +1,1 @@
+CREATE POLICY "Allow anonymous inserts on leads" ON public.leads FOR INSERT TO anon WITH CHECK (true); CREATE POLICY "Allow anonymous inserts on sessions" ON public.sessions FOR INSERT TO anon WITH CHECK (true); CREATE POLICY "Allow anonymous select on sessions" ON public.sessions FOR SELECT TO anon USING (true);

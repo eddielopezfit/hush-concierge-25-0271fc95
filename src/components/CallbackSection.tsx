@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Phone, CheckCircle, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { saveLead } from "@/lib/saveSession";
 
 const serviceOptions = [
   { value: "hair", label: "Hair" },
@@ -34,14 +35,29 @@ export const CallbackSection = () => {
 
   const isFormValid = formData.fullName.trim().length > 0 && formData.phone.trim().length > 0;
 
+  const [submitError, setSubmitError] = useState(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isFormValid) return;
 
     setIsSubmitting(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    setSubmitError(false);
+
+    const success = await saveLead({
+      name: formData.fullName,
+      phone: formData.phone,
+      email: formData.email || undefined,
+      category: formData.interestedIn.join(", ") || undefined,
+      timing: formData.timing || undefined,
+    });
+
     setIsSubmitting(false);
-    setIsSubmitted(true);
+    if (success) {
+      setIsSubmitted(true);
+    } else {
+      setSubmitError(true);
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -252,6 +268,12 @@ export const CallbackSection = () => {
               {!isFormValid && (
                 <p className="font-body text-xs text-muted-foreground">
                   Please fill in your name and phone number to continue
+                </p>
+              )}
+
+              {submitError && (
+                <p className="font-body text-xs text-destructive">
+                  Something went wrong. Please try again or call us at (520) 327-6753.
                 </p>
               )}
 
