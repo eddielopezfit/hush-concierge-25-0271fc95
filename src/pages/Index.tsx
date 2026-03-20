@@ -34,8 +34,6 @@ const Index = () => {
       <ServicesSection />
       {/* 4. Team — stylist trust + matching */}
       <ArtistsSection />
-      {/* 5. Portfolio — real transformation proof */}
-      <PortfolioSection />
       {/* 6. Testimonials — social proof */}
       <TestimonialsSection />
       {/* 6. About — the Hush story */}
