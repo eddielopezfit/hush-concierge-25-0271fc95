@@ -21,7 +21,7 @@ export const MobileStickyBar = () => {
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.4, delay: 0.5 }}
-        className="fixed bottom-0 left-0 right-0 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] bg-gradient-to-t from-background via-background to-background/90 border-t border-charcoal-light z-40 md:hidden"
+        className="fixed bottom-0 left-0 right-0 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] bg-gradient-to-t from-background via-background to-background/90 border-t border-border z-40 md:hidden"
       >
         <div className="flex items-center gap-3 max-w-lg mx-auto">
           <motion.button

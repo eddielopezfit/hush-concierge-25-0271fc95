@@ -157,7 +157,7 @@ export const LunaVoiceWidget = ({ isPrimary = false }: LunaVoiceWidgetProps) => 
           transition-all duration-500 cursor-pointer
           ${isDisabled && !isConnected ? "opacity-50 cursor-not-allowed" : ""}
           ${isConnected 
-            ? "bg-crimson glow-gold" 
+            ? "bg-accent glow-gold" 
             : "bg-gradient-to-br from-gold to-gold-glow"
           }
         `}
