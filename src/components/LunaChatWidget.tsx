@@ -7,6 +7,7 @@ import { ArtistsTab } from "./luna/ArtistsTab";
 import { MyPlanTab } from "./luna/MyPlanTab";
 import { ChatTab } from "./luna/ChatTab";
 import { useLuna } from "@/contexts/LunaContext";
+import { getProactiveSuggestion } from "@/lib/journeyTracker";
 
 type TabId = "find" | "explore" | "artists" | "plan" | "chat";
 
@@ -23,6 +24,7 @@ export const LunaChatWidget = () => {
   const [showBadge, setShowBadge] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>("find");
   const [hasAutoOpened, setHasAutoOpened] = useState(false);
+  const [proactiveMessage, setProactiveMessage] = useState<string | null>(null);
   const { hasInteracted, chatWidgetRequested, clearChatWidgetRequest } = useLuna();
 
   // Respond to external "open chat widget" requests
@@ -53,9 +55,30 @@ export const LunaChatWidget = () => {
     return () => clearTimeout(timer);
   }, [hasAutoOpened, isOpen, hasInteracted]);
 
+  // Proactive engagement — check every 15s after 30s on page
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const interval = setInterval(() => {
+        if (isOpen || proactiveMessage) return;
+        const suggestion = getProactiveSuggestion();
+        if (suggestion) {
+          setProactiveMessage(suggestion.message);
+          setShowBadge(true);
+          clearInterval(interval);
+        }
+      }, 15000);
+      return () => clearInterval(interval);
+    }, 30000);
+    return () => clearTimeout(timer);
+  }, [isOpen, proactiveMessage]);
+
   const handleOpen = () => {
     setIsOpen(true);
     setShowBadge(false);
+    if (proactiveMessage) {
+      setActiveTab("chat");
+      setProactiveMessage(null);
+    }
   };
 
   const handleClose = () => setIsOpen(false);
@@ -64,6 +87,27 @@ export const LunaChatWidget = () => {
 
   return (
     <>
+      {/* Proactive Suggestion Tooltip */}
+      <AnimatePresence>
+        {!isOpen && proactiveMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.9 }}
+            className="fixed bottom-20 right-6 z-[9999] max-w-[280px] p-3 rounded-xl bg-card border border-primary/20 shadow-[var(--shadow-elegant)] cursor-pointer"
+            onClick={handleOpen}
+          >
+            <p className="text-xs font-body text-foreground/90 leading-relaxed">{proactiveMessage}</p>
+            <button
+              onClick={(e) => { e.stopPropagation(); setProactiveMessage(null); setShowBadge(false); }}
+              className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Collapsed Bubble */}
       <AnimatePresence>
         {!isOpen && (

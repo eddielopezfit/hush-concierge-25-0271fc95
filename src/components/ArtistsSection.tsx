@@ -4,6 +4,7 @@ import { X, Sparkles } from "lucide-react";
 import { useLuna } from "@/contexts/LunaContext";
 import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
 import { teamMembers, photoMap, getFounders, getTeam, TeamMember } from "@/data/teamData";
+import { trackArtistClick } from "@/lib/journeyTracker";
 
 const ArtistAvatar = ({ artist }: { artist: TeamMember }) => {
   const photo = photoMap[artist.id];
@@ -110,7 +111,7 @@ export const ArtistsSection = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.05 }}
                 className="group cursor-pointer"
-                onClick={() => setSelectedArtist(artist)}
+                onClick={() => { trackArtistClick(artist.name); setSelectedArtist(artist); }}
               >
                 <div className="relative aspect-[3/4] rounded-lg overflow-hidden border border-border hover:border-gold/30 transition-all duration-500 group-hover:shadow-[0_0_25px_-5px_hsl(38_50%_55%/0.2)]">
                   <ArtistAvatar artist={artist} />
