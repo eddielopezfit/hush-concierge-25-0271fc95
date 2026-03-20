@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Navigation } from "@/components/Navigation";
 import { HeroSection } from "@/components/HeroSection";
 import { ExperienceFinderSection } from "@/components/ExperienceFinderSection";
@@ -12,6 +13,7 @@ import { FooterSection } from "@/components/FooterSection";
 import { MobileStickyBar } from "@/components/MobileStickyBar";
 import { LunaModal } from "@/components/LunaModal";
 import { useLuna } from "@/contexts/LunaContext";
+import { initJourneyTracking } from "@/lib/journeyTracker";
 
 const Index = () => {
   const { isModalOpen, context, closeModal } = useLuna();
