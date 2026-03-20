@@ -99,30 +99,58 @@ export const buildDynamicVariables = (ctx: ConciergeContext | null): Record<stri
   const selectedTiming = ctx?.timing ? (timingLabels[ctx.timing] || ctx.timing) : "";
   const preferredArtist = ctx?.preferredArtist || "";
 
-  // Build natural language summary
+  // Build warm natural language summary for Luna's personalized opening
   const summaryParts: string[] = [];
   if (selectedCategories) {
-    summaryParts.push(`You're exploring ${selectedCategories} services`);
+    summaryParts.push(`The guest is interested in ${selectedCategories}`);
   }
   if (selectedGoal) {
-    summaryParts.push(`aiming to ${selectedGoal.toLowerCase()}`);
+    const goalPhraseMap: Record<string, string> = {
+      "Quick Refresh": "looking for a quick refresh",
+      "Relaxation": "wanting to relax and unwind",
+      "Full Transformation": "ready for a full transformation",
+      "Event Ready": "getting ready for a special event",
+    };
+    summaryParts.push(goalPhraseMap[selectedGoal] || `goal: ${selectedGoal.toLowerCase()}`);
   }
   if (selectedTiming) {
-    summaryParts.push(`looking to book ${selectedTiming.toLowerCase()}`);
+    const timingPhraseMap: Record<string, string> = {
+      "Today": "hoping to come in today",
+      "This Week": "looking to book this week",
+      "Planning Ahead": "planning ahead for a future visit",
+      "Just Browsing": "just exploring options for now",
+    };
+    summaryParts.push(timingPhraseMap[selectedTiming] || `timing: ${selectedTiming.toLowerCase()}`);
   }
   if (preferredArtist) {
-    summaryParts.push(`interested in working with ${preferredArtist}`);
+    summaryParts.push(`specifically interested in working with ${preferredArtist}`);
   }
   
   const lunaContextSummary = summaryParts.length > 0 
-    ? summaryParts.join(", ") + "."
+    ? summaryParts.join(". ") + "."
     : "";
+
+  // Enrich with lunaBrain recommendation if available
+  const storedRec = (() => {
+    try {
+      const r = sessionStorage.getItem("hush_luna_recommendation");
+      return r ? JSON.parse(r) : null;
+    } catch { return null; }
+  })();
+
+  let finalSummary = lunaContextSummary;
+  if (storedRec?.recommendedService) {
+    const recParts = [`Recommended service: ${storedRec.recommendedService}`];
+    if (storedRec.priceRange) recParts.push(`Price: ${storedRec.priceRange}`);
+    if (storedRec.recommendedArtist) recParts.push(`Suggested stylist: ${storedRec.recommendedArtist}`);
+    finalSummary = (lunaContextSummary ? lunaContextSummary + " " : "") + recParts.join(". ") + ".";
+  }
 
   return {
     selected_categories: selectedCategories,
     selected_goal: selectedGoal,
     selected_timing: selectedTiming,
     preferred_artist: preferredArtist,
-    luna_context_summary: lunaContextSummary,
+    luna_context_summary: finalSummary,
   };
 };

@@ -69,7 +69,7 @@ export const HeroSection = () => {
           <div className="relative group" title="Tap to speak with Luna">
             <div className="absolute inset-0 rounded-full animate-hero-pulse" />
             <div className="absolute inset-0 rounded-full animate-hero-pulse-delayed" />
-            <LunaVoiceWidget />
+            <LunaVoiceWidget isPrimary />
           </div>
         </motion.div>
 

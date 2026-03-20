@@ -92,6 +92,18 @@ export const ExperienceFinderSection = () => {
     setSelection((prev) => ({ ...prev, timing: timingId }));
   };
 
+  // Auto-launch Luna 400ms after timing selection — the WOW moment
+  // Guest completed all 3 choices; Luna opens already knowing everything
+  useEffect(() => {
+    if (currentStep === 3 && selection.timing) {
+      const timer = setTimeout(() => {
+        handleLunaAction(true);
+      }, 400);
+      return () => clearTimeout(timer);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStep, selection.timing]);
+
   const handleBack = () => {
     if (currentStep === 2) setCurrentStep(1);
     else if (currentStep === 3) setCurrentStep(2);
@@ -117,6 +129,10 @@ export const ExperienceFinderSection = () => {
     const rec = generateRecommendation(ctx);
     setRecommendation(rec);
     saveSession(ctx);
+    // Persist recommendation so Luna voice can reference it
+    try {
+      sessionStorage.setItem("hush_luna_recommendation", JSON.stringify(rec));
+    } catch { /* ignore */ }
     openModal(ctx);
   };
 
