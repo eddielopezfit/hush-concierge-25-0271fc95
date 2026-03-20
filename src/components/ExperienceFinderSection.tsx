@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Scissors, Hand, Sparkles, Eye, Heart, Mic, MessageSquare, Phone, Check, ArrowLeft, Star } from "lucide-react";
+import { Scissors, Hand, Sparkles, Eye, Heart, Mic, MessageSquare, Check, ArrowLeft, Star } from "lucide-react";
 import { LunaModal, useLunaModal } from "./LunaModal";
 import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
 import { setConciergeContext } from "@/lib/conciergeStore";

@@ -1,11 +1,11 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Mic, MessageSquare, Phone, Sparkles, Star } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
-import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
+import { ConciergeContext } from "@/types/concierge";
 import { setConciergeContext } from "@/lib/conciergeStore";
 import { requestVoiceStart, getVoiceActive, subscribeToVoiceState } from "@/lib/lunaVoiceBus";
 import { generateRecommendation, LunaRecommendation } from "@/lib/lunaBrain";
-import { categoryLabels, goalLabels, timingLabels, getLabel } from "@/lib/conciergeLabels";
+import { goalLabels, timingLabels } from "@/lib/conciergeLabels";
 
 interface LunaModalProps {
   isOpen: boolean;
