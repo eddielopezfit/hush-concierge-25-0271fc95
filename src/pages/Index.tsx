@@ -3,6 +3,7 @@ import { HeroSection } from "@/components/HeroSection";
 import { ExperienceFinderSection } from "@/components/ExperienceFinderSection";
 import { ServicesSection } from "@/components/ServicesSection";
 import { ArtistsSection } from "@/components/ArtistsSection";
+import { PortfolioSection } from "@/components/PortfolioSection";
 import { TestimonialsSection } from "@/components/TestimonialsSection";
 import { AboutSection } from "@/components/AboutSection";
 import { CommunitySection } from "@/components/CommunitySection";
@@ -26,7 +27,9 @@ const Index = () => {
       <ServicesSection />
       {/* 4. Team — stylist trust + matching */}
       <ArtistsSection />
-      {/* 5. Testimonials — social proof */}
+      {/* 5. Portfolio — real transformation proof */}
+      <PortfolioSection />
+      {/* 6. Testimonials — social proof */}
       <TestimonialsSection />
       {/* 6. About — the Hush story */}
       <AboutSection />
