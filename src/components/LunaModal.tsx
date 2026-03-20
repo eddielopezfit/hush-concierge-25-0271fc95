@@ -5,34 +5,13 @@ import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
 import { setConciergeContext } from "@/lib/conciergeStore";
 import { requestVoiceStart, getVoiceActive, subscribeToVoiceState } from "@/lib/lunaVoiceBus";
 import { generateRecommendation, LunaRecommendation } from "@/lib/lunaBrain";
+import { categoryLabels, goalLabels, timingLabels, getLabel } from "@/lib/conciergeLabels";
 
 interface LunaModalProps {
   isOpen: boolean;
   onClose: () => void;
   context?: ConciergeContext;
 }
-
-const serviceLabels: Record<string, string> = {
-  hair: "Hair",
-  nails: "Nails",
-  skincare: "Skincare",
-  lashes: "Lashes",
-  massage: "Massage",
-};
-
-const goalLabels: Record<string, string> = {
-  refresh: "Refresh",
-  relax: "Relax",
-  transform: "Transform",
-  event: "Event-ready",
-};
-
-const timingLabels: Record<string, string> = {
-  today: "Today",
-  week: "This week",
-  planning: "Planning ahead",
-  browsing: "Just browsing",
-};
 
 export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
   const [voiceAlreadyActive, setVoiceAlreadyActive] = useState(false);

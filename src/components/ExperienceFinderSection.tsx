@@ -117,30 +117,16 @@ export const ExperienceFinderSection = () => {
     setCurrentStep(1);
   };
 
-  const buildContext = (): ConciergeContext => ({
+  const buildContext = (includeTimingOverride?: boolean): ConciergeContext => ({
     source: "Experience Finder",
     categories: selection.services as ServiceCategoryId[],
     goal: selection.goal,
-    timing: selection.timing,
+    timing: includeTimingOverride === false ? null : selection.timing,
   });
 
-  const handleOpenLunaModal = () => {
-    const ctx = buildContext();
-    setConciergeContext(ctx);
-    // Generate recommendation and save session
-    const rec = generateRecommendation(ctx);
-    setRecommendation(rec);
-    saveSession(ctx);
-    openModal(ctx);
-  };
-
-  const handleSpeakWithLunaStep2 = () => {
-    const ctx: ConciergeContext = {
-      source: "Experience Finder",
-      categories: selection.services as ServiceCategoryId[],
-      goal: selection.goal,
-      timing: null,
-    };
+  /** Shared handler: build context, generate recommendation, save, open modal */
+  const handleLunaAction = (includeTiming: boolean = true) => {
+    const ctx = buildContext(includeTiming);
     setConciergeContext(ctx);
     const rec = generateRecommendation(ctx);
     setRecommendation(rec);
@@ -148,37 +134,11 @@ export const ExperienceFinderSection = () => {
     openModal(ctx);
   };
 
-  const handleChatWithLunaStep2 = () => {
-    const ctx: ConciergeContext = {
-      source: "Experience Finder",
-      categories: selection.services as ServiceCategoryId[],
-      goal: selection.goal,
-      timing: null,
-    };
-    setConciergeContext(ctx);
-    const rec = generateRecommendation(ctx);
-    setRecommendation(rec);
-    saveSession(ctx);
-    openModal(ctx);
-  };
-
-  const handleSpeakWithLunaStep3 = () => {
-    const ctx = buildContext();
-    setConciergeContext(ctx);
-    const rec = generateRecommendation(ctx);
-    setRecommendation(rec);
-    saveSession(ctx);
-    openModal(ctx);
-  };
-
-  const handleChatWithLunaStep3 = () => {
-    const ctx = buildContext();
-    setConciergeContext(ctx);
-    const rec = generateRecommendation(ctx);
-    setRecommendation(rec);
-    saveSession(ctx);
-    openModal(ctx);
-  };
+  const handleOpenLunaModal = () => handleLunaAction(true);
+  const handleSpeakWithLunaStep2 = () => handleLunaAction(false);
+  const handleChatWithLunaStep2 = () => handleLunaAction(false);
+  const handleSpeakWithLunaStep3 = () => handleLunaAction(true);
+  const handleChatWithLunaStep3 = () => handleLunaAction(true);
 
   const getStepTitle = () => {
     switch (currentStep) {

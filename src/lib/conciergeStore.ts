@@ -1,4 +1,10 @@
-import { ConciergeContext } from "@/types/concierge";
+import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
+import {
+  categoryLabels,
+  goalLabels,
+  timingLabels,
+  formatCategoryList,
+} from "@/lib/conciergeLabels";
 
 const STORAGE_KEY = "hush_concierge_context";
 
@@ -53,14 +59,7 @@ export const buildLunaFirstMessage = (ctx: ConciergeContext | null): string | un
   
   // Categories
   if (ctx.categories && ctx.categories.length > 0) {
-    const categoryLabels: Record<string, string> = {
-      hair: "Hair",
-      nails: "Nails",
-      lashes: "Lashes",
-      skincare: "Skincare",
-      massage: "Massage",
-    };
-    const names = ctx.categories.map(c => categoryLabels[c] || c).join(" and ");
+    const names = formatCategoryList(ctx.categories);
     parts.push(`I see you're interested in ${names}`);
   }
   
@@ -71,24 +70,14 @@ export const buildLunaFirstMessage = (ctx: ConciergeContext | null): string | un
   
   // Goal
   if (ctx.goal) {
-    const goalLabels: Record<string, string> = {
-      refresh: "refresh",
-      relax: "relax",
-      transform: "transform",
-      event: "get event-ready",
-    };
-    parts.push(`Your goal is to ${goalLabels[ctx.goal] || ctx.goal}`);
+    const label = goalLabels[ctx.goal] || ctx.goal;
+    parts.push(`Your goal is to ${label.toLowerCase()}`);
   }
   
   // Timing
   if (ctx.timing) {
-    const timingLabels: Record<string, string> = {
-      today: "today",
-      week: "this week",
-      planning: "sometime in the future",
-      browsing: "when you're ready",
-    };
-    parts.push(`and you're looking to book ${timingLabels[ctx.timing] || ctx.timing}`);
+    const label = timingLabels[ctx.timing] || ctx.timing;
+    parts.push(`and you're looking to book ${label.toLowerCase()}`);
   }
   
   // If no meaningful context, return undefined to use default greeting
@@ -99,42 +88,13 @@ export const buildLunaFirstMessage = (ctx: ConciergeContext | null): string | un
 
 /**
  * Build dynamic variables for ElevenLabs session
- * Returns formatted strings for selected_categories, selected_goal, selected_timing, and luna_context_summary
+ * Uses shared label maps from conciergeLabels.
  */
 export const buildDynamicVariables = (ctx: ConciergeContext | null): Record<string, string> => {
-  const categoryLabels: Record<string, string> = {
-    hair: "Hair",
-    nails: "Nails",
-    lashes: "Lashes",
-    skincare: "Skincare",
-    massage: "Massage",
-  };
-  
-  const goalLabels: Record<string, string> = {
-    refresh: "Quick Refresh",
-    relax: "Relaxation",
-    transform: "Full Transformation",
-    event: "Event Ready",
-  };
-  
-  const timingLabels: Record<string, string> = {
-    today: "Today",
-    week: "This Week",
-    planning: "Planning Ahead",
-    browsing: "Just Browsing",
-  };
-
-  // Format categories with "and" for 2+ items
+  // Format categories with proper conjunction
   let selectedCategories = "";
   if (ctx?.categories && ctx.categories.length > 0) {
-    const names = ctx.categories.map(c => categoryLabels[c] || c);
-    if (names.length === 1) {
-      selectedCategories = names[0];
-    } else if (names.length === 2) {
-      selectedCategories = `${names[0]} and ${names[1]}`;
-    } else {
-      selectedCategories = `${names.slice(0, -1).join(", ")}, and ${names[names.length - 1]}`;
-    }
+    selectedCategories = formatCategoryList(ctx.categories);
   }
 
   const selectedGoal = ctx?.goal ? (goalLabels[ctx.goal] || ctx.goal) : "";

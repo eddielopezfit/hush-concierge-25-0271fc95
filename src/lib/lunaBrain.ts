@@ -1,5 +1,15 @@
 import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
 import { servicesMenuData } from "@/data/servicesMenuData";
+import {
+  categoryLabels,
+  goalLabels,
+  timingLabels,
+  normalizeCategory,
+  normalizeGoal,
+  normalizeTiming,
+  formatCategoryList,
+  VALID_CATEGORIES,
+} from "@/lib/conciergeLabels";
 
 export interface LunaRecommendation {
   recommendedService: string;
@@ -93,25 +103,62 @@ function getNextStep(urgency: "low" | "medium" | "high", hasMultipleCategories: 
 }
 
 function getPriceRange(categoryId: ServiceCategoryId, serviceName: string): string | null {
-  const category = servicesMenuData.find(c => c.id === categoryId);
-  if (!category) return null;
-  for (const group of category.groups) {
-    for (const item of group.items) {
-      if (serviceName.toLowerCase().includes(item.name.toLowerCase())) {
-        return item.price;
+  try {
+    const category = servicesMenuData.find(c => c.id === categoryId);
+    if (!category) return null;
+    for (const group of category.groups) {
+      for (const item of group.items) {
+        if (serviceName.toLowerCase().includes(item.name.toLowerCase())) {
+          return item.price;
+        }
       }
     }
+    return category.pricePreview || null;
+  } catch (err) {
+    console.warn("[lunaBrain] Error resolving price range:", err);
+    return null;
   }
-  return category.pricePreview || null;
 }
 
-export function generateRecommendation(context: ConciergeContext): LunaRecommendation {
-  const primaryCategory = context.categories?.[0] || "hair";
-  const goal = context.goal || "refresh";
-  const urgency = getUrgency(context.timing);
+/**
+ * Safely resolve the primary category from context.
+ * Normalizes and validates the category, falling back to "hair".
+ */
+function resolvePrimaryCategory(context: ConciergeContext): ServiceCategoryId {
+  const categories = context.categories;
+  if (!categories || !Array.isArray(categories) || categories.length === 0) {
+    return "hair";
+  }
+  const first = categories[0];
+  if (VALID_CATEGORIES.includes(first)) return first;
+  const normalized = normalizeCategory(first);
+  return normalized ?? "hair";
+}
+
+/**
+ * Generate a structured recommendation from ConciergeContext.
+ * Handles partial, missing, or malformed context gracefully.
+ */
+export function generateRecommendation(context: ConciergeContext | null | undefined): LunaRecommendation {
+  // Fallback for completely missing context
+  if (!context) {
+    console.debug("[lunaBrain] No context provided, returning default recommendation");
+    return {
+      recommendedService: "Luxury Wash and Blowout",
+      recommendedArtist: "Michelle Yrigolla — Master Stylist & Color Educator",
+      urgency: "medium",
+      nextStep: "Browse our menu at your pace. Luna is here whenever you'd like personalized recommendations.",
+      priceRange: null,
+    };
+  }
+
+  const primaryCategory = resolvePrimaryCategory(context);
+  const normalizedGoal = normalizeGoal(context.goal) ?? "refresh";
+  const normalizedTiming = normalizeTiming(context.timing);
+  const urgency = getUrgency(normalizedTiming);
 
   // Get recommended service based on goal + category
-  const serviceMap = goalServiceMap[goal] || goalServiceMap.refresh;
+  const serviceMap = goalServiceMap[normalizedGoal] || goalServiceMap.refresh;
   const recommendedService = serviceMap[primaryCategory] || serviceMap.hair;
 
   // Pick an artist for the primary category
@@ -122,7 +169,8 @@ export function generateRecommendation(context: ConciergeContext): LunaRecommend
 
   const priceRange = getPriceRange(primaryCategory, recommendedService);
 
-  const nextStep = getNextStep(urgency, (context.categories?.length || 0) > 1);
+  const categoryCount = Array.isArray(context.categories) ? context.categories.length : 0;
+  const nextStep = getNextStep(urgency, categoryCount > 1);
 
   return {
     recommendedService,
@@ -133,57 +181,66 @@ export function generateRecommendation(context: ConciergeContext): LunaRecommend
   };
 }
 
-// Generate a contextual chat response using the brain
-export function generateChatResponse(message: string, context: ConciergeContext | null): string {
-  const lower = message.toLowerCase();
+/**
+ * Generate a contextual chat response using the brain.
+ * Never throws — always returns a safe string.
+ */
+export function generateChatResponse(message: string, context: ConciergeContext | null | undefined): string {
+  try {
+    const lower = (message || "").toLowerCase();
 
-  // If we have context, generate a smart response
-  if (context && context.categories && context.categories.length > 0) {
-    const rec = generateRecommendation(context);
+    // If we have context with categories, generate smart responses
+    if (context?.categories && Array.isArray(context.categories) && context.categories.length > 0) {
+      const rec = generateRecommendation(context);
 
-    if (lower.includes("recommend") || lower.includes("suggest") || lower.includes("what should")) {
-      const parts = [`Based on your selections, I'd recommend **${rec.recommendedService}**`];
-      if (rec.priceRange) parts.push(`(${rec.priceRange})`);
-      if (rec.recommendedArtist) parts.push(`with ${rec.recommendedArtist}`);
-      parts.push(`. ${rec.nextStep}`);
-      return parts.join(" ");
-    }
+      if (lower.includes("recommend") || lower.includes("suggest") || lower.includes("what should")) {
+        const parts = [`Based on your selections, I'd recommend **${rec.recommendedService}**`];
+        if (rec.priceRange) parts.push(`(${rec.priceRange})`);
+        if (rec.recommendedArtist) parts.push(`with ${rec.recommendedArtist}`);
+        parts.push(`. ${rec.nextStep}`);
+        return parts.join(" ");
+      }
 
-    if (lower.includes("price") || lower.includes("cost") || lower.includes("how much")) {
-      const category = servicesMenuData.find(c => context.categories.includes(c.id as ServiceCategoryId));
-      if (category) {
-        const items = category.groups.flatMap(g => g.items).slice(0, 4);
-        const priceList = items.map(i => `${i.name}: ${i.price}`).join(" | ");
-        return `Here's a quick look at ${category.title} pricing: ${priceList}. Want the full menu or help choosing?`;
+      if (lower.includes("price") || lower.includes("cost") || lower.includes("how much")) {
+        const categoryId = context.categories[0];
+        const category = servicesMenuData.find(c => c.id === categoryId);
+        if (category) {
+          const items = category.groups.flatMap(g => g.items).slice(0, 4);
+          const priceList = items.map(i => `${i.name}: ${i.price}`).join(" | ");
+          return `Here's a quick look at ${category.title} pricing: ${priceList}. Want the full menu or help choosing?`;
+        }
+      }
+
+      if (lower.includes("book") || lower.includes("appointment") || lower.includes("schedule")) {
+        return `${rec.nextStep} I can also connect you with our front desk at (520) 327-6753.`;
       }
     }
 
-    if (lower.includes("book") || lower.includes("appointment") || lower.includes("schedule")) {
-      return `${rec.nextStep} I can also connect you with our front desk at (520) 327-6753.`;
+    // No context — guide to ExperienceFinder
+    if (lower.includes("service") || lower.includes("explore") || lower.includes("what do you")) {
+      return "We offer Hair, Nails, Skincare & Spray Tan, Lashes, and Massage. Try our Experience Finder above to get a personalized recommendation, or just tell me what you're looking for!";
     }
-  }
 
-  // No context — guide to ExperienceFinder
-  if (lower.includes("service") || lower.includes("explore") || lower.includes("what do you")) {
-    return "We offer Hair, Nails, Skincare & Spray Tan, Lashes, and Massage. Try our Experience Finder above to get a personalized recommendation, or just tell me what you're looking for!";
-  }
+    if (lower.includes("book") || lower.includes("appointment")) {
+      return "I'd love to help you get booked! You can call our front desk at (520) 327-6753, or share your name and phone number and we'll reach out to you.";
+    }
 
-  if (lower.includes("book") || lower.includes("appointment")) {
-    return "I'd love to help you get booked! You can call our front desk at (520) 327-6753, or share your name and phone number and we'll reach out to you.";
-  }
+    if (lower.includes("hour") || lower.includes("open") || lower.includes("when")) {
+      return "We're open Tuesday through Saturday starting at 9 AM. Closed Sundays and Mondays. Would you like to schedule a visit?";
+    }
 
-  if (lower.includes("hour") || lower.includes("open") || lower.includes("when")) {
-    return "We're open Tuesday through Saturday starting at 9 AM. Closed Sundays and Mondays. Would you like to schedule a visit?";
-  }
+    if (lower.includes("where") || lower.includes("address") || lower.includes("location") || lower.includes("direction")) {
+      return "We're at 4635 E Fort Lowell Rd, Tucson, AZ 85712. Would you like directions or to book a visit?";
+    }
 
-  if (lower.includes("where") || lower.includes("address") || lower.includes("location") || lower.includes("direction")) {
-    return "We're at 4635 E Fort Lowell Rd, Tucson, AZ 85712. Would you like directions or to book a visit?";
-  }
+    if (lower.includes("price") || lower.includes("cost") || lower.includes("how much")) {
+      return "Our services range from $18 for trims to $299 for advanced treatments. What service are you interested in? I can give you specific pricing.";
+    }
 
-  if (lower.includes("price") || lower.includes("cost") || lower.includes("how much")) {
-    return "Our services range from $18 for trims to $299 for advanced treatments. What service are you interested in? I can give you specific pricing.";
+    // Default
+    return "I'm here to help with services, pricing, booking, or anything about Hush. What would you like to know?";
+  } catch (err) {
+    console.error("[lunaBrain] Error generating chat response:", err);
+    return "I'm here to help with services, pricing, booking, or anything about Hush. What would you like to know?";
   }
-
-  // Default
-  return "I'm here to help with services, pricing, booking, or anything about Hush. What would you like to know?";
 }
