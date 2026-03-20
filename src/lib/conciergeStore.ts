@@ -140,15 +140,39 @@ export const buildDynamicVariables = (ctx: ConciergeContext | null): Record<stri
   const selectedGoal = ctx?.goal ? (goalLabels[ctx.goal] || ctx.goal) : "";
   const selectedTiming = ctx?.timing ? (timingLabels[ctx.timing] || ctx.timing) : "";
 
-  // Build summary - only include non-empty parts
-  const summaryParts: string[] = [];
-  if (selectedCategories) summaryParts.push(selectedCategories);
-  if (selectedGoal) summaryParts.push(selectedGoal);
-  if (selectedTiming) summaryParts.push(selectedTiming);
+  // Build rich natural language summary for Luna
+  // Luna reads this as {{luna_context_summary}} and opens with a personalized response
+  let lunaContextSummary = "";
   
-  const lunaContextSummary = summaryParts.length > 0 
-    ? `Selected: ${summaryParts.join(" • ")}`
-    : "";
+  if (selectedCategories || selectedGoal || selectedTiming) {
+    const parts: string[] = [];
+    
+    if (selectedCategories) {
+      parts.push(`The guest is interested in ${selectedCategories}`);
+    }
+    
+    if (selectedGoal) {
+      const goalPhrases: Record<string, string> = {
+        "Quick Refresh": "looking for a quick refresh",
+        "Relaxation": "wanting to relax and decompress",
+        "Full Transformation": "ready for a full transformation",
+        "Event Ready": "getting ready for a special event",
+      };
+      parts.push(goalPhrases[selectedGoal] || `goal: ${selectedGoal}`);
+    }
+    
+    if (selectedTiming) {
+      const timingPhrases: Record<string, string> = {
+        "Today": "hoping to come in today",
+        "This Week": "looking to book this week",
+        "Planning Ahead": "planning ahead for a future visit",
+        "Just Browsing": "just browsing and exploring options",
+      };
+      parts.push(timingPhrases[selectedTiming] || `timing: ${selectedTiming}`);
+    }
+    
+    lunaContextSummary = parts.join(". ") + ".";
+  }
 
   return {
     selected_categories: selectedCategories,

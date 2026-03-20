@@ -100,6 +100,19 @@ export const ExperienceFinderSection = () => {
     setSelection((prev) => ({ ...prev, timing: timingId }));
   };
 
+  // Auto-launch Luna modal 400ms after timing selection — the WOW moment
+  // Guest made 3 choices, now Luna opens already knowing everything
+  useEffect(() => {
+    if (currentStep === 3 && selection.timing) {
+      const timer = setTimeout(() => {
+        const ctx = buildContext();
+        setConciergeContext(ctx);
+        openModal(ctx);
+      }, 400);
+      return () => clearTimeout(timer);
+    }
+  }, [currentStep, selection.timing]);
+
   const handleBack = () => {
     if (currentStep === 2) {
       setCurrentStep(1);
@@ -182,7 +195,7 @@ export const ExperienceFinderSection = () => {
       case 2:
         return "Choose a goal, then choose voice or chat.";
       case 3:
-        return "Choose a timeframe, then speak or chat with Luna.";
+        return "One last thing — then Luna takes it from here.";
       default:
         return "";
     }

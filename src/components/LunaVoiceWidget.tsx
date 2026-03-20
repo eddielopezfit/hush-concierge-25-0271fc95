@@ -10,7 +10,7 @@ import {
   subscribeToVoiceState 
 } from "@/lib/lunaVoiceBus";
 
-const LUNA_AGENT_ID = "agent_4001kf4kgx87fjysr38whwpghj86";
+const LUNA_AGENT_ID = "agent_9501kkz62prjevdt34t1ny4dpzf5";
 
 interface LunaVoiceWidgetProps {
   isPrimary?: boolean;

@@ -201,21 +201,37 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
                 <Sparkles className="w-8 h-8 text-gold" />
               </motion.div>
 
-              {/* Title */}
+              {/* Title — personalized based on context */}
               <h3 className="font-display text-3xl md:text-4xl text-cream mb-3">
-                Your Concierge Path
+                {contextSummary || viewingContext ? "Luna's ready for you." : "Talk to Luna"}
               </h3>
 
-              {/* Context Summary */}
+              {/* Rich personalized context summary */}
               {contextSummary && (
-                <motion.p 
+                <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.15 }}
-                  className="font-body text-gold text-sm md:text-base mb-2 px-4"
+                  className="mb-6 px-2"
                 >
-                  Selected: {contextSummary}
-                </motion.p>
+                  <div className="inline-flex flex-wrap gap-2 justify-center">
+                    {context?.categories && context.categories.length > 0 && context.categories.map(cat => (
+                      <span key={cat} className="text-xs font-body bg-gold/20 text-gold px-3 py-1 rounded-full border border-gold/30">
+                        {serviceLabels[cat] || cat}
+                      </span>
+                    ))}
+                    {context?.goal && (
+                      <span className="text-xs font-body bg-charcoal-light text-cream px-3 py-1 rounded-full">
+                        {goalLabels[context.goal] || context.goal}
+                      </span>
+                    )}
+                    {context?.timing && (
+                      <span className="text-xs font-body bg-charcoal-light text-muted-foreground px-3 py-1 rounded-full">
+                        {timingLabels[context.timing] || context.timing}
+                      </span>
+                    )}
+                  </div>
+                </motion.div>
               )}
 
               {/* Viewing Context (for service menu deep links) */}
@@ -231,11 +247,13 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
               )}
 
               {!contextSummary && !viewingContext && (
-                <div className="mb-6" />
+                <div className="mb-2" />
               )}
 
               <p className="font-body text-muted-foreground mb-8 max-w-sm mx-auto">
-                Choose how you'd like to connect with Luna, your personal concierge.
+                {contextSummary
+                  ? "Luna already knows your preferences. She'll pick up right where this left off."
+                  : "Luna is your personal concierge — she knows the services, prices, and team inside out."}
               </p>
 
               {/* Already Active Notice */}

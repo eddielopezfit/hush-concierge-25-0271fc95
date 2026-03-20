@@ -6,221 +6,284 @@ import { LunaModal, useLunaModal, LunaContext } from "./LunaModal";
 interface Artist {
   id: string;
   name: string;
+  fullName: string;
   photo: string;
   specialty: string;
   description: string;
   specialties: string[];
-  instagram: string;
+  instagram?: string;
+  isFounding?: boolean;
 }
 
 const artists: Artist[] = [
   {
-    id: "1",
-    name: "Sarah",
-    photo: "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?w=400&h=500&fit=crop&crop=face",
-    specialty: "Lived-in Color",
-    description: "Creating effortless, sun-kissed dimension that grows out beautifully.",
-    specialties: ["Balayage", "Dimensional Color", "Corrective Color"],
-    instagram: "https://instagram.com"
+    id: "sheri",
+    name: "Sheri",
+    fullName: "Sheri Turner",
+    photo: "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=400&h=500&fit=crop&crop=face",
+    specialty: "Co-Founder · Color & Cuts",
+    description: "23 years behind the chair at Hush. Guests say Sheri always knows exactly what to do — even when they can't describe it themselves.",
+    specialties: ["Complex Color", "Precision Cuts", "Client Transformations"],
+    isFounding: true,
   },
   {
-    id: "2",
+    id: "danielle",
+    name: "Danielle",
+    fullName: "Danielle Colucci",
+    photo: "https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?w=400&h=500&fit=crop&crop=face",
+    specialty: "Co-Founder · Master Colorist",
+    description: "One of the original three. Deep client relationships built over two decades. Danielle's color work is the standard Hush is built on.",
+    specialties: ["Hair Color", "Cuts & Styling", "Color Education"],
+    isFounding: true,
+  },
+  {
+    id: "kathy",
+    name: "Kathy",
+    fullName: "Kathy Crawford",
+    photo: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=400&h=500&fit=crop&crop=face",
+    specialty: "Co-Founder · Precision Cuts",
+    description: "\"Kathy knew exactly how to cut my thick, fine hair\" — that's the review that says it all. Precision, care, and 23 years of instinct.",
+    specialties: ["Precision Cuts", "Color", "Thick & Fine Hair"],
+    isFounding: true,
+  },
+  {
+    id: "michelle",
     name: "Michelle",
-    photo: "https://images.unsplash.com/photo-1595959183082-7b570b7e1dfa?w=400&h=500&fit=crop&crop=face",
-    specialty: "Blonde Specialist",
-    description: "Signature luminous blondes with healthy, dimensional finishes.",
-    specialties: ["Platinum Blonde", "Highlights", "Toning"],
-    instagram: "https://instagram.com"
+    fullName: "Michelle Yrigolla",
+    photo: "https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=400&h=500&fit=crop&crop=face",
+    specialty: "Master Stylist & Color Educator",
+    description: "The go-to for complex color corrections. \"I walked in anxious about a big change — Michelle reassured me the whole way. Beyond satisfied.\"",
+    specialties: ["Corrective Color", "Extensions", "Color Education"],
   },
   {
-    id: "3",
-    name: "Alex",
-    photo: "https://images.unsplash.com/photo-1605497788044-5a32c7078486?w=400&h=500&fit=crop&crop=face",
-    specialty: "Extensions",
-    description: "Seamless, natural-looking length and volume transformations.",
-    specialties: ["Hand-tied Extensions", "Tape-ins", "Fusion"],
-    instagram: "https://instagram.com"
+    id: "silviya",
+    name: "Silviya",
+    fullName: "Silviya Warren",
+    photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=500&fit=crop&crop=face",
+    specialty: "High Fashion Color",
+    description: "Runway-level blonde and dimensional color. Silviya brings high-fashion precision to every guest — clients simply don't go anywhere else.",
+    specialties: ["Blonde Services", "Extensions", "Brazilian Blowout"],
+    instagram: "https://instagram.com/hairdesignsbysilviya",
   },
   {
-    id: "4",
-    name: "Jordan",
-    photo: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400&h=500&fit=crop&crop=face",
-    specialty: "Precision Cuts",
-    description: "Clean lines and movement for every texture and lifestyle.",
-    specialties: ["Razor Cuts", "Textured Bobs", "Men's Grooming"],
-    instagram: "https://instagram.com"
+    id: "whitney",
+    name: "Whitney",
+    fullName: "Whitney Hernandez",
+    photo: "https://images.unsplash.com/photo-1488716820095-cbe80883c496?w=400&h=500&fit=crop&crop=face",
+    specialty: "Dimensional Blondes & Bridal",
+    description: "\"Whitney nailed it — beige, not golden, not ashy. FINALLY found my stylist.\" Perfect for bridal and anyone serious about their blonde.",
+    specialties: ["Dimensional Blondes", "Balayage", "Bridal Styling"],
   },
   {
-    id: "5",
-    name: "Daniella",
-    photo: "https://images.unsplash.com/photo-1594744803329-e58b31de8bf5?w=400&h=500&fit=crop&crop=face",
-    specialty: "Lash Artistry",
-    description: "Bespoke lash design that enhances your natural eye shape.",
-    specialties: ["Volume Lashes", "Classic Sets", "Lash Lifts"],
-    instagram: "https://instagram.com"
+    id: "melissa",
+    name: "Melissa",
+    fullName: "Melissa Brunty",
+    photo: "https://images.unsplash.com/photo-1512361436605-a484bdb34b5f?w=400&h=500&fit=crop&crop=face",
+    specialty: "Blonde & Long Hair Specialist",
+    description: "Bombshell blondes, balayage, and root melts that grow out beautifully. Melissa's work is all about the lived-in, effortless look.",
+    specialties: ["Blonde", "Balayage", "Root Melts"],
+    instagram: "https://instagram.com/mbhaircreations",
   },
   {
-    id: "6",
-    name: "Natalie",
+    id: "allison",
+    name: "Allison",
+    fullName: "Allison Griessel",
     photo: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&h=500&fit=crop&crop=face",
-    specialty: "Skincare",
-    description: "Results-driven treatments for luminous, healthy skin.",
-    specialties: ["Facials", "Chemical Peels", "Dermaplaning"],
-    instagram: "https://instagram.com"
-  }
+    specialty: "Lashes · Fantasy Color · Esthetics",
+    description: "\"Allison is magical — nonstop compliments since seeing her.\" Our only lash specialist and fantasy color artist. She thinks beyond the chair.",
+    specialties: ["Lash Extensions", "Vivid Color", "Brow Services"],
+    instagram: "https://instagram.com/allieglam",
+  },
+  {
+    id: "patty",
+    name: "Patty",
+    fullName: "Patty",
+    photo: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400&h=500&fit=crop&crop=face",
+    specialty: "Licensed Esthetician",
+    description: "HydraFacials, microneedling, dermaplaning, spray tans — Patty is the skincare specialist who delivers real results, every time.",
+    specialties: ["HydraFacial", "Microneedling", "Spray Tan"],
+  },
+  {
+    id: "tammi",
+    name: "Tammi",
+    fullName: "Tammi",
+    photo: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=500&fit=crop&crop=face",
+    specialty: "Licensed Massage Therapist",
+    description: "People rebook with Tammi before they even leave the table. Swedish, deep tissue, therapeutic — she tailors every session to what your body actually needs.",
+    specialties: ["Deep Tissue", "Swedish", "Therapeutic"],
+  },
 ];
 
 export const ArtistsSection = () => {
   const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
   const { isOpen, context, openModal, closeModal } = useLunaModal();
 
-  const handleBeginWithLuna = (artist: Artist) => {
+  const handleMatchWithLuna = (artist: Artist) => {
     setSelectedArtist(null);
     const lunaContext: LunaContext = {
-      source: "Meet the Artists",
-      categories: [artist.specialty.toLowerCase() as any],
+      source: "Meet the Team",
+      categories: [],
       goal: null,
-      timing: null
+      timing: null,
     };
-    // Add artist name to context via sessionStorage
-    sessionStorage.setItem("selectedArtist", artist.name);
     openModal(lunaContext);
   };
 
   return (
     <>
-      <section id="artists" className="py-20 md:py-28 bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Section Header */}
+      <section id="team" className="py-32 px-6 bg-background">
+        <div className="max-w-7xl mx-auto">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8 }}
-            className="text-center mb-14 md:mb-20"
+            className="text-center mb-16"
           >
-            <h2 className="font-display text-4xl md:text-5xl lg:text-6xl text-cream mb-4">
-              Meet the Artists
+            <h2 className="font-display text-4xl md:text-6xl font-semibold text-cream mb-6">
+              Meet the <span className="text-gold-gradient">Team</span>
             </h2>
-            <p className="font-body text-muted-foreground text-lg max-w-xl mx-auto">
-              Each artist brings a signature style. Luna will help you find your beautiful match.
+            <p className="font-body text-lg text-muted-foreground max-w-2xl mx-auto">
+              Real people with real talent. Not sure who's right for you?{" "}
+              <button
+                onClick={() => openModal({ source: "Team Section", categories: [], goal: null, timing: null })}
+                className="text-gold underline underline-offset-4 hover:text-gold-glow transition-colors"
+              >
+                Luna can match you.
+              </button>
             </p>
           </motion.div>
 
-          {/* Artists Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
             {artists.map((artist, index) => (
               <motion.div
                 key={artist.id}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="group cursor-pointer"
-                onClick={() => setSelectedArtist(artist)}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.5, delay: index * 0.05 }}
               >
-                <div className="relative aspect-[3/4] rounded-lg overflow-hidden border border-border hover:border-gold/40 transition-all duration-500 group-hover:shadow-[0_0_30px_-5px_hsl(43_45%_58%/0.25)]">
-                  <img
-                    src={artist.photo}
-                    alt={artist.name}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-3 md:p-4">
-                    <h3 className="font-display text-xl md:text-2xl text-cream mb-1">
-                      {artist.name}
-                    </h3>
-                    <span className="inline-block text-xs font-body text-gold bg-gold/10 px-2 py-1 rounded-full">
-                      {artist.specialty}
-                    </span>
+                <motion.button
+                  onClick={() => setSelectedArtist(artist)}
+                  className="group w-full text-left relative overflow-hidden rounded-xl border border-charcoal-light bg-card hover:border-gold/50 transition-all duration-300"
+                  whileHover={{ y: -4 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  {artist.isFounding && (
+                    <div className="absolute top-2 left-2 z-10 bg-gold/90 text-background text-xs font-display px-2 py-0.5 rounded-full">
+                      Founding
+                    </div>
+                  )}
+                  <div className="aspect-[3/4] overflow-hidden">
+                    <img
+                      src={artist.photo}
+                      alt={artist.fullName}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
                   </div>
-                </div>
+                  <div className="p-3 md:p-4">
+                    <p className="font-display text-base md:text-lg text-cream">{artist.name}</p>
+                    <p className="font-body text-xs text-gold/80 mt-0.5 line-clamp-1">{artist.specialty}</p>
+                  </div>
+                </motion.button>
               </motion.div>
             ))}
           </div>
+
+          {/* Luna match CTA */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="text-center mt-16"
+          >
+            <motion.button
+              onClick={() => openModal({ source: "Team Section", categories: [], goal: null, timing: null })}
+              className="btn-outline-gold py-4 px-10 flex items-center gap-3 mx-auto"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Sparkles className="w-5 h-5" />
+              Let Luna Match You to the Right Person
+            </motion.button>
+          </motion.div>
         </div>
       </section>
 
-      {/* Artist Mini-Profile Modal */}
+      {/* Artist Detail Modal */}
       <AnimatePresence>
         {selectedArtist && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/85 backdrop-blur-md"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm"
             onClick={() => setSelectedArtist(null)}
           >
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              transition={{ duration: 0.3 }}
-              className="relative w-full max-w-md p-6 md:p-8 rounded-xl border border-gold/30 bg-card shadow-[0_0_60px_-15px_hsl(43_45%_58%/0.3)]"
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={{ type: "spring", damping: 20 }}
+              className="relative max-w-md w-full bg-card border border-charcoal-light rounded-2xl overflow-hidden shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Close Button */}
               <button
                 onClick={() => setSelectedArtist(null)}
-                className="absolute top-4 right-4 w-10 h-10 rounded-full bg-charcoal flex items-center justify-center text-muted-foreground hover:text-cream hover:bg-gold/20 transition-all"
-                aria-label="Close"
+                className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-background/80 flex items-center justify-center text-muted-foreground hover:text-cream transition-colors"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
 
-              {/* Artist Photo */}
-              <div className="flex flex-col items-center text-center">
-                <div className="w-28 h-28 md:w-32 md:h-32 rounded-full overflow-hidden border-2 border-gold/40 mb-5 shadow-[0_0_30px_-5px_hsl(43_45%_58%/0.3)]">
-                  <img
-                    src={selectedArtist.photo}
-                    alt={selectedArtist.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+              <div className="aspect-[4/3] overflow-hidden">
+                <img
+                  src={selectedArtist.photo}
+                  alt={selectedArtist.fullName}
+                  className="w-full h-full object-cover"
+                />
+              </div>
 
-                <h3 className="font-display text-3xl text-cream mb-2">
-                  {selectedArtist.name}
-                </h3>
-
-                <p className="font-body text-muted-foreground mb-5 max-w-xs">
+              <div className="p-6">
+                {selectedArtist.isFounding && (
+                  <span className="inline-block bg-gold/20 text-gold text-xs font-display px-3 py-1 rounded-full mb-3">
+                    Founding Member · 23 Years
+                  </span>
+                )}
+                <h3 className="font-display text-2xl text-cream mb-1">{selectedArtist.fullName}</h3>
+                <p className="font-body text-sm text-gold/80 mb-4">{selectedArtist.specialty}</p>
+                <p className="font-body text-muted-foreground text-sm leading-relaxed mb-6">
                   {selectedArtist.description}
                 </p>
 
-                {/* Specialty Chips */}
-                <div className="flex flex-wrap justify-center gap-2 mb-6">
-                  {selectedArtist.specialties.map((specialty) => (
-                    <span
-                      key={specialty}
-                      className="text-xs font-body text-gold bg-gold/10 border border-gold/20 px-3 py-1.5 rounded-full"
-                    >
-                      {specialty}
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {selectedArtist.specialties.map((s) => (
+                    <span key={s} className="text-xs font-body bg-charcoal-light text-cream px-3 py-1 rounded-full">
+                      {s}
                     </span>
                   ))}
                 </div>
 
-                {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-3 w-full">
-                  <motion.a
-                    href={selectedArtist.instagram}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn-outline-gold py-3 px-5 flex items-center justify-center gap-2 flex-1"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <Instagram className="w-4 h-4" />
-                    <span>View Instagram</span>
-                  </motion.a>
-
+                <div className="flex gap-3">
                   <motion.button
-                    onClick={() => handleBeginWithLuna(selectedArtist)}
-                    className="btn-gold py-3 px-5 flex items-center justify-center gap-2 flex-1"
+                    onClick={() => handleMatchWithLuna(selectedArtist)}
+                    className="btn-gold py-3 px-6 flex-1 flex items-center justify-center gap-2 text-sm"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
                     <Sparkles className="w-4 h-4" />
-                    <span>Begin with Luna</span>
+                    Ask Luna About This
                   </motion.button>
+                  {selectedArtist.instagram && (
+                    <a
+                      href={selectedArtist.instagram}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-outline-gold py-3 px-4 flex items-center justify-center"
+                    >
+                      <Instagram className="w-4 h-4" />
+                    </a>
+                  )}
                 </div>
               </div>
             </motion.div>
@@ -228,7 +291,6 @@ export const ArtistsSection = () => {
         )}
       </AnimatePresence>
 
-      {/* Luna Modal */}
       <LunaModal isOpen={isOpen} onClose={closeModal} context={context} />
     </>
   );
