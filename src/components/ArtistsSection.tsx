@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { X, Sparkles } from "lucide-react";
-import { LunaModal, useLunaModal } from "./LunaModal";
+import { useLuna } from "@/contexts/LunaContext";
 import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
 import { teamMembers, photoMap, getFounders, getTeam, TeamMember } from "@/data/teamData";
 
@@ -34,7 +34,7 @@ const ArtistAvatar = ({ artist }: { artist: TeamMember }) => {
 
 export const ArtistsSection = () => {
   const [selectedArtist, setSelectedArtist] = useState<TeamMember | null>(null);
-  const { isOpen, context, openModal, closeModal } = useLunaModal();
+  const { openModal } = useLuna();
 
   const handleBeginWithLuna = (artist: TeamMember) => {
     setSelectedArtist(null);
@@ -164,7 +164,6 @@ export const ArtistsSection = () => {
                 <h3 className="font-display text-3xl text-cream mb-1">
                   {selectedArtist.name}
                 </h3>
-                
                 <p className="font-body text-gold text-sm mb-3">{selectedArtist.department === "founders" ? "Co-Founder" : selectedArtist.department.charAt(0).toUpperCase() + selectedArtist.department.slice(1)}</p>
 
                 <p className="font-body text-muted-foreground mb-4 max-w-xs">
@@ -203,8 +202,6 @@ export const ArtistsSection = () => {
           </motion.div>
         )}
       </AnimatePresence>
-
-      <LunaModal isOpen={isOpen} onClose={closeModal} context={context} />
     </>
   );
 };
