@@ -1,5 +1,6 @@
 import { ConciergeContext } from "@/types/concierge";
 import {
+  categoryLabels,
   goalLabels,
   timingLabels,
   formatCategoryList,
