@@ -165,9 +165,9 @@ export const LunaVoiceWidget = ({ isPrimary = false }: LunaVoiceWidgetProps) => 
         whileTap={!isDisabled ? { scale: 0.95 } : {}}
         animate={isConnected ? { 
           boxShadow: [
-            "0 0 20px hsl(43 45% 58% / 0.3)",
-            "0 0 40px hsl(43 45% 58% / 0.5)",
-            "0 0 20px hsl(43 45% 58% / 0.3)"
+            "0 0 20px hsl(38 50% 55% / 0.3)",
+            "0 0 40px hsl(38 50% 55% / 0.5)",
+            "0 0 20px hsl(38 50% 55% / 0.3)"
           ]
         } : {}}
         transition={isConnected ? { duration: 2, repeat: Infinity } : {}}
