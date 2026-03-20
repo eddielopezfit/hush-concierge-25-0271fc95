@@ -18,6 +18,11 @@ import { initJourneyTracking } from "@/lib/journeyTracker";
 const Index = () => {
   const { isModalOpen, context, closeModal } = useLuna();
 
+  // Initialize journey tracking
+  useEffect(() => {
+    initJourneyTracking();
+  }, []);
+
   return (
     <main className="bg-background min-h-screen overflow-x-hidden pb-24 md:pb-0">
       <Navigation />
