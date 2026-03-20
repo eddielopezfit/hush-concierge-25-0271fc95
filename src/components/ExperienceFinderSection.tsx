@@ -127,6 +127,10 @@ export const ExperienceFinderSection = () => {
   const handleOpenLunaModal = () => {
     const ctx = buildContext();
     setConciergeContext(ctx);
+    // Generate recommendation and save session
+    const rec = generateRecommendation(ctx);
+    setRecommendation(rec);
+    saveSession(ctx);
     openModal(ctx);
   };
 
