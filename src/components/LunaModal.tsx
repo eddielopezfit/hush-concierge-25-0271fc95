@@ -121,7 +121,7 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
     
     // Categories
     if (context.categories && context.categories.length > 0) {
-      const serviceNames = context.categories.map(s => serviceLabels[s] || s);
+      const serviceNames = context.categories.map(s => categoryLabels[s] || s);
       parts.push(serviceNames.join(", "));
     }
     
