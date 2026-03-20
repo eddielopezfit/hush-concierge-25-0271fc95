@@ -36,6 +36,7 @@ const timingLabels: Record<string, string> = {
 
 export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
   const [voiceAlreadyActive, setVoiceAlreadyActive] = useState(false);
+  const [recommendation, setRecommendation] = useState<LunaRecommendation | null>(null);
 
   // Track voice state
   useEffect(() => {
