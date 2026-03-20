@@ -242,8 +242,30 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
                 <div className="mb-6" />
               )}
 
+              {/* Recommendation */}
+              {recommendation && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="mb-6 p-4 rounded-lg border border-gold/20 bg-background/50 text-left max-w-sm mx-auto"
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <Star className="w-3.5 h-3.5 text-gold" />
+                    <span className="font-body text-xs text-gold uppercase tracking-wider">Recommended</span>
+                  </div>
+                  <p className="font-display text-base text-cream">{recommendation.recommendedService}</p>
+                  {recommendation.priceRange && (
+                    <p className="font-body text-xs text-gold/70 mt-1">{recommendation.priceRange}</p>
+                  )}
+                  {recommendation.recommendedArtist && (
+                    <p className="font-body text-xs text-cream/50 mt-1">{recommendation.recommendedArtist}</p>
+                  )}
+                </motion.div>
+              )}
+
               <p className="font-body text-muted-foreground mb-8 max-w-sm mx-auto">
-                Choose how you'd like to connect with Luna, your personal concierge.
+                {recommendation ? recommendation.nextStep : "Choose how you'd like to connect with Luna, your personal concierge."}
               </p>
 
               {/* Already Active Notice */}
