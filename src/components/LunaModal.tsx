@@ -56,13 +56,19 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
+      // Generate recommendation from context when modal opens
+      if (context && context.categories && context.categories.length > 0) {
+        setRecommendation(generateRecommendation(context));
+      } else {
+        setRecommendation(null);
+      }
     } else {
       document.body.style.overflow = "";
     }
     return () => {
       document.body.style.overflow = "";
     };
-  }, [isOpen]);
+  }, [isOpen, context]);
 
   const handleSpeakWithLuna = () => {
     console.log("[LunaModal] Speak with Luna CTA clicked");
