@@ -1,13 +1,9 @@
 import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
 import { servicesMenuData } from "@/data/servicesMenuData";
 import {
-  categoryLabels,
-  goalLabels,
-  timingLabels,
   normalizeCategory,
   normalizeGoal,
   normalizeTiming,
-  formatCategoryList,
   VALID_CATEGORIES,
 } from "@/lib/conciergeLabels";
 
