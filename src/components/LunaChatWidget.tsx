@@ -24,6 +24,7 @@ export const LunaChatWidget = () => {
   const [showBadge, setShowBadge] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>("find");
   const [hasAutoOpened, setHasAutoOpened] = useState(false);
+  const [proactiveMessage, setProactiveMessage] = useState<string | null>(null);
   const { hasInteracted, chatWidgetRequested, clearChatWidgetRequest } = useLuna();
 
   // Respond to external "open chat widget" requests
