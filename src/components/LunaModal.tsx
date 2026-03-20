@@ -141,7 +141,7 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
   const getViewingContext = () => {
     if (!context?.category || !context?.group || !context?.item) return null;
     
-    const categoryLabel = serviceLabels[context.category] || context.category;
+    const categoryLabel = categoryLabels[context.category] || context.category;
     const priceStr = context.price ? ` (${context.price})` : "";
     
     return `${categoryLabel} > ${context.group} > ${context.item}${priceStr}`;
