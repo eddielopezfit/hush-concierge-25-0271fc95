@@ -1,9 +1,10 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Mic, MessageSquare, Phone, Sparkles } from "lucide-react";
+import { X, Mic, MessageSquare, Phone, Sparkles, Star } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
 import { setConciergeContext } from "@/lib/conciergeStore";
 import { requestVoiceStart, getVoiceActive, subscribeToVoiceState } from "@/lib/lunaVoiceBus";
+import { generateRecommendation, LunaRecommendation } from "@/lib/lunaBrain";
 
 interface LunaModalProps {
   isOpen: boolean;
