@@ -4,6 +4,7 @@ import { MessageCircle, X, Minus, Mic, Send } from "lucide-react";
 import { getConciergeContext } from "@/lib/conciergeStore";
 import { generateChatResponse } from "@/lib/lunaBrain";
 import { saveLead } from "@/lib/saveSession";
+import { formatCategoryList } from "@/lib/conciergeLabels";
 
 interface ChatMessage {
   id: string;
