@@ -215,6 +215,32 @@
     }
   }
 
+  /* Hero mic pulse ring */
+  .animate-hero-pulse {
+    animation: heroPulse 2s ease-out infinite;
+    border: 2px solid hsl(43 45% 58% / 0.4);
+    border-radius: 9999px;
+    pointer-events: none;
+  }
+
+  .animate-hero-pulse-delayed {
+    animation: heroPulse 2s ease-out infinite 0.8s;
+    border: 2px solid hsl(43 45% 58% / 0.3);
+    border-radius: 9999px;
+    pointer-events: none;
+  }
+
+  @keyframes heroPulse {
+    0% {
+      transform: scale(1);
+      opacity: 0.6;
+    }
+    100% {
+      transform: scale(1.8);
+      opacity: 0;
+    }
+  }
+
   /* Fade In Animation */
   .animate-fade-in {
     animation: fadeIn 1s ease-out forwards;

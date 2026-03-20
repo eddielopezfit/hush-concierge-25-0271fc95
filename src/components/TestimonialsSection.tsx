@@ -21,7 +21,7 @@ const testimonials = [
 
 export const TestimonialsSection = () => {
   return (
-    <section className="py-32 px-6 bg-card">
+    <section className="py-20 md:py-24 px-6 bg-card">
       <div className="max-w-6xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
