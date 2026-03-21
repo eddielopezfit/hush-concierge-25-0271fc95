@@ -105,19 +105,18 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
     return chips;
   })();
 
-  // Soft direction text (only when subtype is known and not "unsure")
+  // Soft direction text — gentle, never overconfident
   const softDirection = (() => {
     if (!context?.categories?.length) return null;
     const cat = context.categories[0];
     const sub = context.service_subtype;
     if (!sub || sub === "unsure") return null;
     const catLabel = categoryLabels[cat] || cat;
-    const subLabel = subtypeDisplayLabels[sub] || sub;
     const goalLabel = context.goal ? (goalLabels[context.goal] || context.goal).toLowerCase() : "";
     if (goalLabel) {
-      return `Based on what you shared, ${catLabel.toLowerCase()} — ${subLabel.toLowerCase()} — feels like the right starting point for ${goalLabel}.`;
+      return `Based on what you shared, you may be leaning toward ${catLabel.toLowerCase()} services — with a focus on ${goalLabel}. Luna can help refine this.`;
     }
-    return `Based on what you shared, ${catLabel.toLowerCase()} — ${subLabel.toLowerCase()} — looks like a strong fit.`;
+    return `It sounds like ${catLabel.toLowerCase()} services could be a good fit. Luna can help you narrow it down.`;
   })();
 
   return (
