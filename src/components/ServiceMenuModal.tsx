@@ -22,6 +22,9 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
   const { openModal } = useLuna();
   const [openAccordions, setOpenAccordions] = useState<string[]>([]);
 
+  // Resolve category with cross-referenced items
+  const resolvedCategory = category ? getCategoryWithCrossRefs(category.id) ?? category : null;
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
