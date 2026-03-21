@@ -54,7 +54,7 @@ const SYSTEM_PROMPT = `You are Luna, the AI concierge for Hush Salon & Day Spa i
 - Mention your stylist's name for 20% off!
 
 ## LASHES
-- Allison — Lash Specialist. Phone: (520) 250-6606
+- Allison Griessel — also handles lashes (see Hair Team above). Phone: (520) 250-6606
 
 ## FRONT DESK
 - Kendell Barraza — Guest Experience Coordinator
