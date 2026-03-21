@@ -3,6 +3,10 @@ import { Scissors, Hand, Sparkles, Eye, Heart, LucideIcon } from "lucide-react";
 export interface ServiceItem {
   name: string;
   price: string;
+  /** Unique ID for cross-category shared services */
+  sharedId?: string;
+  /** Additional category IDs this service should appear under */
+  crossCategories?: string[];
 }
 
 export interface ServiceGroup {
@@ -157,7 +161,7 @@ export const servicesMenuData: ServiceCategory[] = [
           { name: "Volume Lash Set", price: "$250" },
           { name: "Volume Lash Fill", price: "$90" },
           { name: "Lash Lift & Perm", price: "$65" },
-          { name: "Lash or Brow Tint", price: "$20" },
+          { name: "Lash or Brow Tint", price: "$20", sharedId: "brow-lash-tint", crossCategories: ["skincare"] },
         ],
       },
     ],
@@ -177,7 +181,7 @@ export const servicesMenuData: ServiceCategory[] = [
           { name: "Signature Facial", price: "$95" },
           { name: "Dermaplane / Hydrafacial / Microdermabrasion Facials", price: "$115" },
           { name: "Microneedling", price: "$299" },
-          { name: "Brow Wax", price: "$20" },
+          { name: "Brow Wax", price: "$20", sharedId: "brow-wax", crossCategories: ["lashes"] },
           { name: "Airbrush Spray Tan", price: "$35" },
           { name: "Other waxing services", price: "Call for pricing" },
         ],
@@ -215,3 +219,44 @@ export const servicesMenuData: ServiceCategory[] = [
 export const getCategoryById = (id: string): ServiceCategory | undefined => {
   return servicesMenuData.find((cat) => cat.id === id);
 };
+
+/**
+ * Get all cross-referenced service items that belong to a given category
+ * but are defined in other categories via crossCategories.
+ */
+export function getCrossReferencedItems(categoryId: string): ServiceGroup | null {
+  const crossItems: ServiceItem[] = [];
+
+  for (const cat of servicesMenuData) {
+    if (cat.id === categoryId) continue;
+    for (const group of cat.groups) {
+      for (const item of group.items) {
+        if (item.crossCategories?.includes(categoryId)) {
+          if (!crossItems.some(ci => ci.sharedId === item.sharedId)) {
+            crossItems.push(item);
+          }
+        }
+      }
+    }
+  }
+
+  return crossItems.length > 0
+    ? { name: "Also Available", items: crossItems }
+    : null;
+}
+
+/**
+ * Get a category with cross-referenced items appended as an extra group.
+ */
+export function getCategoryWithCrossRefs(id: string): ServiceCategory | undefined {
+  const category = getCategoryById(id);
+  if (!category) return undefined;
+
+  const crossGroup = getCrossReferencedItems(id);
+  if (!crossGroup) return category;
+
+  return {
+    ...category,
+    groups: [...category.groups, crossGroup],
+  };
+}

@@ -7,7 +7,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { ServiceCategory } from "@/data/servicesMenuData";
+import { ServiceCategory, getCategoryWithCrossRefs } from "@/data/servicesMenuData";
 import { useLuna } from "@/contexts/LunaContext";
 import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
 import { setConciergeContext } from "@/lib/conciergeStore";
@@ -22,6 +22,9 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
   const { openModal } = useLuna();
   const [openAccordions, setOpenAccordions] = useState<string[]>([]);
 
+  // Resolve category with cross-referenced items
+  const resolvedCategory = category ? getCategoryWithCrossRefs(category.id) ?? category : null;
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -32,12 +35,12 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
   }, [isOpen]);
 
   useEffect(() => {
-    if (category && category.groups.length === 1) {
-      setOpenAccordions([category.groups[0].name]);
+    if (resolvedCategory && resolvedCategory.groups.length === 1) {
+      setOpenAccordions([resolvedCategory.groups[0].name]);
     } else {
       setOpenAccordions([]);
     }
-  }, [category]);
+  }, [resolvedCategory]);
 
   const buildCategoryContext = (groupName?: string, itemName?: string, itemPrice?: string): ConciergeContext => {
     if (!category) {
@@ -68,9 +71,9 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
     setTimeout(() => openModal(ctx), 100);
   };
 
-  if (!category) return null;
+  if (!resolvedCategory) return null;
 
-  const CategoryIcon = category.icon;
+  const CategoryIcon = resolvedCategory.icon;
 
   return (
     <AnimatePresence>
@@ -105,7 +108,7 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
                   <CategoryIcon className="w-6 h-6 text-gold" />
                 </div>
                 <h2 className="font-display text-2xl md:text-3xl text-cream">
-                  {category.title}
+                  {resolvedCategory.title}
                 </h2>
               </div>
               <p className="font-body text-muted-foreground text-sm md:text-base mb-3">
@@ -124,7 +127,7 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
                 onValueChange={setOpenAccordions}
                 className="space-y-2"
               >
-                {category.groups.map((group) => (
+                {resolvedCategory.groups.map((group) => (
                   <AccordionItem
                     key={group.name}
                     value={group.name}
@@ -162,9 +165,9 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
                 ))}
               </Accordion>
 
-              {category.notes && category.notes.length > 0 && (
+              {resolvedCategory.notes && resolvedCategory.notes.length > 0 && (
                 <div className="mt-6 p-4 bg-secondary/30 rounded-lg border border-secondary/50">
-                  {category.notes.map((note, idx) => (
+                  {resolvedCategory.notes!.map((note, idx) => (
                     <p key={idx} className="font-body text-sm text-cream/60 italic">
                       {note}
                     </p>
@@ -172,13 +175,13 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
                 </div>
               )}
 
-              {category.directContacts && category.directContacts.length > 0 && (
+              {resolvedCategory.directContacts && resolvedCategory.directContacts.length > 0 && (
                 <div className="mt-6 pt-6 border-t border-secondary/50">
                   <h4 className="font-body text-xs text-muted-foreground uppercase tracking-wide mb-4">
                     Direct Booking Contacts
                   </h4>
                   <div className="space-y-2">
-                    {category.directContacts.map((contact) => (
+                    {resolvedCategory.directContacts.map((contact) => (
                       <div key={contact.name} className="flex justify-between items-center py-2">
                         <span className="font-body text-cream/70 text-sm">{contact.name}</span>
                         <a
