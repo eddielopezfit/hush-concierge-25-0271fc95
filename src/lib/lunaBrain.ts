@@ -147,7 +147,7 @@ export function generateRecommendation(context: ConciergeContext | null | undefi
     console.debug("[lunaBrain] No context provided, returning default recommendation");
     return {
       recommendedService: "Luxury Wash and Blowout",
-      recommendedArtist: "Michelle Yrigolla — Master Stylist & Color Educator",
+      recommendedArtist: null,
       urgency: "medium",
       nextStep: "Browse our menu at your pace. Luna is here whenever you'd like personalized recommendations.",
       priceRange: null,
