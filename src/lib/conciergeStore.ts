@@ -112,6 +112,9 @@ function buildConversationalSummary(
   rec:         { recommendedService?: string; priceRange?: string; recommendedArtist?: string } | null,
   multiServiceMode: MultiServiceMode | undefined,
   primaryCategory: string | null | undefined,
+  source:      string,
+  viewedArtist: string,
+  comparisonArtists: string,
 ): string {
   const parts: string[] = [];
   const who = firstName ? `${firstName} is` : "The guest is";
