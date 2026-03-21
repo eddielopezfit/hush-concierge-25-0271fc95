@@ -1,148 +1,124 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Mic, MessageSquare, Phone, Sparkles, Star } from "lucide-react";
+import { X, Mic, MessageSquare, Phone } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import { ConciergeContext } from "@/types/concierge";
 import { setConciergeContext } from "@/lib/conciergeStore";
 import { requestVoiceStart, getVoiceActive, subscribeToVoiceState } from "@/lib/lunaVoiceBus";
-import { generateRecommendation, LunaRecommendation } from "@/lib/lunaBrain";
 import { categoryLabels, goalLabels, timingLabels } from "@/lib/conciergeLabels";
 
 interface LunaModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+  isOpen:   boolean;
+  onClose:  () => void;
   context?: ConciergeContext;
 }
 
+const subtypeDisplayLabels: Record<string, string> = {
+  cut:         "Cut or cleanup",
+  color:       "Color or highlights",
+  both:        "Cut + color",
+  manicure:    "Manicure",
+  pedicure:    "Pedicure",
+  full_set:    "Full set",
+  nail_art:    "Nail art",
+  fill:        "Lash fill",
+  lift:        "Lash lift",
+  relaxation:  "Relaxation massage",
+  deep_tissue: "Deep tissue",
+  pain_relief: "Pain relief",
+  facial:      "Facial",
+  acne:        "Acne / correction",
+  glow:        "Glow / refresh",
+  unsure:      "Open to guidance",
+};
+
 export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
   const [voiceAlreadyActive, setVoiceAlreadyActive] = useState(false);
-  const [recommendation, setRecommendation] = useState<LunaRecommendation | null>(null);
 
-  // Track voice state
+  // Voice state tracking
   useEffect(() => {
     if (!isOpen) return;
-    
-    // Check initial state
     setVoiceAlreadyActive(getVoiceActive());
-    
-    const unsubscribe = subscribeToVoiceState((active) => {
-      setVoiceAlreadyActive(active);
-    });
-    
-    return unsubscribe;
+    const unsub = subscribeToVoiceState(active => setVoiceAlreadyActive(active));
+    return unsub;
   }, [isOpen]);
 
-  // Lock body scroll when modal is open
+  // Body scroll lock
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-      // Generate recommendation from context when modal opens
-      if (context && context.categories && context.categories.length > 0) {
-        setRecommendation(generateRecommendation(context));
-      } else {
-        setRecommendation(null);
-      }
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isOpen, context]);
+    if (isOpen) document.body.style.overflow = "hidden";
+    else        document.body.style.overflow = "";
+    return () => { document.body.style.overflow = ""; };
+  }, [isOpen]);
+
+  // ── Handlers ────────────────────────────────────────────────────────────────
 
   const handleSpeakWithLuna = () => {
-    console.log("[LunaModal] Speak with Luna CTA clicked");
-    
-    // Store context for Luna to pick up
-    if (context) {
-      setConciergeContext(context);
-    }
-    
-    // Close modal first
+    if (context) setConciergeContext(context);
     onClose();
-    
-    // Request voice start via the bus
-    const granted = requestVoiceStart("modal");
-    console.log("[LunaModal] Voice start request granted:", granted);
-    
-    // Scroll to hero where primary voice widget lives
-    setTimeout(() => {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }, 100);
+    requestVoiceStart("modal");
+    setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 100);
   };
 
   const handleChatWithLuna = () => {
-    // For now, show a message - text chat is being prepared
-    // This will be replaced when text chat is implemented
+    if (context) setConciergeContext(context);
     onClose();
-    if (context) {
-      setConciergeContext(context);
-    }
-    // Show text chat placeholder - for now, open callback as fallback
     setTimeout(() => {
-      const callbackSection = document.getElementById("callback");
-      if (callbackSection) {
-        callbackSection.scrollIntoView({ behavior: "smooth" });
-        // Focus name field after scroll
-        setTimeout(() => {
-          const nameInput = document.querySelector<HTMLInputElement>('#callback input[name="fullName"]');
-          if (nameInput) {
-            nameInput.focus();
-          }
-        }, 800);
-      }
+      const el = document.getElementById("callback");
+      if (el) el.scrollIntoView({ behavior: "smooth" });
     }, 100);
   };
 
   const handleRequestCallback = () => {
     onClose();
-    const callbackSection = document.getElementById("callback");
-    if (callbackSection) {
-      callbackSection.scrollIntoView({ behavior: "smooth" });
-      // Focus name field after scroll
-      setTimeout(() => {
-        const nameInput = document.querySelector<HTMLInputElement>('#callback input[name="fullName"]');
-        if (nameInput) {
-          nameInput.focus();
-        }
-      }, 800);
-    }
+    setTimeout(() => {
+      const el = document.getElementById("callback");
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth" });
+        setTimeout(() => {
+          const inp = document.querySelector<HTMLInputElement>('#callback input[name="fullName"]');
+          inp?.focus();
+        }, 800);
+      }
+    }, 100);
   };
 
-  const getContextSummary = () => {
-    if (!context) return null;
-    
-    const parts: string[] = [];
-    
-    // Categories
-    if (context.categories && context.categories.length > 0) {
-      const serviceNames = context.categories.map(s => categoryLabels[s] || s);
-      parts.push(serviceNames.join(", "));
-    }
-    
-    // Goal
-    if (context.goal) {
-      parts.push(goalLabels[context.goal] || context.goal);
-    }
-    
-    // Timing
-    if (context.timing) {
-      parts.push(timingLabels[context.timing] || context.timing);
-    }
-    
-    return parts.length > 0 ? parts.join(" • ") : null;
-  };
+  // ── Context display helpers ──────────────────────────────────────────────────
 
-  const getViewingContext = () => {
-    if (!context?.category || !context?.group || !context?.item) return null;
-    
-    const categoryLabel = categoryLabels[context.category] || context.category;
-    const priceStr = context.price ? ` (${context.price})` : "";
-    
-    return `${categoryLabel} > ${context.group} > ${context.item}${priceStr}`;
-  };
+  const hasContext = !!(
+    context?.categories?.length ||
+    context?.goal ||
+    context?.timing ||
+    context?.service_subtype
+  );
 
-  const contextSummary = getContextSummary();
-  const viewingContext = getViewingContext();
+  const isUnsure = context?.service_subtype === "unsure";
+
+  const contextChips = (() => {
+    const chips: string[] = [];
+    if (context?.categories?.length) {
+      chips.push(...context.categories.map(c => categoryLabels[c] || c));
+    }
+    if (context?.goal)           chips.push(goalLabels[context.goal]    || context.goal);
+    if (context?.timing)         chips.push(timingLabels[context.timing] || context.timing);
+    if (context?.service_subtype && context.service_subtype !== "unsure") {
+      chips.push(subtypeDisplayLabels[context.service_subtype] || context.service_subtype);
+    }
+    return chips;
+  })();
+
+  // Soft direction text (only when subtype is known and not "unsure")
+  const softDirection = (() => {
+    if (!context?.categories?.length) return null;
+    const cat = context.categories[0];
+    const sub = context.service_subtype;
+    if (!sub || sub === "unsure") return null;
+    const catLabel = categoryLabels[cat] || cat;
+    const subLabel = subtypeDisplayLabels[sub] || sub;
+    const goalLabel = context.goal ? (goalLabels[context.goal] || context.goal).toLowerCase() : "";
+    if (goalLabel) {
+      return `Based on what you shared, ${catLabel.toLowerCase()} — ${subLabel.toLowerCase()} — feels like the right starting point for ${goalLabel}.`;
+    }
+    return `Based on what you shared, ${catLabel.toLowerCase()} — ${subLabel.toLowerCase()} — looks like a strong fit.`;
+  })();
 
   return (
     <AnimatePresence>
@@ -158,135 +134,116 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-            className="relative w-full max-w-lg p-8 md:p-10 rounded-xl border border-gold/25 bg-card shadow-[0_0_50px_-15px_hsl(38_50%_55%/0.25)]"
-            onClick={(e) => e.stopPropagation()}
+            transition={{ duration: 0.28, ease: "easeOut" }}
+            className="relative w-full max-w-md p-8 md:p-10 rounded-xl border border-gold/20 bg-card shadow-[0_0_60px_-15px_hsl(38_50%_55%/0.2)]"
+            onClick={e => e.stopPropagation()}
           >
-            {/* Close Button */}
+            {/* Close */}
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-muted-foreground hover:text-cream hover:bg-gold/15 transition-all"
-              aria-label="Close modal"
+              className="absolute top-4 right-4 w-9 h-9 rounded-full bg-secondary flex items-center justify-center text-muted-foreground hover:text-cream hover:bg-gold/15 transition-all"
+              aria-label="Close"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
 
-            <div className="text-center">
-              {/* Icon */}
-              <motion.div 
-                initial={{ scale: 0.8 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.1, duration: 0.3 }}
-                className="w-16 h-16 mx-auto mb-6 rounded-full bg-gold/20 flex items-center justify-center"
+            {/* ── SECTION 1 — Context reflection ────────────────────────── */}
+            {hasContext && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.05 }}
+                className="mb-6"
               >
-                <Sparkles className="w-8 h-8 text-gold" />
+                <p className="font-body text-xs text-muted-foreground uppercase tracking-wider mb-3">
+                  You're exploring
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {contextChips.map((chip, i) => (
+                    <span
+                      key={i}
+                      className="px-3 py-1 rounded-full text-xs font-body bg-gold/10 text-gold border border-gold/20"
+                    >
+                      {chip}
+                    </span>
+                  ))}
+                  {isUnsure && (
+                    <span className="px-3 py-1 rounded-full text-xs font-body bg-secondary text-muted-foreground">
+                      Open to guidance
+                    </span>
+                  )}
+                </div>
               </motion.div>
+            )}
 
-              {/* Title */}
-              <h3 className="font-display text-3xl md:text-4xl text-cream mb-3">
-                Your Concierge Path
-              </h3>
+            {/* ── SECTION 2 — Soft direction ────────────────────────────── */}
+            {softDirection && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="mb-6 p-4 rounded-lg border border-gold/15 bg-background/40"
+              >
+                <p className="font-body text-[10px] text-gold uppercase tracking-wider mb-2">
+                  A strong starting direction
+                </p>
+                <p className="font-body text-sm text-cream/80 leading-relaxed">
+                  {softDirection}
+                </p>
+              </motion.div>
+            )}
 
-              {/* Context Summary */}
-              {contextSummary && (
-                <motion.p 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.15 }}
-                  className="font-body text-gold text-sm md:text-base mb-2 px-4"
-                >
-                  Selected: {contextSummary}
-                </motion.p>
-              )}
+            {/* ── SECTION 3 — Trust layer ───────────────────────────────── */}
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.15 }}
+              className="font-body text-xs text-muted-foreground leading-relaxed mb-7 italic"
+            >
+              This isn't final — Luna can refine this with you based on your preferences, history, and desired outcome.
+            </motion.p>
 
-              {/* Viewing Context (for service menu deep links) */}
-              {viewingContext && (
-                <motion.p 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="font-body text-gold/70 text-xs md:text-sm mb-4 px-4"
-                >
-                  Viewing: {viewingContext}
-                </motion.p>
-              )}
+            {/* ── SECTION 4 — Primary CTA ───────────────────────────────── */}
+            <motion.button
+              onClick={handleSpeakWithLuna}
+              className={`w-full btn-gold py-4 px-6 flex items-center justify-center gap-3 text-base mb-3 ${voiceAlreadyActive ? "opacity-70" : ""}`}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <Mic className="w-5 h-5" />
+              {voiceAlreadyActive ? "Go to Luna" : "Speak with Luna to personalize this"}
+            </motion.button>
 
-              {!contextSummary && !viewingContext && (
-                <div className="mb-6" />
-              )}
+            {/* ── SECTION 5 — Secondary CTAs ───────────────────────────── */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.28 }}
+              className="flex flex-col gap-2"
+            >
+              <motion.button
+                onClick={handleChatWithLuna}
+                className="w-full btn-outline-gold py-3 px-6 flex items-center justify-center gap-3 text-sm"
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <MessageSquare className="w-4 h-4" />
+                Chat with Luna
+              </motion.button>
 
-              {/* Recommendation */}
-              {recommendation && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="mb-6 p-4 rounded-lg border border-gold/20 bg-background/50 text-left max-w-sm mx-auto"
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    <Star className="w-3.5 h-3.5 text-gold" />
-                    <span className="font-body text-xs text-gold uppercase tracking-wider">Recommended</span>
-                  </div>
-                  <p className="font-display text-base text-cream">{recommendation.recommendedService}</p>
-                  {recommendation.priceRange && (
-                    <p className="font-body text-xs text-gold/70 mt-1">{recommendation.priceRange}</p>
-                  )}
-                  {recommendation.recommendedArtist && (
-                    <p className="font-body text-xs text-cream/50 mt-1">{recommendation.recommendedArtist}</p>
-                  )}
-                </motion.div>
-              )}
+              <motion.button
+                onClick={handleRequestCallback}
+                className="w-full py-3 px-6 flex items-center justify-center gap-2 text-xs text-muted-foreground hover:text-gold transition-colors font-body"
+                whileHover={{ scale: 1.01 }}
+              >
+                <Phone className="w-3.5 h-3.5" />
+                Request a callback
+              </motion.button>
+            </motion.div>
 
-              <p className="font-body text-muted-foreground mb-8 max-w-sm mx-auto">
-                {recommendation ? recommendation.nextStep : "Choose how you'd like to connect with Luna, your personal concierge."}
-              </p>
-
-              {/* Already Active Notice */}
-              {voiceAlreadyActive && (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-gold text-sm mb-4"
-                >
-                  Luna is already speaking below.
-                </motion.p>
-              )}
-
-              {/* CTA Buttons */}
-              <div className="flex flex-col gap-3">
-                <motion.button
-                  onClick={handleSpeakWithLuna}
-                  className={`btn-gold py-4 px-6 flex items-center justify-center gap-3 w-full ${
-                    voiceAlreadyActive ? "opacity-70" : ""
-                  }`}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Mic className="w-5 h-5" />
-                  <span>{voiceAlreadyActive ? "Go to Luna" : "Speak with Luna"}</span>
-                </motion.button>
-
-                <motion.button
-                  onClick={handleChatWithLuna}
-                  className="btn-outline-gold py-4 px-6 flex items-center justify-center gap-3 w-full"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <MessageSquare className="w-5 h-5" />
-                  <span>Chat with Luna</span>
-                </motion.button>
-
-                <motion.button
-                  onClick={handleRequestCallback}
-                  className="py-4 px-6 flex items-center justify-center gap-3 w-full text-muted-foreground hover:text-gold transition-colors font-body text-sm"
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
-                >
-                  <Phone className="w-4 h-4" />
-                  <span>Request a Callback</span>
-                </motion.button>
-              </div>
-            </div>
           </motion.div>
         </motion.div>
       )}
@@ -294,22 +251,14 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
   );
 };
 
-// Re-export LunaContext type for backwards compatibility
+// Re-export type alias for backward compatibility
 export type { ConciergeContext as LunaContext };
 
-// Custom hook for managing Luna modal state
+// Hook for components that manage their own modal state
 export const useLunaModal = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [context, setContext] = useState<ConciergeContext | undefined>(undefined);
-
-  const openModal = useCallback((newContext?: ConciergeContext) => {
-    setContext(newContext);
-    setIsOpen(true);
-  }, []);
-
-  const closeModal = useCallback(() => {
-    setIsOpen(false);
-  }, []);
-
+  const [isOpen, setIsOpen]     = useState(false);
+  const [context, setContext]   = useState<ConciergeContext | undefined>();
+  const openModal  = useCallback((ctx?: ConciergeContext) => { setContext(ctx); setIsOpen(true); }, []);
+  const closeModal = useCallback(() => setIsOpen(false), []);
   return { isOpen, context, openModal, closeModal };
 };

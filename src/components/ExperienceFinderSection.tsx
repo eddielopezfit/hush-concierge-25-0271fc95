@@ -1,376 +1,548 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Scissors, Hand, Sparkles, Eye, Heart, Mic, MessageSquare, Check, ArrowLeft, Star } from "lucide-react";
-import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
+import {
+  Scissors, Hand, Sparkles, Eye, Heart,
+  Mic, MessageSquare, Check, ArrowLeft,
+} from "lucide-react";
+import { ConciergeContext, ServiceCategoryId, ServiceSubtype } from "@/types/concierge";
 import { setConciergeContext } from "@/lib/conciergeStore";
 import { generateRecommendation, LunaRecommendation } from "@/lib/lunaBrain";
 import { saveSession } from "@/lib/saveSession";
 import { useLuna } from "@/contexts/LunaContext";
 
-type Step = 1 | 2 | 3 | "result";
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+type Step = 1 | 2 | 3 | 4;
 
 interface Selection {
-  services: string[];
-  goal: string | null;
-  timing: string | null;
+  services:  string[];
+  goal:      string | null;
+  timing:    string | null;
+  subtype:   ServiceSubtype | null;
 }
 
+// ── Static data ───────────────────────────────────────────────────────────────
+
 const categories = [
-  { id: "hair", label: "Hair", icon: Scissors },
-  { id: "nails", label: "Nails", icon: Hand },
+  { id: "hair",     label: "Hair",     icon: Scissors },
+  { id: "nails",    label: "Nails",    icon: Hand },
   { id: "skincare", label: "Skincare", icon: Sparkles },
-  { id: "lashes", label: "Lashes", icon: Eye },
-  { id: "massage", label: "Massage", icon: Heart },
+  { id: "lashes",   label: "Lashes",   icon: Eye },
+  { id: "massage",  label: "Massage",  icon: Heart },
 ];
 
 const goals = [
-  { id: "refresh", label: "Refresh" },
-  { id: "relax", label: "Relax" },
+  { id: "refresh",   label: "Refresh" },
+  { id: "relax",     label: "Relax" },
   { id: "transform", label: "Transform" },
-  { id: "event", label: "Event-ready" },
+  { id: "event",     label: "Event-ready" },
 ];
 
 const timings = [
-  { id: "today", label: "Today" },
-  { id: "week", label: "This week" },
+  { id: "today",    label: "Today" },
+  { id: "week",     label: "This week" },
   { id: "planning", label: "Planning ahead" },
   { id: "browsing", label: "Just browsing" },
 ];
 
+// Category-specific step 4 qualifiers
+const subtypeOptions: Record<string, { id: ServiceSubtype; label: string }[]> = {
+  hair: [
+    { id: "cut",   label: "Just a cut or cleanup" },
+    { id: "color", label: "Color or highlights" },
+    { id: "both",  label: "Cut + color" },
+    { id: "unsure",label: "Not sure yet" },
+  ],
+  nails: [
+    { id: "manicure",  label: "Manicure" },
+    { id: "pedicure",  label: "Pedicure" },
+    { id: "full_set",  label: "Full set" },
+    { id: "nail_art",  label: "Nail art" },
+    { id: "unsure",    label: "Not sure" },
+  ],
+  lashes: [
+    { id: "full_set",  label: "Full set" },
+    { id: "fill",      label: "Fill" },
+    { id: "lift",      label: "Lift" },
+    { id: "unsure",    label: "Not sure" },
+  ],
+  massage: [
+    { id: "relaxation",  label: "Relaxation" },
+    { id: "deep_tissue", label: "Deep tissue" },
+    { id: "pain_relief", label: "Pain relief" },
+    { id: "unsure",      label: "Not sure" },
+  ],
+  skincare: [
+    { id: "facial",  label: "Facial" },
+    { id: "acne",    label: "Acne / correction" },
+    { id: "glow",    label: "Glow / refresh" },
+    { id: "unsure",  label: "Not sure" },
+  ],
+};
+
+// ── Animations ────────────────────────────────────────────────────────────────
+
 const stepVariants = {
   initial: { opacity: 0, x: 40 },
-  animate: { opacity: 1, x: 0, transition: { duration: 0.4, ease: "easeOut" as const } },
-  exit: { opacity: 0, x: -40, transition: { duration: 0.3, ease: "easeIn" as const } },
+  animate: { opacity: 1, x: 0, transition: { duration: 0.35, ease: "easeOut" as const } },
+  exit:    { opacity: 0, x: -40, transition: { duration: 0.25, ease: "easeIn"  as const } },
 };
 
 const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
+  hidden:  { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.07 } },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" as const } },
+  hidden:  { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: "easeOut" as const } },
 };
+
+// ── Shared button styles ──────────────────────────────────────────────────────
+
+const optionBase =
+  "group relative p-5 md:p-7 rounded-lg text-center transition-all duration-300 border focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2";
+const optionActive =
+  "border-gold bg-gold/8 shadow-[0_0_20px_-5px_hsl(38_50%_55%/0.3)]";
+const optionIdle =
+  "border-secondary bg-card hover:border-gold/40";
+
+// ── Component ─────────────────────────────────────────────────────────────────
 
 export const ExperienceFinderSection = () => {
   const [currentStep, setCurrentStep] = useState<Step>(1);
-  const [selection, setSelection] = useState<Selection>({ services: [], goal: null, timing: null });
+  const [selection, setSelection] = useState<Selection>({
+    services: [], goal: null, timing: null, subtype: null,
+  });
   const [recommendation, setRecommendation] = useState<LunaRecommendation | null>(null);
   const { openModal, markInteracted } = useLuna();
 
-  const toggleService = (serviceId: string) => {
-    setSelection((prev) => ({
+  // ── Handlers ───────────────────────────────────────────────────────────────
+
+  const toggleService = (id: string) => {
+    setSelection(prev => ({
       ...prev,
-      services: prev.services.includes(serviceId)
-        ? prev.services.filter((s) => s !== serviceId)
-        : [...prev.services, serviceId],
+      services: prev.services.includes(id)
+        ? prev.services.filter(s => s !== id)
+        : [...prev.services, id],
+      subtype: null, // reset qualifier on category change
     }));
     markInteracted();
   };
 
-  const handleContinueToStep2 = () => {
-    if (selection.services.length > 0) setCurrentStep(2);
+  const handleGoalSelect = (id: string) => {
+    setSelection(prev => ({ ...prev, goal: id }));
   };
 
-  const handleClearServices = () => {
-    setSelection((prev) => ({ ...prev, services: [] }));
+  const handleTimingSelect = (id: string) => {
+    setSelection(prev => ({ ...prev, timing: id }));
   };
 
-  const handleGoalSelect = (goalId: string) => {
-    setSelection((prev) => ({ ...prev, goal: goalId }));
+  const handleSubtypeSelect = (id: ServiceSubtype) => {
+    setSelection(prev => ({ ...prev, subtype: id }));
   };
-
-  useEffect(() => {
-    if (currentStep === 2 && selection.goal) {
-      const timer = setTimeout(() => setCurrentStep(3), 350);
-      return () => clearTimeout(timer);
-    }
-  }, [currentStep, selection.goal]);
-
-  const handleTimingSelect = (timingId: string) => {
-    setSelection((prev) => ({ ...prev, timing: timingId }));
-  };
-
-  // Auto-launch Luna 400ms after timing selection — the WOW moment
-  // Guest completed all 3 choices; Luna opens already knowing everything
-  useEffect(() => {
-    if (currentStep === 3 && selection.timing) {
-      const timer = setTimeout(() => {
-        handleLunaAction(true);
-      }, 400);
-      return () => clearTimeout(timer);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentStep, selection.timing]);
 
   const handleBack = () => {
-    if (currentStep === 2) setCurrentStep(1);
-    else if (currentStep === 3) setCurrentStep(2);
-    else if (currentStep === "result") setCurrentStep(3);
+    if (currentStep === 2) { setCurrentStep(1); setSelection(p => ({ ...p, goal: null })); }
+    else if (currentStep === 3) { setCurrentStep(2); setSelection(p => ({ ...p, timing: null })); }
+    else if (currentStep === 4) { setCurrentStep(3); setSelection(p => ({ ...p, subtype: null })); }
   };
 
   const handleReset = () => {
-    setSelection({ services: [], goal: null, timing: null });
+    setSelection({ services: [], goal: null, timing: null, subtype: null });
     setCurrentStep(1);
     setRecommendation(null);
   };
 
-  const buildContext = (includeTiming: boolean = true): ConciergeContext => ({
-    source: "Experience Finder",
-    categories: selection.services as ServiceCategoryId[],
-    goal: selection.goal,
-    timing: includeTiming ? selection.timing : null,
-    group: null,
-    item: null,
-    price: null,
-    preferredArtist: null,
+  // ── Auto-advance step 2 → 3 after goal ────────────────────────────────────
+  useEffect(() => {
+    if (currentStep === 2 && selection.goal) {
+      const t = setTimeout(() => setCurrentStep(3), 350);
+      return () => clearTimeout(t);
+    }
+  }, [currentStep, selection.goal]);
+
+  // ── Auto-advance step 3 → 4 after timing ──────────────────────────────────
+  useEffect(() => {
+    if (currentStep === 3 && selection.timing) {
+      const primaryCat = selection.services[0] as ServiceCategoryId | undefined;
+      const hasQualifier = primaryCat && subtypeOptions[primaryCat];
+      if (hasQualifier) {
+        const t = setTimeout(() => setCurrentStep(4), 350);
+        return () => clearTimeout(t);
+      } else {
+        // No qualifier for this category — go straight to Luna
+        const t = setTimeout(() => handleLunaAction(), 400);
+        return () => clearTimeout(t);
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStep, selection.timing]);
+
+  // ── Auto-launch after step 4 subtype selection ────────────────────────────
+  useEffect(() => {
+    if (currentStep === 4 && selection.subtype) {
+      const t = setTimeout(() => handleLunaAction(), 400);
+      return () => clearTimeout(t);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStep, selection.subtype]);
+
+  // ── Build context ──────────────────────────────────────────────────────────
+
+  const buildContext = (): ConciergeContext => ({
+    source:          "find_your_experience",
+    categories:      selection.services as ServiceCategoryId[],
+    goal:            selection.goal,
+    timing:          selection.timing,
+    service_subtype: selection.subtype,
+    is_multi_service: selection.services.length > 1,
+    group:   null,
+    item:    null,
+    price:   null,
+    preferredArtist:   null,
     preferredArtistId: null,
   });
 
-  const handleLunaAction = (includeTiming: boolean = true) => {
-    const ctx = buildContext(includeTiming);
+  // ── Launch Luna ─────────────────────────────────────────────────────────────
+
+  const handleLunaAction = () => {
+    const ctx = buildContext();
     setConciergeContext(ctx);
     const rec = generateRecommendation(ctx);
     setRecommendation(rec);
     saveSession(ctx);
-    // Persist recommendation so Luna voice can reference it
     try {
       sessionStorage.setItem("hush_luna_recommendation", JSON.stringify(rec));
     } catch { /* ignore */ }
     openModal(ctx);
   };
 
-  const getStepTitle = () => {
-    switch (currentStep) {
-      case 1: return "What are you looking for?";
-      case 2: return "What's your goal?";
-      case 3: return "How soon?";
-      default: return "";
-    }
+  // ── Step meta ──────────────────────────────────────────────────────────────
+
+  const primaryCat = selection.services[0] as ServiceCategoryId | undefined;
+
+  const stepTitles: Record<Step, string> = {
+    1: "What are you looking for?",
+    2: "What's your goal today?",
+    3: "How soon are you thinking?",
+    4: primaryCat === "hair"     ? "What kind of change are you thinking about?"
+       : primaryCat === "nails"  ? "What nail service interests you?"
+       : primaryCat === "lashes" ? "What lash service are you after?"
+       : primaryCat === "massage"? "What kind of massage?"
+       : "What specifically interests you?",
   };
 
-  const getStepSubtitle = () => {
-    switch (currentStep) {
-      case 1: return "Select one or more services.";
-      case 2: return "Pick a goal — then voice or chat with Luna.";
-      case 3: return "Choose your timeframe.";
-      default: return "";
-    }
+  const stepSubtitles: Record<Step, string> = {
+    1: "Select one or more.",
+    2: "Pick what resonates.",
+    3: "No pressure — just helps Luna prepare.",
+    4: "One more thing — then Luna takes it from here.",
   };
 
-  const getStepNumber = () => (currentStep === "result" ? 3 : currentStep);
+  // ── Step indicator (4 steps) ──────────────────────────────────────────────
 
-  const ActionButtons = ({ disabled, onSpeak, onChat, onBack }: { disabled: boolean; onSpeak: () => void; onChat: () => void; onBack?: () => void }) => (
-    <>
-      {/* Desktop */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="hidden md:flex items-center justify-center gap-4 mt-10">
-        {onBack && (
-          <motion.button onClick={onBack} className="flex items-center gap-2 font-body text-sm text-muted-foreground hover:text-gold transition-colors" whileHover={{ x: -3 }}>
-            <ArrowLeft className="w-4 h-4" /> Back
-          </motion.button>
-        )}
-        <motion.button onClick={onSpeak} disabled={disabled} className={`btn-gold py-4 px-8 flex items-center justify-center gap-3 transition-all duration-300 ${disabled ? "opacity-40 cursor-not-allowed" : ""}`} whileHover={!disabled ? { scale: 1.02 } : {}} whileTap={!disabled ? { scale: 0.98 } : {}}>
-          <Mic className="w-5 h-5" /> Speak with Luna
-        </motion.button>
-        <motion.button onClick={onChat} disabled={disabled} className={`btn-outline-gold py-4 px-8 flex items-center justify-center gap-3 transition-all duration-300 ${disabled ? "opacity-40 cursor-not-allowed" : ""}`} whileHover={!disabled ? { scale: 1.02 } : {}} whileTap={!disabled ? { scale: 0.98 } : {}}>
-          <MessageSquare className="w-5 h-5" /> Chat with Luna
-        </motion.button>
-      </motion.div>
-      {/* Mobile */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="flex md:hidden flex-col items-center gap-3 mt-10">
-        <motion.button onClick={onSpeak} disabled={disabled} className={`btn-gold py-4 px-8 w-full max-w-xs flex items-center justify-center gap-3 transition-all duration-300 ${disabled ? "opacity-40 cursor-not-allowed" : ""}`} whileTap={!disabled ? { scale: 0.98 } : {}}>
-          <Mic className="w-5 h-5" /> Speak with Luna
-        </motion.button>
-        <motion.button onClick={onChat} disabled={disabled} className={`btn-outline-gold py-4 px-8 w-full max-w-xs flex items-center justify-center gap-3 transition-all duration-300 ${disabled ? "opacity-40 cursor-not-allowed" : ""}`} whileTap={!disabled ? { scale: 0.98 } : {}}>
-          <MessageSquare className="w-5 h-5" /> Chat with Luna
-        </motion.button>
-        {onBack && (
-          <motion.button onClick={onBack} className="flex items-center gap-2 font-body text-sm text-muted-foreground hover:text-gold transition-colors mt-2">
-            <ArrowLeft className="w-4 h-4" /> Back
-          </motion.button>
-        )}
-      </motion.div>
-    </>
-  );
+  const TOTAL_STEPS = 4;
 
   return (
-    <section id="experience-finder" className="py-20 md:py-28 px-6 bg-gradient-to-b from-card to-background relative overflow-hidden">
+    <section
+      id="experience-finder"
+      className="py-20 md:py-28 px-6 bg-gradient-to-b from-card to-background relative overflow-hidden"
+    >
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gold/[0.03] rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-rose/[0.02] rounded-full blur-3xl" />
       </div>
 
       <div className="max-w-4xl mx-auto relative z-10">
-        <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-100px" }} transition={{ duration: 0.8 }} className="text-center mb-16">
+
+        {/* Heading */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-16"
+        >
           <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-semibold text-cream mb-4">
             Find Your <span className="text-gold-gradient">Experience</span>
           </h2>
           <p className="font-body text-base text-muted-foreground max-w-lg mx-auto">
-            Three quick questions. Luna handles the rest.
+            A few questions. Luna does the rest.
           </p>
         </motion.div>
 
-        {/* Step Indicator */}
-        {currentStep !== "result" && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-center items-center gap-3 mb-12">
-            {[1, 2, 3].map((step) => (
-              <div key={step} className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-display text-sm transition-all duration-300 ${
-                  step === currentStep ? "bg-gold text-background" : step < getStepNumber() ? "bg-gold/25 text-gold" : "bg-secondary text-muted-foreground"
-                }`}>
-                  {step}
-                </div>
-                {step < 3 && <div className={`w-12 md:w-20 h-px transition-all duration-300 ${step < getStepNumber() ? "bg-gold/40" : "bg-secondary"}`} />}
+        {/* Step indicator */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex justify-center items-center gap-2 mb-12"
+        >
+          {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map(step => (
+            <div key={step} className="flex items-center gap-2">
+              <div className={`w-9 h-9 rounded-full flex items-center justify-center font-display text-sm transition-all duration-300 ${
+                step === currentStep
+                  ? "bg-gold text-background"
+                  : step < currentStep
+                  ? "bg-gold/25 text-gold"
+                  : "bg-secondary text-muted-foreground"
+              }`}>
+                {step < currentStep ? <Check className="w-4 h-4" /> : step}
               </div>
-            ))}
-          </motion.div>
-        )}
+              {step < TOTAL_STEPS && (
+                <div className={`w-8 md:w-16 h-px transition-all duration-300 ${
+                  step < currentStep ? "bg-gold/40" : "bg-secondary"
+                }`} />
+              )}
+            </div>
+          ))}
+        </motion.div>
 
-        {/* Step Content */}
-        <div className="min-h-[450px] flex items-center justify-center pb-24 md:pb-0">
+        {/* Step content */}
+        <div className="min-h-[420px] flex items-center justify-center pb-24 md:pb-0">
           <AnimatePresence mode="wait">
+
+            {/* ── STEP 1 — Category ─────────────────────────────────────── */}
             {currentStep === 1 && (
-              <motion.div key="step1" variants={stepVariants} initial="initial" animate="animate" exit="exit" className="w-full">
-                <h3 className="font-display text-2xl md:text-3xl text-cream text-center mb-3">{getStepTitle()}</h3>
-                <p className="font-body text-sm text-muted-foreground text-center mb-10">{getStepSubtitle()}</p>
-                <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                  {categories.map((cat) => {
-                    const isSelected = selection.services.includes(cat.id);
+              <motion.div
+                key="step1"
+                variants={stepVariants}
+                initial="initial" animate="animate" exit="exit"
+                className="w-full"
+              >
+                <h3 className="font-display text-2xl md:text-3xl text-cream text-center mb-2">
+                  {stepTitles[1]}
+                </h3>
+                <p className="font-body text-sm text-muted-foreground text-center mb-10">
+                  {stepSubtitles[1]}
+                </p>
+                <motion.div
+                  variants={containerVariants} initial="hidden" animate="visible"
+                  className="grid grid-cols-2 md:grid-cols-5 gap-4"
+                >
+                  {categories.map(cat => {
+                    const sel = selection.services.includes(cat.id);
                     return (
-                      <motion.button key={cat.id} variants={itemVariants} onClick={() => toggleService(cat.id)}
-                        className={`group relative p-6 md:p-8 rounded-lg text-center transition-all duration-300 border focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2 ${
-                          isSelected ? "border-gold bg-gold/8 shadow-[0_0_25px_-5px_hsl(38_50%_55%/0.3)]" : "border-secondary bg-card hover:border-gold/40"
-                        }`}
-                        whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                      <motion.button
+                        key={cat.id}
+                        variants={itemVariants}
+                        onClick={() => toggleService(cat.id)}
+                        className={`${optionBase} ${sel ? optionActive : optionIdle}`}
+                        whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                      >
                         <AnimatePresence>
-                          {isSelected && (
-                            <motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0, opacity: 0 }} className="absolute top-2 right-2 w-6 h-6 rounded-full bg-gold flex items-center justify-center">
+                          {sel && (
+                            <motion.div
+                              initial={{ scale: 0, opacity: 0 }}
+                              animate={{ scale: 1, opacity: 1 }}
+                              exit={{ scale: 0, opacity: 0 }}
+                              className="absolute top-2 right-2 w-6 h-6 rounded-full bg-gold flex items-center justify-center"
+                            >
                               <Check className="w-4 h-4 text-background" />
                             </motion.div>
                           )}
                         </AnimatePresence>
-                        <cat.icon className={`w-8 h-8 mx-auto mb-4 transition-colors duration-300 ${isSelected ? "text-gold" : "text-muted-foreground group-hover:text-gold"}`} />
-                        <span className={`font-display text-lg transition-colors duration-300 ${isSelected ? "text-gold" : "text-cream group-hover:text-gold"}`}>{cat.label}</span>
+                        <cat.icon className={`w-8 h-8 mx-auto mb-4 transition-colors ${sel ? "text-gold" : "text-muted-foreground group-hover:text-gold"}`} />
+                        <span className={`font-display text-lg transition-colors ${sel ? "text-gold" : "text-cream group-hover:text-gold"}`}>
+                          {cat.label}
+                        </span>
                       </motion.button>
                     );
                   })}
                 </motion.div>
 
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="flex flex-col items-center gap-4 mt-10">
-                  <motion.button onClick={handleContinueToStep2} disabled={selection.services.length === 0}
-                    className={`btn-gold py-4 px-10 min-w-[180px] transition-all duration-300 ${selection.services.length === 0 ? "opacity-40 cursor-not-allowed" : ""}`}
-                    whileHover={selection.services.length > 0 ? { scale: 1.02 } : {}} whileTap={selection.services.length > 0 ? { scale: 0.98 } : {}}>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="flex flex-col items-center gap-4 mt-10"
+                >
+                  <motion.button
+                    onClick={() => selection.services.length > 0 && setCurrentStep(2)}
+                    disabled={selection.services.length === 0}
+                    className={`btn-gold py-4 px-10 min-w-[160px] transition-all ${selection.services.length === 0 ? "opacity-40 cursor-not-allowed" : ""}`}
+                    whileHover={selection.services.length > 0 ? { scale: 1.02 } : {}}
+                    whileTap={selection.services.length > 0 ? { scale: 0.98 } : {}}
+                  >
                     Continue
                   </motion.button>
                   {selection.services.length > 0 && (
-                    <motion.button initial={{ opacity: 0 }} animate={{ opacity: 1 }} onClick={handleClearServices} className="font-body text-sm text-muted-foreground hover:text-gold transition-colors underline underline-offset-4">
-                      Clear selection
+                    <motion.button
+                      initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                      onClick={() => setSelection(p => ({ ...p, services: [] }))}
+                      className="font-body text-sm text-muted-foreground hover:text-gold transition-colors underline underline-offset-4"
+                    >
+                      Clear
                     </motion.button>
                   )}
                 </motion.div>
               </motion.div>
             )}
 
+            {/* ── STEP 2 — Goal ─────────────────────────────────────────── */}
             {currentStep === 2 && (
-              <motion.div key="step2" variants={stepVariants} initial="initial" animate="animate" exit="exit" className="w-full">
-                <h3 className="font-display text-2xl md:text-3xl text-cream text-center mb-3">{getStepTitle()}</h3>
-                <p className="font-body text-sm text-muted-foreground text-center mb-10">{getStepSubtitle()}</p>
-                <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
-                  {goals.map((goal) => (
-                    <motion.button key={goal.id} variants={itemVariants} onClick={() => handleGoalSelect(goal.id)}
-                      className={`group p-6 md:p-8 rounded-lg text-center transition-all duration-300 border focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2 ${
-                        selection.goal === goal.id ? "border-gold bg-gold/8 shadow-[0_0_25px_-5px_hsl(38_50%_55%/0.3)]" : "border-secondary bg-card hover:border-gold/40"
-                      }`}
-                      whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                      <span className={`font-display text-xl transition-colors duration-300 ${selection.goal === goal.id ? "text-gold" : "text-cream group-hover:text-gold"}`}>{goal.label}</span>
+              <motion.div
+                key="step2"
+                variants={stepVariants}
+                initial="initial" animate="animate" exit="exit"
+                className="w-full"
+              >
+                <h3 className="font-display text-2xl md:text-3xl text-cream text-center mb-2">
+                  {stepTitles[2]}
+                </h3>
+                <p className="font-body text-sm text-muted-foreground text-center mb-10">
+                  {stepSubtitles[2]}
+                </p>
+                <motion.div
+                  variants={containerVariants} initial="hidden" animate="visible"
+                  className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto"
+                >
+                  {goals.map(goal => (
+                    <motion.button
+                      key={goal.id} variants={itemVariants}
+                      onClick={() => handleGoalSelect(goal.id)}
+                      className={`${optionBase} ${selection.goal === goal.id ? optionActive : optionIdle}`}
+                      whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                    >
+                      <span className={`font-display text-xl transition-colors ${selection.goal === goal.id ? "text-gold" : "text-cream group-hover:text-gold"}`}>
+                        {goal.label}
+                      </span>
                     </motion.button>
                   ))}
                 </motion.div>
-                <ActionButtons disabled={!selection.goal} onSpeak={() => handleLunaAction(false)} onChat={() => handleLunaAction(false)} onBack={handleBack} />
+                <BackButton onClick={handleBack} />
               </motion.div>
             )}
 
+            {/* ── STEP 3 — Timing ───────────────────────────────────────── */}
             {currentStep === 3 && (
-              <motion.div key="step3" variants={stepVariants} initial="initial" animate="animate" exit="exit" className="w-full">
-                <h3 className="font-display text-2xl md:text-3xl text-cream text-center mb-3">{getStepTitle()}</h3>
-                <p className="font-body text-sm text-muted-foreground text-center mb-10">{getStepSubtitle()}</p>
-                <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
-                  {timings.map((timing) => (
-                    <motion.button key={timing.id} variants={itemVariants} onClick={() => handleTimingSelect(timing.id)}
-                      className={`group p-6 md:p-8 rounded-lg text-center transition-all duration-300 border focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2 ${
-                        selection.timing === timing.id ? "border-gold bg-gold/8 shadow-[0_0_25px_-5px_hsl(38_50%_55%/0.3)]" : "border-secondary bg-card hover:border-gold/40"
-                      }`}
-                      whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                      <span className={`font-display text-lg md:text-xl transition-colors duration-300 ${selection.timing === timing.id ? "text-gold" : "text-cream group-hover:text-gold"}`}>{timing.label}</span>
+              <motion.div
+                key="step3"
+                variants={stepVariants}
+                initial="initial" animate="animate" exit="exit"
+                className="w-full"
+              >
+                <h3 className="font-display text-2xl md:text-3xl text-cream text-center mb-2">
+                  {stepTitles[3]}
+                </h3>
+                <p className="font-body text-sm text-muted-foreground text-center mb-10">
+                  {stepSubtitles[3]}
+                </p>
+                <motion.div
+                  variants={containerVariants} initial="hidden" animate="visible"
+                  className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto"
+                >
+                  {timings.map(t => (
+                    <motion.button
+                      key={t.id} variants={itemVariants}
+                      onClick={() => handleTimingSelect(t.id)}
+                      className={`${optionBase} ${selection.timing === t.id ? optionActive : optionIdle}`}
+                      whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                    >
+                      <span className={`font-display text-lg md:text-xl transition-colors ${selection.timing === t.id ? "text-gold" : "text-cream group-hover:text-gold"}`}>
+                        {t.label}
+                      </span>
                     </motion.button>
                   ))}
                 </motion.div>
-                <ActionButtons disabled={!selection.timing} onSpeak={() => handleLunaAction(true)} onChat={() => handleLunaAction(true)} onBack={handleBack} />
+                <BackButton onClick={handleBack} />
               </motion.div>
             )}
 
-            {currentStep === "result" && (
-              <motion.div key="result" variants={stepVariants} initial="initial" animate="animate" exit="exit" className="w-full max-w-2xl mx-auto">
-                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }}
-                  className="p-10 md:p-14 rounded-xl text-center border border-gold/25 bg-card shadow-[0_0_50px_-15px_hsl(38_50%_55%/0.25)]">
-                  <div className="w-16 h-16 mx-auto mb-8 rounded-full bg-gold/15 flex items-center justify-center">
-                    <Sparkles className="w-8 h-8 text-gold" />
-                  </div>
-                  <h3 className="font-display text-3xl md:text-4xl text-cream mb-4">Luna's ready for you.</h3>
-
-                  {recommendation && (
-                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-                      className="mb-8 p-5 rounded-lg border border-gold/15 bg-background/50 text-left max-w-md mx-auto">
-                      <div className="flex items-center gap-2 mb-3">
-                        <Star className="w-4 h-4 text-gold" />
-                        <span className="font-body text-xs text-gold uppercase tracking-wider">Luna's Pick</span>
-                      </div>
-                      <p className="font-display text-lg text-cream mb-1">{recommendation.recommendedService}</p>
-                      {recommendation.priceRange && <p className="font-body text-sm text-gold/70 mb-2">{recommendation.priceRange}</p>}
-                      {recommendation.recommendedArtist && <p className="font-body text-sm text-cream/55 mb-3">Suggested: {recommendation.recommendedArtist}</p>}
-                      <div className="flex items-center gap-2">
-                        <span className={`px-2 py-0.5 rounded text-xs font-body ${
-                          recommendation.urgency === "high" ? "bg-accent/20 text-accent" :
-                          recommendation.urgency === "medium" ? "bg-gold/15 text-gold" : "bg-cream/8 text-cream/55"
-                        }`}>
-                          {recommendation.urgency === "high" ? "Book Now" : recommendation.urgency === "medium" ? "This Week" : "Take Your Time"}
-                        </span>
-                      </div>
-                      <p className="font-body text-sm text-cream/45 mt-3">{recommendation.nextStep}</p>
-                    </motion.div>
-                  )}
-
-                  {!recommendation && (
-                    <p className="font-body text-muted-foreground text-base mb-10 max-w-md mx-auto">
-                      Based on your selections, Luna will recommend the right service and stylist.
-                    </p>
-                  )}
-
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <motion.button onClick={() => handleLunaAction(true)} className="btn-gold py-4 px-8 flex items-center justify-center gap-3" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                      <Mic className="w-5 h-5" /> Speak with Luna
+            {/* ── STEP 4 — Category qualifier ───────────────────────────── */}
+            {currentStep === 4 && primaryCat && subtypeOptions[primaryCat] && (
+              <motion.div
+                key="step4"
+                variants={stepVariants}
+                initial="initial" animate="animate" exit="exit"
+                className="w-full"
+              >
+                <h3 className="font-display text-2xl md:text-3xl text-cream text-center mb-2">
+                  {stepTitles[4]}
+                </h3>
+                <p className="font-body text-sm text-muted-foreground text-center mb-10">
+                  {stepSubtitles[4]}
+                </p>
+                <motion.div
+                  variants={containerVariants} initial="hidden" animate="visible"
+                  className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto"
+                >
+                  {subtypeOptions[primaryCat].map(opt => (
+                    <motion.button
+                      key={opt.id} variants={itemVariants}
+                      onClick={() => handleSubtypeSelect(opt.id as ServiceSubtype)}
+                      className={`${optionBase} ${selection.subtype === opt.id ? optionActive : optionIdle}`}
+                      whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                    >
+                      <span className={`font-display text-lg transition-colors ${selection.subtype === opt.id ? "text-gold" : "text-cream group-hover:text-gold"}`}>
+                        {opt.label}
+                      </span>
                     </motion.button>
-                    <motion.button onClick={() => handleLunaAction(true)} className="btn-outline-gold py-4 px-8 flex items-center justify-center gap-3" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                      <MessageSquare className="w-5 h-5" /> Chat with Luna
-                    </motion.button>
-                  </div>
-
-                  <div className="flex items-center justify-center gap-4 mt-8">
-                    <motion.button onClick={handleBack} className="flex items-center gap-2 font-body text-sm text-muted-foreground hover:text-gold transition-colors" whileHover={{ x: -3 }}>
-                      <ArrowLeft className="w-4 h-4" /> Back
-                    </motion.button>
-                    <span className="text-secondary">|</span>
-                    <button onClick={handleReset} className="font-body text-sm text-muted-foreground hover:text-gold transition-colors underline underline-offset-4">
-                      Start over
-                    </button>
-                  </div>
+                  ))}
                 </motion.div>
+
+                {/* Manual CTA as fallback (auto-launch fires on selection) */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  className="flex flex-col md:flex-row items-center justify-center gap-4 mt-10"
+                >
+                  <motion.button
+                    onClick={handleLunaAction}
+                    disabled={!selection.subtype}
+                    className={`btn-gold py-4 px-8 flex items-center gap-3 ${!selection.subtype ? "opacity-40 cursor-not-allowed" : ""}`}
+                    whileHover={selection.subtype ? { scale: 1.02 } : {}}
+                    whileTap={selection.subtype ? { scale: 0.98 } : {}}
+                  >
+                    <Mic className="w-5 h-5" />
+                    Speak with Luna
+                  </motion.button>
+                  <motion.button
+                    onClick={handleLunaAction}
+                    disabled={!selection.subtype}
+                    className={`btn-outline-gold py-4 px-8 flex items-center gap-3 ${!selection.subtype ? "opacity-40 cursor-not-allowed" : ""}`}
+                    whileHover={selection.subtype ? { scale: 1.02 } : {}}
+                    whileTap={selection.subtype ? { scale: 0.98 } : {}}
+                  >
+                    <MessageSquare className="w-5 h-5" />
+                    Chat with Luna
+                  </motion.button>
+                </motion.div>
+                <BackButton onClick={handleBack} className="mt-4" />
               </motion.div>
             )}
+
           </AnimatePresence>
         </div>
+
+        {/* Reset link */}
+        {currentStep > 1 && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center mt-4">
+            <button
+              onClick={handleReset}
+              className="font-body text-xs text-muted-foreground hover:text-gold transition-colors underline underline-offset-4"
+            >
+              Start over
+            </button>
+          </motion.div>
+        )}
       </div>
     </section>
   );
 };
+
+// ── Shared sub-components ─────────────────────────────────────────────────────
+
+const BackButton = ({ onClick, className = "" }: { onClick: () => void; className?: string }) => (
+  <motion.div
+    initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+    className={`flex justify-center mt-8 ${className}`}
+  >
+    <motion.button
+      onClick={onClick}
+      className="flex items-center gap-2 font-body text-sm text-muted-foreground hover:text-gold transition-colors"
+      whileHover={{ x: -3 }}
+    >
+      <ArrowLeft className="w-4 h-4" /> Back
+    </motion.button>
+  </motion.div>
+);
