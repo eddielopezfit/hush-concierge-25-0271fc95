@@ -14,6 +14,8 @@ export type ServiceSubtype =
   | MassageIntentType
   | SkincareIntentType;
 
+export type MultiServiceMode = "primary_focus" | "bundle_guidance" | "unsure" | null;
+
 export interface ConciergeContext {
   // Core flow
   source:     string;
@@ -23,6 +25,10 @@ export interface ConciergeContext {
 
   // Step 4 — category-specific qualifier (NEW)
   service_subtype?: ServiceSubtype | null;
+
+  // Multi-service handling
+  primary_category?: ServiceCategoryId | null;
+  multi_service_mode?: MultiServiceMode;
 
   // Enrichment flags
   is_multi_service?:    boolean;

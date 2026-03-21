@@ -1,4 +1,4 @@
-import { ConciergeContext, ServiceSubtype } from "@/types/concierge";
+import { ConciergeContext, ServiceSubtype, MultiServiceMode } from "@/types/concierge";
 import {
   categoryLabels,
   goalLabels,
@@ -39,6 +39,8 @@ export const mergeConciergeContext = (partial: Partial<ConciergeContext>): Conci
     goal:               partial.goal               !== undefined ? partial.goal               : (existing?.goal               ?? null),
     timing:             partial.timing             !== undefined ? partial.timing             : (existing?.timing             ?? null),
     service_subtype:    partial.service_subtype    !== undefined ? partial.service_subtype    : (existing?.service_subtype    ?? null),
+    primary_category:   partial.primary_category   !== undefined ? partial.primary_category   : (existing?.primary_category   ?? null),
+    multi_service_mode: partial.multi_service_mode !== undefined ? partial.multi_service_mode : (existing?.multi_service_mode ?? null),
     is_multi_service:   partial.is_multi_service   !== undefined ? partial.is_multi_service   : (existing?.is_multi_service   ?? false),
     is_new_client:      partial.is_new_client      !== undefined ? partial.is_new_client      : (existing?.is_new_client      ?? null),
     budget_sensitivity: partial.budget_sensitivity !== undefined ? partial.budget_sensitivity : (existing?.budget_sensitivity ?? null),
@@ -108,6 +110,8 @@ function buildConversationalSummary(
   artist:      string,
   firstName:   string,
   rec:         { recommendedService?: string; priceRange?: string; recommendedArtist?: string } | null,
+  multiServiceMode: MultiServiceMode | undefined,
+  primaryCategory: string | null | undefined,
 ): string {
   const parts: string[] = [];
   const who = firstName ? `${firstName} is` : "The guest is";
@@ -121,14 +125,24 @@ function buildConversationalSummary(
   };
   const goalStr = goalMap[goal] || (goal ? goal.toLowerCase() : "");
 
-  // Core sentence
-  if (subtypeStr) {
-    parts.push(`${who} exploring ${categories || "services"} — specifically ${subtypeStr}`);
+  // Multi-service aware core sentence
+  if (multiServiceMode === "bundle_guidance") {
+    parts.push(`${who} exploring multiple services including ${categories || "several categories"}`);
+    parts.push("They'd like help deciding what to prioritize and how to combine them");
+  } else if (multiServiceMode === "unsure") {
+    parts.push(`${who} exploring multiple services including ${categories || "several categories"}`);
+    parts.push("They're not sure where to start and would like guidance");
+  } else if (subtypeStr) {
+    if (primaryCategory) {
+      parts.push(`${who} exploring multiple services including ${categories || "services"}, with ${primaryCategory} as their priority — specifically ${subtypeStr}`);
+    } else {
+      parts.push(`${who} exploring ${categories || "services"} — specifically ${subtypeStr}`);
+    }
   } else if (categories) {
     parts.push(`${who} exploring ${categories} services`);
   }
 
-  if (goalStr && subtype !== "unsure") {
+  if (goalStr && subtype !== "unsure" && multiServiceMode !== "unsure") {
     parts.push(`looking for ${goalStr}`);
   }
 
@@ -143,7 +157,9 @@ function buildConversationalSummary(
   if (artist) parts.push(`interested in working with ${artist}`);
 
   // Soft recommendation — gentle framing, never overconfident
-  if (rec?.recommendedService && subtype !== "unsure") {
+  if (multiServiceMode === "bundle_guidance" || multiServiceMode === "unsure") {
+    parts.push("Luna can help map the best combination and next step");
+  } else if (rec?.recommendedService && subtype !== "unsure") {
     const catWord = categories ? categories.toLowerCase() : "services";
     parts.push(`A likely direction may be ${catWord}`);
     if (rec.recommendedArtist) parts.push(`${rec.recommendedArtist} could be a good fit`);
@@ -164,12 +180,15 @@ export const buildDynamicVariables = (ctx: ConciergeContext | null): Record<stri
   const selectedTiming     = ctx?.timing  ? (timingLabels[ctx.timing] || ctx.timing) : "";
   const preferredArtist    = ctx?.preferredArtist || "";
   const subtype            = ctx?.service_subtype ?? null;
-  const serviceCategory    = ctx?.categories?.length ? (categoryLabels[ctx.categories[0]] || ctx.categories[0]) : "";
+  const primaryCat         = ctx?.primary_category;
+  const primaryCatLabel    = primaryCat ? (categoryLabels[primaryCat] || primaryCat) : "";
+  const serviceCategory    = primaryCatLabel || (ctx?.categories?.length ? (categoryLabels[ctx.categories[0]] || ctx.categories[0]) : "");
   const serviceName        = ctx?.item || ctx?.group || "";
   const sourceEntry        = ctx?.source || "find_your_experience";
   const firstName          = getGuestFirstName();
   const sessionId          = getOrCreateSessionId();
   const isMultiService     = ctx?.is_multi_service ? "true" : "false";
+  const multiServiceMode   = ctx?.multi_service_mode || "";
   const isNewClient        = ctx?.is_new_client != null ? String(ctx.is_new_client) : "";
   const budgetSensitivity  = ctx?.budget_sensitivity || "";
 
@@ -184,7 +203,9 @@ export const buildDynamicVariables = (ctx: ConciergeContext | null): Record<stri
     } catch { return null; }
   })();
 
-  const recConfidence = subtype === "unsure"
+  const recConfidence = (ctx?.multi_service_mode === "bundle_guidance" || ctx?.multi_service_mode === "unsure")
+    ? "low"
+    : subtype === "unsure"
     ? "low"
     : rec?.urgency === "high" ? "high" : "medium";
 
@@ -196,6 +217,8 @@ export const buildDynamicVariables = (ctx: ConciergeContext | null): Record<stri
     preferredArtist,
     firstName,
     recConfidence !== "low" ? rec : null,
+    ctx?.multi_service_mode,
+    primaryCatLabel,
   );
 
   return {
@@ -210,6 +233,8 @@ export const buildDynamicVariables = (ctx: ConciergeContext | null): Record<stri
     source_entry:              sourceEntry,
     session_id:                sessionId,
     is_multi_service:          isMultiService,
+    multi_service_mode:        multiServiceMode,
+    primary_category:          primaryCatLabel,
     is_new_client:             isNewClient,
     budget_sensitivity:        budgetSensitivity,
     recommended_service:       rec?.recommendedService || "",

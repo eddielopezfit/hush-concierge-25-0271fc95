@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Scissors, Hand, Sparkles, Eye, Heart,
-  Mic, MessageSquare, Check, ArrowLeft,
+  Mic, MessageSquare, Check, ArrowLeft, HelpCircle, Layers,
 } from "lucide-react";
-import { ConciergeContext, ServiceCategoryId, ServiceSubtype } from "@/types/concierge";
+import { ConciergeContext, ServiceCategoryId, ServiceSubtype, MultiServiceMode } from "@/types/concierge";
 import { setConciergeContext } from "@/lib/conciergeStore";
 import { generateRecommendation, LunaRecommendation } from "@/lib/lunaBrain";
 import { saveSession } from "@/lib/saveSession";
@@ -12,13 +12,15 @@ import { useLuna } from "@/contexts/LunaContext";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type Step = 1 | 2 | 3 | 4;
+type Step = 1 | 2 | 3 | 4 | 5;
 
 interface Selection {
   services:  string[];
   goal:      string | null;
   timing:    string | null;
   subtype:   ServiceSubtype | null;
+  primaryCategory: ServiceCategoryId | null;
+  multiServiceMode: MultiServiceMode;
 }
 
 // ── Static data ───────────────────────────────────────────────────────────────
@@ -45,7 +47,7 @@ const timings = [
   { id: "browsing", label: "Just browsing" },
 ];
 
-// Category-specific step 4 qualifiers
+// Category-specific step qualifiers
 const subtypeOptions: Record<string, { id: ServiceSubtype; label: string }[]> = {
   hair: [
     { id: "cut",   label: "Just a cut or cleanup" },
@@ -113,9 +115,12 @@ export const ExperienceFinderSection = () => {
   const [currentStep, setCurrentStep] = useState<Step>(1);
   const [selection, setSelection] = useState<Selection>({
     services: [], goal: null, timing: null, subtype: null,
+    primaryCategory: null, multiServiceMode: null,
   });
   const [recommendation, setRecommendation] = useState<LunaRecommendation | null>(null);
   const { openModal, markInteracted } = useLuna();
+
+  const isMultiService = selection.services.length > 1;
 
   // ── Handlers ───────────────────────────────────────────────────────────────
 
@@ -125,7 +130,9 @@ export const ExperienceFinderSection = () => {
       services: prev.services.includes(id)
         ? prev.services.filter(s => s !== id)
         : [...prev.services, id],
-      subtype: null, // reset qualifier on category change
+      subtype: null,
+      primaryCategory: null,
+      multiServiceMode: null,
     }));
     markInteracted();
   };
@@ -145,11 +152,19 @@ export const ExperienceFinderSection = () => {
   const handleBack = () => {
     if (currentStep === 2) { setCurrentStep(1); setSelection(p => ({ ...p, goal: null })); }
     else if (currentStep === 3) { setCurrentStep(2); setSelection(p => ({ ...p, timing: null })); }
-    else if (currentStep === 4) { setCurrentStep(3); setSelection(p => ({ ...p, subtype: null })); }
+    else if (currentStep === 4) {
+      setCurrentStep(3);
+      setSelection(p => ({ ...p, subtype: null, primaryCategory: null, multiServiceMode: null }));
+    }
+    else if (currentStep === 5) {
+      // Step 5 is the qualifier after multi-service priority pick
+      setCurrentStep(4);
+      setSelection(p => ({ ...p, subtype: null }));
+    }
   };
 
   const handleReset = () => {
-    setSelection({ services: [], goal: null, timing: null, subtype: null });
+    setSelection({ services: [], goal: null, timing: null, subtype: null, primaryCategory: null, multiServiceMode: null });
     setCurrentStep(1);
     setRecommendation(null);
   };
@@ -165,23 +180,30 @@ export const ExperienceFinderSection = () => {
   // ── Auto-advance step 3 → 4 after timing ──────────────────────────────────
   useEffect(() => {
     if (currentStep === 3 && selection.timing) {
-      const primaryCat = selection.services[0] as ServiceCategoryId | undefined;
-      const hasQualifier = primaryCat && subtypeOptions[primaryCat];
-      if (hasQualifier) {
+      if (isMultiService) {
+        // Multi-service: go to priority picker (step 4)
         const t = setTimeout(() => setCurrentStep(4), 350);
         return () => clearTimeout(t);
       } else {
-        // No qualifier for this category — open modal (user chooses CTA)
-        const t = setTimeout(() => handleLunaAction(), 400);
-        return () => clearTimeout(t);
+        // Single service: go to qualifier (step 4) or launch
+        const singleCat = selection.services[0] as ServiceCategoryId | undefined;
+        const hasQualifier = singleCat && subtypeOptions[singleCat];
+        if (hasQualifier) {
+          const t = setTimeout(() => setCurrentStep(4), 350);
+          return () => clearTimeout(t);
+        } else {
+          const t = setTimeout(() => handleLunaAction(), 400);
+          return () => clearTimeout(t);
+        }
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStep, selection.timing]);
 
-  // ── After step 4 subtype selection — open modal (no auto-voice) ─────────
+  // ── After subtype selection (step 4 single-service or step 5 multi) — open modal
   useEffect(() => {
-    if (currentStep === 4 && selection.subtype) {
+    const isQualifierStep = (!isMultiService && currentStep === 4) || (isMultiService && currentStep === 5);
+    if (isQualifierStep && selection.subtype) {
       const t = setTimeout(() => handleLunaAction(), 400);
       return () => clearTimeout(t);
     }
@@ -191,12 +213,14 @@ export const ExperienceFinderSection = () => {
   // ── Build context ──────────────────────────────────────────────────────────
 
   const buildContext = (): ConciergeContext => ({
-    source:          "find_your_experience",
-    categories:      selection.services as ServiceCategoryId[],
-    goal:            selection.goal,
-    timing:          selection.timing,
-    service_subtype: selection.subtype,
-    is_multi_service: selection.services.length > 1,
+    source:            "find_your_experience",
+    categories:        selection.services as ServiceCategoryId[],
+    goal:              selection.goal,
+    timing:            selection.timing,
+    service_subtype:   selection.subtype,
+    is_multi_service:  isMultiService,
+    primary_category:  selection.primaryCategory,
+    multi_service_mode: selection.multiServiceMode,
     group:   null,
     item:    null,
     price:   null,
@@ -208,6 +232,13 @@ export const ExperienceFinderSection = () => {
 
   const handleLunaAction = () => {
     const ctx = buildContext();
+    console.debug("[ExperienceFinder] launching Luna with:", {
+      categories: ctx.categories,
+      primary_category: ctx.primary_category,
+      service_subtype: ctx.service_subtype,
+      multi_service_mode: ctx.multi_service_mode,
+      is_multi_service: ctx.is_multi_service,
+    });
     setConciergeContext(ctx);
     const rec = generateRecommendation(ctx);
     setRecommendation(rec);
@@ -218,31 +249,84 @@ export const ExperienceFinderSection = () => {
     openModal(ctx);
   };
 
+  // ── Multi-service priority handlers ────────────────────────────────────────
+
+  const handlePrimaryPick = (catId: ServiceCategoryId) => {
+    setSelection(prev => ({
+      ...prev,
+      primaryCategory: catId,
+      multiServiceMode: "primary_focus" as MultiServiceMode,
+    }));
+    // Check if that category has qualifiers
+    if (subtypeOptions[catId]) {
+      setTimeout(() => setCurrentStep(5), 350);
+    } else {
+      setTimeout(() => handleLunaAction(), 400);
+    }
+  };
+
+  const handleBundleGuidance = () => {
+    setSelection(prev => ({
+      ...prev,
+      primaryCategory: null,
+      multiServiceMode: "bundle_guidance" as MultiServiceMode,
+    }));
+    setTimeout(() => handleLunaAction(), 400);
+  };
+
+  const handleMultiUnsure = () => {
+    setSelection(prev => ({
+      ...prev,
+      primaryCategory: null,
+      multiServiceMode: "unsure" as MultiServiceMode,
+    }));
+    setTimeout(() => handleLunaAction(), 400);
+  };
+
   // ── Step meta ──────────────────────────────────────────────────────────────
 
-  const primaryCat = selection.services[0] as ServiceCategoryId | undefined;
+  const qualifierCat = isMultiService
+    ? selection.primaryCategory
+    : (selection.services[0] as ServiceCategoryId | undefined);
 
-  const stepTitles: Record<Step, string> = {
-    1: "What are you looking for?",
-    2: "What's your goal today?",
-    3: "How soon are you thinking?",
-    4: primaryCat === "hair"     ? "What kind of change are you thinking about?"
-       : primaryCat === "nails"  ? "What nail service interests you?"
-       : primaryCat === "lashes" ? "What lash service are you after?"
-       : primaryCat === "massage"? "What kind of massage?"
-       : "What specifically interests you?",
+  const getStepTitle = (s: Step): string => {
+    if (s === 1) return "What are you looking for?";
+    if (s === 2) return "What's your goal today?";
+    if (s === 3) return "How soon are you thinking?";
+    if (s === 4 && isMultiService) return "Which feels most important right now?";
+    if (s === 4) {
+      // single-service qualifier
+      const cat = selection.services[0];
+      if (cat === "hair") return "What kind of change are you thinking about?";
+      if (cat === "nails") return "What nail service interests you?";
+      if (cat === "lashes") return "What lash service are you after?";
+      if (cat === "massage") return "What kind of massage?";
+      return "What specifically interests you?";
+    }
+    if (s === 5) {
+      const cat = selection.primaryCategory;
+      if (cat === "hair") return "What kind of change are you thinking about?";
+      if (cat === "nails") return "What nail service interests you?";
+      if (cat === "lashes") return "What lash service are you after?";
+      if (cat === "massage") return "What kind of massage?";
+      return "What specifically interests you?";
+    }
+    return "";
   };
 
-  const stepSubtitles: Record<Step, string> = {
-    1: "Select one or more.",
-    2: "Pick what resonates.",
-    3: "No pressure — just helps Luna prepare.",
-    4: "One more thing — then Luna takes it from here.",
+  const getStepSubtitle = (s: Step): string => {
+    if (s === 1) return "Select one or more.";
+    if (s === 2) return "Pick what resonates.";
+    if (s === 3) return "No pressure — just helps Luna prepare.";
+    if (s === 4 && isMultiService) return "We'll focus here first, then Luna can help with the rest.";
+    if (s === 4 || s === 5) return "One more thing — then Luna takes it from here.";
+    return "";
   };
 
-  // ── Step indicator (4 steps) ──────────────────────────────────────────────
+  // ── Step indicator ────────────────────────────────────────────────────────
 
-  const TOTAL_STEPS = 4;
+  const TOTAL_VISUAL_STEPS = 4; // always show 4 dots visually
+  const visualStep = currentStep === 5 ? 4 : currentStep; // step 5 maps to dot 4
 
   return (
     <section
@@ -278,20 +362,20 @@ export const ExperienceFinderSection = () => {
           animate={{ opacity: 1 }}
           className="flex justify-center items-center gap-2 mb-12"
         >
-          {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map(step => (
+          {Array.from({ length: TOTAL_VISUAL_STEPS }, (_, i) => i + 1).map(step => (
             <div key={step} className="flex items-center gap-2">
               <div className={`w-9 h-9 rounded-full flex items-center justify-center font-display text-sm transition-all duration-300 ${
-                step === currentStep
+                step === visualStep
                   ? "bg-gold text-background"
-                  : step < currentStep
+                  : step < visualStep
                   ? "bg-gold/25 text-gold"
                   : "bg-secondary text-muted-foreground"
               }`}>
-                {step < currentStep ? <Check className="w-4 h-4" /> : step}
+                {step < visualStep ? <Check className="w-4 h-4" /> : step}
               </div>
-              {step < TOTAL_STEPS && (
+              {step < TOTAL_VISUAL_STEPS && (
                 <div className={`w-8 md:w-16 h-px transition-all duration-300 ${
-                  step < currentStep ? "bg-gold/40" : "bg-secondary"
+                  step < visualStep ? "bg-gold/40" : "bg-secondary"
                 }`} />
               )}
             </div>
@@ -311,10 +395,10 @@ export const ExperienceFinderSection = () => {
                 className="w-full"
               >
                 <h3 className="font-display text-2xl md:text-3xl text-cream text-center mb-2">
-                  {stepTitles[1]}
+                  {getStepTitle(1)}
                 </h3>
                 <p className="font-body text-sm text-muted-foreground text-center mb-10">
-                  {stepSubtitles[1]}
+                  {getStepSubtitle(1)}
                 </p>
                 <motion.div
                   variants={containerVariants} initial="hidden" animate="visible"
@@ -387,10 +471,10 @@ export const ExperienceFinderSection = () => {
                 className="w-full"
               >
                 <h3 className="font-display text-2xl md:text-3xl text-cream text-center mb-2">
-                  {stepTitles[2]}
+                  {getStepTitle(2)}
                 </h3>
                 <p className="font-body text-sm text-muted-foreground text-center mb-10">
-                  {stepSubtitles[2]}
+                  {getStepSubtitle(2)}
                 </p>
                 <motion.div
                   variants={containerVariants} initial="hidden" animate="visible"
@@ -422,10 +506,10 @@ export const ExperienceFinderSection = () => {
                 className="w-full"
               >
                 <h3 className="font-display text-2xl md:text-3xl text-cream text-center mb-2">
-                  {stepTitles[3]}
+                  {getStepTitle(3)}
                 </h3>
                 <p className="font-body text-sm text-muted-foreground text-center mb-10">
-                  {stepSubtitles[3]}
+                  {getStepSubtitle(3)}
                 </p>
                 <motion.div
                   variants={containerVariants} initial="hidden" animate="visible"
@@ -448,67 +532,100 @@ export const ExperienceFinderSection = () => {
               </motion.div>
             )}
 
-            {/* ── STEP 4 — Category qualifier ───────────────────────────── */}
-            {currentStep === 4 && primaryCat && subtypeOptions[primaryCat] && (
+            {/* ── STEP 4 — Multi-service: priority picker OR Single-service: qualifier */}
+            {currentStep === 4 && isMultiService && (
               <motion.div
-                key="step4"
+                key="step4-multi"
                 variants={stepVariants}
                 initial="initial" animate="animate" exit="exit"
                 className="w-full"
               >
                 <h3 className="font-display text-2xl md:text-3xl text-cream text-center mb-2">
-                  {stepTitles[4]}
+                  {getStepTitle(4)}
                 </h3>
                 <p className="font-body text-sm text-muted-foreground text-center mb-10">
-                  {stepSubtitles[4]}
+                  {getStepSubtitle(4)}
                 </p>
                 <motion.div
                   variants={containerVariants} initial="hidden" animate="visible"
-                  className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto"
+                  className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-3xl mx-auto"
                 >
-                  {subtypeOptions[primaryCat].map(opt => (
-                    <motion.button
-                      key={opt.id} variants={itemVariants}
-                      onClick={() => handleSubtypeSelect(opt.id as ServiceSubtype)}
-                      className={`${optionBase} ${selection.subtype === opt.id ? optionActive : optionIdle}`}
-                      whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                    >
-                      <span className={`font-display text-lg transition-colors ${selection.subtype === opt.id ? "text-gold" : "text-cream group-hover:text-gold"}`}>
-                        {opt.label}
-                      </span>
-                    </motion.button>
-                  ))}
-                </motion.div>
+                  {/* Selected category buttons */}
+                  {selection.services.map(svcId => {
+                    const cat = categories.find(c => c.id === svcId);
+                    if (!cat) return null;
+                    const sel = selection.primaryCategory === svcId;
+                    return (
+                      <motion.button
+                        key={cat.id} variants={itemVariants}
+                        onClick={() => handlePrimaryPick(cat.id as ServiceCategoryId)}
+                        className={`${optionBase} ${sel ? optionActive : optionIdle}`}
+                        whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                      >
+                        <cat.icon className={`w-7 h-7 mx-auto mb-3 transition-colors ${sel ? "text-gold" : "text-muted-foreground group-hover:text-gold"}`} />
+                        <span className={`font-display text-lg transition-colors ${sel ? "text-gold" : "text-cream group-hover:text-gold"}`}>
+                          {cat.label}
+                        </span>
+                      </motion.button>
+                    );
+                  })}
 
-                {/* Manual CTA as fallback (auto-launch fires on selection) */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 }}
-                  className="flex flex-col md:flex-row items-center justify-center gap-4 mt-10"
-                >
+                  {/* Help me combine them */}
                   <motion.button
-                    onClick={handleLunaAction}
-                    disabled={!selection.subtype}
-                    className={`btn-gold py-4 px-8 flex items-center gap-3 ${!selection.subtype ? "opacity-40 cursor-not-allowed" : ""}`}
-                    whileHover={selection.subtype ? { scale: 1.02 } : {}}
-                    whileTap={selection.subtype ? { scale: 0.98 } : {}}
+                    variants={itemVariants}
+                    onClick={handleBundleGuidance}
+                    className={`${optionBase} ${optionIdle}`}
+                    whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                   >
-                    <Mic className="w-5 h-5" />
-                    Speak with Luna
+                    <Layers className="w-7 h-7 mx-auto mb-3 text-muted-foreground group-hover:text-gold transition-colors" />
+                    <span className="font-display text-lg text-cream group-hover:text-gold transition-colors">
+                      Help me combine them
+                    </span>
                   </motion.button>
+
+                  {/* Not sure yet */}
                   <motion.button
-                    onClick={handleLunaAction}
-                    disabled={!selection.subtype}
-                    className={`btn-outline-gold py-4 px-8 flex items-center gap-3 ${!selection.subtype ? "opacity-40 cursor-not-allowed" : ""}`}
-                    whileHover={selection.subtype ? { scale: 1.02 } : {}}
-                    whileTap={selection.subtype ? { scale: 0.98 } : {}}
+                    variants={itemVariants}
+                    onClick={handleMultiUnsure}
+                    className={`${optionBase} ${optionIdle}`}
+                    whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                   >
-                    <MessageSquare className="w-5 h-5" />
-                    Chat with Luna
+                    <HelpCircle className="w-7 h-7 mx-auto mb-3 text-muted-foreground group-hover:text-gold transition-colors" />
+                    <span className="font-display text-lg text-cream group-hover:text-gold transition-colors">
+                      Not sure yet
+                    </span>
                   </motion.button>
                 </motion.div>
-                <BackButton onClick={handleBack} className="mt-4" />
+                <BackButton onClick={handleBack} />
               </motion.div>
+            )}
+
+            {/* ── STEP 4 — Single-service qualifier ─────────────────────── */}
+            {currentStep === 4 && !isMultiService && qualifierCat && subtypeOptions[qualifierCat] && (
+              <QualifierStep
+                step={4}
+                title={getStepTitle(4)}
+                subtitle={getStepSubtitle(4)}
+                category={qualifierCat}
+                selectedSubtype={selection.subtype}
+                onSelect={handleSubtypeSelect}
+                onLunaAction={handleLunaAction}
+                onBack={handleBack}
+              />
+            )}
+
+            {/* ── STEP 5 — Multi-service qualifier (after priority pick) ── */}
+            {currentStep === 5 && qualifierCat && subtypeOptions[qualifierCat] && (
+              <QualifierStep
+                step={5}
+                title={getStepTitle(5)}
+                subtitle={getStepSubtitle(5)}
+                category={qualifierCat}
+                selectedSubtype={selection.subtype}
+                onSelect={handleSubtypeSelect}
+                onLunaAction={handleLunaAction}
+                onBack={handleBack}
+              />
             )}
 
           </AnimatePresence>
@@ -529,6 +646,81 @@ export const ExperienceFinderSection = () => {
     </section>
   );
 };
+
+// ── Qualifier step sub-component ──────────────────────────────────────────────
+
+interface QualifierStepProps {
+  step: number;
+  title: string;
+  subtitle: string;
+  category: ServiceCategoryId;
+  selectedSubtype: ServiceSubtype | null;
+  onSelect: (id: ServiceSubtype) => void;
+  onLunaAction: () => void;
+  onBack: () => void;
+}
+
+const QualifierStep = ({ step, title, subtitle, category, selectedSubtype, onSelect, onLunaAction, onBack }: QualifierStepProps) => (
+  <motion.div
+    key={`step${step}-qualifier`}
+    variants={stepVariants}
+    initial="initial" animate="animate" exit="exit"
+    className="w-full"
+  >
+    <h3 className="font-display text-2xl md:text-3xl text-cream text-center mb-2">
+      {title}
+    </h3>
+    <p className="font-body text-sm text-muted-foreground text-center mb-10">
+      {subtitle}
+    </p>
+    <motion.div
+      variants={containerVariants} initial="hidden" animate="visible"
+      className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto"
+    >
+      {subtypeOptions[category]?.map(opt => (
+        <motion.button
+          key={opt.id} variants={itemVariants}
+          onClick={() => onSelect(opt.id as ServiceSubtype)}
+          className={`${optionBase} ${selectedSubtype === opt.id ? optionActive : optionIdle}`}
+          whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+        >
+          <span className={`font-display text-lg transition-colors ${selectedSubtype === opt.id ? "text-gold" : "text-cream group-hover:text-gold"}`}>
+            {opt.label}
+          </span>
+        </motion.button>
+      ))}
+    </motion.div>
+
+    {/* Manual CTA */}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.5 }}
+      className="flex flex-col md:flex-row items-center justify-center gap-4 mt-10"
+    >
+      <motion.button
+        onClick={onLunaAction}
+        disabled={!selectedSubtype}
+        className={`btn-gold py-4 px-8 flex items-center gap-3 ${!selectedSubtype ? "opacity-40 cursor-not-allowed" : ""}`}
+        whileHover={selectedSubtype ? { scale: 1.02 } : {}}
+        whileTap={selectedSubtype ? { scale: 0.98 } : {}}
+      >
+        <Mic className="w-5 h-5" />
+        Speak with Luna
+      </motion.button>
+      <motion.button
+        onClick={onLunaAction}
+        disabled={!selectedSubtype}
+        className={`btn-outline-gold py-4 px-8 flex items-center gap-3 ${!selectedSubtype ? "opacity-40 cursor-not-allowed" : ""}`}
+        whileHover={selectedSubtype ? { scale: 1.02 } : {}}
+        whileTap={selectedSubtype ? { scale: 0.98 } : {}}
+      >
+        <MessageSquare className="w-5 h-5" />
+        Chat with Luna
+      </motion.button>
+    </motion.div>
+    <BackButton onClick={onBack} className="mt-4" />
+  </motion.div>
+);
 
 // ── Shared sub-components ─────────────────────────────────────────────────────
 
