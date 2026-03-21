@@ -179,7 +179,7 @@ export const ExperienceFinderSection = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStep, selection.timing]);
 
-  // ── Auto-launch after step 4 subtype selection ────────────────────────────
+  // ── After step 4 subtype selection — open modal (no auto-voice) ─────────
   useEffect(() => {
     if (currentStep === 4 && selection.subtype) {
       const t = setTimeout(() => handleLunaAction(), 400);
