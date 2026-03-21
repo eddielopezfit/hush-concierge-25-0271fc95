@@ -34,7 +34,7 @@ const SYSTEM_PROMPT = `You are Luna, the AI concierge for Hush Salon & Day Spa i
 - Silviya Warren — High Fashion Color. Best for: bold transformations and vivid color
 - Whitney Hernandez — Dimensional Blondes & Updos. Best for: blonding, events, bridal
 - Kathy Charette — Cuts & Color. Best for: clean cuts and reliable color, great with first-timers
-- Allison Griessel — Creative Color. Best for: creative/unconventional looks, also does lashes
+- Allison Griessel — Creative Color, Esthetics & Lashes. Phone: (520) 250-6606. Best for: creative/unconventional looks, also does facials and lashes
 - Melissa Brunty — Extensions & Long Hair. Best for: length, volume, extensions
 - Ana Moreno — Color, Cuts & Styling. Best for: versatile everyday looks
 - Priscilla — Color & Cuts. Best for: dependable quality every visit
