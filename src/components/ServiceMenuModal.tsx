@@ -7,7 +7,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { ServiceCategory } from "@/data/servicesMenuData";
+import { ServiceCategory, getCategoryWithCrossRefs } from "@/data/servicesMenuData";
 import { useLuna } from "@/contexts/LunaContext";
 import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
 import { setConciergeContext } from "@/lib/conciergeStore";
