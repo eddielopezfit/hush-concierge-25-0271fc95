@@ -39,6 +39,8 @@ export const mergeConciergeContext = (partial: Partial<ConciergeContext>): Conci
     goal:               partial.goal               !== undefined ? partial.goal               : (existing?.goal               ?? null),
     timing:             partial.timing             !== undefined ? partial.timing             : (existing?.timing             ?? null),
     service_subtype:    partial.service_subtype    !== undefined ? partial.service_subtype    : (existing?.service_subtype    ?? null),
+    primary_category:   partial.primary_category   !== undefined ? partial.primary_category   : (existing?.primary_category   ?? null),
+    multi_service_mode: partial.multi_service_mode !== undefined ? partial.multi_service_mode : (existing?.multi_service_mode ?? null),
     is_multi_service:   partial.is_multi_service   !== undefined ? partial.is_multi_service   : (existing?.is_multi_service   ?? false),
     is_new_client:      partial.is_new_client      !== undefined ? partial.is_new_client      : (existing?.is_new_client      ?? null),
     budget_sensitivity: partial.budget_sensitivity !== undefined ? partial.budget_sensitivity : (existing?.budget_sensitivity ?? null),
