@@ -71,9 +71,9 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
     setTimeout(() => openModal(ctx), 100);
   };
 
-  if (!category) return null;
+  if (!resolvedCategory) return null;
 
-  const CategoryIcon = category.icon;
+  const CategoryIcon = resolvedCategory.icon;
 
   return (
     <AnimatePresence>
