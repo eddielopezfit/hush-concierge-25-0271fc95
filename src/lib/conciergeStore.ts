@@ -128,6 +128,19 @@ function buildConversationalSummary(
   };
   const goalStr = goalMap[goal] || (goal ? goal.toLowerCase() : "");
 
+  // Team Compare mode — comparison-specific summary
+  if (source === "Team Compare") {
+    parts.push(`${who} comparing stylists in ${categories || "a category"}`);
+    if (viewedArtist) {
+      parts.push(`They were looking at ${viewedArtist}'s profile`);
+    }
+    if (comparisonArtists) {
+      parts.push(`Available artists in this category: ${comparisonArtists}`);
+    }
+    parts.push("They want to understand how these artists differ — help them compare without choosing for them");
+    return parts.join(". ") + ".";
+  }
+
   // Multi-service aware core sentence
   if (multiServiceMode === "bundle_guidance") {
     parts.push(`${who} exploring multiple services including ${categories || "several categories"}`);
