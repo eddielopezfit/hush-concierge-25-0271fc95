@@ -150,16 +150,12 @@ export const LunaVoiceWidget = ({ isPrimary = false }: LunaVoiceWidgetProps) => 
       }
     } else {
       // Non-primary widget: request via bus, scroll to primary
-      const granted = requestVoiceStart("secondary-widget");
-      
-      // Always scroll to Luna section
+      requestVoiceStart("secondary-widget");
+
       const lunaSection = document.getElementById("luna");
       if (lunaSection) {
         lunaSection.scrollIntoView({ behavior: "smooth" });
       }
-      
-      // If not granted, the primary will NOT start (already active)
-      // The bus dispatches the event which primary listens to
     }
   }, [conversation.status, isPrimary, startConversation, stopConversation]);
 
