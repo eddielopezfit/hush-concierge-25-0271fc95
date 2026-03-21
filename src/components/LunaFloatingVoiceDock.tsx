@@ -6,9 +6,6 @@ import { getConciergeContext, buildDynamicVariables, buildLunaFirstMessage } fro
 import {
   requestVoiceStart,
   endVoiceSession,
-  getVoiceActive,
-  subscribeToVoiceState,
-  setVoiceActive,
 } from "@/lib/lunaVoiceBus";
 
 const LUNA_AGENT_ID = "agent_9501kkz62prjevdt34t1ny4dpzf5";
