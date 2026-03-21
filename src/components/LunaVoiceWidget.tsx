@@ -76,11 +76,19 @@ export const LunaVoiceWidget = ({ isPrimary = false }: LunaVoiceWidgetProps) => 
       const dynamicVariables = buildDynamicVariables(ctx);
       console.log("Dynamic vars:", dynamicVariables);
 
+      // Build context-aware first message
+      const contextSummary = dynamicVariables.luna_context_summary;
+      let firstMessage: string | undefined;
+      if (contextSummary && contextSummary.trim().length > 10) {
+        firstMessage = `Welcome to Hush. ${contextSummary} How can I help you take the next step?`;
+      }
+
       console.log("Starting ElevenLabs session");
 
       await conversation.startSession({
         agentId: LUNA_AGENT_ID,
         dynamicVariables,
+        ...(firstMessage ? { overrides: { agent: { firstMessage } } } : {}),
       } as any);
       
       console.log("[LunaVoiceWidget] Session started successfully");

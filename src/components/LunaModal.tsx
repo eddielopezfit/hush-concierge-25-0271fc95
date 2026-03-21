@@ -184,7 +184,7 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
                 className="mb-6 p-4 rounded-lg border border-gold/15 bg-background/40"
               >
                 <p className="font-body text-[10px] text-gold uppercase tracking-wider mb-2">
-                  A strong starting direction
+                  A possible direction
                 </p>
                 <p className="font-body text-sm text-cream/80 leading-relaxed">
                   {softDirection}
