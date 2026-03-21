@@ -108,22 +108,27 @@ export const LunaChatWidget = () => {
         )}
       </AnimatePresence>
 
-      {/* Collapsed Bubble */}
+      {/* Collapsed Bubble + Label */}
       <AnimatePresence>
         {!isOpen && (
-          <motion.button
+          <motion.div
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
             transition={{ type: "spring", stiffness: 260, damping: 20 }}
-            onClick={handleOpen}
-            className="fixed bottom-6 right-6 z-[9999] w-[60px] h-[60px] rounded-full bg-primary flex items-center justify-center shadow-[var(--shadow-gold)] hover:shadow-[0_0_50px_hsl(38_50%_55%/0.5)] transition-shadow"
+            className="fixed bottom-20 md:bottom-6 right-6 z-[9999] flex flex-col items-center gap-1.5"
           >
-            <MessageCircle className="w-7 h-7 text-primary-foreground" />
-            {showBadge && (
-              <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-foreground rounded-full border-2 border-primary" />
-            )}
-          </motion.button>
+            <motion.button
+              onClick={handleOpen}
+              className="w-[56px] h-[56px] rounded-full bg-primary flex items-center justify-center shadow-[var(--shadow-gold)] hover:shadow-[0_0_50px_hsl(38_50%_55%/0.5)] transition-shadow"
+            >
+              <MessageCircle className="w-6 h-6 text-primary-foreground" />
+              {showBadge && (
+                <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-foreground rounded-full border-2 border-primary" />
+              )}
+            </motion.button>
+            <span className="font-body text-[10px] text-muted-foreground tracking-wide">Ask Luna</span>
+          </motion.div>
         )}
       </AnimatePresence>
 
