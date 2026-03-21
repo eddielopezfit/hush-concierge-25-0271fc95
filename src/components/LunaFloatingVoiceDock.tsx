@@ -198,7 +198,7 @@ export const LunaFloatingVoiceDock = () => {
                       <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center">
                         <span className="font-display text-xs text-primary-foreground font-semibold">L</span>
                       </div>
-                      <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-card" />
+                      <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-accent border-2 border-card" />
                     </div>
                     <div>
                       <span className="font-display text-sm text-foreground">Luna</span>
