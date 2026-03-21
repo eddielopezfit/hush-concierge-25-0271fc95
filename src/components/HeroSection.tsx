@@ -1,12 +1,16 @@
 import { motion } from "framer-motion";
-import { LunaVoiceWidget } from "./LunaVoiceWidget";
-import { ArrowDown, Sparkles } from "lucide-react";
+import { ArrowDown, Sparkles, Mic } from "lucide-react";
 import heroImage from "@/assets/hero-salon.jpg";
+import { requestVoiceStart } from "@/lib/lunaVoiceBus";
 
 export const HeroSection = () => {
   const handleDiscoverClick = () => {
     const finder = document.getElementById("experience-finder");
     if (finder) finder.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleSpeakWithLuna = () => {
+    requestVoiceStart("hero");
   };
 
   return (
@@ -65,22 +69,17 @@ export const HeroSection = () => {
             Find Your Experience
           </motion.button>
 
-          {/* Primary CTA — Luna voice (isPrimary: owns the voice bus + handles all start-request events) */}
-          <div className="relative group" title="Tap to speak with Luna">
-            <div className="absolute inset-0 rounded-full animate-hero-pulse" />
-            <div className="absolute inset-0 rounded-full animate-hero-pulse-delayed" />
-            <LunaVoiceWidget isPrimary />
-          </div>
+          {/* Secondary CTA — speak with Luna (triggers floating dock) */}
+          <motion.button
+            onClick={handleSpeakWithLuna}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="btn-outline-gold py-4 px-8 flex items-center gap-3"
+          >
+            <Mic className="w-5 h-5" />
+            Speak with Luna
+          </motion.button>
         </motion.div>
-
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1, duration: 0.6 }}
-          className="text-xs text-muted-foreground uppercase tracking-widest"
-        >
-          or tap the mic to speak with Luna
-        </motion.p>
       </div>
 
       {/* Scroll Indicator */}

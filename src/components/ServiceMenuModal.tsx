@@ -62,7 +62,8 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
     const ctx = buildCategoryContext();
     setConciergeContext(ctx);
     onClose();
-    setTimeout(() => openModal(ctx), 100);
+    // Start voice via the floating dock — no modal redirect needed
+    requestVoiceStart("service-menu");
   };
 
   const handleChatWithLuna = () => {

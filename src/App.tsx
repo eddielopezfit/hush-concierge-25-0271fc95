@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { LunaChatWidget } from "./components/LunaChatWidget";
+import { LunaFloatingVoiceDock } from "./components/LunaFloatingVoiceDock";
 import { LunaProvider } from "./contexts/LunaContext";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
+        <LunaFloatingVoiceDock />
         <LunaChatWidget />
       </LunaProvider>
     </TooltipProvider>
