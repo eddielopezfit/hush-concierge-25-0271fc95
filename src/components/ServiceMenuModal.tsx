@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Mic, MessageSquare, Phone } from "lucide-react";
 import { useEffect, useState } from "react";
+import { requestVoiceStart } from "@/lib/lunaVoiceBus";
 import {
   Accordion,
   AccordionContent,
