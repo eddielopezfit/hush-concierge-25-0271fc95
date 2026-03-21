@@ -87,15 +87,19 @@ export const LunaVoiceWidget = ({ isPrimary = false }: LunaVoiceWidgetProps) => 
         firstMessage = `Welcome to Hush. ${contextSummary} How can I help you take the next step?`;
       }
 
-      console.log("Starting ElevenLabs session");
-
-      await conversation.startSession({
+      const sessionOptions: any = {
         agentId: LUNA_AGENT_ID,
         dynamicVariables,
-        ...(firstMessage ? { overrides: { agent: { firstMessage } } } : {}),
-      } as any);
+      };
+      if (firstMessage) {
+        sessionOptions.overrides = { agent: { firstMessage } };
+      }
+
+      console.log("[LunaVoiceWidget] Starting session with options:", JSON.stringify(sessionOptions, null, 2));
+
+      await conversation.startSession(sessionOptions);
       
-      console.log("[LunaVoiceWidget] Session started successfully");
+      console.log("[LunaVoiceWidget] Session started, status:", conversation.status);
     } catch (err) {
       console.error("[LunaVoiceWidget] Voice start failed:", err);
       setError(String(err));
