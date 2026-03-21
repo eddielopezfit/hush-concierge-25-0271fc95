@@ -142,13 +142,12 @@ function buildConversationalSummary(
 
   if (artist) parts.push(`interested in working with ${artist}`);
 
-  // Soft recommendation — only when subtype is known
+  // Soft recommendation — gentle framing, never overconfident
   if (rec?.recommendedService && subtype !== "unsure") {
-    let recStr = `A strong starting direction: ${rec.recommendedService}`;
-    if (rec.priceRange) recStr += ` (${rec.priceRange})`;
-    if (rec.recommendedArtist) recStr += ` — ${rec.recommendedArtist}`;
-    parts.push(recStr);
-    parts.push("This isn't final — Luna can refine this with the guest");
+    const catWord = categories ? categories.toLowerCase() : "services";
+    parts.push(`A likely direction may be ${catWord}`);
+    if (rec.recommendedArtist) parts.push(`${rec.recommendedArtist} could be a good fit`);
+    parts.push("Luna can help refine this further");
   } else if (subtype === "unsure") {
     parts.push("They're open to guidance on which service fits best");
   }

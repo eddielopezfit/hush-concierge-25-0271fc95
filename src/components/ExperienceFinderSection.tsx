@@ -171,7 +171,7 @@ export const ExperienceFinderSection = () => {
         const t = setTimeout(() => setCurrentStep(4), 350);
         return () => clearTimeout(t);
       } else {
-        // No qualifier for this category — go straight to Luna
+        // No qualifier for this category — open modal (user chooses CTA)
         const t = setTimeout(() => handleLunaAction(), 400);
         return () => clearTimeout(t);
       }
