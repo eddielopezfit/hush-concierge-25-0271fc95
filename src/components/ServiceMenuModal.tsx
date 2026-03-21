@@ -108,7 +108,7 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
                   <CategoryIcon className="w-6 h-6 text-gold" />
                 </div>
                 <h2 className="font-display text-2xl md:text-3xl text-cream">
-                  {category.title}
+                  {resolvedCategory.title}
                 </h2>
               </div>
               <p className="font-body text-muted-foreground text-sm md:text-base mb-3">
