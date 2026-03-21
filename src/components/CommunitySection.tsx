@@ -64,10 +64,10 @@ export const CommunitySection = () => {
           className="text-center mb-14"
         >
           <h2 className="font-display text-4xl md:text-5xl font-semibold text-cream mb-4">
-            The Hush <span className="text-gold-gradient">Inner Circle</span>
+            Hush <span className="text-gold-gradient">Inner Circle</span>
           </h2>
-          <p className="font-body text-base text-muted-foreground max-w-lg mx-auto">
-            Our most loyal guests get treated like family. Because at Hush, you are.
+          <p className="font-body text-base text-muted-foreground max-w-xl mx-auto">
+            Built on the original Hush Groupies referral program — now enhanced for a more personalized experience.
           </p>
         </motion.div>
 
