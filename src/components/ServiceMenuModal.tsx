@@ -167,7 +167,7 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
 
               {resolvedCategory.notes && resolvedCategory.notes.length > 0 && (
                 <div className="mt-6 p-4 bg-secondary/30 rounded-lg border border-secondary/50">
-                  {category.notes.map((note, idx) => (
+                  {resolvedCategory.notes!.map((note, idx) => (
                     <p key={idx} className="font-body text-sm text-cream/60 italic">
                       {note}
                     </p>
