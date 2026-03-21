@@ -31,6 +31,10 @@ export interface TeamMember {
   specialties: string[];
   description: string;
   bestFor: string;
+  /** Short warm fit statement shown on filtered cards */
+  fitStatement: string;
+  /** "Known for" / "Guests often choose for" tags */
+  knownFor: string[];
   badge?: string;
   /** Primary service category for concierge context */
   serviceCategory: ServiceCategoryId | null;
