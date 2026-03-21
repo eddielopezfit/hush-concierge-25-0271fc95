@@ -181,7 +181,7 @@ export const servicesMenuData: ServiceCategory[] = [
           { name: "Signature Facial", price: "$95" },
           { name: "Dermaplane / Hydrafacial / Microdermabrasion Facials", price: "$115" },
           { name: "Microneedling", price: "$299" },
-          { name: "Brow Wax", price: "$20" },
+          { name: "Brow Wax", price: "$20", sharedId: "brow-wax", crossCategories: ["lashes"] },
           { name: "Airbrush Spray Tan", price: "$35" },
           { name: "Other waxing services", price: "Call for pricing" },
         ],
