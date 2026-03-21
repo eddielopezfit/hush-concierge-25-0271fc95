@@ -87,8 +87,7 @@ export const teamMembers: TeamMember[] = [
   { id: "n3", name: "Jackie", department: "nails", role: "nail-tech", photo: imgJackie, specialty: "Nail Art & Extensions", specialties: ["Nail Art", "Extensions"], description: "Creative nail art and extension specialist.", bestFor: "Trendy nail art", serviceCategory: "nails", isPrimaryBooking: true },
   // Massage
   { id: "m1", name: "Tammi", department: "massage", role: "massage-therapist", photo: null, specialty: "Massage Therapist", specialties: ["Massage", "Relaxation", "Therapeutic"], description: "Therapeutic touch that restores balance and renews spirit.", bestFor: "Deep relaxation and recovery", serviceCategory: "massage", directPhone: "(520) 370-3018", isPrimaryBooking: true },
-  // Lashes
-  { id: "l1", name: "Allison", department: "lashes", role: "lash-specialist", photo: null, specialty: "Lash Specialist", specialties: ["Classic Lashes", "Volume Lashes", "Lash Lifts"], description: "Custom lash design enhancing natural eye shape.", bestFor: "Natural to dramatic lash looks", serviceCategory: "lashes", directPhone: "(520) 250-6606", isPrimaryBooking: true },
+  // Lashes — Allison Griessel (h6) covers lashes via serviceCategories; no separate record needed
 ];
 
 /** Get founders only */

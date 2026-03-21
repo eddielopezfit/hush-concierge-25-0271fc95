@@ -119,9 +119,14 @@ function getPriceRange(categoryId: ServiceCategoryId, serviceName: string): stri
 
 /**
  * Safely resolve the primary category from context.
- * Normalizes and validates the category, falling back to "hair".
+ * Prioritizes explicit primary_category, then falls back to categories[0].
  */
 function resolvePrimaryCategory(context: ConciergeContext): ServiceCategoryId {
+  // If a primary_category was explicitly chosen (multi-service flow), use it
+  if (context.primary_category && VALID_CATEGORIES.includes(context.primary_category)) {
+    return context.primary_category;
+  }
+
   const categories = context.categories;
   if (!categories || !Array.isArray(categories) || categories.length === 0) {
     return "hair";
