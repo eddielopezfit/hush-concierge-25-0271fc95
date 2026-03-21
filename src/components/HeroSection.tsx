@@ -69,12 +69,12 @@ export const HeroSection = () => {
             Find Your Experience
           </motion.button>
 
-          {/* Secondary CTA — speak with Luna (triggers floating dock) */}
+          {/* Secondary CTA — speak with Luna (hidden on mobile, sticky bar handles it) */}
           <motion.button
             onClick={handleSpeakWithLuna}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="btn-outline-gold py-4 px-8 flex items-center gap-3"
+            className="btn-outline-gold py-4 px-8 hidden sm:flex items-center gap-3"
           >
             <Mic className="w-5 h-5" />
             Speak with Luna
