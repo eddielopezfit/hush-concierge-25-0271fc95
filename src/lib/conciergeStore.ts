@@ -7,6 +7,11 @@ import {
 } from "@/lib/conciergeLabels";
 
 const STORAGE_KEY = "hush_concierge_context";
+const REC_KEY = "hush_luna_recommendation";
+const FIRST_NAME_KEY = "hush_guest_first_name";
+const SESSION_ID_KEY = "hush_session_id";
+
+// ── Storage helpers ──────────────────────────────────────────────────────────
 
 export const getConciergeContext = (): ConciergeContext | null => {
   try {
@@ -22,7 +27,7 @@ export const setConciergeContext = (ctx: ConciergeContext): void => {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(ctx));
   } catch {
-    console.error("Failed to save concierge context");
+    console.error("[conciergeStore] Failed to save context");
   }
 };
 
@@ -30,7 +35,7 @@ export const clearConciergeContext = (): void => {
   try {
     localStorage.removeItem(STORAGE_KEY);
   } catch {
-    console.error("Failed to clear concierge context");
+    console.error("[conciergeStore] Failed to clear context");
   }
 };
 
@@ -52,133 +57,172 @@ export const mergeConciergeContext = (partial: Partial<ConciergeContext>): Conci
   return merged;
 };
 
-// Helper to build a first message for Luna based on context
+// ── Session ID ───────────────────────────────────────────────────────────────
+
+export const getOrCreateSessionId = (): string => {
+  try {
+    const existing = sessionStorage.getItem(SESSION_ID_KEY);
+    if (existing) return existing;
+    const id = `sess_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    sessionStorage.setItem(SESSION_ID_KEY, id);
+    return id;
+  } catch {
+    return "";
+  }
+};
+
+// ── Guest name ───────────────────────────────────────────────────────────────
+
+export const setGuestFirstName = (fullName: string): void => {
+  if (!fullName?.trim()) return;
+  const first = fullName.trim().split(/\s+/)[0];
+  try { sessionStorage.setItem(FIRST_NAME_KEY, first); } catch { /* ignore */ }
+};
+
+export const getGuestFirstName = (): string => {
+  try { return sessionStorage.getItem(FIRST_NAME_KEY) || ""; } catch { return ""; }
+};
+
+// ── Legacy helper ────────────────────────────────────────────────────────────
+
 export const buildLunaFirstMessage = (ctx: ConciergeContext | null): string | undefined => {
   if (!ctx) return undefined;
-  
   const parts: string[] = [];
-  
-  if (ctx.categories && ctx.categories.length > 0) {
-    const names = formatCategoryList(ctx.categories);
-    parts.push(`I see you're interested in ${names}`);
-  }
-  
-  if (ctx.group && ctx.item) {
-    parts.push(`specifically ${ctx.item} from our ${ctx.group} menu`);
-  }
-  
-  if (ctx.goal) {
-    const label = goalLabels[ctx.goal] || ctx.goal;
-    parts.push(`Your goal is to ${label.toLowerCase()}`);
-  }
-  
-  if (ctx.timing) {
-    const label = timingLabels[ctx.timing] || ctx.timing;
-    parts.push(`and you're looking to book ${label.toLowerCase()}`);
-  }
-
-  if (ctx.preferredArtist) {
-    parts.push(`You're interested in working with ${ctx.preferredArtist}`);
-  }
-  
-  if (parts.length === 0) return undefined;
-  
+  if (ctx.categories?.length) parts.push(`I see you're interested in ${formatCategoryList(ctx.categories)}`);
+  if (ctx.group && ctx.item) parts.push(`specifically ${ctx.item} from our ${ctx.group} menu`);
+  if (ctx.goal) parts.push(`Your goal is to ${(goalLabels[ctx.goal] || ctx.goal).toLowerCase()}`);
+  if (ctx.timing) parts.push(`and you're looking to book ${(timingLabels[ctx.timing] || ctx.timing).toLowerCase()}`);
+  if (ctx.preferredArtist) parts.push(`You're interested in working with ${ctx.preferredArtist}`);
+  if (!parts.length) return undefined;
   return `Welcome! ${parts.join(". ")}. Let me help you find the perfect experience.`;
 };
 
-/**
- * Build dynamic variables for ElevenLabs session.
- * Uses natural language for luna_context_summary.
- */
+// ── Main build function ──────────────────────────────────────────────────────
+
 export const buildDynamicVariables = (ctx: ConciergeContext | null): Record<string, string> => {
-  let selectedCategories = "";
-  if (ctx?.categories && ctx.categories.length > 0) {
-    selectedCategories = formatCategoryList(ctx.categories);
-  }
 
-  const selectedGoal = ctx?.goal ? (goalLabels[ctx.goal] || ctx.goal) : "";
-  const selectedTiming = ctx?.timing ? (timingLabels[ctx.timing] || ctx.timing) : "";
-  const preferredArtist = ctx?.preferredArtist || "";
-
-  // Build warm natural language summary for Luna's personalized opening
-  const summaryParts: string[] = [];
-  if (selectedCategories) {
-    summaryParts.push(`The guest is interested in ${selectedCategories}`);
-  }
-  if (selectedGoal) {
-    // Keys must match goalLabels output exactly: "Refresh", "Relax", "Transform", "Event-ready"
-    const goalPhraseMap: Record<string, string> = {
-      "Refresh": "looking for a quick refresh",
-      "Relax": "wanting to relax and unwind",
-      "Transform": "ready for a full transformation",
-      "Event-ready": "getting ready for a special event",
-    };
-    summaryParts.push(goalPhraseMap[selectedGoal] || `wanting ${selectedGoal.toLowerCase()}`);
-  }
-  if (selectedTiming) {
-    // Keys must match timingLabels output: "Today", "This week", "Planning ahead", "Just browsing"
-    const timingPhraseMap: Record<string, string> = {
-      "Today": "hoping to come in today",
-      "This week": "looking to book this week",
-      "Planning ahead": "planning ahead for a future visit",
-      "Just browsing": "just exploring options for now",
-    };
-    summaryParts.push(timingPhraseMap[selectedTiming] || `timing: ${selectedTiming.toLowerCase()}`);
-  }
-  if (preferredArtist) {
-    summaryParts.push(`specifically interested in working with ${preferredArtist}`);
-  }
-  
-  const lunaContextSummary = summaryParts.length > 0 
-    ? summaryParts.join(". ") + "."
+  // ── 1. Resolve display values ──────────────────────────────────────────────
+  const selectedCategories = ctx?.categories?.length
+    ? formatCategoryList(ctx.categories)
     : "";
 
-  // Enrich with lunaBrain recommendation if available
-  const storedRec = (() => {
+  // goalLabels keys: refresh → "Refresh", relax → "Relax", transform → "Transform", event → "Event-ready"
+  const selectedGoal    = ctx?.goal   ? (goalLabels[ctx.goal]     || ctx.goal)   : "";
+  const selectedTiming  = ctx?.timing ? (timingLabels[ctx.timing] || ctx.timing) : "";
+  const preferredArtist = ctx?.preferredArtist || "";
+
+  const serviceCategory = ctx?.categories?.length
+    ? (categoryLabels[ctx.categories[0]] || ctx.categories[0])
+    : "";
+
+  const serviceName   = ctx?.item  || ctx?.group || "";
+  const servicePrice  = ctx?.price || "";
+  const sourceEntry   = ctx?.source || "";
+  const firstName     = getGuestFirstName();
+  const sessionId     = getOrCreateSessionId();
+
+  // ── 2. Load recommendation from sessionStorage ─────────────────────────────
+  const rec = (() => {
     try {
-      const r = sessionStorage.getItem("hush_luna_recommendation");
+      const r = sessionStorage.getItem(REC_KEY);
       return r ? JSON.parse(r) : null;
     } catch { return null; }
   })();
 
-  let finalSummary = lunaContextSummary;
-  if (storedRec?.recommendedService) {
-    const recParts = [`Recommended service: ${storedRec.recommendedService}`];
-    if (storedRec.priceRange) recParts.push(`Price: ${storedRec.priceRange}`);
-    if (storedRec.recommendedArtist) recParts.push(`Suggested stylist: ${storedRec.recommendedArtist}`);
-    finalSummary = (lunaContextSummary ? lunaContextSummary + " " : "") + recParts.join(". ") + ".";
+  const recommendedService = rec?.recommendedService || "";
+  const recommendedArtist  = rec?.recommendedArtist  || "";
+  const recommendedPrice   = rec?.priceRange         || "";
+  const urgency            = rec?.urgency            || "";
+  const nextStep           = rec?.nextStep           || "";
+
+  // ── 3. Build natural-language summary ─────────────────────────────────────
+  // goalPhraseMap keys must match goalLabels OUTPUT values exactly
+  const goalPhraseMap: Record<string, string> = {
+    "Refresh":    "looking for a quick refresh",
+    "Relax":      "wanting to relax and unwind",
+    "Transform":  "ready for a full transformation",
+    "Event-ready":"getting ready for a special event",
+  };
+
+  // timingPhraseMap keys must match timingLabels OUTPUT values exactly (case-sensitive)
+  const timingPhraseMap: Record<string, string> = {
+    "Today":          "hoping to come in today",
+    "This week":      "looking to book this week",
+    "Planning ahead": "planning ahead for a future visit",
+    "Just browsing":  "just exploring options for now",
+  };
+
+  const parts: string[] = [];
+
+  // Greet by name if available
+  if (firstName) {
+    parts.push(`Guest name: ${firstName}`);
   }
 
-  // ── Discrete fields for individual variable slots ────────────────────────
-  // service_category: first selected category, human-readable
-  const serviceCategory = ctx?.categories && ctx.categories.length > 0
-    ? (categoryLabels[ctx.categories[0]] || ctx.categories[0])
-    : "";
+  // Category
+  if (selectedCategories) {
+    parts.push(`Interested in: ${selectedCategories}`);
+  }
 
-  // service_name: specific item selected (e.g. "Brazilian Blowout Smoothing Treatment")
-  const serviceName = ctx?.item || ctx?.group || "";
+  // Specific service (from menu deep-link)
+  if (serviceName && serviceName !== selectedCategories) {
+    parts.push(`Specific service: ${serviceName}${servicePrice ? ` (${servicePrice})` : ""}`);
+  }
 
-  // source_entry: where the user triggered Luna from
-  const sourceEntry = ctx?.source || "";
+  // Goal
+  if (selectedGoal) {
+    const phrase = goalPhraseMap[selectedGoal];
+    parts.push(phrase ? `Goal: ${phrase}` : `Goal: ${selectedGoal}`);
+  }
 
-  // first_name: captured from form if available
-  const firstName = (() => {
-    try {
-      return sessionStorage.getItem("hush_guest_first_name") || "";
-    } catch { return ""; }
-  })();
+  // Timing
+  if (selectedTiming) {
+    const phrase = timingPhraseMap[selectedTiming];
+    parts.push(phrase ? `Timeframe: ${phrase}` : `Timeframe: ${selectedTiming}`);
+  }
 
+  // Preferred artist
+  if (preferredArtist) {
+    parts.push(`Interested in: ${preferredArtist}`);
+  }
+
+  // Recommendation from lunaBrain
+  if (recommendedService) {
+    const recLine = [`Suggested: ${recommendedService}`];
+    if (recommendedPrice) recLine.push(`at ${recommendedPrice}`);
+    if (recommendedArtist) recLine.push(`with ${recommendedArtist}`);
+    parts.push(recLine.join(" "));
+  }
+
+  // Source
+  if (sourceEntry) {
+    parts.push(`Entry: ${sourceEntry}`);
+  }
+
+  const lunaContextSummary = parts.length > 0 ? parts.join(" | ") : "";
+
+  // ── 4. Return full variable set ───────────────────────────────────────────
   return {
-    // Legacy / summary
-    selected_categories: selectedCategories,
-    selected_goal: selectedGoal,
-    selected_timing: selectedTiming,
-    preferred_artist: preferredArtist,
-    luna_context_summary: finalSummary,
-    // New discrete variables — match ElevenLabs agent variable names exactly
+    // Primary context variable — appears in first message
+    luna_context_summary: lunaContextSummary,
+
+    // Discrete fields — consumed by Section 1C in system prompt
+    first_name:       firstName,
     service_category: serviceCategory,
-    service_name: serviceName,
-    source_entry: sourceEntry,
-    first_name: firstName,
+    service_name:     serviceName,
+    selected_goal:    selectedGoal,
+    selected_timing:  selectedTiming,
+    preferred_artist: preferredArtist,
+    source_entry:     sourceEntry,
+    session_id:       sessionId,
+
+    // Recommendation fields
+    recommended_service: recommendedService,
+    recommended_artist:  recommendedArtist,
+    recommended_price:   recommendedPrice,
+    urgency:             urgency,
+
+    // Legacy — kept for backward compat
+    selected_categories: selectedCategories,
   };
 };

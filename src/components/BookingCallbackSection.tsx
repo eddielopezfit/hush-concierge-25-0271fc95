@@ -3,7 +3,7 @@ import { Mic, Phone, MessageCircle, CheckCircle, Check } from "lucide-react";
 import { useState } from "react";
 import { useLuna } from "@/contexts/LunaContext";
 import { ConciergeContext } from "@/types/concierge";
-import { setConciergeContext } from "@/lib/conciergeStore";
+import { setConciergeContext, setGuestFirstName } from "@/lib/conciergeStore";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { saveLead } from "@/lib/saveSession";
@@ -47,8 +47,7 @@ export const BookingCallbackSection = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
     // Capture first name for Luna context
     if (field === "fullName" && value.trim()) {
-      const firstName = value.trim().split(" ")[0];
-      try { sessionStorage.setItem("hush_guest_first_name", firstName); } catch {}
+      setGuestFirstName(value);
     }
   };
 
