@@ -235,6 +235,9 @@ export const buildDynamicVariables = (ctx: ConciergeContext | null): Record<stri
     recConfidence !== "low" ? rec : null,
     ctx?.multi_service_mode,
     primaryCatLabel,
+    sourceEntry,
+    ctx?.group || "",
+    ctx?.item || "",
   );
 
   return {
