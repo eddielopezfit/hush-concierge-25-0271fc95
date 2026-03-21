@@ -63,7 +63,12 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
     onClose();
     console.debug("[LunaModal] requestVoiceStart('modal') called");
     requestVoiceStart("modal");
-    setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 100);
+    setTimeout(() => {
+      const lunaSection = document.getElementById("luna");
+      if (lunaSection) {
+        lunaSection.scrollIntoView({ behavior: "smooth" });
+      }
+    }, 100);
   };
 
   const handleChatWithLuna = () => {
