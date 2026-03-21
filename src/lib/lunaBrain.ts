@@ -36,6 +36,7 @@ const artistsByCategory: Record<ServiceCategoryId, { name: string; specialty: st
   skincare: [
     { name: "Patty", specialty: "Facials & Skincare" },
     { name: "Lori", specialty: "Facials & Skincare" },
+    { name: "Allison Griessel", specialty: "Creative Color & Esthetics" },
   ],
   massage: [
     { name: "Tammy", specialty: "Massage Therapist" },

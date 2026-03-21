@@ -100,9 +100,12 @@ export const getTeam = () => teamMembers.filter(m => m.department !== "founders"
 /** Get bookable artists (for Luna matching) */
 export const getBookableArtists = () => teamMembers.filter(m => m.isPrimaryBooking);
 
-/** Get artists by service category */
+/** Get artists by service category (includes multi-category members) */
 export const getArtistsByCategory = (category: ServiceCategoryId) =>
-  teamMembers.filter(m => m.serviceCategory === category && m.isPrimaryBooking);
+  teamMembers.filter(m =>
+    m.isPrimaryBooking &&
+    (m.serviceCategory === category || (m.serviceCategories?.includes(category) ?? false))
+  );
 
 /** Department label for display */
 export const departmentLabels: Record<TeamDepartment, string> = {
