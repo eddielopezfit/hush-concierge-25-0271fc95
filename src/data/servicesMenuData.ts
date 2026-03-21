@@ -224,7 +224,7 @@ export const getCategoryById = (id: string): ServiceCategory | undefined => {
  * Get all cross-referenced service items that belong to a given category
  * but are defined in other categories via crossCategories.
  */
-export function getCrossReferencedItems(categoryId: string): { groupName: string; items: ServiceItem[] } | null {
+export function getCrossReferencedItems(categoryId: string): ServiceGroup | null {
   const crossItems: ServiceItem[] = [];
 
   for (const cat of servicesMenuData) {
@@ -232,7 +232,6 @@ export function getCrossReferencedItems(categoryId: string): { groupName: string
     for (const group of cat.groups) {
       for (const item of group.items) {
         if (item.crossCategories?.includes(categoryId)) {
-          // Avoid duplicates by sharedId
           if (!crossItems.some(ci => ci.sharedId === item.sharedId)) {
             crossItems.push(item);
           }
@@ -242,7 +241,7 @@ export function getCrossReferencedItems(categoryId: string): { groupName: string
   }
 
   return crossItems.length > 0
-    ? { groupName: "Also Available", items: crossItems }
+    ? { name: "Also Available", items: crossItems }
     : null;
 }
 
