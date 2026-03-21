@@ -18,7 +18,6 @@ interface LunaVoiceWidgetProps {
 
 export const LunaVoiceWidget = ({ isPrimary = false }: LunaVoiceWidgetProps) => {
   const [isConnecting, setIsConnecting] = useState(false);
-  const [hasPermission, setHasPermission] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [voiceActiveElsewhere, setVoiceActiveElsewhere] = useState(false);
   const isStartingRef = useRef(false);
@@ -26,9 +25,13 @@ export const LunaVoiceWidget = ({ isPrimary = false }: LunaVoiceWidgetProps) => 
   const conversation = useConversation({
     onConnect: () => {
       console.log("[Luna] Connected successfully");
+      setError(null);
     },
     onDisconnect: (details) => {
       console.log("[Luna] Disconnected, details:", details);
+      if (details?.reason === "error" && details?.message) {
+        setError(details.message);
+      }
       endVoiceSession();
     },
     onError: (error) => {
