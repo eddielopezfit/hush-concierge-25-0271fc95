@@ -6,8 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 const perks = [
   {
     icon: Gift,
-    title: "Refer & Earn",
-    description: "Share Hush with a friend — you both receive a $10 credit toward your next service. The original Groupies deal, still going strong."
+    title: "Refer & Earn $10",
+    description: "Refer a friend — when they book, you both receive $10 off your next purchase. The original Groupies deal, still going strong."
   },
   {
     icon: Crown,
