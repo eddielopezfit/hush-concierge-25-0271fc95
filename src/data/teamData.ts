@@ -32,8 +32,10 @@ export interface TeamMember {
   description: string;
   bestFor: string;
   badge?: string;
-  /** Maps department to a valid ServiceCategoryId for concierge context */
+  /** Primary service category for concierge context */
   serviceCategory: ServiceCategoryId | null;
+  /** Additional service categories this team member covers */
+  serviceCategories?: ServiceCategoryId[];
   directPhone?: string;
   isPrimaryBooking: boolean;
 }
@@ -69,7 +71,7 @@ export const teamMembers: TeamMember[] = [
   { id: "h3", name: "Silviya Warren", department: "hair", role: "stylist", photo: imgSilviyaWarren, specialty: "High Fashion Color", specialties: ["Fashion Color", "Artistic Color"], description: "Specializing in bold, editorial color work.", bestFor: "Bold transformations and vivid color", serviceCategory: "hair", isPrimaryBooking: true },
   { id: "h4", name: "Whitney Hernandez", department: "hair", role: "stylist", photo: imgWhitneyHernandez, specialty: "Dimensional Blondes & Updos", specialties: ["Blondes", "Updos", "Dimensional Color"], description: "Creating luminous blondes and stunning updo artistry.", bestFor: "Blonding, events, and bridal", serviceCategory: "hair", isPrimaryBooking: true },
   { id: "h5", name: "Kathy Charette", department: "hair", role: "stylist", photo: imgKathyCharette, specialty: "Cuts & Color", specialties: ["Haircuts", "Color"], description: "Precision cuts paired with beautiful color.", bestFor: "Clean cuts and reliable color", serviceCategory: "hair", isPrimaryBooking: true },
-  { id: "h6", name: "Allison Griessel", department: "hair", role: "stylist", photo: imgAllisonGriessel, specialty: "Creative Color", specialties: ["Creative Color", "Esthetics"], description: "Pushing boundaries with creative color techniques.", bestFor: "Creative and unconventional looks", serviceCategory: "hair", isPrimaryBooking: true },
+  { id: "h6", name: "Allison Griessel", department: "hair", role: "stylist", photo: imgAllisonGriessel, specialty: "Creative Color & Esthetics", specialties: ["Creative Color", "Esthetics", "Facials", "Skincare"], description: "Dual-trained in creative color and esthetics — one of the few artists at Hush who can do both.", bestFor: "Creative color + skincare in one visit", serviceCategory: "hair", serviceCategories: ["hair", "skincare"], isPrimaryBooking: true },
   { id: "h7", name: "Melissa Brunty", department: "hair", role: "stylist", photo: imgMelissaBrunty, specialty: "Extensions & Long Hair", specialties: ["Extensions", "Long Hair"], description: "Seamless extensions and long hair transformations.", bestFor: "Length, volume, and extensions", serviceCategory: "hair", isPrimaryBooking: true },
   { id: "h8", name: "Ana Moreno", department: "hair", role: "stylist", photo: imgAnaMoreno, specialty: "Color, Cuts & Styling", specialties: ["Color", "Cuts", "Styling"], description: "Versatile stylist skilled in color, cuts, and finishing.", bestFor: "Versatile everyday looks", serviceCategory: "hair", isPrimaryBooking: true },
   { id: "h9", name: "Priscilla", department: "hair", role: "stylist", photo: imgPriscilla, specialty: "Color & Cuts", specialties: ["Color", "Cuts"], description: "Reliable artistry in color and precision cutting.", bestFor: "Dependable quality every visit", serviceCategory: "hair", isPrimaryBooking: true },
@@ -98,9 +100,12 @@ export const getTeam = () => teamMembers.filter(m => m.department !== "founders"
 /** Get bookable artists (for Luna matching) */
 export const getBookableArtists = () => teamMembers.filter(m => m.isPrimaryBooking);
 
-/** Get artists by service category */
+/** Get artists by service category (includes multi-category members) */
 export const getArtistsByCategory = (category: ServiceCategoryId) =>
-  teamMembers.filter(m => m.serviceCategory === category && m.isPrimaryBooking);
+  teamMembers.filter(m =>
+    m.isPrimaryBooking &&
+    (m.serviceCategory === category || (m.serviceCategories?.includes(category) ?? false))
+  );
 
 /** Department label for display */
 export const departmentLabels: Record<TeamDepartment, string> = {
