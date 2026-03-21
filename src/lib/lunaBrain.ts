@@ -177,11 +177,8 @@ export function generateRecommendation(context: ConciergeContext | null | undefi
     recommendedService = subtypeServiceOverride[subtype];
   }
 
-  // Pick an artist for the primary category
-  const artists = artistsByCategory[primaryCategory] || [];
-  // Return ALL qualified artists so Luna can present options, not just one
-  const artistOptions = artists.map(a => `${a.name} (${a.specialty})`).join(" | ");
-  const recommendedArtist = artistOptions || null;
+  // Do not recommend specific artists — the team feels it's biased
+  const recommendedArtist = null;
 
   const priceRange = getPriceRange(primaryCategory, recommendedService);
 
