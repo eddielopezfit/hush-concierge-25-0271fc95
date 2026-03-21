@@ -60,17 +60,17 @@ const goalServiceMap: Record<string, Record<ServiceCategoryId, string>> = {
     massage: "90 min Massage",
   },
   transform: {
-    hair: "Expert Color — Full Transformation",
+    hair: "Expert Color",
     nails: "Nail Set w/Gel",
     lashes: "Volume Lash Set",
     skincare: "Microneedling",
     massage: "120 min Massage",
   },
   event: {
-    hair: "Special Occasion Style + Color",
-    nails: "Manicure w/Gel + Pedicure w/Gel",
+    hair: "Special Occasion Style",
+    nails: "Manicure w/Gel",
     lashes: "Hybrid Lash Set",
-    skincare: "Dermaplane / Hydrafacial",
+    skincare: "Dermaplane / Hydrafacial / Microdermabrasion Facials",
     massage: "60 min Massage",
   },
 };
@@ -156,13 +156,27 @@ export function generateRecommendation(context: ConciergeContext | null | undefi
 
   // Get recommended service based on goal + category
   const serviceMap = goalServiceMap[normalizedGoal] || goalServiceMap.refresh;
-  const recommendedService = serviceMap[primaryCategory] || serviceMap.hair;
+  let recommendedService = serviceMap[primaryCategory] || serviceMap.hair;
+
+  // Subtype overrides goal-based suggestion with specific service
+  const subtypeServiceOverride: Record<string, string> = {
+    cut: "Precision Haircut", color: "Expert Color", both: "Precision Haircut + Expert Color",
+    manicure: "Manicure", pedicure: "Pedicure", full_set: "Nail Set", nail_art: "Nail Set w/Gel",
+    fill: "Classic Lash Fill", lift: "Lash Lift & Perm",
+    relaxation: "90 min Massage", deep_tissue: "90 min Massage", pain_relief: "90 min Massage",
+    facial: "Signature Facial", acne: "Microneedling",
+    glow: "Dermaplane / Hydrafacial / Microdermabrasion Facials",
+  };
+  const subtype = (context as any).service_subtype;
+  if (subtype && subtype !== "unsure" && subtypeServiceOverride[subtype]) {
+    recommendedService = subtypeServiceOverride[subtype];
+  }
 
   // Pick an artist for the primary category
   const artists = artistsByCategory[primaryCategory] || [];
-  const recommendedArtist = artists.length > 0
-    ? `${artists[0].name} — ${artists[0].specialty}`
-    : null;
+  // Return ALL qualified artists so Luna can present options, not just one
+  const artistOptions = artists.map(a => `${a.name} (${a.specialty})`).join(" | ");
+  const recommendedArtist = artistOptions || null;
 
   const priceRange = getPriceRange(primaryCategory, recommendedService);
 
