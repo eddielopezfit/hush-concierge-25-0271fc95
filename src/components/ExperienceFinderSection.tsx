@@ -171,7 +171,7 @@ export const ExperienceFinderSection = () => {
         const t = setTimeout(() => setCurrentStep(4), 350);
         return () => clearTimeout(t);
       } else {
-        // No qualifier for this category — go straight to Luna
+        // No qualifier for this category — open modal (user chooses CTA)
         const t = setTimeout(() => handleLunaAction(), 400);
         return () => clearTimeout(t);
       }
@@ -179,7 +179,7 @@ export const ExperienceFinderSection = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStep, selection.timing]);
 
-  // ── Auto-launch after step 4 subtype selection ────────────────────────────
+  // ── After step 4 subtype selection — open modal (no auto-voice) ─────────
   useEffect(() => {
     if (currentStep === 4 && selection.subtype) {
       const t = setTimeout(() => handleLunaAction(), 400);
