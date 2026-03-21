@@ -5,7 +5,7 @@ import {
   Mic, MessageSquare, Check, ArrowLeft, HelpCircle, Layers,
 } from "lucide-react";
 import { ConciergeContext, ServiceCategoryId, ServiceSubtype, MultiServiceMode } from "@/types/concierge";
-import { setConciergeContext } from "@/lib/conciergeStore";
+import { setConciergeContext, setGuestFirstName } from "@/lib/conciergeStore";
 import { generateRecommendation, LunaRecommendation } from "@/lib/lunaBrain";
 import { saveSession } from "@/lib/saveSession";
 import { useLuna } from "@/contexts/LunaContext";
@@ -118,6 +118,7 @@ export const ExperienceFinderSection = () => {
     primaryCategory: null, multiServiceMode: null,
   });
   const [recommendation, setRecommendation] = useState<LunaRecommendation | null>(null);
+  const [guestName, setGuestName] = useState("");
   const { openModal, markInteracted } = useLuna();
 
   const isMultiService = selection.services.length > 1;
@@ -200,15 +201,9 @@ export const ExperienceFinderSection = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStep, selection.timing]);
 
-  // ── After subtype selection (step 4 single-service or step 5 multi) — open modal
-  useEffect(() => {
-    const isQualifierStep = (!isMultiService && currentStep === 4) || (isMultiService && currentStep === 5);
-    if (isQualifierStep && selection.subtype) {
-      const t = setTimeout(() => handleLunaAction(), 400);
-      return () => clearTimeout(t);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentStep, selection.subtype]);
+  // NOTE: Subtype auto-launch removed intentionally.
+  // QualifierStep has its own "Speak with Luna" / "Chat with Luna" CTAs
+  // which serve as the explicit launch trigger after subtype selection.
 
   // ── Build context ──────────────────────────────────────────────────────────
 
@@ -435,13 +430,38 @@ export const ExperienceFinderSection = () => {
                   })}
                 </motion.div>
 
+                {/* ── Name capture ──────────────────────────────────── */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="max-w-xs mx-auto mt-8"
+                >
+                  <input
+                    type="text"
+                    value={guestName}
+                    onChange={e => setGuestName(e.target.value)}
+                    placeholder="What should Luna call you? (optional)"
+                    className="w-full bg-background/40 border border-gold/15 rounded-lg px-4 py-3 text-cream text-sm font-body placeholder-muted-foreground/50 focus:outline-none focus:border-gold/50 text-center transition-colors"
+                    onKeyDown={e => {
+                      if (e.key === "Enter" && selection.services.length > 0) {
+                        if (guestName.trim()) setGuestFirstName(guestName.trim());
+                        setCurrentStep(2);
+                      }
+                    }}
+                  />
+                </motion.div>
+
                 <motion.div
                   initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 }}
-                  className="flex flex-col items-center gap-4 mt-10"
+                  className="flex flex-col items-center gap-4 mt-6"
                 >
                   <motion.button
-                    onClick={() => selection.services.length > 0 && setCurrentStep(2)}
+                    onClick={() => {
+                      if (selection.services.length === 0) return;
+                      if (guestName.trim()) setGuestFirstName(guestName.trim());
+                      setCurrentStep(2);
+                    }}
                     disabled={selection.services.length === 0}
                     className={`btn-gold py-4 px-10 min-w-[160px] transition-all ${selection.services.length === 0 ? "opacity-40 cursor-not-allowed" : ""}`}
                     whileHover={selection.services.length > 0 ? { scale: 1.02 } : {}}

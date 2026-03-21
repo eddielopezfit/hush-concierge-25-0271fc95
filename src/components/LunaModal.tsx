@@ -1,10 +1,11 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Mic, MessageSquare, Phone } from "lucide-react";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { ConciergeContext } from "@/types/concierge";
 import { setConciergeContext } from "@/lib/conciergeStore";
 import { requestVoiceStart, getVoiceActive, subscribeToVoiceState } from "@/lib/lunaVoiceBus";
 import { categoryLabels, goalLabels, timingLabels } from "@/lib/conciergeLabels";
+import { useLuna } from "@/contexts/LunaContext";
 
 interface LunaModalProps {
   isOpen:   boolean;
@@ -32,7 +33,13 @@ const subtypeDisplayLabels: Record<string, string> = {
 };
 
 export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
+  const { openChatWidget } = useLuna();
   const [voiceAlreadyActive, setVoiceAlreadyActive] = useState(false);
+  // Exit-intent lead capture
+  const [showLeadCapture, setShowLeadCapture] = useState(false);
+  const [leadPhone, setLeadPhone]             = useState("");
+  const [leadSubmitted, setLeadSubmitted]     = useState(false);
+  const ctaClickedRef                         = useRef(false);
 
   // Voice state tracking
   useEffect(() => {
@@ -40,6 +47,16 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
     setVoiceAlreadyActive(getVoiceActive());
     const unsub = subscribeToVoiceState(active => setVoiceAlreadyActive(active));
     return unsub;
+  }, [isOpen]);
+
+  // Reset CTA-clicked ref and lead capture state each time modal opens
+  useEffect(() => {
+    if (isOpen) {
+      ctaClickedRef.current = false;
+      setShowLeadCapture(false);
+      setLeadSubmitted(false);
+      setLeadPhone("");
+    }
   }, [isOpen]);
 
   // Body scroll lock
@@ -52,35 +69,27 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
   // ── Handlers ────────────────────────────────────────────────────────────────
 
   const handleSpeakWithLuna = () => {
-    console.debug("[LunaModal] Speak with Luna clicked", {
-      categories: context?.categories,
-      primary_category: context?.primary_category,
-      service_subtype: context?.service_subtype,
-      multi_service_mode: context?.multi_service_mode,
-      is_multi_service: context?.is_multi_service,
-    });
+    ctaClickedRef.current = true;
+    console.debug("[LunaModal] Speak with Luna clicked");
     if (context) setConciergeContext(context);
     onClose();
-    console.debug("[LunaModal] requestVoiceStart('modal') called");
     requestVoiceStart("modal");
+    // Scroll to hero mic — that's now the primary voice widget
     setTimeout(() => {
-      const lunaSection = document.getElementById("luna");
-      if (lunaSection) {
-        lunaSection.scrollIntoView({ behavior: "smooth" });
-      }
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }, 100);
   };
 
   const handleChatWithLuna = () => {
+    ctaClickedRef.current = true;
     if (context) setConciergeContext(context);
     onClose();
-    setTimeout(() => {
-      const el = document.getElementById("callback");
-      if (el) el.scrollIntoView({ behavior: "smooth" });
-    }, 100);
+    // Open the real LunaChatWidget on the Chat tab
+    openChatWidget();
   };
 
   const handleRequestCallback = () => {
+    ctaClickedRef.current = true;
     onClose();
     setTimeout(() => {
       const el = document.getElementById("callback");
@@ -92,6 +101,38 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
         }, 800);
       }
     }, 100);
+  };
+
+  // Exit-intent: show lead capture if user closes without choosing a CTA
+  const handleClose = () => {
+    if (!ctaClickedRef.current && !leadSubmitted && context?.categories?.length) {
+      setShowLeadCapture(true);
+    } else {
+      onClose();
+    }
+  };
+
+  const handleLeadSubmit = () => {
+    if (leadPhone.trim().length >= 10) {
+      // Save phone + context to localStorage for now (GHL webhook optional)
+      try {
+        const leads = JSON.parse(localStorage.getItem("hush_leads") || "[]");
+        leads.push({
+          phone: leadPhone.trim(),
+          context,
+          timestamp: new Date().toISOString(),
+        });
+        localStorage.setItem("hush_leads", JSON.stringify(leads));
+      } catch { /* ignore */ }
+      setLeadSubmitted(true);
+      setTimeout(() => {
+        setShowLeadCapture(false);
+        setLeadSubmitted(false);
+        setLeadPhone("");
+        ctaClickedRef.current = false;
+        onClose();
+      }, 2000);
+    }
   };
 
   // ── Context display helpers ──────────────────────────────────────────────────
@@ -168,7 +209,7 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 bg-background/85 backdrop-blur-md"
-          onClick={onClose}
+          onClick={handleClose}
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -180,12 +221,72 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
           >
             {/* Close */}
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="absolute top-4 right-4 w-9 h-9 rounded-full bg-secondary flex items-center justify-center text-muted-foreground hover:text-cream hover:bg-gold/15 transition-all"
               aria-label="Close"
             >
               <X className="w-4 h-4" />
             </button>
+
+            {/* ── EXIT-INTENT LEAD CAPTURE (slide-in overlay) ──────────── */}
+            <AnimatePresence>
+              {showLeadCapture && (
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                  transition={{ duration: 0.25 }}
+                  className="absolute inset-0 rounded-xl bg-card flex flex-col items-center justify-center p-8 z-10"
+                >
+                  {leadSubmitted ? (
+                    <motion.div
+                      initial={{ scale: 0.9, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="text-center"
+                    >
+                      <p className="font-display text-2xl text-gold mb-2">Got it.</p>
+                      <p className="font-body text-sm text-muted-foreground">
+                        We'll text you a booking link shortly.
+                      </p>
+                    </motion.div>
+                  ) : (
+                    <>
+                      <p className="font-display text-xl text-cream mb-1 text-center">
+                        Want Luna to text you
+                        <br />a booking link?
+                      </p>
+                      <p className="font-body text-xs text-muted-foreground text-center mb-6">
+                        We'll hold your preferences and reach out.
+                      </p>
+                      <input
+                        type="tel"
+                        value={leadPhone}
+                        onChange={e => setLeadPhone(e.target.value)}
+                        onKeyDown={e => e.key === "Enter" && handleLeadSubmit()}
+                        placeholder="Your phone number"
+                        className="w-full bg-background/60 border border-gold/20 rounded-lg px-4 py-3 text-cream text-sm font-body placeholder-muted-foreground focus:outline-none focus:border-gold/60 mb-3"
+                        autoFocus
+                      />
+                      <button
+                        onClick={handleLeadSubmit}
+                        disabled={leadPhone.trim().length < 10}
+                        className={`w-full btn-gold py-3 px-6 text-sm ${
+                          leadPhone.trim().length < 10 ? "opacity-40 cursor-not-allowed" : ""
+                        }`}
+                      >
+                        Send me the link
+                      </button>
+                      <button
+                        onClick={() => { setShowLeadCapture(false); onClose(); }}
+                        className="mt-3 text-xs text-muted-foreground hover:text-gold transition-colors font-body"
+                      >
+                        No thanks
+                      </button>
+                    </>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* ── SECTION 1 — Context reflection ────────────────────────── */}
             {hasContext && (
