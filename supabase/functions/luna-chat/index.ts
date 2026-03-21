@@ -50,7 +50,7 @@ const SYSTEM_PROMPT = `You are Luna, the AI concierge for Hush Salon & Day Spa i
 - Jackie — Nail Art & Extensions. Phone: (520) 501-6861. Best for: trendy nail art
 
 ## MASSAGE
-- Tammy — Massage Therapist. Phone: (520) 370-3018. Best for: deep relaxation and recovery
+- Tammi — Massage Therapist. Phone: (520) 370-3018. Best for: deep relaxation and recovery
 - Mention your stylist's name for 20% off!
 
 ## LASHES
