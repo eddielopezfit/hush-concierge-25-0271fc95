@@ -180,7 +180,7 @@ export const LunaFloatingVoiceDock = () => {
                     )}
                   </div>
                   {/* Pulse indicator */}
-                  <span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-green-500 border-2 border-card animate-pulse" />
+                  <span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-accent border-2 border-card animate-pulse" />
                 </div>
                 <span className="font-body text-xs text-foreground/80">Luna active</span>
                 <Maximize2 className="w-3.5 h-3.5 text-muted-foreground" />
