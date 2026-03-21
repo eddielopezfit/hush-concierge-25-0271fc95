@@ -32,8 +32,10 @@ export interface TeamMember {
   description: string;
   bestFor: string;
   badge?: string;
-  /** Maps department to a valid ServiceCategoryId for concierge context */
+  /** Primary service category for concierge context */
   serviceCategory: ServiceCategoryId | null;
+  /** Additional service categories this team member covers */
+  serviceCategories?: ServiceCategoryId[];
   directPhone?: string;
   isPrimaryBooking: boolean;
 }
