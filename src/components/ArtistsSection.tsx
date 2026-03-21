@@ -1,10 +1,28 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
-import { X, Sparkles } from "lucide-react";
+import { useState, useMemo } from "react";
+import { X, Sparkles, Scissors, Hand, Eye, Heart } from "lucide-react";
 import { useLuna } from "@/contexts/LunaContext";
 import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
 import { teamMembers, photoMap, getFounders, getTeam, TeamMember } from "@/data/teamData";
 import { trackArtistClick } from "@/lib/journeyTracker";
+
+// Filter chip definitions
+const filterChips: { id: string; label: string; icon?: typeof Scissors }[] = [
+  { id: "all", label: "All" },
+  { id: "hair", label: "Hair", icon: Scissors },
+  { id: "nails", label: "Nails", icon: Hand },
+  { id: "lashes", label: "Lashes", icon: Eye },
+  { id: "skincare", label: "Skincare", icon: Sparkles },
+  { id: "massage", label: "Massage", icon: Heart },
+];
+
+/** Check if a team member matches a category (using both serviceCategory and serviceCategories) */
+const matchesCategory = (member: TeamMember, category: string): boolean => {
+  if (category === "all") return true;
+  if (member.serviceCategory === category) return true;
+  if (member.serviceCategories?.includes(category as ServiceCategoryId)) return true;
+  return false;
+};
 
 const ArtistAvatar = ({ artist }: { artist: TeamMember }) => {
   const photo = photoMap[artist.id];
@@ -35,11 +53,14 @@ const ArtistAvatar = ({ artist }: { artist: TeamMember }) => {
 
 export const ArtistsSection = () => {
   const [selectedArtist, setSelectedArtist] = useState<TeamMember | null>(null);
+  const [activeFilter, setActiveFilter] = useState("all");
   const { openModal } = useLuna();
 
   const handleBeginWithLuna = (artist: TeamMember) => {
     setSelectedArtist(null);
-    const categories: ServiceCategoryId[] = artist.serviceCategory ? [artist.serviceCategory] : [];
+    const categories: ServiceCategoryId[] = artist.serviceCategories?.length
+      ? artist.serviceCategories
+      : artist.serviceCategory ? [artist.serviceCategory] : [];
     const lunaContext: ConciergeContext = {
       source: "Meet the Team",
       categories,
@@ -54,6 +75,18 @@ export const ArtistsSection = () => {
   const founders = getFounders();
   const team = getTeam();
 
+  // Filtered lists
+  const filteredFounders = useMemo(
+    () => activeFilter === "all" ? founders : founders.filter(m => matchesCategory(m, activeFilter)),
+    [activeFilter, founders]
+  );
+  const filteredTeam = useMemo(
+    () => activeFilter === "all" ? team : team.filter(m => matchesCategory(m, activeFilter)),
+    [activeFilter, team]
+  );
+
+  const hasResults = filteredFounders.length > 0 || filteredTeam.length > 0;
+
   return (
     <>
       <section id="artists" className="py-20 md:py-28 bg-background">
@@ -63,7 +96,7 @@ export const ArtistsSection = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
-            className="text-center mb-14 md:mb-20"
+            className="text-center mb-10 md:mb-14"
           >
             <h2 className="font-display text-4xl md:text-5xl lg:text-6xl text-cream mb-4">
               Meet the <span className="text-gold-gradient">Team</span>
@@ -73,61 +106,131 @@ export const ArtistsSection = () => {
             </p>
           </motion.div>
 
-          {/* Founders Row */}
-          <div className="flex justify-center gap-4 md:gap-6 mb-10">
-            {founders.map((artist, index) => (
+          {/* Category Filter Chips */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="flex flex-wrap justify-center gap-2 mb-12 md:mb-16"
+          >
+            {filterChips.map(chip => {
+              const isActive = activeFilter === chip.id;
+              const Icon = chip.icon;
+              return (
+                <button
+                  key={chip.id}
+                  onClick={() => setActiveFilter(chip.id)}
+                  className={`
+                    flex items-center gap-1.5 px-4 py-2 rounded-full font-body text-sm transition-all duration-300
+                    ${isActive
+                      ? "bg-primary text-primary-foreground shadow-[var(--shadow-gold)]"
+                      : "bg-secondary text-muted-foreground border border-border hover:border-primary/40 hover:text-foreground"
+                    }
+                  `}
+                >
+                  {Icon && <Icon className="w-3.5 h-3.5" />}
+                  {chip.label}
+                </button>
+              );
+            })}
+          </motion.div>
+
+          {/* No results */}
+          <AnimatePresence mode="wait">
+            {!hasResults && (
               <motion.div
-                key={artist.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="group cursor-pointer w-40 md:w-48"
-                onClick={() => setSelectedArtist(artist)}
+                key="no-results"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="text-center py-16"
               >
-                <div className="relative aspect-[3/4] rounded-lg overflow-hidden border border-gold/25 hover:border-gold/50 transition-all duration-500 group-hover:shadow-[0_0_25px_-5px_hsl(38_50%_55%/0.2)]">
-                  <ArtistAvatar artist={artist} />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-3">
-                    <h3 className="font-display text-lg md:text-xl text-cream mb-1 leading-tight">
-                      {artist.name}
-                    </h3>
-                    <span className="inline-block text-[10px] font-body text-gold bg-gold/8 px-2 py-0.5 rounded-full">
-                      {artist.specialty}
-                    </span>
-                  </div>
-                </div>
+                <p className="font-body text-muted-foreground text-base mb-2">
+                  No specialists available for this service right now.
+                </p>
+                <p className="font-body text-sm text-primary">
+                  Luna can help you choose.
+                </p>
               </motion.div>
-            ))}
-          </div>
+            )}
+          </AnimatePresence>
+
+          {/* Founders Row */}
+          <AnimatePresence mode="wait">
+            {filteredFounders.length > 0 && (
+              <motion.div
+                key={`founders-${activeFilter}`}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="flex justify-center gap-4 md:gap-6 mb-10"
+              >
+                {filteredFounders.map((artist, index) => (
+                  <motion.div
+                    key={artist.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.35, delay: index * 0.06 }}
+                    className="group cursor-pointer w-40 md:w-48"
+                    onClick={() => setSelectedArtist(artist)}
+                  >
+                    <div className="relative aspect-[3/4] rounded-lg overflow-hidden border border-gold/25 hover:border-gold/50 transition-all duration-500 group-hover:shadow-[0_0_25px_-5px_hsl(38_50%_55%/0.2)]">
+                      <ArtistAvatar artist={artist} />
+                      <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent" />
+                      <div className="absolute bottom-0 left-0 right-0 p-3">
+                        <h3 className="font-display text-lg md:text-xl text-cream mb-1 leading-tight">
+                          {artist.name}
+                        </h3>
+                        <span className="inline-block text-[10px] font-body text-gold bg-gold/8 px-2 py-0.5 rounded-full">
+                          {artist.specialty}
+                        </span>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Team Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-5">
-            {team.map((artist, index) => (
+          <AnimatePresence mode="wait">
+            {filteredTeam.length > 0 && (
               <motion.div
-                key={artist.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.05 }}
-                className="group cursor-pointer"
-                onClick={() => { trackArtistClick(artist.name); setSelectedArtist(artist); }}
+                key={`team-${activeFilter}`}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-5"
               >
-                <div className="relative aspect-[3/4] rounded-lg overflow-hidden border border-border hover:border-gold/30 transition-all duration-500 group-hover:shadow-[0_0_25px_-5px_hsl(38_50%_55%/0.2)]">
-                  <ArtistAvatar artist={artist} />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-3">
-                    <h3 className="font-display text-base md:text-lg text-cream mb-1 leading-tight">
-                      {artist.name}
-                    </h3>
-                    <span className="inline-block text-[10px] font-body text-gold bg-gold/8 px-2 py-0.5 rounded-full">
-                      {artist.specialty}
-                    </span>
-                  </div>
-                </div>
+                {filteredTeam.map((artist, index) => (
+                  <motion.div
+                    key={artist.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.35, delay: index * 0.04 }}
+                    className="group cursor-pointer"
+                    onClick={() => { trackArtistClick(artist.name); setSelectedArtist(artist); }}
+                  >
+                    <div className="relative aspect-[3/4] rounded-lg overflow-hidden border border-border hover:border-gold/30 transition-all duration-500 group-hover:shadow-[0_0_25px_-5px_hsl(38_50%_55%/0.2)]">
+                      <ArtistAvatar artist={artist} />
+                      <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
+                      <div className="absolute bottom-0 left-0 right-0 p-3">
+                        <h3 className="font-display text-base md:text-lg text-cream mb-1 leading-tight">
+                          {artist.name}
+                        </h3>
+                        <span className="inline-block text-[10px] font-body text-gold bg-gold/8 px-2 py-0.5 rounded-full">
+                          {artist.specialty}
+                        </span>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
               </motion.div>
-            ))}
-          </div>
+            )}
+          </AnimatePresence>
         </div>
       </section>
 
