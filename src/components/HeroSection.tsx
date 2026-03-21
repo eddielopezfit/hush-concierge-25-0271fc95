@@ -65,11 +65,11 @@ export const HeroSection = () => {
             Find Your Experience
           </motion.button>
 
-          {/* Secondary CTA — Luna voice */}
+          {/* Primary CTA — Luna voice (isPrimary: owns the voice bus + handles all start-request events) */}
           <div className="relative group" title="Tap to speak with Luna">
             <div className="absolute inset-0 rounded-full animate-hero-pulse" />
             <div className="absolute inset-0 rounded-full animate-hero-pulse-delayed" />
-            <LunaVoiceWidget />
+            <LunaVoiceWidget isPrimary />
           </div>
         </motion.div>
 

@@ -131,12 +131,8 @@ export const LunaVoiceWidget = ({ isPrimary = false }: LunaVoiceWidgetProps) => 
         startConversation();
       }
     } else {
+      // Non-primary widget: fire bus event — the primary widget will catch it
       requestVoiceStart("secondary-widget");
-
-      const lunaSection = document.getElementById("luna");
-      if (lunaSection) {
-        lunaSection.scrollIntoView({ behavior: "smooth" });
-      }
     }
   }, [conversation.status, isPrimary, startConversation, stopConversation]);
 
