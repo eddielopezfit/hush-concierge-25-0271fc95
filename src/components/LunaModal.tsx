@@ -73,11 +73,8 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
     console.debug("[LunaModal] Speak with Luna clicked");
     if (context) setConciergeContext(context);
     onClose();
+    // Start voice via the floating dock — no scroll needed
     requestVoiceStart("modal");
-    // Scroll to hero mic — that's now the primary voice widget
-    setTimeout(() => {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }, 100);
   };
 
   const handleChatWithLuna = () => {

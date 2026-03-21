@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Mic, MessageSquare, Phone } from "lucide-react";
 import { useEffect, useState } from "react";
+import { requestVoiceStart } from "@/lib/lunaVoiceBus";
 import {
   Accordion,
   AccordionContent,
@@ -40,7 +41,7 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
     } else {
       setOpenAccordions([]);
     }
-  }, [resolvedCategory]);
+  }, [category?.id]);
 
   const buildCategoryContext = (groupName?: string, itemName?: string, itemPrice?: string): ConciergeContext => {
     if (!category) {
@@ -61,7 +62,8 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
     const ctx = buildCategoryContext();
     setConciergeContext(ctx);
     onClose();
-    setTimeout(() => openModal(ctx), 100);
+    // Start voice via the floating dock — no modal redirect needed
+    requestVoiceStart("service-menu");
   };
 
   const handleChatWithLuna = () => {
