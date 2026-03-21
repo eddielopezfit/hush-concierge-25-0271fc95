@@ -1,19 +1,10 @@
 import { motion } from "framer-motion";
 import { Mic, Phone } from "lucide-react";
-import { useLuna } from "@/contexts/LunaContext";
-import { ConciergeContext } from "@/types/concierge";
+import { requestVoiceStart } from "@/lib/lunaVoiceBus";
 
 export const MobileStickyBar = () => {
-  const { openModal } = useLuna();
-
   const handleSpeakWithLuna = () => {
-    const lunaContext: ConciergeContext = {
-      source: "Mobile Sticky Bar",
-      categories: [],
-      goal: null,
-      timing: null,
-    };
-    openModal(lunaContext);
+    requestVoiceStart("mobile-sticky");
   };
 
   return (
