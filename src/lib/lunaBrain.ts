@@ -9,7 +9,7 @@ import {
 
 export interface LunaRecommendation {
   recommendedService: string;
-  recommendedArtist: string | null;
+  recommendedArtist: null;
   urgency: "low" | "medium" | "high";
   nextStep: string;
   priceRange: string | null;
@@ -147,7 +147,7 @@ export function generateRecommendation(context: ConciergeContext | null | undefi
     console.debug("[lunaBrain] No context provided, returning default recommendation");
     return {
       recommendedService: "Luxury Wash and Blowout",
-      recommendedArtist: "Michelle Yrigolla — Master Stylist & Color Educator",
+      recommendedArtist: null,
       urgency: "medium",
       nextStep: "Browse our menu at your pace. Luna is here whenever you'd like personalized recommendations.",
       priceRange: null,
@@ -177,11 +177,8 @@ export function generateRecommendation(context: ConciergeContext | null | undefi
     recommendedService = subtypeServiceOverride[subtype];
   }
 
-  // Pick an artist for the primary category
-  const artists = artistsByCategory[primaryCategory] || [];
-  // Return ALL qualified artists so Luna can present options, not just one
-  const artistOptions = artists.map(a => `${a.name} (${a.specialty})`).join(" | ");
-  const recommendedArtist = artistOptions || null;
+  // Do not recommend specific artists — the team feels it's biased
+  const recommendedArtist = null;
 
   const priceRange = getPriceRange(primaryCategory, recommendedService);
 
@@ -212,7 +209,6 @@ export function generateChatResponse(message: string, context: ConciergeContext 
       if (lower.includes("recommend") || lower.includes("suggest") || lower.includes("what should")) {
         const parts = [`Based on your selections, I'd recommend **${rec.recommendedService}**`];
         if (rec.priceRange) parts.push(`(${rec.priceRange})`);
-        if (rec.recommendedArtist) parts.push(`with ${rec.recommendedArtist}`);
         parts.push(`. ${rec.nextStep}`);
         return parts.join(" ");
       }

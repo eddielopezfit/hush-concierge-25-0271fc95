@@ -201,12 +201,6 @@ export const FindMyLookTab = ({ onSwitchTab }: FindMyLookTabProps) => {
                   )}
                 </div>
 
-                {recommendation.recommendedArtist && (
-                  <div>
-                    <p className="text-[10px] font-body text-primary uppercase tracking-wider">Matched Artist</p>
-                    <p className="text-sm text-foreground font-body">{recommendation.recommendedArtist}</p>
-                  </div>
-                )}
 
                 <div>
                   <p className="text-[10px] font-body text-primary uppercase tracking-wider">Next Step</p>

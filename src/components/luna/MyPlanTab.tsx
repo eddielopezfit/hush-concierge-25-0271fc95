@@ -156,19 +156,6 @@ export const MyPlanTab = ({ onSwitchTab }: MyPlanTabProps) => {
             {/* Divider */}
             <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
 
-            {/* Artist Match */}
-            {recommendation.recommendedArtist && (
-              <div className="flex items-center gap-3">
-                <div className="shrink-0 w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-                  <User className="w-4 h-4 text-muted-foreground" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[10px] font-body text-primary uppercase tracking-wider mb-0.5">Your Stylist Match</p>
-                  <p className="text-sm text-foreground font-body truncate">{recommendation.recommendedArtist}</p>
-                </div>
-              </div>
-            )}
-
             {/* Urgency Badge */}
             <div className={`flex items-center gap-2.5 px-3 py-2 rounded-lg border ${urgency.bgColor}`}>
               <UrgencyIcon className={`w-4 h-4 shrink-0 ${urgency.color}`} />
