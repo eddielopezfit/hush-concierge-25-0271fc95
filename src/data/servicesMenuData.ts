@@ -219,3 +219,45 @@ export const servicesMenuData: ServiceCategory[] = [
 export const getCategoryById = (id: string): ServiceCategory | undefined => {
   return servicesMenuData.find((cat) => cat.id === id);
 };
+
+/**
+ * Get all cross-referenced service items that belong to a given category
+ * but are defined in other categories via crossCategories.
+ */
+export function getCrossReferencedItems(categoryId: string): { groupName: string; items: ServiceItem[] } | null {
+  const crossItems: ServiceItem[] = [];
+
+  for (const cat of servicesMenuData) {
+    if (cat.id === categoryId) continue;
+    for (const group of cat.groups) {
+      for (const item of group.items) {
+        if (item.crossCategories?.includes(categoryId)) {
+          // Avoid duplicates by sharedId
+          if (!crossItems.some(ci => ci.sharedId === item.sharedId)) {
+            crossItems.push(item);
+          }
+        }
+      }
+    }
+  }
+
+  return crossItems.length > 0
+    ? { groupName: "Also Available", items: crossItems }
+    : null;
+}
+
+/**
+ * Get a category with cross-referenced items appended as an extra group.
+ */
+export function getCategoryWithCrossRefs(id: string): ServiceCategory | undefined {
+  const category = getCategoryById(id);
+  if (!category) return undefined;
+
+  const crossGroup = getCrossReferencedItems(id);
+  if (!crossGroup) return category;
+
+  return {
+    ...category,
+    groups: [...category.groups, crossGroup],
+  };
+}
