@@ -246,14 +246,131 @@ export const buildDynamicVariables = (ctx: ConciergeContext | null): Record<stri
   };
 };
 
-// ── Legacy helper ─────────────────────────────────────────────────────────────
+// ── Luna spoken first message (context-aware opener) ────────────────────────
+//
+// This is what Luna SAYS out loud when the session starts.
+// Returned as a string to pass as `overrides.agent.first_message` in startSession().
+// Falls back to the static default if no context is present.
+//
+export const buildLunaFirstMessage = (ctx: ConciergeContext | null): string => {
+  const DEFAULT = "Hey — welcome to Hush. I'm Luna. How can I help you today?";
+  if (!ctx) return DEFAULT;
 
-export const buildLunaFirstMessage = (ctx: ConciergeContext | null): string | undefined => {
-  if (!ctx) return undefined;
-  const parts: string[] = [];
-  if (ctx.categories?.length) parts.push(`interested in ${formatCategoryList(ctx.categories)}`);
-  if (ctx.goal) parts.push(`goal: ${(goalLabels[ctx.goal] || ctx.goal).toLowerCase()}`);
-  if (ctx.timing) parts.push(`timing: ${(timingLabels[ctx.timing] || ctx.timing).toLowerCase()}`);
-  if (!parts.length) return undefined;
-  return `The guest is ${parts.join(", ")}.`;
+  const firstName    = getGuestFirstName();
+  const nameGreet    = firstName ? `Hey ${firstName} — ` : "Hey — ";
+  const multi        = ctx.multi_service_mode;
+  const subtype      = ctx.service_subtype;
+  const cats         = ctx.categories ?? [];
+  const goal         = ctx.goal;
+  const timing       = ctx.timing;
+  const primaryCat   = ctx.primary_category;
+
+  // Subtype labels (spoken, conversational)
+  const spokenSubtype: Record<string, string> = {
+    cut:         "a haircut",
+    color:       "color work",
+    both:        "a cut and color",
+    manicure:    "a manicure",
+    pedicure:    "a pedicure",
+    full_set:    "a full nail set",
+    nail_art:    "nail art",
+    fill:        "a lash fill",
+    lift:        "a lash lift",
+    relaxation:  "a relaxation massage",
+    deep_tissue: "some deep tissue work",
+    pain_relief: "a pain relief massage",
+    facial:      "a facial",
+    acne:        "an acne treatment",
+    glow:        "a glow treatment",
+  };
+
+  const spokenGoal: Record<string, string> = {
+    Refresh:     "a quick refresh",
+    Relax:       "some relaxation",
+    Transform:   "a full transformation",
+    "Event-ready": "getting event-ready",
+  };
+
+  const spokenTiming: Record<string, string> = {
+    Today:          "today",
+    "This week":    "this week",
+    "Planning ahead": "sometime soon",
+    "Just browsing": "",
+  };
+
+  const spokenCat: Record<string, string> = {
+    hair:     "hair",
+    nails:    "nails",
+    lashes:   "lashes",
+    skincare: "skincare",
+    massage:  "a massage",
+  };
+
+  // ── Multi-service / unsure ────────────────────────────────────────────────
+  if (multi === "unsure" || (cats.length > 1 && !primaryCat && !subtype)) {
+    const catList = cats.map(c => spokenCat[c] ?? c).join(", ");
+    return `${nameGreet}sounds like you're thinking about a few things — ${catList}. ` +
+      `Let's figure out the best place to start. Is there one that feels most important to you right now?`;
+  }
+
+  if (multi === "bundle_guidance") {
+    const catList = cats.map(c => spokenCat[c] ?? c).join(" and ");
+    return `${nameGreet}you're looking to combine ${catList} — love that. ` +
+      `Let me help you figure out how to make the most of that. What's the occasion, or is this just a good self-care day?`;
+  }
+
+  // ── Single service or primary_focus ──────────────────────────────────────
+  const cat     = primaryCat ?? cats[0] ?? null;
+  const subtypeStr = subtype && subtype !== "unsure" ? spokenSubtype[subtype] ?? "" : "";
+  const goalStr    = goal ? spokenGoal[goal] ?? "" : "";
+  const timingStr  = timing ? spokenTiming[timing] ?? "" : "";
+
+  // Special cases by category
+  if (cat === "massage" && subtypeStr) {
+    const timingPart = timingStr ? ` — ${timingStr}` : "";
+    return `${nameGreet}you're thinking ${subtypeStr}${timingPart}. ` +
+      `Perfect. Tammi is incredible — she tailors every session to exactly what your body needs. ` +
+      `Are you thinking 60, 90, or 120 minutes?`;
+  }
+
+  if (cat === "skincare" && subtypeStr) {
+    const timingPart = timingStr ? ` and want to get in ${timingStr}` : "";
+    return `${nameGreet}you're interested in ${subtypeStr}${goalStr ? `, looking for ${goalStr}` : ""}${timingPart}. ` +
+      `Our estheticians are amazing at this. Want me to walk you through what to expect, ` +
+      `or are you ready to figure out timing?`;
+  }
+
+  if (cat === "hair") {
+    if (subtypeStr) {
+      const goalPart   = goalStr    ? `, ${goalStr}`  : "";
+      const timingPart = timingStr  ? ` ${timingStr}` : "";
+      return `${nameGreet}you're thinking ${subtypeStr}${goalPart}${timingPart ? " —" + timingPart : ""}. ` +
+        `Let's find exactly the right fit for you. Do you have a stylist in mind, or would you like a recommendation?`;
+    }
+    const goalPart   = goalStr   ? ` looking for ${goalStr}` : "";
+    const timingPart = timingStr ? `, ${timingStr}` : "";
+    return `${nameGreet}you're exploring hair${goalPart}${timingPart}. ` +
+      `Tell me a little more — are you thinking a cut, color, or both?`;
+  }
+
+  if (cat === "nails" && subtypeStr) {
+    const timingPart = timingStr ? ` — ${timingStr}` : "";
+    return `${nameGreet}you're thinking ${subtypeStr}${timingPart}. ` +
+      `Anita does incredible nail work. Want me to tell you more about what that looks like here?`;
+  }
+
+  // Generic fallback with any context we have
+  if (subtypeStr || goalStr) {
+    const detail = subtypeStr || goalStr;
+    const timingPart = timingStr ? ` — ${timingStr}` : "";
+    return `${nameGreet}so you're thinking ${detail}${timingPart}. ` +
+      `Tell me a little more about what you're hoping to walk away with.`;
+  }
+
+  if (cats.length) {
+    const catStr = cats.map(c => spokenCat[c] ?? c).join(" and ");
+    return `${nameGreet}so you're exploring ${catStr}. What are you hoping to feel like when you leave?`;
+  }
+
+  return DEFAULT;
 };

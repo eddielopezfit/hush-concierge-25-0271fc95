@@ -2,7 +2,7 @@ import { useConversation } from "@elevenlabs/react";
 import { useState, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mic, Volume2 } from "lucide-react";
-import { getConciergeContext, buildDynamicVariables } from "@/lib/conciergeStore";
+import { getConciergeContext, buildDynamicVariables, buildLunaFirstMessage } from "@/lib/conciergeStore";
 import {
   requestVoiceStart,
   endVoiceSession,
@@ -75,12 +75,20 @@ export const LunaVoiceWidget = ({ isPrimary = false }: LunaVoiceWidgetProps) => 
 
       const ctx = getConciergeContext();
       const dynamicVariables = buildDynamicVariables(ctx);
-      console.log("Dynamic vars:", dynamicVariables);
+      const firstMessage = buildLunaFirstMessage(ctx);
+
+      console.log("[LunaVoiceWidget] Dynamic vars:", dynamicVariables);
+      console.log("[LunaVoiceWidget] First message:", firstMessage);
 
       const sessionOptions = {
         agentId: LUNA_AGENT_ID,
         connectionType: "webrtc" as const,
         dynamicVariables,
+        overrides: {
+          agent: {
+            firstMessage,
+          },
+        },
       };
 
       console.log(
