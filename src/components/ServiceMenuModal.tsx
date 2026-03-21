@@ -127,7 +127,7 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
                 onValueChange={setOpenAccordions}
                 className="space-y-2"
               >
-                {category.groups.map((group) => (
+                {resolvedCategory.groups.map((group) => (
                   <AccordionItem
                     key={group.name}
                     value={group.name}
