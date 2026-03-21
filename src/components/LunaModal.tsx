@@ -91,6 +91,9 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
   );
 
   const isUnsure = context?.service_subtype === "unsure";
+  const isMultiBundle = context?.multi_service_mode === "bundle_guidance";
+  const isMultiUnsure = context?.multi_service_mode === "unsure";
+  const isMultiService = context?.is_multi_service;
 
   const contextChips = (() => {
     const chips: string[] = [];
@@ -102,12 +105,37 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
     if (context?.service_subtype && context.service_subtype !== "unsure") {
       chips.push(subtypeDisplayLabels[context.service_subtype] || context.service_subtype);
     }
+    if (context?.primary_category && isMultiService) {
+      chips.push(`Focus: ${categoryLabels[context.primary_category] || context.primary_category}`);
+    }
     return chips;
   })();
 
-  // Soft direction text — gentle, never overconfident
+  // Soft direction text — multi-service aware
   const softDirection = (() => {
     if (!context?.categories?.length) return null;
+
+    // Multi-service: bundle or unsure — no single-service recommendation
+    if (isMultiBundle) {
+      const catList = context.categories.map(c => categoryLabels[c] || c).join(", ");
+      return `This looks more like a custom experience than a single service — you're interested in ${catList}. Luna can help map the best combination and next step.`;
+    }
+    if (isMultiUnsure) {
+      const catList = context.categories.map(c => categoryLabels[c] || c).join(", ");
+      return `You're exploring ${catList} and not sure where to start. Luna can help figure out what to prioritize.`;
+    }
+
+    // Multi-service with primary focus
+    if (isMultiService && context.primary_category) {
+      const primaryLabel = categoryLabels[context.primary_category] || context.primary_category;
+      const sub = context.service_subtype;
+      if (!sub || sub === "unsure") {
+        return `You may be leaning toward ${primaryLabel.toLowerCase()} services as a starting point. Luna can help with the rest.`;
+      }
+      return `Based on what you shared, you may be leaning toward ${primaryLabel.toLowerCase()} services. Luna can help refine this and plan across your other interests.`;
+    }
+
+    // Single service
     const cat = context.categories[0];
     const sub = context.service_subtype;
     if (!sub || sub === "unsure") return null;
