@@ -112,6 +112,9 @@ function buildConversationalSummary(
   rec:         { recommendedService?: string; priceRange?: string; recommendedArtist?: string } | null,
   multiServiceMode: MultiServiceMode | undefined,
   primaryCategory: string | null | undefined,
+  source:      string,
+  viewedArtist: string,
+  comparisonArtists: string,
 ): string {
   const parts: string[] = [];
   const who = firstName ? `${firstName} is` : "The guest is";
@@ -124,6 +127,19 @@ function buildConversationalSummary(
     "Event-ready": "getting event-ready",
   };
   const goalStr = goalMap[goal] || (goal ? goal.toLowerCase() : "");
+
+  // Team Compare mode — comparison-specific summary
+  if (source === "Team Compare") {
+    parts.push(`${who} comparing stylists in ${categories || "a category"}`);
+    if (viewedArtist) {
+      parts.push(`They were looking at ${viewedArtist}'s profile`);
+    }
+    if (comparisonArtists) {
+      parts.push(`Available artists in this category: ${comparisonArtists}`);
+    }
+    parts.push("They want to understand how these artists differ — help them compare without choosing for them");
+    return parts.join(". ") + ".";
+  }
 
   // Multi-service aware core sentence
   if (multiServiceMode === "bundle_guidance") {
@@ -219,6 +235,9 @@ export const buildDynamicVariables = (ctx: ConciergeContext | null): Record<stri
     recConfidence !== "low" ? rec : null,
     ctx?.multi_service_mode,
     primaryCatLabel,
+    sourceEntry,
+    ctx?.group || "",
+    ctx?.item || "",
   );
 
   return {

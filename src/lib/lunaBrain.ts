@@ -202,12 +202,36 @@ export function generateChatResponse(message: string, context: ConciergeContext 
   try {
     const lower = (message || "").toLowerCase();
 
+    // Team Compare mode — comparison-first responses
+    if (context?.source === "Team Compare") {
+      const categoryId = context.categories?.[0];
+      const artists = categoryId ? artistsByCategory[categoryId] : [];
+      const viewedName = context.group || "";
+
+      if (lower.includes("compare") || lower.includes("differ") || lower.includes("which")) {
+        const list = artists.map(a => `**${a.name}** — ${a.specialty}`).join("\n");
+        return `You have a few strong options here. Here's how they compare:\n\n${list}\n\nAre you looking for something bold or lower-maintenance? That'll help me narrow it down.`;
+      }
+
+      if (viewedName) {
+        const viewed = artists.find(a => a.name === viewedName);
+        if (viewed) {
+          const others = artists.filter(a => a.name !== viewedName).slice(0, 2);
+          const othersStr = others.map(a => `**${a.name}** (${a.specialty})`).join(" and ");
+          return `I see you were looking at **${viewed.name}** — they're known for ${viewed.specialty.toLowerCase()}. You might also consider ${othersStr}. What matters most to you — artistry, comfort, or a specific look?`;
+        }
+      }
+
+      const list = artists.map(a => `**${a.name}** — ${a.specialty}`).join("\n");
+      return `You have a few strong options here. I can help you compare them:\n\n${list}\n\nDo you already have someone in mind, or are you open?`;
+    }
+
     // If we have context with categories, generate smart responses
     if (context?.categories && Array.isArray(context.categories) && context.categories.length > 0) {
       const rec = generateRecommendation(context);
 
       if (lower.includes("recommend") || lower.includes("suggest") || lower.includes("what should")) {
-        const parts = [`Based on your selections, I'd recommend **${rec.recommendedService}**`];
+        const parts = [`Based on your selections, I'd suggest exploring **${rec.recommendedService}**`];
         if (rec.priceRange) parts.push(`(${rec.priceRange})`);
         parts.push(`. ${rec.nextStep}`);
         return parts.join(" ");
