@@ -5,19 +5,19 @@ import { supabase } from "@/integrations/supabase/client";
 
 const perks = [
   {
-    icon: Crown,
-    title: "Priority Booking",
-    description: "Get first access to new openings and peak-time slots."
+    icon: Gift,
+    title: "Refer & Earn",
+    description: "Share Hush with a friend — you both receive a $10 credit toward your next service. The original Groupies deal, still going strong."
   },
   {
-    icon: Gift,
-    title: "Insider Offers",
-    description: "Exclusive promotions, seasonal deals, and early product access."
+    icon: Crown,
+    title: "Priority Booking",
+    description: "Inner Circle members get early access to new openings and peak-time slots. Coming soon."
   },
   {
     icon: Heart,
-    title: "Community",
-    description: "Be part of the Hush family — events, sneak peeks, and VIP treatment."
+    title: "Personalized Experience",
+    description: "Luna remembers your preferences, past services, and favorite artists — so every visit feels like coming home."
   },
 ];
 
