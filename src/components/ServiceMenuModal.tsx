@@ -41,7 +41,7 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
     } else {
       setOpenAccordions([]);
     }
-  }, [resolvedCategory]);
+  }, [category?.id]);
 
   const buildCategoryContext = (groupName?: string, itemName?: string, itemPrice?: string): ConciergeContext => {
     if (!category) {
