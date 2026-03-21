@@ -34,6 +34,8 @@ const Index = () => {
       <ServicesSection />
       {/* 4. Team — stylist trust + matching */}
       <ArtistsSection />
+      {/* 5. Build Experience — custom packages via Luna */}
+      <BuildExperienceSection />
       {/* 6. Testimonials — social proof */}
       <TestimonialsSection />
       {/* 6. About — the Hush story */}
