@@ -52,8 +52,16 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
   // ── Handlers ────────────────────────────────────────────────────────────────
 
   const handleSpeakWithLuna = () => {
+    console.debug("[LunaModal] Speak with Luna clicked", {
+      categories: context?.categories,
+      primary_category: context?.primary_category,
+      service_subtype: context?.service_subtype,
+      multi_service_mode: context?.multi_service_mode,
+      is_multi_service: context?.is_multi_service,
+    });
     if (context) setConciergeContext(context);
     onClose();
+    console.debug("[LunaModal] requestVoiceStart('modal') called");
     requestVoiceStart("modal");
     setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 100);
   };
