@@ -35,12 +35,12 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
   }, [isOpen]);
 
   useEffect(() => {
-    if (category && category.groups.length === 1) {
-      setOpenAccordions([category.groups[0].name]);
+    if (resolvedCategory && resolvedCategory.groups.length === 1) {
+      setOpenAccordions([resolvedCategory.groups[0].name]);
     } else {
       setOpenAccordions([]);
     }
-  }, [category]);
+  }, [resolvedCategory]);
 
   const buildCategoryContext = (groupName?: string, itemName?: string, itemPrice?: string): ConciergeContext => {
     if (!category) {
