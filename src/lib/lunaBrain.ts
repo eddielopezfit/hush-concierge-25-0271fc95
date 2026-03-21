@@ -31,7 +31,7 @@ const artistsByCategory: Record<ServiceCategoryId, { name: string; specialty: st
     { name: "Jackie", specialty: "Nail Art & Extensions" },
   ],
   lashes: [
-    { name: "Allison Griessel", specialty: "Creative Color & Lashes" },
+    { name: "Allison Griessel", specialty: "Creative Color, Esthetics & Lashes" },
   ],
   skincare: [
     { name: "Patty", specialty: "Facials & Skincare" },
