@@ -1,12 +1,14 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useMemo } from "react";
-import { X, Sparkles, Scissors, Hand, Eye, Heart } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import { X, Sparkles, Scissors, Hand, Eye, Heart, MessageSquare } from "lucide-react";
 import { useLuna } from "@/contexts/LunaContext";
 import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
-import { teamMembers, photoMap, getFounders, getTeam, TeamMember } from "@/data/teamData";
+import { photoMap, getFounders, getTeam, TeamMember } from "@/data/teamData";
 import { trackArtistClick } from "@/lib/journeyTracker";
+import { getConciergeContext } from "@/lib/conciergeStore";
 
-// Filter chip definitions
+// ── Filter chip config ────────────────────────────────────────────────────────
+
 const filterChips: { id: string; label: string; icon?: typeof Scissors }[] = [
   { id: "all", label: "All" },
   { id: "hair", label: "Hair", icon: Scissors },
@@ -16,13 +18,24 @@ const filterChips: { id: string; label: string; icon?: typeof Scissors }[] = [
   { id: "massage", label: "Massage", icon: Heart },
 ];
 
-/** Check if a team member matches a category (using both serviceCategory and serviceCategories) */
+const helperStrips: Record<string, string> = {
+  all: "Each artist has a different style and strength — Luna can walk you through the options.",
+  hair: "Not sure who fits best for your hair goals? Luna can help you compare.",
+  nails: "Our nail artists each specialize in different techniques — Luna can help narrow it down.",
+  lashes: "Whether it's your first set or a fill, Luna can help match the right approach.",
+  skincare: "Our estheticians each bring a different focus — Luna can help you decide.",
+  massage: "Luna can help you figure out the right pressure and approach for your visit.",
+};
+
+/** Check if a team member matches a category */
 const matchesCategory = (member: TeamMember, category: string): boolean => {
   if (category === "all") return true;
   if (member.serviceCategory === category) return true;
   if (member.serviceCategories?.includes(category as ServiceCategoryId)) return true;
   return false;
 };
+
+// ── Artist Avatar ─────────────────────────────────────────────────────────────
 
 const ArtistAvatar = ({ artist }: { artist: TeamMember }) => {
   const photo = photoMap[artist.id];
@@ -51,10 +64,92 @@ const ArtistAvatar = ({ artist }: { artist: TeamMember }) => {
   );
 };
 
+// ── Smart Matching Card ───────────────────────────────────────────────────────
+
+interface SmartCardProps {
+  artist: TeamMember;
+  isFiltered: boolean;
+  onClick: () => void;
+  onCompare: () => void;
+}
+
+const SmartCard = ({ artist, isFiltered, onClick, onCompare }: SmartCardProps) => (
+  <div className="group cursor-pointer flex flex-col">
+    <div
+      className="relative aspect-[3/4] rounded-t-lg overflow-hidden border border-b-0 border-border hover:border-primary/30 transition-all duration-500 group-hover:shadow-[0_0_25px_-5px_hsl(38_50%_55%/0.2)]"
+      onClick={onClick}
+    >
+      <ArtistAvatar artist={artist} />
+      <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 p-3">
+        <h3 className="font-display text-base md:text-lg text-cream mb-1 leading-tight">
+          {artist.name}
+        </h3>
+        <span className="inline-block text-[10px] font-body text-primary bg-primary/8 px-2 py-0.5 rounded-full">
+          {artist.specialty}
+        </span>
+      </div>
+    </div>
+
+    {/* Smart matching info — only when a category filter is active */}
+    {isFiltered && (
+      <motion.div
+        initial={{ opacity: 0, height: 0 }}
+        animate={{ opacity: 1, height: "auto" }}
+        exit={{ opacity: 0, height: 0 }}
+        transition={{ duration: 0.3 }}
+        className="rounded-b-lg border border-t-0 border-border bg-card px-3 pt-2.5 pb-3 space-y-2"
+      >
+        {/* Fit statement */}
+        <p className="font-body text-[11px] text-foreground/70 leading-relaxed italic">
+          {artist.fitStatement}
+        </p>
+
+        {/* Known for tags */}
+        {artist.knownFor.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {artist.knownFor.slice(0, 3).map(tag => (
+              <span
+                key={tag}
+                className="text-[9px] font-body text-primary/80 bg-primary/6 border border-primary/12 px-1.5 py-0.5 rounded-full"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Compare with Luna */}
+        <button
+          onClick={(e) => { e.stopPropagation(); onCompare(); }}
+          className="flex items-center gap-1.5 text-[10px] font-body text-muted-foreground hover:text-primary transition-colors pt-0.5"
+        >
+          <MessageSquare className="w-3 h-3" />
+          Compare with Luna
+        </button>
+      </motion.div>
+    )}
+  </div>
+);
+
+// ── Main Section ──────────────────────────────────────────────────────────────
+
 export const ArtistsSection = () => {
   const [selectedArtist, setSelectedArtist] = useState<TeamMember | null>(null);
   const [activeFilter, setActiveFilter] = useState("all");
   const { openModal } = useLuna();
+
+  // Auto-filter from concierge context
+  useEffect(() => {
+    const ctx = getConciergeContext();
+    if (ctx?.categories?.length === 1) {
+      const cat = ctx.categories[0];
+      if (filterChips.some(c => c.id === cat)) {
+        setActiveFilter(cat);
+      }
+    }
+    // Only run once on mount
+  }, []);
 
   const handleBeginWithLuna = (artist: TeamMember) => {
     setSelectedArtist(null);
@@ -72,17 +167,29 @@ export const ArtistsSection = () => {
     openModal(lunaContext);
   };
 
+  const handleCompareWithLuna = (artist: TeamMember) => {
+    const category = activeFilter !== "all" ? activeFilter as ServiceCategoryId : artist.serviceCategory;
+    const lunaContext: ConciergeContext = {
+      source: "Team Compare",
+      categories: category ? [category] : [],
+      goal: null,
+      timing: null,
+      // Do NOT set preferredArtist — Luna compares, not assigns
+    };
+    openModal(lunaContext);
+  };
+
   const founders = getFounders();
   const team = getTeam();
+  const isFiltered = activeFilter !== "all";
 
-  // Filtered lists
   const filteredFounders = useMemo(
-    () => activeFilter === "all" ? founders : founders.filter(m => matchesCategory(m, activeFilter)),
-    [activeFilter, founders]
+    () => isFiltered ? founders.filter(m => matchesCategory(m, activeFilter)) : founders,
+    [activeFilter, isFiltered, founders]
   );
   const filteredTeam = useMemo(
-    () => activeFilter === "all" ? team : team.filter(m => matchesCategory(m, activeFilter)),
-    [activeFilter, team]
+    () => isFiltered ? team.filter(m => matchesCategory(m, activeFilter)) : team,
+    [activeFilter, isFiltered, team]
   );
 
   const hasResults = filteredFounders.length > 0 || filteredTeam.length > 0;
@@ -91,6 +198,7 @@ export const ArtistsSection = () => {
     <>
       <section id="artists" className="py-20 md:py-28 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -102,7 +210,7 @@ export const ArtistsSection = () => {
               Meet the <span className="text-gold-gradient">Team</span>
             </h2>
             <p className="font-body text-muted-foreground text-base max-w-lg mx-auto">
-              Real people with real talent. Not sure who's right for you? Luna can match you.
+              Real people with real talent. Not sure who's right for you? Luna can help you compare.
             </p>
           </motion.div>
 
@@ -112,7 +220,7 @@ export const ArtistsSection = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="flex flex-wrap justify-center gap-2 mb-12 md:mb-16"
+            className="flex flex-wrap justify-center gap-2 mb-4"
           >
             {filterChips.map(chip => {
               const isActive = activeFilter === chip.id;
@@ -135,6 +243,20 @@ export const ArtistsSection = () => {
               );
             })}
           </motion.div>
+
+          {/* Helper strip */}
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={activeFilter}
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.25 }}
+              className="font-body text-xs text-muted-foreground text-center mb-12 md:mb-16 max-w-md mx-auto"
+            >
+              {helperStrips[activeFilter] || helperStrips.all}
+            </motion.p>
+          </AnimatePresence>
 
           {/* No results */}
           <AnimatePresence mode="wait">
@@ -183,7 +305,7 @@ export const ArtistsSection = () => {
                         <h3 className="font-display text-lg md:text-xl text-cream mb-1 leading-tight">
                           {artist.name}
                         </h3>
-                        <span className="inline-block text-[10px] font-body text-gold bg-gold/8 px-2 py-0.5 rounded-full">
+                        <span className="inline-block text-[10px] font-body text-primary bg-primary/8 px-2 py-0.5 rounded-full">
                           {artist.specialty}
                         </span>
                       </div>
@@ -194,7 +316,7 @@ export const ArtistsSection = () => {
             )}
           </AnimatePresence>
 
-          {/* Team Grid */}
+          {/* Team Grid — Smart Matching Cards */}
           <AnimatePresence mode="wait">
             {filteredTeam.length > 0 && (
               <motion.div
@@ -203,7 +325,11 @@ export const ArtistsSection = () => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-5"
+                className={`grid gap-4 md:gap-5 ${
+                  isFiltered
+                    ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
+                    : "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"
+                }`}
               >
                 {filteredTeam.map((artist, index) => (
                   <motion.div
@@ -211,21 +337,13 @@ export const ArtistsSection = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.35, delay: index * 0.04 }}
-                    className="group cursor-pointer"
-                    onClick={() => { trackArtistClick(artist.name); setSelectedArtist(artist); }}
                   >
-                    <div className="relative aspect-[3/4] rounded-lg overflow-hidden border border-border hover:border-gold/30 transition-all duration-500 group-hover:shadow-[0_0_25px_-5px_hsl(38_50%_55%/0.2)]">
-                      <ArtistAvatar artist={artist} />
-                      <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
-                      <div className="absolute bottom-0 left-0 right-0 p-3">
-                        <h3 className="font-display text-base md:text-lg text-cream mb-1 leading-tight">
-                          {artist.name}
-                        </h3>
-                        <span className="inline-block text-[10px] font-body text-gold bg-gold/8 px-2 py-0.5 rounded-full">
-                          {artist.specialty}
-                        </span>
-                      </div>
-                    </div>
+                    <SmartCard
+                      artist={artist}
+                      isFiltered={isFiltered}
+                      onClick={() => { trackArtistClick(artist.name); setSelectedArtist(artist); }}
+                      onCompare={() => handleCompareWithLuna(artist)}
+                    />
                   </motion.div>
                 ))}
               </motion.div>
@@ -249,7 +367,7 @@ export const ArtistsSection = () => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.3 }}
-              className="relative w-full max-w-md p-6 md:p-8 rounded-xl border border-gold/25 bg-card shadow-[0_0_50px_-15px_hsl(38_50%_55%/0.25)]"
+              className="relative w-full max-w-md p-6 md:p-8 rounded-xl border border-gold/25 bg-card shadow-[0_0_50px_-15px_hsl(38_50%_55%/0.25)] max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
               <button
@@ -268,16 +386,34 @@ export const ArtistsSection = () => {
                 <h3 className="font-display text-3xl text-cream mb-1">
                   {selectedArtist.name}
                 </h3>
-                <p className="font-body text-gold text-sm mb-3">{selectedArtist.department === "founders" ? "Co-Founder" : selectedArtist.department.charAt(0).toUpperCase() + selectedArtist.department.slice(1)}</p>
+                <p className="font-body text-primary text-sm mb-3">
+                  {selectedArtist.department === "founders"
+                    ? "Co-Founder"
+                    : selectedArtist.department.charAt(0).toUpperCase() + selectedArtist.department.slice(1)}
+                </p>
 
                 <p className="font-body text-muted-foreground mb-4 max-w-xs">
                   {selectedArtist.description}
                 </p>
 
-                {selectedArtist.bestFor && (
-                  <div className="w-full bg-gold/8 border border-gold/15 rounded-lg p-3 mb-4">
-                    <p className="font-body text-xs text-gold uppercase tracking-wider mb-1">Best for</p>
-                    <p className="font-body text-sm text-cream/80">{selectedArtist.bestFor}</p>
+                {/* Fit statement */}
+                {selectedArtist.fitStatement && (
+                  <p className="font-body text-xs text-foreground/60 italic mb-4 max-w-xs">
+                    {selectedArtist.fitStatement}
+                  </p>
+                )}
+
+                {/* Known for / Best for */}
+                {selectedArtist.knownFor.length > 0 && (
+                  <div className="w-full bg-primary/6 border border-primary/12 rounded-lg p-3 mb-4">
+                    <p className="font-body text-[10px] text-primary uppercase tracking-wider mb-2">Known for</p>
+                    <div className="flex flex-wrap justify-center gap-1.5">
+                      {selectedArtist.knownFor.map(tag => (
+                        <span key={tag} className="text-xs font-body text-primary/80 bg-primary/8 border border-primary/15 px-2.5 py-1 rounded-full">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 )}
 
@@ -285,22 +421,32 @@ export const ArtistsSection = () => {
                   {selectedArtist.specialties.map((s) => (
                     <span
                       key={s}
-                      className="text-xs font-body text-gold bg-gold/8 border border-gold/15 px-3 py-1.5 rounded-full"
+                      className="text-xs font-body text-primary bg-primary/8 border border-primary/15 px-3 py-1.5 rounded-full"
                     >
                       {s}
                     </span>
                   ))}
                 </div>
 
+                {/* Primary CTA */}
                 <motion.button
                   onClick={() => handleBeginWithLuna(selectedArtist)}
-                  className="btn-gold py-3 px-5 flex items-center justify-center gap-2 w-full"
+                  className="btn-gold py-3 px-5 flex items-center justify-center gap-2 w-full mb-2"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
                   <Sparkles className="w-4 h-4" />
                   <span>Book with {selectedArtist.name.split(" ")[0]}</span>
                 </motion.button>
+
+                {/* Compare CTA */}
+                <button
+                  onClick={() => { setSelectedArtist(null); handleCompareWithLuna(selectedArtist); }}
+                  className="flex items-center justify-center gap-2 text-xs font-body text-muted-foreground hover:text-primary transition-colors py-2"
+                >
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  Compare options with Luna
+                </button>
               </div>
             </motion.div>
           </motion.div>
