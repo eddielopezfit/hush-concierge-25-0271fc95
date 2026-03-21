@@ -9,7 +9,7 @@ import {
 
 export interface LunaRecommendation {
   recommendedService: string;
-  recommendedArtist: string | null;
+  recommendedArtist: null;
   urgency: "low" | "medium" | "high";
   nextStep: string;
   priceRange: string | null;
