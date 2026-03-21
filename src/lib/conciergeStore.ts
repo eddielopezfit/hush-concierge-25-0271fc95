@@ -1,4 +1,4 @@
-import { ConciergeContext, ServiceSubtype } from "@/types/concierge";
+import { ConciergeContext, ServiceSubtype, MultiServiceMode } from "@/types/concierge";
 import {
   categoryLabels,
   goalLabels,
