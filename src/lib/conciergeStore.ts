@@ -162,7 +162,7 @@ function buildConversationalSummary(
   } else if (rec?.recommendedService && subtype !== "unsure") {
     const catWord = categories ? categories.toLowerCase() : "services";
     parts.push(`A likely direction may be ${catWord}`);
-    if (rec.recommendedArtist) parts.push(`${rec.recommendedArtist} could be a good fit`);
+    parts.push("Our front desk will match you with the perfect artist");
     parts.push("Luna can help refine this further");
   } else if (subtype === "unsure") {
     parts.push("They're open to guidance on which service fits best");

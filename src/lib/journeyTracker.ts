@@ -143,7 +143,7 @@ export function getJourneyContextString(): string {
     if (rec) {
       const parsed = JSON.parse(rec);
       if (parsed?.recommendedService) {
-        parts.push(`Luna previously recommended: ${parsed.recommendedService}${parsed.recommendedArtist ? ` with ${parsed.recommendedArtist}` : ""}.`);
+        parts.push(`Luna previously recommended: ${parsed.recommendedService}.`);
       }
     }
   } catch { /* ignore */ }

@@ -209,7 +209,6 @@ export function generateChatResponse(message: string, context: ConciergeContext 
       if (lower.includes("recommend") || lower.includes("suggest") || lower.includes("what should")) {
         const parts = [`Based on your selections, I'd recommend **${rec.recommendedService}**`];
         if (rec.priceRange) parts.push(`(${rec.priceRange})`);
-        if (rec.recommendedArtist) parts.push(`with ${rec.recommendedArtist}`);
         parts.push(`. ${rec.nextStep}`);
         return parts.join(" ");
       }
