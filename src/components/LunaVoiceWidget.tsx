@@ -25,15 +25,19 @@ export const LunaVoiceWidget = ({ isPrimary = false }: LunaVoiceWidgetProps) => 
 
   const conversation = useConversation({
     onConnect: () => {
-      console.log("[Luna] Connected");
+      console.log("[Luna] Connected successfully");
     },
-    onDisconnect: () => {
-      console.log("[Luna] Disconnected");
+    onDisconnect: (details) => {
+      console.log("[Luna] Disconnected, details:", details);
       endVoiceSession();
     },
     onError: (error) => {
       console.error("[Luna] Error:", error);
+      setError(typeof error === "string" ? error : JSON.stringify(error));
       endVoiceSession();
+    },
+    onMessage: (message) => {
+      console.log("[Luna] Message:", message);
     },
   });
 
