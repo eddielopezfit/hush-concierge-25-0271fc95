@@ -3,6 +3,10 @@ import { Scissors, Hand, Sparkles, Eye, Heart, LucideIcon } from "lucide-react";
 export interface ServiceItem {
   name: string;
   price: string;
+  /** Unique ID for cross-category shared services */
+  sharedId?: string;
+  /** Additional category IDs this service should appear under */
+  crossCategories?: string[];
 }
 
 export interface ServiceGroup {
