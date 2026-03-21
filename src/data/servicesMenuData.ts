@@ -161,7 +161,7 @@ export const servicesMenuData: ServiceCategory[] = [
           { name: "Volume Lash Set", price: "$250" },
           { name: "Volume Lash Fill", price: "$90" },
           { name: "Lash Lift & Perm", price: "$65" },
-          { name: "Lash or Brow Tint", price: "$20" },
+          { name: "Lash or Brow Tint", price: "$20", sharedId: "brow-lash-tint", crossCategories: ["skincare"] },
         ],
       },
     ],
