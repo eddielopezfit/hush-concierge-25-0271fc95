@@ -72,8 +72,8 @@ export const BookingCallbackSection = () => {
   };
 
   const handleInputChange = (field: string, value: string) => {
+    setUserTouched(true);
     setFormData(prev => ({ ...prev, [field]: value }));
-    // Capture first name for Luna context
     if (field === "fullName" && value.trim()) {
       setGuestFirstName(value);
     }
