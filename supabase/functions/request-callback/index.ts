@@ -1,25 +1,18 @@
 /**
  * request-callback — Luna voice tool endpoint
  *
- * Purpose: Dedicated tool for when a guest explicitly requests a callback,
- * wants a consultation booked, or has confirmed their contact information
- * and is ready to be connected with the team.
- *
- * Why separate from capture_lead:
- *   - capture_lead = "I have your info" — general lead capture, any stage
- *   - request_callback = "Someone will call you back" — explicit handoff commitment
- *
- * A request_callback always:
- *   - Creates a callback_requests record (never skipped)
- *   - Routes to #hush-callbacks Slack channel (always)
- *   - Fires P1 if same-day or urgency is high
- *   - Returns a specific spoken commitment Luna makes to the caller
- *   - Sets close_after: true — Luna closes the call immediately after
- *
- * Idempotency: same (phone + session_id) within 5 minutes = suppressed.
+ * Now imports shared booking rules from _shared/booking-rules.ts
  */
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  derivePriority,
+  getInternalBookingPath,
+  PRIORITY_EMOJI,
+  PRIORITY_LABEL,
+  getUrgencyAction,
+  type Priority,
+} from "../_shared/booking-rules.ts";
 
 const SUPABASE_URL     = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -34,51 +27,35 @@ const corsHeaders = {
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 interface RequestCallbackBody {
-  guest_name:             string;   // required
-  phone:                  string;   // required
+  guest_name:             string;
+  phone:                  string;
   email?:                 string;
-  service_category?:      string;   // hair | nails | lashes | skincare | massage
-  service_name?:          string;   // specific service e.g. "balayage consultation"
-  timing?:                string;   // today | this week | planning
-  urgency?:               string;   // high | medium | low
+  service_category?:      string;
+  service_name?:          string;
+  timing?:                string;
+  urgency?:               string;
   consultation_required?: boolean;
-  preferred_fit?:         string;   // any stylist preference expressed by guest
-  call_summary?:          string;   // 1-2 sentence briefing for the front desk
+  preferred_fit?:         string;
+  call_summary?:          string;
   elevenlabs_session_id?: string;
 }
 
-type Priority = "P1" | "P2" | "P3";
-
-// ── Priority ──────────────────────────────────────────────────────────────────
-function derivePriority(body: RequestCallbackBody): Priority {
-  if (body.timing === "today" || body.urgency === "high") return "P1";
-  if (body.timing === "this week" || body.urgency === "medium") return "P2";
-  return "P3";
-}
-
-// ── Booking path by category ──────────────────────────────────────────────────
-const BOOKING_PATHS: Record<string, string> = {
-  hair:     "Front Desk: (520) 327-6753",
-  nails:    "Direct: Anita (520) 591-0208 · Kelly (520) 488-7149 · Jackie (520) 501-6861",
-  lashes:   "Direct: Allison (520) 250-6606",
-  skincare: "Direct: Patty (520) 870-6048 · Lori (520) 400-5091",
-  massage:  "Direct: Tammi (520) 370-3018",
-};
-function bookingPath(cat?: string): string {
-  return BOOKING_PATHS[cat?.toLowerCase() ?? ""] || BOOKING_PATHS.hair;
+// ── Priority (using shared derivePriority) ────────────────────────────────────
+function deriveLocalPriority(body: RequestCallbackBody): Priority {
+  // Map urgency string to timing format expected by shared function
+  const timing = body.timing ?? (body.urgency === "high" ? "today" : body.urgency === "medium" ? "week" : null);
+  return derivePriority(
+    timing,
+    true, // always callback_requested for this function
+    body.consultation_required ?? false,
+    70 // baseline intent for explicit callback requests
+  );
 }
 
 // ── Slack Block Kit ───────────────────────────────────────────────────────────
 function buildSlackMessage(body: RequestCallbackBody, priority: Priority): object {
-  const emoji: Record<Priority, string> = { P1: "🔴", P2: "🟠", P3: "🟡" };
-  const label: Record<Priority, string> = { P1: "HIGH PRIORITY", P2: "MEDIUM", P3: "STANDARD" };
-
-  const action =
-    priority === "P1"
-      ? "🚨 *Action:* @Kendell — Call within 10 minutes"
-      : priority === "P2"
-      ? "⏰ *Action:* @Kendell — Call back today"
-      : "📋 *Action:* @Kendell — Schedule callback";
+  const bookingPathDisplay = getInternalBookingPath(body.service_category);
+  const action = getUrgencyAction(priority);
 
   const flags: string[] = ["📞 Guest requested a callback — Luna made the commitment"];
   if (body.consultation_required) flags.push("⚠️ Consultation required — no pricing until consult");
@@ -95,7 +72,7 @@ function buildSlackMessage(body: RequestCallbackBody, priority: Priority): objec
         type: "header",
         text: {
           type: "plain_text",
-          text: `${emoji[priority]} ${label[priority]} — Callback Requested via Luna`,
+          text: `${PRIORITY_EMOJI[priority]} ${PRIORITY_LABEL[priority]} — Callback Requested via Luna`,
         },
       },
       {
@@ -105,7 +82,7 @@ function buildSlackMessage(body: RequestCallbackBody, priority: Priority): objec
           { type: "mrkdwn", text: `*Phone:*\n${phoneDisplay}` },
           { type: "mrkdwn", text: `*Service:*\n${body.service_name || body.service_category || "General inquiry"}` },
           { type: "mrkdwn", text: `*Timing:*\n${body.timing || "Not specified"}` },
-          { type: "mrkdwn", text: `*Booking Path:*\n${bookingPath(body.service_category)}` },
+          { type: "mrkdwn", text: `*Booking Path:*\n${bookingPathDisplay}` },
           { type: "mrkdwn", text: `*Urgency:*\n${body.urgency || "standard"}` },
         ],
       },
@@ -133,8 +110,6 @@ function buildSlackMessage(body: RequestCallbackBody, priority: Priority): objec
 }
 
 // ── Confirmation Luna speaks aloud ────────────────────────────────────────────
-// Always closes cleanly. This is a commitment, not a question.
-// Luna reads this, then calls end_call immediately.
 function buildConfirmation(body: RequestCallbackBody, priority: Priority): string {
   const firstName = body.guest_name !== "Unknown"
     ? body.guest_name.trim().split(/\s+/)[0]
@@ -142,7 +117,6 @@ function buildConfirmation(body: RequestCallbackBody, priority: Priority): strin
   const nameGreet = firstName ? `${firstName}, ` : "";
   const service   = body.service_name || body.service_category || "what you're looking for";
 
-  // Build timing commitment
   const timingCommitment =
     priority === "P1" || body.timing === "today"
       ? "within the next few minutes"
@@ -150,7 +124,6 @@ function buildConfirmation(body: RequestCallbackBody, priority: Priority): strin
       ? "today or tomorrow"
       : "soon";
 
-  // Consultation-specific close
   if (body.consultation_required) {
     return `${nameGreet}you're all set. Kendell will call you back ${timingCommitment} to set up your consultation for ${service}. They'll walk you through everything. Have a great day.`;
   }
@@ -182,11 +155,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    const priority = derivePriority(body);
+    const priority = deriveLocalPriority(body);
     const db       = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
     // ── 1. Idempotency check — 5-minute window ────────────────────────────────
-    // A callback commitment made within the same session should never fire twice.
     let alreadyCommitted = false;
     if (body.elevenlabs_session_id && body.phone) {
       const windowStart = new Date(Date.now() - 5 * 60 * 1000).toISOString();
@@ -231,20 +203,31 @@ Deno.serve(async (req) => {
         console.error("[request-callback] callback_requests:", cbErr.message);
       }
 
-      // Also upsert leads for CRM completeness
-      await db.from("leads").upsert(
-        {
-          name:     body.guest_name.trim(),
-          phone:    body.phone.trim(),
-          email:    body.email?.trim() || null,
-          category: body.service_category || null,
-          timing:   body.timing || null,
-        },
-        { onConflict: "phone", ignoreDuplicates: false }
-      ).catch((e: Error) => console.error("[request-callback] leads upsert:", e.message));
+      // Also insert into leads for CRM completeness (manual dedup, no upsert)
+      const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const { data: existingLead } = await db
+        .from("leads")
+        .select("id")
+        .eq("phone", body.phone.trim())
+        .gte("created_at", since24h)
+        .limit(1);
+
+      if (!existingLead?.length) {
+        try {
+          await db.from("leads").insert({
+            name:     body.guest_name.trim(),
+            phone:    body.phone.trim(),
+            email:    body.email?.trim() || null,
+            category: body.service_category || null,
+            timing:   body.timing || null,
+          });
+        } catch (e) {
+          console.error("[request-callback] leads insert:", (e as Error).message);
+        }
+      }
     }
 
-    // ── 3. Slack alert to #hush-callbacks (always this channel) ──────────────
+    // ── 3. Slack alert to #hush-callbacks ──────────────────────────────────────
     const slackMsg = buildSlackMessage(body, priority);
     if (!alreadyCommitted && CALLBACKS_HOOK) {
       fetch(CALLBACKS_HOOK, {

@@ -1,4 +1,11 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  detectCategory,
+  detectUrgency,
+  isHighIntent,
+  getInternalBookingPath,
+  getUrgencyAction,
+} from "../_shared/booking-rules.ts";
 
 // ── Environment ─────────────────────────────────────────────────────────────
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -39,54 +46,6 @@ async function verifyHMAC(
   return computed === signature.replace(/^sha256=/, "");
 }
 
-// ── Booking Rules (shared logic) ────────────────────────────────────────────
-
-function deriveBookingPath(category: string | null): string {
-  switch (category?.toLowerCase()) {
-    case "nails":
-      return "Direct booking: Anita (520) 591-0208, Kelly (520) 488-7149, Jackie (520) 501-6861";
-    case "lashes":
-      return "Direct booking: Allison (520) 250-6606";
-    case "skincare":
-      return "Direct booking: Patty (520) 870-6048";
-    case "massage":
-      return "Direct booking: Tammi (520) 370-3018";
-    case "hair":
-    default:
-      return "Call Front Desk: (520) 327-6753";
-  }
-}
-
-function deriveUrgency(transcript: string): string {
-  const lower = transcript.toLowerCase();
-  if (lower.includes("today") || lower.includes("right now") || lower.includes("asap")) return "today";
-  if (lower.includes("this week") || lower.includes("soon")) return "week";
-  if (lower.includes("planning") || lower.includes("next month")) return "planning";
-  return "browsing";
-}
-
-function detectCategory(transcript: string): string | null {
-  const lower = transcript.toLowerCase();
-  if (lower.includes("hair") || lower.includes("color") || lower.includes("cut") || lower.includes("blowout") || lower.includes("balayage")) return "hair";
-  if (lower.includes("nail") || lower.includes("manicure") || lower.includes("pedicure")) return "nails";
-  if (lower.includes("lash")) return "lashes";
-  if (lower.includes("facial") || lower.includes("skin") || lower.includes("spray tan")) return "skincare";
-  if (lower.includes("massage")) return "massage";
-  return null;
-}
-
-// FIX #4: Expanded high-intent signal detection
-function isHighIntent(transcript: string): boolean {
-  const lower = transcript.toLowerCase();
-  const signals = [
-    "book", "appointment", "schedule", "call me", "callback",
-    "phone number", "available", "availability", "openings",
-    "price", "how much", "cost", "consultation",
-    "when can", "next opening", "today", "asap",
-  ];
-  return signals.some((s) => lower.includes(s));
-}
-
 // ── Slack Voice Alert ───────────────────────────────────────────────────────
 
 async function sendVoiceSlackAlert(
@@ -108,12 +67,9 @@ async function sendVoiceSlackAlert(
     today: "🔴", week: "🟠", planning: "🟡", browsing: "⚪",
   };
 
-  // Urgency-based action instruction
-  const actionText = urgency === "today"
-    ? "🚨 *Action:* @Kendell — Call within 10 minutes"
-    : urgency === "week"
-    ? "⏰ *Action:* @Kendell — Follow up today"
-    : "📋 *Action:* @Kendell — Add to follow-up queue";
+  const actionText = getUrgencyAction(
+    urgency === "today" ? "P1" : urgency === "week" ? "P2" : "P3"
+  );
 
   const payload = {
     blocks: [
@@ -275,10 +231,11 @@ Deno.serve(async (req) => {
       if (insertErr) console.error("[voice-session-log] message insert error:", insertErr.message);
     }
 
+    // Use shared detection functions
     const fullTranscript = transcript.map((l) => `${l.role}: ${l.message}`).join("\n");
     const category = detectCategory(fullTranscript);
-    const urgency = deriveUrgency(fullTranscript);
-    const bookingPath = deriveBookingPath(category);
+    const urgency = detectUrgency(fullTranscript);
+    const bookingPath = getInternalBookingPath(category);
     const highIntent = isHighIntent(fullTranscript);
 
     await sendVoiceSlackAlert(
