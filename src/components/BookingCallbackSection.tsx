@@ -9,69 +9,50 @@ import { Textarea } from "@/components/ui/textarea";
 import { saveCallbackRequest } from "@/lib/saveSession";
 import { callbackServiceOptions as serviceOptions, callbackTimingOptions as timingOptions } from "@/data/categoryData";
 
-const buildPrefillFromContext = () => {
-  const ctx = getConciergeContext();
-  const interestedIn: string[] = [];
-  let timing = "";
-
-  if (ctx) {
-    if (ctx.categories?.length) {
-      ctx.categories.forEach((cat: string) => {
-        const match = serviceOptions.find(o => o.value === cat);
-        if (match && interestedIn.length < 3) interestedIn.push(match.value);
-      });
-      if (ctx.categories.length > 1 && !interestedIn.includes("multiple") && interestedIn.length < 3) {
-        interestedIn.push("multiple");
-      }
-    }
-    if (ctx.timing) {
-      const timingMatch = timingOptions.find(o => o.value === ctx.timing);
-      if (timingMatch) timing = timingMatch.value;
-    }
-  }
-
-  return { interestedIn, timing };
-};
-
 export const BookingCallbackSection = () => {
-  const { openModal, openChatWidget } = useLuna();
+  const { openModal, openChatWidget, conciergeContext } = useLuna();
 
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(false);
+  const [userTouched, setUserTouched] = useState(false);
 
-  const [formData, setFormData] = useState(() => {
-    const prefill = buildPrefillFromContext();
-    return {
-      fullName: "",
-      phone: "",
-      email: "",
-      interestedIn: prefill.interestedIn,
-      timing: prefill.timing,
-      message: "",
-    };
+  const [formData, setFormData] = useState({
+    fullName: "",
+    phone: "",
+    email: "",
+    interestedIn: [] as string[],
+    timing: "",
+    message: "",
   });
 
-  // Re-sync from context when section scrolls into view (e.g. user finishes finder then scrolls down)
+  // Prefill from concierge context reactively — only fill empty fields, never overwrite user input
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          const prefill = buildPrefillFromContext();
-          setFormData(prev => ({
-            ...prev,
-            interestedIn: prev.interestedIn.length > 0 ? prev.interestedIn : prefill.interestedIn,
-            timing: prev.timing || prefill.timing,
-          }));
-          observer.disconnect();
+    if (userTouched) return;
+    if (!conciergeContext) return;
+
+    setFormData(prev => {
+      const interestedIn = prev.interestedIn.length > 0 ? prev.interestedIn : (() => {
+        const result: string[] = [];
+        conciergeContext.categories?.forEach((cat: string) => {
+          const match = serviceOptions.find(o => o.value === cat);
+          if (match && result.length < 3) result.push(match.value);
+        });
+        if ((conciergeContext.categories?.length ?? 0) > 1 && !result.includes("multiple") && result.length < 3) {
+          result.push("multiple");
         }
-      },
-      { threshold: 0.1 }
-    );
-    const el = document.getElementById("callback");
-    if (el) observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
+        return result;
+      })();
+
+      const timing = prev.timing || (() => {
+        if (!conciergeContext.timing) return "";
+        const match = timingOptions.find(o => o.value === conciergeContext.timing);
+        return match ? match.value : "";
+      })();
+
+      return { ...prev, interestedIn, timing };
+    });
+  }, [conciergeContext, userTouched]);
 
   const isFormValid = formData.fullName.trim().length > 0 && formData.phone.trim().length > 0;
 
