@@ -8,6 +8,7 @@ import { saveLead } from "@/lib/saveSession";
 import { getConversationId, startSession } from "@/lib/sessionManager";
 import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
 import ReactMarkdown from "react-markdown";
+import { useLuna } from "@/contexts/LunaContext";
 
 interface ChatMessage {
   id: string;
