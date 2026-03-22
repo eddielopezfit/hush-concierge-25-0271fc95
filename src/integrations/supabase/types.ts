@@ -56,6 +56,77 @@ export type Database = {
         }
         Relationships: []
       }
+      conversations: {
+        Row: {
+          channel: string
+          concierge_context: Json | null
+          ended_at: string | null
+          guest_profile_id: string
+          id: string
+          started_at: string
+          status: string
+        }
+        Insert: {
+          channel?: string
+          concierge_context?: Json | null
+          ended_at?: string | null
+          guest_profile_id: string
+          id?: string
+          started_at?: string
+          status?: string
+        }
+        Update: {
+          channel?: string
+          concierge_context?: Json | null
+          ended_at?: string | null
+          guest_profile_id?: string
+          id?: string
+          started_at?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_guest_profile_id_fkey"
+            columns: ["guest_profile_id"]
+            isOneToOne: false
+            referencedRelation: "guest_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guest_profiles: {
+        Row: {
+          created_at: string
+          fingerprint: string
+          first_name: string | null
+          id: string
+          is_returning: boolean
+          last_context: Json | null
+          updated_at: string
+          visit_count: number
+        }
+        Insert: {
+          created_at?: string
+          fingerprint: string
+          first_name?: string | null
+          id?: string
+          is_returning?: boolean
+          last_context?: Json | null
+          updated_at?: string
+          visit_count?: number
+        }
+        Update: {
+          created_at?: string
+          fingerprint?: string
+          first_name?: string | null
+          id?: string
+          is_returning?: boolean
+          last_context?: Json | null
+          updated_at?: string
+          visit_count?: number
+        }
+        Relationships: []
+      }
       leads: {
         Row: {
           category: string | null
@@ -88,6 +159,44 @@ export type Database = {
           timing?: string | null
         }
         Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          latency_ms: number | null
+          role: string
+          source: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          latency_ms?: number | null
+          role: string
+          source?: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          latency_ms?: number | null
+          role?: string
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sessions: {
         Row: {
