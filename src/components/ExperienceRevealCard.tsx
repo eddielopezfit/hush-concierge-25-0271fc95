@@ -13,26 +13,6 @@ interface ExperienceRevealCardProps {
 
 export const ExperienceRevealCard = ({ data, onBook }: ExperienceRevealCardProps) => {
   const { conciergeContext } = useLuna();
-
-  const handleBook = () => {
-    if (onBook) {
-      onBook();
-    } else {
-      const el = document.getElementById("callback");
-      if (el) el.scrollIntoView({ behavior: "smooth" });
-    }
-  };
-
-  const handleChat = () => {
-    const ctx = getConciergeContext();
-    openChatWidget();
-    if (ctx) openModal(ctx);
-  };
-
-  const handleCall = () => {
-    window.location.href = "tel:+15203276753";
-  };
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 30, scale: 0.97 }}
