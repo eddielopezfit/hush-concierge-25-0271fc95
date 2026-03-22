@@ -80,6 +80,7 @@ export const BookingCallbackSection = () => {
   };
 
   const toggleService = (value: string) => {
+    setUserTouched(true);
     setFormData(prev => ({
       ...prev,
       interestedIn: prev.interestedIn.includes(value)
