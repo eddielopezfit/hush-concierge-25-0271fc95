@@ -229,19 +229,37 @@ function formatSlackMessage(lead: LeadPayload, priority: Priority): object {
   return { blocks };
 }
 
+// ── Category-specific Slack channel mapping ─────────────────────────────────
+
+type SlackChannel = "callbacks" | "leads" | "nails" | "lashes" | "skin" | "massage" | "voice";
+
+function resolveSlackChannel(
+  category: string | null,
+  callbackRequested: boolean,
+): SlackChannel {
+  if (callbackRequested) return "callbacks";
+  const cat = category?.toLowerCase();
+  switch (cat) {
+    case "nails":    return "nails";
+    case "lashes":   return "lashes";
+    case "skincare": return "skin";
+    case "massage":  return "massage";
+    default:         return "leads";
+  }
+}
+
 async function sendSlackAlert(
   lead: LeadPayload,
   priority: Priority,
-  channel: "callbacks" | "leads"
+  channel: SlackChannel,
 ): Promise<void> {
   if (!SLACK_WEBHOOK_URL) {
     console.warn("[lead-qualify] SLACK_WEBHOOK_URL not set, skipping Slack alert");
     return;
   }
 
-  const channelWebhookKey = channel === "callbacks"
-    ? "SLACK_WEBHOOK_URL_CALLBACKS"
-    : "SLACK_WEBHOOK_URL_LEADS";
+  // Try channel-specific webhook first, fall back to default
+  const channelWebhookKey = `SLACK_WEBHOOK_URL_${channel.toUpperCase()}`;
   const webhookUrl = Deno.env.get(channelWebhookKey) || SLACK_WEBHOOK_URL;
 
   const payload = formatSlackMessage(lead, priority);
@@ -392,8 +410,8 @@ Deno.serve(async (req) => {
       }
     }
 
-    // 3. Slack notifications — route by type
-    const slackChannel = callbackRequested ? "callbacks" : "leads";
+    // 3. Slack notifications — route by category + type
+    const slackChannel = resolveSlackChannel(lead.category ?? null, callbackRequested);
     await sendSlackAlert(enrichedLead, priority, slackChannel);
 
     // 4. CRM push (stub)

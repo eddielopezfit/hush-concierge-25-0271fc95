@@ -1,9 +1,11 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { Sparkles, ArrowRight, RefreshCw, Phone, MessageCircle, Calendar, Star, Clock } from "lucide-react";
+import { Sparkles, ArrowRight, RefreshCw, Calendar, Star, Clock } from "lucide-react";
 import { generateRecommendation, LunaRecommendation } from "@/lib/lunaBrain";
 import { formatCategoryList } from "@/lib/conciergeLabels";
 import { useLuna } from "@/contexts/LunaContext";
+import { buildRevealData } from "@/lib/experienceReveal";
+import { BookingDecisionCard } from "@/components/BookingDecisionCard";
 
 interface MyPlanTabProps {
   onSwitchTab: (tab: string) => void;
@@ -169,41 +171,31 @@ export const MyPlanTab = ({ onSwitchTab }: MyPlanTabProps) => {
           <p className="text-xs text-muted-foreground font-body leading-relaxed">{recommendation.nextStep}</p>
         </motion.div>
 
-        {/* Action Buttons */}
+        {/* Booking Decision */}
+        {(() => {
+          const revealData = buildRevealData(conciergeContext);
+          if (!revealData) return null;
+          return (
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              <BookingDecisionCard
+                revealData={revealData}
+                context={conciergeContext}
+                compact
+                onChatWithLuna={() => onSwitchTab("chat")}
+              />
+            </motion.div>
+          );
+        })()}
+
         <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="space-y-2 pt-1"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
         >
-          <button
-            onClick={() => {
-              const callbackSection = document.getElementById("callback");
-              if (callbackSection) callbackSection.scrollIntoView({ behavior: "smooth" });
-            }}
-            className="w-full btn-gold py-3 text-sm rounded-xl flex items-center justify-center gap-2"
-          >
-            <Calendar className="w-4 h-4" />
-            Book This Experience
-          </button>
-
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={() => onSwitchTab("chat")}
-              className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-primary/20 bg-primary/5 text-xs text-primary hover:bg-primary/10 transition-colors font-body"
-            >
-              <MessageCircle className="w-3.5 h-3.5" />
-              Ask Luna
-            </button>
-            <a
-              href="tel:5203276753"
-              className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-border bg-secondary/50 text-xs text-muted-foreground hover:text-foreground transition-colors font-body"
-            >
-              <Phone className="w-3.5 h-3.5" />
-              Call Hush
-            </a>
-          </div>
-
           <button
             onClick={() => onSwitchTab("find")}
             className="w-full flex items-center justify-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground transition-colors py-2 font-body"

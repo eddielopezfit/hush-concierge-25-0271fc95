@@ -1,9 +1,10 @@
 import { motion } from "framer-motion";
-import { Sparkles, Clock, DollarSign, Phone, MessageSquare, Users, ArrowRight } from "lucide-react";
+import { Sparkles, Clock, DollarSign, Users } from "lucide-react";
 import { RevealData } from "@/lib/experienceReveal";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useLuna } from "@/contexts/LunaContext";
 import { getConciergeContext } from "@/lib/conciergeStore";
+import { BookingDecisionCard } from "@/components/BookingDecisionCard";
 
 interface ExperienceRevealCardProps {
   data: RevealData;
@@ -11,27 +12,7 @@ interface ExperienceRevealCardProps {
 }
 
 export const ExperienceRevealCard = ({ data, onBook }: ExperienceRevealCardProps) => {
-  const { openModal, openChatWidget } = useLuna();
-
-  const handleBook = () => {
-    if (onBook) {
-      onBook();
-    } else {
-      const el = document.getElementById("callback");
-      if (el) el.scrollIntoView({ behavior: "smooth" });
-    }
-  };
-
-  const handleChat = () => {
-    const ctx = getConciergeContext();
-    openChatWidget();
-    if (ctx) openModal(ctx);
-  };
-
-  const handleCall = () => {
-    window.location.href = "tel:+15203276753";
-  };
-
+  const { conciergeContext } = useLuna();
   return (
     <motion.div
       initial={{ opacity: 0, y: 30, scale: 0.97 }}
@@ -116,63 +97,16 @@ export const ExperienceRevealCard = ({ data, onBook }: ExperienceRevealCardProps
             </motion.div>
           )}
 
-          {/* Consultation / booking path */}
+          {/* Booking Decision */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.65 }}
-            className="text-center"
           >
-            {data.consultationRequired ? (
-              <p className="text-xs font-body text-muted-foreground mb-4">
-                This experience starts with a quick consultation to personalize your service and pricing.
-              </p>
-            ) : (
-              <p className="text-xs font-body text-muted-foreground mb-4">
-                You can book this experience directly — we'll match you with the perfect artist.
-              </p>
-            )}
-          </motion.div>
-
-          {/* CTAs */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.75 }}
-            className="space-y-3"
-          >
-            {/* Primary */}
-            <motion.button
-              onClick={handleBook}
-              className="w-full btn-gold py-4 text-sm font-display flex items-center justify-center gap-2"
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.99 }}
-            >
-              {data.consultationRequired ? "Request Consultation" : "Book This Experience"}
-              <ArrowRight className="w-4 h-4" />
-            </motion.button>
-
-            {/* Secondary */}
-            <div className="grid grid-cols-2 gap-3">
-              <motion.button
-                onClick={handleChat}
-                className="btn-outline-gold py-3 text-xs font-body flex items-center justify-center gap-2"
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
-              >
-                <MessageSquare className="w-3.5 h-3.5" />
-                Chat with Luna
-              </motion.button>
-              <motion.button
-                onClick={handleCall}
-                className="btn-outline-gold py-3 text-xs font-body flex items-center justify-center gap-2"
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
-              >
-                <Phone className="w-3.5 h-3.5" />
-                Call Front Desk
-              </motion.button>
-            </div>
+            <BookingDecisionCard
+              revealData={data}
+              context={conciergeContext}
+            />
           </motion.div>
         </div>
       </div>
