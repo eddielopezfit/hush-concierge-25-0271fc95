@@ -63,17 +63,20 @@ serve(async (req) => {
 
     if (type === "lead") {
       const { name, phone, email, category, goal, timing } = body;
-      if (!name?.trim() || !phone?.trim()) {
+      // Require at least one contact method (phone or email)
+      const hasPhone = phone?.trim();
+      const hasEmail = email?.trim();
+      if (!name?.trim() || (!hasPhone && !hasEmail)) {
         return new Response(
-          JSON.stringify({ error: "name and phone are required" }),
+          JSON.stringify({ error: "name and at least one contact method (phone or email) are required" }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
       const { error } = await db.from("leads").insert({
         name: name.trim(),
-        phone: phone.trim(),
-        email: email?.trim() || null,
+        phone: hasPhone || null,
+        email: hasEmail || null,
         category: category || null,
         goal: goal || null,
         timing: timing || null,
