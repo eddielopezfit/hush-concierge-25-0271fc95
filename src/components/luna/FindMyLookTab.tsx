@@ -40,6 +40,7 @@ export const FindMyLookTab = ({ onSwitchTab }: FindMyLookTabProps) => {
   const [selectedGoal, setSelectedGoal] = useState<string | null>(null);
   const [selectedTiming, setSelectedTiming] = useState<string | null>(null);
   const [recommendation, setRecommendation] = useState<LunaRecommendation | null>(null);
+  const [revealData, setRevealData] = useState<RevealData | null>(null);
 
   const toggleCategory = (id: ServiceCategoryId) => {
     setSelectedCategories(prev =>
