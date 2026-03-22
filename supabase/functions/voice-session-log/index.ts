@@ -39,7 +39,7 @@ async function verifyHMAC(
   return computed === signature.replace(/^sha256=/, "");
 }
 
-// ── Booking Rules ───────────────────────────────────────────────────────────
+// ── Booking Rules (shared logic) ────────────────────────────────────────────
 
 function deriveBookingPath(category: string | null): string {
   switch (category?.toLowerCase()) {
@@ -53,7 +53,7 @@ function deriveBookingPath(category: string | null): string {
       return "Direct booking: Tammi (520) 370-3018";
     case "hair":
     default:
-      return "Route to Kendell / Front Desk at (520) 327-6753";
+      return "Call Front Desk: (520) 327-6753";
   }
 }
 
@@ -75,9 +75,15 @@ function detectCategory(transcript: string): string | null {
   return null;
 }
 
+// FIX #4: Expanded high-intent signal detection
 function isHighIntent(transcript: string): boolean {
   const lower = transcript.toLowerCase();
-  const signals = ["book", "appointment", "schedule", "call me", "callback", "phone number", "available"];
+  const signals = [
+    "book", "appointment", "schedule", "call me", "callback",
+    "phone number", "available", "availability", "openings",
+    "price", "how much", "cost", "consultation",
+    "when can", "next opening", "today", "asap",
+  ];
   return signals.some((s) => lower.includes(s));
 }
 
@@ -92,7 +98,6 @@ async function sendVoiceSlackAlert(
   highIntent: boolean,
   messageCount: number
 ): Promise<void> {
-  // Use voice-specific webhook if available
   const voiceWebhook = Deno.env.get("SLACK_WEBHOOK_URL_VOICE") || SLACK_WEBHOOK_URL;
   if (!voiceWebhook) {
     console.warn("[voice-session-log] No Slack webhook configured, skipping alert");
@@ -102,6 +107,13 @@ async function sendVoiceSlackAlert(
   const urgencyEmoji: Record<string, string> = {
     today: "🔴", week: "🟠", planning: "🟡", browsing: "⚪",
   };
+
+  // Urgency-based action instruction
+  const actionText = urgency === "today"
+    ? "🚨 *Action:* @Kendell — Call within 10 minutes"
+    : urgency === "week"
+    ? "⏰ *Action:* @Kendell — Follow up today"
+    : "📋 *Action:* @Kendell — Add to follow-up queue";
 
   const payload = {
     blocks: [
@@ -136,6 +148,13 @@ async function sendVoiceSlackAlert(
         },
       }] : []),
       {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: actionText,
+        },
+      },
+      {
         type: "context",
         elements: [
           { type: "mrkdwn", text: `Conversation: \`${conversationId}\`` },
@@ -162,14 +181,13 @@ async function sendVoiceSlackAlert(
 
 interface ElevenLabsWebhookPayload {
   event_type?: string;
-  conversation_id?: string;          // ElevenLabs conversation/session ID
+  conversation_id?: string;
   agent_id?: string;
   duration_seconds?: number;
   cost_credits?: number;
   transcript?: Array<{ role: string; message: string; timestamp?: number }>;
   metadata?: Record<string, unknown>;
-  // Our internal mapping
-  hush_conversation_id?: string;     // our conversations.id, passed via metadata
+  hush_conversation_id?: string;
 }
 
 Deno.serve(async (req) => {
@@ -187,7 +205,6 @@ Deno.serve(async (req) => {
   try {
     const rawBody = await req.text();
 
-    // HMAC verification (skip if no secret configured — dev mode)
     if (WEBHOOK_SECRET) {
       const signature = req.headers.get("x-elevenlabs-signature");
       const valid = await verifyHMAC(rawBody, signature, WEBHOOK_SECRET);
@@ -208,12 +225,9 @@ Deno.serve(async (req) => {
     const costCredits = body.cost_credits ?? 0;
     const transcript = body.transcript ?? [];
 
-    // Resolve our internal conversation_id
-    // Option A: passed explicitly in metadata
     let conversationId = body.hush_conversation_id ||
       (body.metadata?.hush_conversation_id as string) || null;
 
-    // Option B: look up by ElevenLabs session ID
     if (!conversationId && elSessionId) {
       const { data: match } = await supabase
         .from("conversations")
@@ -221,11 +235,9 @@ Deno.serve(async (req) => {
         .eq("elevenlabs_session_id", elSessionId)
         .limit(1)
         .maybeSingle();
-
       conversationId = match?.id ?? null;
     }
 
-    // Option C: create a new conversation for unmatched voice sessions
     if (!conversationId) {
       const { data: newConvo, error: createErr } = await supabase
         .from("conversations")
@@ -239,11 +251,9 @@ Deno.serve(async (req) => {
         })
         .select("id")
         .single();
-
       if (createErr) throw createErr;
       conversationId = newConvo.id;
     } else {
-      // Update existing conversation with voice metadata
       await supabase
         .from("conversations")
         .update({
@@ -254,7 +264,6 @@ Deno.serve(async (req) => {
         .eq("id", conversationId);
     }
 
-    // Persist transcript lines as messages
     if (transcript.length > 0) {
       const messageRows = transcript.map((line) => ({
         conversation_id: conversationId!,
@@ -262,21 +271,16 @@ Deno.serve(async (req) => {
         content: line.message,
         source: "voice",
       }));
-
       const { error: insertErr } = await supabase.from("messages").insert(messageRows);
-      if (insertErr) {
-        console.error("[voice-session-log] message insert error:", insertErr.message);
-      }
+      if (insertErr) console.error("[voice-session-log] message insert error:", insertErr.message);
     }
 
-    // Build full transcript text for analysis
     const fullTranscript = transcript.map((l) => `${l.role}: ${l.message}`).join("\n");
     const category = detectCategory(fullTranscript);
     const urgency = deriveUrgency(fullTranscript);
     const bookingPath = deriveBookingPath(category);
     const highIntent = isHighIntent(fullTranscript);
 
-    // Send Slack voice alert
     await sendVoiceSlackAlert(
       conversationId!,
       durationSecs,
@@ -287,7 +291,7 @@ Deno.serve(async (req) => {
       transcript.length
     );
 
-    // Trigger session-summarize asynchronously
+    // Trigger session-summarize
     fetch(`${SUPABASE_URL}/functions/v1/session-summarize`, {
       method: "POST",
       headers: {
@@ -297,7 +301,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({ conversation_id: conversationId }),
     }).catch((err) => console.error("[voice-session-log] session-summarize trigger error:", err));
 
-    // If high intent, also trigger lead-qualify directly
+    // If high intent, also trigger lead-qualify
     if (highIntent && conversationId) {
       fetch(`${SUPABASE_URL}/functions/v1/lead-qualify`, {
         method: "POST",
