@@ -7,7 +7,6 @@ import { setConciergeContext, setGuestFirstName } from "@/lib/conciergeStore";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { saveCallbackRequest } from "@/lib/saveSession";
-import { getConciergeContext } from "@/lib/conciergeStore";
 import { callbackServiceOptions as serviceOptions, callbackTimingOptions as timingOptions } from "@/data/categoryData";
 
 const buildPrefillFromContext = () => {
