@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Heart, Gift, Crown, Mail } from "lucide-react";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { saveLead } from "@/lib/saveSession";
 
 const perks = [
   {
@@ -25,24 +25,28 @@ export const CommunitySection = () => {
   const [email, setEmail] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasError, setHasError] = useState(false);
 
   const handleJoin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) return;
     setIsSubmitting(true);
+    setHasError(false);
 
-    try {
-      await supabase.from('leads' as any).insert({
-        email: email.trim(),
-        category: "inner-circle",
-        goal: "loyalty",
-      });
-    } catch (err) {
-      console.debug("[CommunitySection] Lead capture failed:", err);
-    }
+    const success = await saveLead({
+      name: "Inner Circle Signup",
+      phone: "—",
+      email: email.trim(),
+      category: "inner-circle",
+      goal: "loyalty",
+    });
 
     setIsSubmitting(false);
-    setIsSubmitted(true);
+    if (success) {
+      setIsSubmitted(true);
+    } else {
+      setHasError(true);
+    }
   };
 
   return (
@@ -101,28 +105,35 @@ export const CommunitySection = () => {
           className="text-center"
         >
           {!isSubmitted ? (
-            <form onSubmit={handleJoin} className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-md mx-auto">
-              <div className="relative flex-1 w-full">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Your email"
-                  className="w-full h-12 pl-10 pr-4 rounded-lg bg-background/50 border border-gold/15 text-cream placeholder:text-cream/35 font-body text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/15 transition-all"
-                />
-              </div>
-              <motion.button
-                type="submit"
-                disabled={isSubmitting}
-                className="btn-gold py-3 px-6 whitespace-nowrap text-sm"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                {isSubmitting ? "Joining..." : "Join the Inner Circle"}
-              </motion.button>
-            </form>
+            <>
+              <form onSubmit={handleJoin} className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-md mx-auto">
+                <div className="relative flex-1 w-full">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Your email"
+                    className="w-full h-12 pl-10 pr-4 rounded-lg bg-background/50 border border-gold/15 text-cream placeholder:text-cream/35 font-body text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/15 transition-all"
+                  />
+                </div>
+                <motion.button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="btn-gold py-3 px-6 whitespace-nowrap text-sm"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  {isSubmitting ? "Joining..." : "Join the Inner Circle"}
+                </motion.button>
+              </form>
+              {hasError && (
+                <p className="font-body text-xs text-destructive mt-2">
+                  Something went wrong. Please try again or call us at (520) 327-6753.
+                </p>
+              )}
+            </>
           ) : (
             <motion.p
               initial={{ opacity: 0, y: 10 }}
