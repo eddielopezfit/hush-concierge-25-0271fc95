@@ -59,7 +59,7 @@ export const FindMyLookTab = ({ onSwitchTab }: FindMyLookTabProps) => {
       timing: id,
     };
     setConciergeContext(context);
-    saveSession(context);
+    startSession(context, "find_my_look");
     const rec = generateRecommendation(context);
     setRecommendation(rec);
     setTimeout(() => setStep(4), 300);
