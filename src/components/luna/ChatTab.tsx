@@ -202,7 +202,7 @@ export const ChatTab = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
-  // Build contextual greeting + chips
+  // Build contextual greeting + chips, ensure session exists
   useEffect(() => {
     if (initialized) return;
     const ctx = getConciergeContext();
@@ -211,6 +211,11 @@ export const ChatTab = () => {
     setContextPills(getContextPills(ctx));
     setSmartChips(getSmartChips(ctx));
     setInitialized(true);
+
+    // Ensure a conversation exists for this chat session
+    if (!getConversationId()) {
+      startSession(ctx, "chat");
+    }
   }, [initialized]);
 
   useEffect(() => {
