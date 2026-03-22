@@ -74,28 +74,16 @@ export const BookingCallbackSection = () => {
     setIsSubmitting(true);
     setSubmitError(false);
 
-    const success = await saveLead({
-      name: formData.fullName,
+    const success = await saveCallbackRequest({
+      full_name: formData.fullName,
       phone: formData.phone,
       email: formData.email || undefined,
-      category: formData.interestedIn.join(", ") || undefined,
+      interested_in: formData.interestedIn.join(", ") || undefined,
       timing: formData.timing || undefined,
+      message: formData.message || undefined,
+      source: "callback_form",
+      concierge_context: getConciergeContext() || {},
     });
-
-    try {
-      await supabase.from('callback_requests' as any).insert({
-        full_name: formData.fullName.trim(),
-        phone: formData.phone.trim(),
-        email: formData.email.trim() || null,
-        interested_in: formData.interestedIn.join(", ") || null,
-        timing: formData.timing || null,
-        message: formData.message.trim() || null,
-        source: 'callback_form',
-        concierge_context: getConciergeContext() || {},
-      });
-    } catch (err) {
-      console.debug("[BookingCallback] callback_requests insert failed:", err);
-    }
 
     setIsSubmitting(false);
     if (success) {
