@@ -16,14 +16,57 @@ export const BookingCallbackSection = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(false);
-  const [formData, setFormData] = useState({
-    fullName: "",
-    phone: "",
-    email: "",
-    interestedIn: [] as string[],
-    timing: "",
-    message: "",
-  });
+  const [hasPreFilled, setHasPreFilled] = useState(false);
+
+  // Pre-fill from concierge context on first render
+  const getInitialFormData = () => {
+    const ctx = getConciergeContext();
+    const interestedIn: string[] = [];
+    let timing = "";
+
+    if (ctx) {
+      if (ctx.categories?.length) {
+        ctx.categories.forEach((cat: string) => {
+          const match = serviceOptions.find(o => o.value === cat);
+          if (match && interestedIn.length < 3) interestedIn.push(match.value);
+        });
+        if (ctx.categories.length > 1 && !interestedIn.includes("multiple") && interestedIn.length < 3) {
+          interestedIn.push("multiple");
+        }
+      }
+      if (ctx.timing) {
+        const timingMatch = timingOptions.find(o => o.value === ctx.timing);
+        if (timingMatch) timing = timingMatch.value;
+      }
+    }
+
+    return {
+      fullName: "",
+      phone: "",
+      email: "",
+      interestedIn,
+      timing,
+      message: "",
+    };
+  };
+
+  const [formData, setFormData] = useState(getInitialFormData);
+
+  // Re-sync if context changes (e.g. user completes finder then scrolls to form)
+  if (!hasPreFilled) {
+    const ctx = getConciergeContext();
+    if (ctx?.categories?.length && formData.interestedIn.length === 0) {
+      const newData = getInitialFormData();
+      if (newData.interestedIn.length > 0 || newData.timing) {
+        setFormData(prev => ({
+          ...prev,
+          interestedIn: prev.interestedIn.length > 0 ? prev.interestedIn : newData.interestedIn,
+          timing: prev.timing || newData.timing,
+        }));
+      }
+    }
+    setHasPreFilled(true);
+  }
 
   const isFormValid = formData.fullName.trim().length > 0 && formData.phone.trim().length > 0;
 

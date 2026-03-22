@@ -467,7 +467,7 @@ export const ExperienceFinderSection = () => {
                     whileHover={selection.services.length > 0 ? { scale: 1.02 } : {}}
                     whileTap={selection.services.length > 0 ? { scale: 0.98 } : {}}
                   >
-                    Continue
+                    Show Me Options
                   </motion.button>
                   {selection.services.length > 0 && (
                     <motion.button
