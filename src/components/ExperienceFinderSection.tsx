@@ -230,14 +230,13 @@ export const ExperienceFinderSection = () => {
 
   const handleLunaAction = () => {
     const ctx = buildContext();
-    setConciergeContext(ctx);
+    setConcierge(ctx);
     const rec = generateRecommendation(ctx);
     setRecommendation(rec);
     startSession(ctx, "finder");
     try {
       sessionStorage.setItem("hush_luna_recommendation", JSON.stringify(rec));
     } catch { /* ignore */ }
-    // Build reveal data and show the reveal card inline
     const reveal = buildRevealData(ctx);
     setRevealData(reveal);
     setCurrentStep("reveal");

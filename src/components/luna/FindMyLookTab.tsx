@@ -96,6 +96,7 @@ export const FindMyLookTab = ({ onSwitchTab }: FindMyLookTabProps) => {
     setSelectedTiming(null);
     setRecommendation(null);
     setRevealData(null);
+    setResumedFromContext(false);
   };
 
   const stepLabels = ["Services", "Goal", "Timing", "Your Look"];
