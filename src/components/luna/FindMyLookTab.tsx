@@ -258,48 +258,20 @@ export const FindMyLookTab = ({ onSwitchTab }: FindMyLookTabProps) => {
                 </div>
               )}
 
-              {/* Booking path */}
-              <p className="text-[11px] font-body text-muted-foreground text-center">
-                {revealData.consultationRequired
-                  ? "This experience starts with a quick consultation."
-                  : "You can book this experience directly."}
-              </p>
+              {/* Booking Decision */}
+              <BookingDecisionCard
+                revealData={revealData}
+                context={conciergeContext}
+                compact
+                onChatWithLuna={() => onSwitchTab("chat")}
+              />
 
-              {/* CTAs */}
-              <div className="space-y-2">
-                <button
-                  onClick={() => {
-                    const callbackSection = document.getElementById("callback");
-                    if (callbackSection) callbackSection.scrollIntoView({ behavior: "smooth" });
-                  }}
-                  className="w-full btn-gold py-3 text-sm flex items-center justify-center gap-2"
-                >
-                  {revealData.consultationRequired ? "Request Consultation" : "Book This Experience"}
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => onSwitchTab("chat")}
-                    className="btn-outline-gold py-2 text-xs flex items-center justify-center gap-1.5"
-                  >
-                    <MessageSquare className="w-3 h-3" />
-                    Chat with Luna
-                  </button>
-                  <button
-                    onClick={() => { window.location.href = "tel:+15203276753"; }}
-                    className="btn-outline-gold py-2 text-xs flex items-center justify-center gap-1.5"
-                  >
-                    <Phone className="w-3 h-3" />
-                    Call
-                  </button>
-                </div>
-                <button
-                  onClick={handleReset}
-                  className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors py-2 font-body"
-                >
-                  Start over
-                </button>
-              </div>
+              <button
+                onClick={handleReset}
+                className="w-full flex items-center justify-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground transition-colors py-2 font-body"
+              >
+                <RotateCcw className="w-3 h-3" /> Edit selections
+              </button>
             </motion.div>
           )}
         </AnimatePresence>
