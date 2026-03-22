@@ -35,12 +35,31 @@ interface FindMyLookTabProps {
 }
 
 export const FindMyLookTab = ({ onSwitchTab }: FindMyLookTabProps) => {
+  const { conciergeContext, setConcierge } = useLuna();
   const [step, setStep] = useState(1);
   const [selectedCategories, setSelectedCategories] = useState<ServiceCategoryId[]>([]);
   const [selectedGoal, setSelectedGoal] = useState<string | null>(null);
   const [selectedTiming, setSelectedTiming] = useState<string | null>(null);
   const [recommendation, setRecommendation] = useState<LunaRecommendation | null>(null);
   const [revealData, setRevealData] = useState<RevealData | null>(null);
+  const [resumedFromContext, setResumedFromContext] = useState(false);
+
+  // If context already has categories from another surface, skip to reveal
+  useEffect(() => {
+    if (conciergeContext?.categories?.length && !resumedFromContext && step === 1) {
+      const reveal = buildRevealData(conciergeContext);
+      if (reveal) {
+        setSelectedCategories(conciergeContext.categories);
+        setSelectedGoal(conciergeContext.goal ?? null);
+        setSelectedTiming(conciergeContext.timing ?? null);
+        setRevealData(reveal);
+        setRecommendation(generateRecommendation(conciergeContext));
+        setStep(4);
+        setResumedFromContext(true);
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const toggleCategory = (id: ServiceCategoryId) => {
     setSelectedCategories(prev =>
