@@ -1,11 +1,35 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+// ── CORS allowlist ──────────────────────────────────────────────────────────
+const ALLOWED_ORIGINS = [
+  "https://hush-salon.lovable.app",
+  "http://localhost:5173",
+];
 
+function isAllowedOrigin(origin: string | null): boolean {
+  if (!origin) return false;
+  if (ALLOWED_ORIGINS.includes(origin)) return true;
+  // Allow any *.lovable.app preview URL
+  if (/^https:\/\/[a-z0-9\-]+\.lovable\.app$/.test(origin)) return true;
+  return false;
+}
+
+function getCorsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get("origin");
+  const allowed = isAllowedOrigin(origin);
+  if (!allowed && origin) {
+    console.warn(`[luna-chat] Blocked origin: ${origin}`);
+  }
+  return {
+    "Access-Control-Allow-Origin": allowed && origin ? origin : ALLOWED_ORIGINS[0],
+    "Access-Control-Allow-Headers":
+      "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+    "Vary": "Origin",
+  };
+}
+
+// ── System prompt ───────────────────────────────────────────────────────────
 const SYSTEM_PROMPT = `You are Luna, the AI concierge for Hush Salon & Day Spa in Tucson, Arizona. You are warm, confident, conversational, and stylist-aware. You speak like a knowledgeable, trusted beauty advisor — never robotic, never generic.
 
 ## YOUR PERSONALITY
@@ -134,23 +158,81 @@ When the journey context mentions "comparing stylists" or "Team Compare" or "com
 ## JOURNEY CONTEXT
 The user may have browsed specific sections of our website. Use this context to personalize your responses. If they've looked at specific artists or services, reference those naturally.`;
 
+// ── DB client (service role) ────────────────────────────────────────────────
+function getServiceDb() {
+  const url = Deno.env.get("SUPABASE_URL")!;
+  const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  return createClient(url, key);
+}
+
+// ── Persist messages ────────────────────────────────────────────────────────
+async function persistMessages(
+  conversationId: string,
+  userContent: string,
+  assistantContent: string,
+  latencyMs: number | null,
+) {
+  if (!conversationId) return;
+  try {
+    const db = getServiceDb();
+    const rows = [
+      {
+        conversation_id: conversationId,
+        role: "user" as const,
+        content: userContent,
+        source: "chat",
+      },
+      {
+        conversation_id: conversationId,
+        role: "assistant" as const,
+        content: assistantContent,
+        source: "chat",
+        latency_ms: latencyMs,
+      },
+    ];
+    const { error } = await db.from("messages").insert(rows);
+    if (error) console.error("[luna-chat] message persist error:", error.message);
+  } catch (e) {
+    console.error("[luna-chat] message persist exception:", e);
+  }
+}
+
+// ── Main handler ────────────────────────────────────────────────────────────
 serve(async (req) => {
+  const cors = getCorsHeaders(req);
+
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: cors });
+  }
+
+  // Block disallowed origins
+  const origin = req.headers.get("origin");
+  if (origin && !isAllowedOrigin(origin)) {
+    return new Response(
+      JSON.stringify({ error: "Origin not allowed" }),
+      { status: 403, headers: { ...cors, "Content-Type": "application/json" } }
+    );
   }
 
   try {
-    const { messages, journeyContext } = await req.json();
+    const { messages, journeyContext, conversation_id } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // Build system prompt with journey context if available
+    // Build system prompt with journey context
     let systemPrompt = SYSTEM_PROMPT;
     if (journeyContext) {
       systemPrompt += `\n\n## CURRENT USER JOURNEY\n${journeyContext}`;
     }
+
+    // Extract latest user message for persistence
+    const latestUserMessage = messages?.length
+      ? messages[messages.length - 1]?.content || ""
+      : "";
+
+    const startTime = Date.now();
 
     const response = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
@@ -175,31 +257,88 @@ serve(async (req) => {
       if (response.status === 429) {
         return new Response(
           JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { status: 429, headers: { ...cors, "Content-Type": "application/json" } }
         );
       }
       if (response.status === 402) {
         return new Response(
           JSON.stringify({ error: "Service temporarily unavailable." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { status: 402, headers: { ...cors, "Content-Type": "application/json" } }
         );
       }
       const t = await response.text();
       console.error("AI gateway error:", response.status, t);
       return new Response(
         JSON.stringify({ error: "AI service error" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 500, headers: { ...cors, "Content-Type": "application/json" } }
       );
     }
 
-    return new Response(response.body, {
-      headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+    // We need to both stream to client AND capture full response for persistence.
+    // Use TransformStream to tee the data.
+    const { readable, writable } = new TransformStream();
+    const writer = writable.getWriter();
+    let fullAssistantContent = "";
+
+    // Process stream in background
+    (async () => {
+      const reader = response.body!.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value, { stream: true });
+          buffer += chunk;
+
+          // Forward raw chunk to client
+          await writer.write(value);
+
+          // Parse for content capture
+          let idx: number;
+          while ((idx = buffer.indexOf("\n")) !== -1) {
+            let line = buffer.slice(0, idx);
+            buffer = buffer.slice(idx + 1);
+            if (line.endsWith("\r")) line = line.slice(0, -1);
+            if (!line.startsWith("data: ")) continue;
+            const jsonStr = line.slice(6).trim();
+            if (jsonStr === "[DONE]") continue;
+            try {
+              const parsed = JSON.parse(jsonStr);
+              const content = parsed.choices?.[0]?.delta?.content;
+              if (content) fullAssistantContent += content;
+            } catch { /* partial JSON, skip */ }
+          }
+        }
+      } catch (e) {
+        console.error("[luna-chat] stream read error:", e);
+      } finally {
+        await writer.close();
+
+        // Persist messages after stream completes
+        const latencyMs = Date.now() - startTime;
+        if (conversation_id && latestUserMessage) {
+          await persistMessages(
+            conversation_id,
+            latestUserMessage,
+            fullAssistantContent,
+            latencyMs,
+          );
+        }
+      }
+    })();
+
+    return new Response(readable, {
+      headers: { ...cors, "Content-Type": "text/event-stream" },
     });
   } catch (e) {
     console.error("luna-chat error:", e);
     return new Response(
       JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...cors, "Content-Type": "application/json" } }
     );
   }
 });
