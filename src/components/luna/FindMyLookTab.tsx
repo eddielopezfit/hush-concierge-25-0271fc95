@@ -1,12 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, Sparkles, ArrowRight, Clock, DollarSign, Users, Phone, MessageSquare } from "lucide-react";
+import { ChevronLeft, Sparkles, ArrowRight, Clock, DollarSign, Users, Phone, MessageSquare, RotateCcw } from "lucide-react";
 import { generateRecommendation, LunaRecommendation } from "@/lib/lunaBrain";
-import { setConciergeContext } from "@/lib/conciergeStore";
 import { startSession } from "@/lib/sessionManager";
 import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
 import { buildRevealData, RevealData } from "@/lib/experienceReveal";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { useLuna } from "@/contexts/LunaContext";
 
 const categories: { id: ServiceCategoryId; label: string; emoji: string }[] = [
   { id: "hair", label: "Hair", emoji: "✂️" },
