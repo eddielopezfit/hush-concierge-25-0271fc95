@@ -214,6 +214,7 @@ export type Database = {
           latency_ms: number | null
           role: string
           source: string
+          tokens_used: number | null
         }
         Insert: {
           content: string
@@ -223,6 +224,7 @@ export type Database = {
           latency_ms?: number | null
           role: string
           source?: string
+          tokens_used?: number | null
         }
         Update: {
           content?: string
@@ -232,6 +234,7 @@ export type Database = {
           latency_ms?: number | null
           role?: string
           source?: string
+          tokens_used?: number | null
         }
         Relationships: [
           {
