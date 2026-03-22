@@ -60,29 +60,50 @@ export type Database = {
         Row: {
           channel: string
           concierge_context: Json | null
+          el_cost_credits: number | null
+          el_duration_secs: number | null
+          elevenlabs_session_id: string | null
           ended_at: string | null
-          guest_profile_id: string
+          first_message: string | null
+          guest_profile_id: string | null
           id: string
+          intent_signals: Json | null
+          outcome: string | null
           started_at: string
           status: string
+          summary: string | null
         }
         Insert: {
           channel?: string
           concierge_context?: Json | null
+          el_cost_credits?: number | null
+          el_duration_secs?: number | null
+          elevenlabs_session_id?: string | null
           ended_at?: string | null
-          guest_profile_id: string
+          first_message?: string | null
+          guest_profile_id?: string | null
           id?: string
+          intent_signals?: Json | null
+          outcome?: string | null
           started_at?: string
           status?: string
+          summary?: string | null
         }
         Update: {
           channel?: string
           concierge_context?: Json | null
+          el_cost_credits?: number | null
+          el_duration_secs?: number | null
+          elevenlabs_session_id?: string | null
           ended_at?: string | null
-          guest_profile_id?: string
+          first_message?: string | null
+          guest_profile_id?: string | null
           id?: string
+          intent_signals?: Json | null
+          outcome?: string | null
           started_at?: string
           status?: string
+          summary?: string | null
         }
         Relationships: [
           {
