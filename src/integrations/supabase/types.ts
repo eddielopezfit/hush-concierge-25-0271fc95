@@ -97,31 +97,55 @@ export type Database = {
       guest_profiles: {
         Row: {
           created_at: string
-          fingerprint: string
+          email: string | null
+          fingerprint: string | null
           first_name: string | null
           id: string
+          intent_score: number | null
           is_returning: boolean
           last_context: Json | null
+          last_seen_at: string | null
+          notes: string | null
+          phone: string | null
+          preferred_artist_ids: string[] | null
+          preferred_categories: string[] | null
+          source: string | null
           updated_at: string
           visit_count: number
         }
         Insert: {
           created_at?: string
-          fingerprint: string
+          email?: string | null
+          fingerprint?: string | null
           first_name?: string | null
           id?: string
+          intent_score?: number | null
           is_returning?: boolean
           last_context?: Json | null
+          last_seen_at?: string | null
+          notes?: string | null
+          phone?: string | null
+          preferred_artist_ids?: string[] | null
+          preferred_categories?: string[] | null
+          source?: string | null
           updated_at?: string
           visit_count?: number
         }
         Update: {
           created_at?: string
-          fingerprint?: string
+          email?: string | null
+          fingerprint?: string | null
           first_name?: string | null
           id?: string
+          intent_score?: number | null
           is_returning?: boolean
           last_context?: Json | null
+          last_seen_at?: string | null
+          notes?: string | null
+          phone?: string | null
+          preferred_artist_ids?: string[] | null
+          preferred_categories?: string[] | null
+          source?: string | null
           updated_at?: string
           visit_count?: number
         }
