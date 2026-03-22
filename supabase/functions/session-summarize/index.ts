@@ -265,7 +265,7 @@ Deno.serve(async (req) => {
         conversation_id,
         summary,
         intent_signals: intentSignals,
-        lead_qualified: intentScore >= LEAD_QUALIFY_THRESHOLD,
+        lead_qualified: shouldQualify,
       }),
       { status: 200, headers: corsHeaders }
     );
