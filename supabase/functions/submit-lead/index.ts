@@ -29,6 +29,23 @@ serve(async (req) => {
         );
       }
 
+      // Dedup: check for existing callback from this phone in the last 24 hours
+      const windowStart24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const { data: existingCb } = await db
+        .from("callback_requests")
+        .select("id")
+        .eq("phone", phone.trim())
+        .gte("created_at", windowStart24h)
+        .limit(1);
+
+      if (existingCb && existingCb.length > 0) {
+        console.log("[submit-lead] Duplicate callback suppressed for phone:", phone.trim());
+        return new Response(
+          JSON.stringify({ success: true, deduplicated: true }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       // Insert into callback_requests
       const { error: cbErr } = await db.from("callback_requests").insert({
         full_name: full_name.trim(),
@@ -73,6 +90,25 @@ serve(async (req) => {
           JSON.stringify({ error: "name and at least one contact method (phone or email) are required" }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
+      }
+
+      // Dedup: check for existing lead from this phone in the last 24 hours
+      if (hasPhone) {
+        const windowStart24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        const { data: existingLead } = await db
+          .from("leads")
+          .select("id")
+          .eq("phone", hasPhone)
+          .gte("created_at", windowStart24h)
+          .limit(1);
+
+        if (existingLead && existingLead.length > 0) {
+          console.log("[submit-lead] Duplicate lead suppressed for phone:", hasPhone);
+          return new Response(
+            JSON.stringify({ success: true, deduplicated: true }),
+            { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
       }
 
       const { error } = await db.from("leads").insert({

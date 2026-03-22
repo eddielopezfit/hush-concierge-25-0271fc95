@@ -195,6 +195,7 @@ export const ChatTab = () => {
   const [userMessageCount, setUserMessageCount] = useState(0);
   const [leadCaptured, setLeadCaptured] = useState(false);
   const [showLeadForm, setShowLeadForm] = useState(false);
+  const [leadDismissed, setLeadDismissed] = useState(false);
   const [leadName, setLeadName] = useState("");
   const [leadPhone, setLeadPhone] = useState("");
   const [initialized, setInitialized] = useState(false);
@@ -356,11 +357,11 @@ export const ChatTab = () => {
 
       streamChat(newMessages.filter((m) => m.id !== "greeting"));
 
-      if (newCount >= 3 && !leadCaptured && !showLeadForm) {
+      if (newCount >= 4 && !leadCaptured && !showLeadForm && !leadDismissed) {
         setTimeout(() => setShowLeadForm(true), 3000);
       }
     },
-    [input, isStreaming, messages, userMessageCount, leadCaptured, showLeadForm, streamChat]
+    [input, isStreaming, messages, userMessageCount, leadCaptured, showLeadForm, leadDismissed, streamChat]
   );
 
   const handleLeadSubmit = async () => {
@@ -521,7 +522,7 @@ export const ChatTab = () => {
                   Submit
                 </button>
                 <button
-                  onClick={() => setShowLeadForm(false)}
+                  onClick={() => { setShowLeadForm(false); setLeadDismissed(true); }}
                   className="px-3 text-xs text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Not now
