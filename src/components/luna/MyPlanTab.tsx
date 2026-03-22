@@ -1,9 +1,11 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { Sparkles, ArrowRight, RefreshCw, Phone, MessageCircle, Calendar, Star, Clock } from "lucide-react";
+import { Sparkles, ArrowRight, RefreshCw, Calendar, Star, Clock } from "lucide-react";
 import { generateRecommendation, LunaRecommendation } from "@/lib/lunaBrain";
 import { formatCategoryList } from "@/lib/conciergeLabels";
 import { useLuna } from "@/contexts/LunaContext";
+import { buildRevealData } from "@/lib/experienceReveal";
+import { BookingDecisionCard } from "@/components/BookingDecisionCard";
 
 interface MyPlanTabProps {
   onSwitchTab: (tab: string) => void;
