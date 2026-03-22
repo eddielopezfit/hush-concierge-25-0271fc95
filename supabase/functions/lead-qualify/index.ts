@@ -33,7 +33,7 @@ const BOOKING_RULES: Record<string, RoutingRule> = {
   hair: {
     booking_path: "front_desk",
     action_owner: "Kendell / Front Desk",
-    consultation_required: false, // overridden per-service below
+    consultation_required: false,
   },
   nails: {
     booking_path: "direct",
@@ -68,13 +68,24 @@ function requiresConsultation(service: string | null): boolean {
   return CONSULTATION_SERVICES.some((s) => lower.includes(s));
 }
 
+// ── FIX #3: Priority logic aligned with operational rules ───────────────────
 function derivePriority(
   urgency: string | null,
   callbackRequested: boolean,
+  consultationRequired: boolean,
   intentScore: number
 ): Priority {
-  if (urgency === "today" || intentScore >= 80) return "P1";
-  if (callbackRequested || urgency === "week" || intentScore >= 60) return "P2";
+  // Callbacks are always P1 — they explicitly asked for contact
+  if (callbackRequested) return "P1";
+  // Same-day urgency = P1
+  if (urgency === "today") return "P1";
+  // Consultation + this week = P1 (needs scheduling coordination)
+  if (consultationRequired && urgency === "week") return "P1";
+  // High intent score
+  if (intentScore >= 80) return "P1";
+  // This week or strong interest
+  if (urgency === "week" || intentScore >= 60) return "P2";
+  // Planning ahead
   if (urgency === "planning" || intentScore >= 40) return "P3";
   return "P4";
 }
@@ -95,6 +106,14 @@ function deriveInternalRouting(
   }
 
   return `Route to Kendell / Front Desk at (520) 327-6753. Action owner: ${rule.action_owner}.`;
+}
+
+// ── FIX #1: Booking path display + consultation/urgency notes ───────────────
+function formatBookingPathDisplay(rule: RoutingRule): string {
+  if (rule.booking_path === "front_desk") {
+    return "Call Front Desk: (520) 327-6753";
+  }
+  return rule.direct_contacts?.join(", ") ?? "Call Front Desk: (520) 327-6753";
 }
 
 // ── Slack Alert Formatting ──────────────────────────────────────────────────
@@ -120,10 +139,34 @@ function formatSlackMessage(lead: LeadPayload, priority: Priority): object {
   const cat = lead.category?.toLowerCase() ?? "unknown";
   const rule = BOOKING_RULES[cat] ?? BOOKING_RULES.hair;
   const routing = deriveInternalRouting(lead.category ?? null, lead.service ?? null);
+  const bookingDisplay = formatBookingPathDisplay(rule);
 
   const priorityEmoji: Record<Priority, string> = {
     P1: "🔴", P2: "🟠", P3: "🟡", P4: "⚪",
   };
+
+  // FIX #2: Urgency-based action instructions with Kendell ownership
+  const urgencyAction = priority === "P1"
+    ? "🚨 *Action:* @Kendell — Call within 10 minutes"
+    : priority === "P2"
+    ? "⏰ *Action:* @Kendell — Follow up today"
+    : "📋 *Action:* @Kendell — Add to follow-up queue";
+
+  // FIX #1: Consultation + urgency notes block
+  const notesLines: string[] = [];
+  if (lead.consultation_required) {
+    notesLines.push("⚠️ Consultation required before pricing.");
+  } else {
+    notesLines.push("✅ Direct booking available.");
+  }
+  if (lead.urgency === "today") {
+    notesLines.push("🔥 Guest wants same-day service — check availability immediately.");
+  } else if (lead.urgency === "week") {
+    notesLines.push("📅 Guest wants to book this week.");
+  }
+  if (lead.callback_requested) {
+    notesLines.push("📞 Guest explicitly requested a callback.");
+  }
 
   const blocks = [
     {
@@ -141,7 +184,7 @@ function formatSlackMessage(lead: LeadPayload, priority: Priority): object {
         { type: "mrkdwn", text: `*Category:*\n${lead.category || "Unknown"}` },
         { type: "mrkdwn", text: `*Service:*\n${lead.service || "General inquiry"}` },
         { type: "mrkdwn", text: `*Timing:*\n${lead.timing || "Not specified"}` },
-        { type: "mrkdwn", text: `*Booking Path:*\n${rule.booking_path}` },
+        { type: "mrkdwn", text: `*Booking Path:*\n${bookingDisplay}` },
       ],
     },
     {
@@ -155,7 +198,21 @@ function formatSlackMessage(lead: LeadPayload, priority: Priority): object {
       type: "section",
       text: {
         type: "mrkdwn",
+        text: `*Notes:*\n${notesLines.join("\n")}`,
+      },
+    },
+    {
+      type: "section",
+      text: {
+        type: "mrkdwn",
         text: `*Internal Routing:*\n${routing}`,
+      },
+    },
+    {
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: urgencyAction,
       },
     },
     {
@@ -182,8 +239,6 @@ async function sendSlackAlert(
     return;
   }
 
-  // Use channel-specific webhook if available, fallback to default
-  // Convention: SLACK_WEBHOOK_URL_CALLBACKS, SLACK_WEBHOOK_URL_LEADS
   const channelWebhookKey = channel === "callbacks"
     ? "SLACK_WEBHOOK_URL_CALLBACKS"
     : "SLACK_WEBHOOK_URL_LEADS";
@@ -291,9 +346,9 @@ Deno.serve(async (req) => {
     const intentScore = lead.intent_score ?? 50;
     const callbackRequested = lead.callback_requested ?? false;
     const consultationRequired = lead.consultation_required ?? requiresConsultation(lead.service ?? null);
-    const priority = derivePriority(lead.urgency ?? null, callbackRequested, intentScore);
+    // FIX #3: Pass consultationRequired to priority derivation
+    const priority = derivePriority(lead.urgency ?? null, callbackRequested, consultationRequired, intentScore);
 
-    // Enrich the lead payload
     const enrichedLead: LeadPayload = {
       ...lead,
       intent_score: intentScore,
@@ -301,7 +356,7 @@ Deno.serve(async (req) => {
       consultation_required: consultationRequired,
     };
 
-    // 1. Update guest_profiles.intent_score if we have a profile ID
+    // 1. Update guest_profiles.intent_score
     if (lead.guest_profile_id) {
       await supabase
         .from("guest_profiles")
@@ -312,9 +367,8 @@ Deno.serve(async (req) => {
         });
     }
 
-    // 2. Insert into leads table for record keeping
+    // 2. Insert into leads with 24h dedup
     if (lead.phone || lead.email) {
-      // Dedup: check if same phone+category exists in last 24h
       const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
       const { data: existing } = await supabase
         .from("leads")
@@ -342,10 +396,10 @@ Deno.serve(async (req) => {
     const slackChannel = callbackRequested ? "callbacks" : "leads";
     await sendSlackAlert(enrichedLead, priority, slackChannel);
 
-    // 4. CRM push (stub — activates when GHL secrets are present)
+    // 4. CRM push (stub)
     await pushToCRM(enrichedLead);
 
-    // 5. SMS follow-up (stub — activates when Twilio secrets are present)
+    // 5. SMS follow-up for P1/P2
     if (priority === "P1" || priority === "P2") {
       await sendSmsFollowup(enrichedLead);
     }

@@ -207,9 +207,14 @@ Deno.serve(async (req) => {
         .eq("id", convo.guest_profile_id);
     }
 
-    // 8. If high intent, trigger lead-qualify
+    // 8. FIX #6: Trigger lead-qualify on high intent OR callback OR same-day urgency
     const intentScore = (intentSignals.intent_score as number) ?? 0;
-    if (intentScore >= LEAD_QUALIFY_THRESHOLD) {
+    const shouldQualify =
+      intentScore >= LEAD_QUALIFY_THRESHOLD ||
+      intentSignals.callback_requested === true ||
+      intentSignals.urgency === "today";
+
+    if (shouldQualify) {
       // Get guest info for lead-qualify
       let guestPhone: string | null = null;
       let guestEmail: string | null = null;
