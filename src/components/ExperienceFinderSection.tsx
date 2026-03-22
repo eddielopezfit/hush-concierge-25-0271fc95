@@ -122,7 +122,7 @@ export const ExperienceFinderSection = () => {
   const [recommendation, setRecommendation] = useState<LunaRecommendation | null>(null);
   const [revealData, setRevealData] = useState<RevealData | null>(null);
   const [guestName, setGuestName] = useState("");
-  const { openModal, markInteracted } = useLuna();
+  const { openModal, markInteracted, setConcierge } = useLuna();
 
   const isMultiService = selection.services.length > 1;
 
