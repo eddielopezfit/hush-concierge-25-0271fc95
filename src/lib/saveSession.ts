@@ -55,7 +55,7 @@ export async function saveLead(lead: {
       body: JSON.stringify({
         type: "lead",
         name: lead.name.trim(),
-        phone: lead.phone.trim(),
+        phone: lead.phone?.trim() || null,
         email: lead.email?.trim() || null,
         category: normalizedCategory,
         goal: normalizedGoal,
