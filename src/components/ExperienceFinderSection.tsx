@@ -648,6 +648,18 @@ export const ExperienceFinderSection = () => {
               />
             )}
 
+            {/* ── REVEAL — Experience Reveal Card ────────────────────── */}
+            {currentStep === "reveal" && revealData && (
+              <motion.div
+                key="step-reveal"
+                variants={stepVariants}
+                initial="initial" animate="animate" exit="exit"
+                className="w-full"
+              >
+                <ExperienceRevealCard data={revealData} />
+              </motion.div>
+            )}
+
           </AnimatePresence>
         </div>
 
