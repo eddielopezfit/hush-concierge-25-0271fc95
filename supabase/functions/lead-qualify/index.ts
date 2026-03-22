@@ -410,8 +410,8 @@ Deno.serve(async (req) => {
       }
     }
 
-    // 3. Slack notifications — route by type
-    const slackChannel = callbackRequested ? "callbacks" : "leads";
+    // 3. Slack notifications — route by category + type
+    const slackChannel = resolveSlackChannel(lead.category ?? null, callbackRequested);
     await sendSlackAlert(enrichedLead, priority, slackChannel);
 
     // 4. CRM push (stub)
