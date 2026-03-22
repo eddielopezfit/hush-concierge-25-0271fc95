@@ -47,13 +47,15 @@ serve(async (req) => {
       }
 
       // Also insert into leads for backward compat
-      await db.from("leads").insert({
-        name: full_name.trim(),
-        phone: phone.trim(),
-        email: email?.trim() || null,
-        category: interested_in || null,
-        timing: timing || null,
-      }).catch(() => {});
+      try {
+        await db.from("leads").insert({
+          name: full_name.trim(),
+          phone: phone.trim(),
+          email: email?.trim() || null,
+          category: interested_in || null,
+          timing: timing || null,
+        });
+      } catch { /* ignore */ }
 
       return new Response(
         JSON.stringify({ success: true }),
