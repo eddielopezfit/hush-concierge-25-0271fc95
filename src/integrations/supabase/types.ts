@@ -14,6 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
+      artists: {
+        Row: {
+          badge: string | null
+          best_for: string | null
+          created_at: string
+          department: string
+          description: string | null
+          direct_phone: string | null
+          fit_statement: string | null
+          id: string
+          is_active: boolean
+          is_primary_booking: boolean
+          known_for: string[]
+          name: string
+          role: string
+          service_categories: string[]
+          service_category: string | null
+          specialties: string[]
+          specialty: string
+          updated_at: string
+        }
+        Insert: {
+          badge?: string | null
+          best_for?: string | null
+          created_at?: string
+          department: string
+          description?: string | null
+          direct_phone?: string | null
+          fit_statement?: string | null
+          id: string
+          is_active?: boolean
+          is_primary_booking?: boolean
+          known_for?: string[]
+          name: string
+          role: string
+          service_categories?: string[]
+          service_category?: string | null
+          specialties?: string[]
+          specialty: string
+          updated_at?: string
+        }
+        Update: {
+          badge?: string | null
+          best_for?: string | null
+          created_at?: string
+          department?: string
+          description?: string | null
+          direct_phone?: string | null
+          fit_statement?: string | null
+          id?: string
+          is_active?: boolean
+          is_primary_booking?: boolean
+          known_for?: string[]
+          name?: string
+          role?: string
+          service_categories?: string[]
+          service_category?: string | null
+          specialties?: string[]
+          specialty?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       callback_requests: {
         Row: {
           concierge_context: Json | null
@@ -172,6 +235,45 @@ export type Database = {
         }
         Relationships: []
       }
+      knowledge_items: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          elevenlabs_doc_id: string | null
+          id: string
+          is_active: boolean
+          last_synced_at: string | null
+          slug: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          content: string
+          created_at?: string
+          elevenlabs_doc_id?: string | null
+          id?: string
+          is_active?: boolean
+          last_synced_at?: string | null
+          slug: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          elevenlabs_doc_id?: string | null
+          id?: string
+          is_active?: boolean
+          last_synced_at?: string | null
+          slug?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       leads: {
         Row: {
           category: string | null
@@ -245,6 +347,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      services: {
+        Row: {
+          category_id: string
+          category_title: string
+          created_at: string
+          cross_categories: string[]
+          group_name: string
+          id: string
+          is_active: boolean
+          name: string
+          price: string
+          shared_id: string | null
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          category_id: string
+          category_title: string
+          created_at?: string
+          cross_categories?: string[]
+          group_name: string
+          id?: string
+          is_active?: boolean
+          name: string
+          price: string
+          shared_id?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string
+          category_title?: string
+          created_at?: string
+          cross_categories?: string[]
+          group_name?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          price?: string
+          shared_id?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       sessions: {
         Row: {
