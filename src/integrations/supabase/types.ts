@@ -131,6 +131,8 @@ export type Database = {
           guest_profile_id: string | null
           id: string
           intent_signals: Json | null
+          last_summarized_at: string | null
+          last_summarized_message_count: number
           outcome: string | null
           started_at: string
           status: string
@@ -147,6 +149,8 @@ export type Database = {
           guest_profile_id?: string | null
           id?: string
           intent_signals?: Json | null
+          last_summarized_at?: string | null
+          last_summarized_message_count?: number
           outcome?: string | null
           started_at?: string
           status?: string
@@ -163,6 +167,8 @@ export type Database = {
           guest_profile_id?: string | null
           id?: string
           intent_signals?: Json | null
+          last_summarized_at?: string | null
+          last_summarized_message_count?: number
           outcome?: string | null
           started_at?: string
           status?: string
