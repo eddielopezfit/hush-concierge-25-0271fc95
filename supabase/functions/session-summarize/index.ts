@@ -158,7 +158,8 @@ Deno.serve(async (req) => {
 
     const summary = (extracted.summary as string) || "No summary generated.";
 
-    // 6. Update conversations
+    // 6. Update conversations + stamp throttle columns
+    const totalMessages = messages.length;
     await supabase
       .from("conversations")
       .update({
@@ -166,6 +167,8 @@ Deno.serve(async (req) => {
         intent_signals: intentSignals,
         status: "completed",
         ended_at: new Date().toISOString(),
+        last_summarized_at: new Date().toISOString(),
+        last_summarized_message_count: totalMessages,
       })
       .eq("id", conversation_id);
 

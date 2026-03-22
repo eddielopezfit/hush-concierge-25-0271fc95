@@ -326,16 +326,50 @@ Deno.serve(async (req) => {
               if (error) console.error("[luna-chat] message persist error:", error.message);
             });
 
-            // Auto-summarize: trigger after enough conversation depth
-            // Count total messages for this conversation
-            const { count } = await supabase
-              .from("messages")
-              .select("id", { count: "exact", head: true })
-              .eq("conversation_id", conversation_id);
+            // ── Summarize throttling ────────────────────────────────
+            // Fetch conversation throttle state + current message count
+            const [{ count }, { data: convoState }] = await Promise.all([
+              supabase
+                .from("messages")
+                .select("id", { count: "exact", head: true })
+                .eq("conversation_id", conversation_id),
+              supabase
+                .from("conversations")
+                .select("last_summarized_at, last_summarized_message_count")
+                .eq("id", conversation_id)
+                .single(),
+            ]);
 
             const messageCount = count ?? 0;
-            // Summarize at 6+ messages (3 exchanges) and every 6 messages after
-            if (messageCount >= 6 && messageCount % 6 === 0) {
+            const lastSummarizedCount = convoState?.last_summarized_message_count ?? 0;
+            const lastSummarizedAt = convoState?.last_summarized_at
+              ? new Date(convoState.last_summarized_at).getTime()
+              : 0;
+            const secsSinceLastSummarize = (Date.now() - lastSummarizedAt) / 1000;
+
+            let shouldSummarize = false;
+
+            // Periodic: 6+ new messages since last summarize
+            if (messageCount >= 6 && messageCount >= lastSummarizedCount + 6) {
+              shouldSummarize = true;
+            }
+
+            // High-intent: immediate, but only if >60s since last summarize
+            const lowerMsg = lastUserMessage.content.toLowerCase();
+            const highIntentSignals = [
+              "book", "appointment", "schedule", "call me", "callback",
+              "phone number", "available", "availability", "openings",
+              "my number is", "call back", "reach me",
+            ];
+            if (
+              highIntentSignals.some((s) => lowerMsg.includes(s)) &&
+              messageCount >= 2 &&
+              secsSinceLastSummarize > 60
+            ) {
+              shouldSummarize = true;
+            }
+
+            if (shouldSummarize) {
               fetch(`${SUPABASE_URL}/functions/v1/session-summarize`, {
                 method: "POST",
                 headers: {
@@ -344,27 +378,6 @@ Deno.serve(async (req) => {
                 },
                 body: JSON.stringify({ conversation_id }),
               }).catch((err) => console.error("[luna-chat] auto-summarize error:", err));
-            }
-
-            // Also detect high-intent signals in the user's message
-            const lowerMsg = lastUserMessage.content.toLowerCase();
-            const highIntentSignals = [
-              "book", "appointment", "schedule", "call me", "callback",
-              "phone number", "available", "availability", "openings",
-              "my number is", "call back", "reach me",
-            ];
-            if (highIntentSignals.some((s) => lowerMsg.includes(s))) {
-              // Immediately trigger summarize for high-intent messages
-              if (messageCount >= 2 && messageCount % 6 !== 0) {
-                fetch(`${SUPABASE_URL}/functions/v1/session-summarize`, {
-                  method: "POST",
-                  headers: {
-                    Authorization: `Bearer ${SERVICE_ROLE_KEY}`,
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({ conversation_id }),
-                }).catch((err) => console.error("[luna-chat] intent-summarize error:", err));
-              }
             }
           }
         }
