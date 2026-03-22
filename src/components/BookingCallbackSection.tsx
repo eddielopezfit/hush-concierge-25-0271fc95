@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Mic, Phone, MessageCircle, CheckCircle, Check } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLuna } from "@/contexts/LunaContext";
 import { ConciergeContext } from "@/types/concierge";
 import { setConciergeContext, setGuestFirstName } from "@/lib/conciergeStore";
@@ -10,63 +10,69 @@ import { saveCallbackRequest } from "@/lib/saveSession";
 import { getConciergeContext } from "@/lib/conciergeStore";
 import { callbackServiceOptions as serviceOptions, callbackTimingOptions as timingOptions } from "@/data/categoryData";
 
+const buildPrefillFromContext = () => {
+  const ctx = getConciergeContext();
+  const interestedIn: string[] = [];
+  let timing = "";
+
+  if (ctx) {
+    if (ctx.categories?.length) {
+      ctx.categories.forEach((cat: string) => {
+        const match = serviceOptions.find(o => o.value === cat);
+        if (match && interestedIn.length < 3) interestedIn.push(match.value);
+      });
+      if (ctx.categories.length > 1 && !interestedIn.includes("multiple") && interestedIn.length < 3) {
+        interestedIn.push("multiple");
+      }
+    }
+    if (ctx.timing) {
+      const timingMatch = timingOptions.find(o => o.value === ctx.timing);
+      if (timingMatch) timing = timingMatch.value;
+    }
+  }
+
+  return { interestedIn, timing };
+};
+
 export const BookingCallbackSection = () => {
   const { openModal, openChatWidget } = useLuna();
 
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(false);
-  const [hasPreFilled, setHasPreFilled] = useState(false);
 
-  // Pre-fill from concierge context on first render
-  const getInitialFormData = () => {
-    const ctx = getConciergeContext();
-    const interestedIn: string[] = [];
-    let timing = "";
-
-    if (ctx) {
-      if (ctx.categories?.length) {
-        ctx.categories.forEach((cat: string) => {
-          const match = serviceOptions.find(o => o.value === cat);
-          if (match && interestedIn.length < 3) interestedIn.push(match.value);
-        });
-        if (ctx.categories.length > 1 && !interestedIn.includes("multiple") && interestedIn.length < 3) {
-          interestedIn.push("multiple");
-        }
-      }
-      if (ctx.timing) {
-        const timingMatch = timingOptions.find(o => o.value === ctx.timing);
-        if (timingMatch) timing = timingMatch.value;
-      }
-    }
-
+  const [formData, setFormData] = useState(() => {
+    const prefill = buildPrefillFromContext();
     return {
       fullName: "",
       phone: "",
       email: "",
-      interestedIn,
-      timing,
+      interestedIn: prefill.interestedIn,
+      timing: prefill.timing,
       message: "",
     };
-  };
+  });
 
-  const [formData, setFormData] = useState(getInitialFormData);
-
-  // Re-sync if context changes (e.g. user completes finder then scrolls to form)
-  if (!hasPreFilled) {
-    const ctx = getConciergeContext();
-    if (ctx?.categories?.length && formData.interestedIn.length === 0) {
-      const newData = getInitialFormData();
-      if (newData.interestedIn.length > 0 || newData.timing) {
-        setFormData(prev => ({
-          ...prev,
-          interestedIn: prev.interestedIn.length > 0 ? prev.interestedIn : newData.interestedIn,
-          timing: prev.timing || newData.timing,
-        }));
-      }
-    }
-    setHasPreFilled(true);
-  }
+  // Re-sync from context when section scrolls into view (e.g. user finishes finder then scrolls down)
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          const prefill = buildPrefillFromContext();
+          setFormData(prev => ({
+            ...prev,
+            interestedIn: prev.interestedIn.length > 0 ? prev.interestedIn : prefill.interestedIn,
+            timing: prev.timing || prefill.timing,
+          }));
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    const el = document.getElementById("callback");
+    if (el) observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const isFormValid = formData.fullName.trim().length > 0 && formData.phone.trim().length > 0;
 

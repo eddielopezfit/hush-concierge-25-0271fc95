@@ -28,8 +28,10 @@ export async function saveLead(lead: {
   goal?: string;
   timing?: string;
 }): Promise<boolean> {
-  if (!lead.name?.trim() || !lead.phone?.trim()) {
-    console.warn("[saveLead] Missing required fields (name/phone), skipping.");
+  const hasPhone = lead.phone?.trim();
+  const hasEmail = lead.email?.trim();
+  if (!lead.name?.trim() || (!hasPhone && !hasEmail)) {
+    console.warn("[saveLead] Missing required fields (name + phone or email), skipping.");
     return false;
   }
 

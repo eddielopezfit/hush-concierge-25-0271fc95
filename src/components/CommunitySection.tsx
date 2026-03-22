@@ -35,7 +35,7 @@ export const CommunitySection = () => {
 
     const success = await saveLead({
       name: "Inner Circle Signup",
-      phone: "—",
+      phone: "",
       email: email.trim(),
       category: "inner-circle",
       goal: "loyalty",
