@@ -12,7 +12,7 @@ interface ExperienceRevealCardProps {
 }
 
 export const ExperienceRevealCard = ({ data, onBook }: ExperienceRevealCardProps) => {
-  const { openModal, openChatWidget } = useLuna();
+  const { conciergeContext } = useLuna();
 
   const handleBook = () => {
     if (onBook) {
