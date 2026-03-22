@@ -49,6 +49,7 @@ serve(async (req) => {
           is_returning: true,
           first_name: first_name || undefined,
           last_context: concierge_context || undefined,
+          last_seen_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         })
         .eq("id", guestProfileId);
