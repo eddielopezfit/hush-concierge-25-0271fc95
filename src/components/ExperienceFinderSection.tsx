@@ -14,7 +14,7 @@ import { ExperienceRevealCard } from "@/components/ExperienceRevealCard";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type Step = 1 | 2 | 3 | 4 | 5;
+type Step = 1 | 2 | 3 | 4 | 5 | "reveal";
 
 interface Selection {
   services:  string[];
