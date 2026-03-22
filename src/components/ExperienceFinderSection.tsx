@@ -320,8 +320,8 @@ export const ExperienceFinderSection = () => {
   // ── Step indicator ────────────────────────────────────────────────────────
 
   const TOTAL_VISUAL_STEPS = 4;
-  const numericStep = currentStep === "reveal" ? 5 : currentStep;
-  const visualStep = numericStep >= 4 ? 4 : numericStep;
+  const numericStep: number = currentStep === "reveal" ? 5 : currentStep;
+  const visualStep: number = numericStep >= 4 ? 4 : numericStep;
 
   return (
     <section
