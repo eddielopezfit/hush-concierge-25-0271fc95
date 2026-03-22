@@ -1,10 +1,9 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, ArrowRight, RotateCcw, ChevronRight, Clock, Layers } from "lucide-react";
 import { useLuna } from "@/contexts/LunaContext";
-import { getConciergeContext } from "@/lib/conciergeStore";
 import { categoryLabels, goalLabels, timingLabels } from "@/lib/conciergeLabels";
 import { ServiceCategoryId } from "@/types/concierge";
-import { useState, useEffect, useCallback } from "react";
+import { useMemo } from "react";
 
 // ── Interpretation engine ────────────────────────────────────────────────────
 
