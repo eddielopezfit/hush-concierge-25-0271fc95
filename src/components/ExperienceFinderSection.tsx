@@ -7,7 +7,7 @@ import {
 import { ConciergeContext, ServiceCategoryId, ServiceSubtype, MultiServiceMode } from "@/types/concierge";
 import { setConciergeContext, setGuestFirstName } from "@/lib/conciergeStore";
 import { generateRecommendation, LunaRecommendation } from "@/lib/lunaBrain";
-import { saveSession } from "@/lib/saveSession";
+import { startSession } from "@/lib/sessionManager";
 import { useLuna } from "@/contexts/LunaContext";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
