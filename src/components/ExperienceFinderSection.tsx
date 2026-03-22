@@ -230,13 +230,6 @@ export const ExperienceFinderSection = () => {
 
   const handleLunaAction = () => {
     const ctx = buildContext();
-    console.debug("[ExperienceFinder] launching Luna with:", {
-      categories: ctx.categories,
-      primary_category: ctx.primary_category,
-      service_subtype: ctx.service_subtype,
-      multi_service_mode: ctx.multi_service_mode,
-      is_multi_service: ctx.is_multi_service,
-    });
     setConciergeContext(ctx);
     const rec = generateRecommendation(ctx);
     setRecommendation(rec);
@@ -244,7 +237,10 @@ export const ExperienceFinderSection = () => {
     try {
       sessionStorage.setItem("hush_luna_recommendation", JSON.stringify(rec));
     } catch { /* ignore */ }
-    openModal(ctx);
+    // Build reveal data and show the reveal card inline
+    const reveal = buildRevealData(ctx);
+    setRevealData(reveal);
+    setCurrentStep("reveal");
   };
 
   // ── Multi-service priority handlers ────────────────────────────────────────
