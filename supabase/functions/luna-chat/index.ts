@@ -325,6 +325,47 @@ Deno.serve(async (req) => {
             ]).then(({ error }) => {
               if (error) console.error("[luna-chat] message persist error:", error.message);
             });
+
+            // Auto-summarize: trigger after enough conversation depth
+            // Count total messages for this conversation
+            const { count } = await supabase
+              .from("messages")
+              .select("id", { count: "exact", head: true })
+              .eq("conversation_id", conversation_id);
+
+            const messageCount = count ?? 0;
+            // Summarize at 6+ messages (3 exchanges) and every 6 messages after
+            if (messageCount >= 6 && messageCount % 6 === 0) {
+              fetch(`${SUPABASE_URL}/functions/v1/session-summarize`, {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${SERVICE_ROLE_KEY}`,
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ conversation_id }),
+              }).catch((err) => console.error("[luna-chat] auto-summarize error:", err));
+            }
+
+            // Also detect high-intent signals in the user's message
+            const lowerMsg = lastUserMessage.content.toLowerCase();
+            const highIntentSignals = [
+              "book", "appointment", "schedule", "call me", "callback",
+              "phone number", "available", "availability", "openings",
+              "my number is", "call back", "reach me",
+            ];
+            if (highIntentSignals.some((s) => lowerMsg.includes(s))) {
+              // Immediately trigger summarize for high-intent messages
+              if (messageCount >= 2 && messageCount % 6 !== 0) {
+                fetch(`${SUPABASE_URL}/functions/v1/session-summarize`, {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${SERVICE_ROLE_KEY}`,
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({ conversation_id }),
+                }).catch((err) => console.error("[luna-chat] intent-summarize error:", err));
+              }
+            }
           }
         }
       },
