@@ -5,7 +5,7 @@ import {
   Mic, MessageSquare, Check, ArrowLeft, HelpCircle, Layers,
 } from "lucide-react";
 import { ConciergeContext, ServiceCategoryId, ServiceSubtype, MultiServiceMode } from "@/types/concierge";
-import { setConciergeContext, setGuestFirstName } from "@/lib/conciergeStore";
+import { setGuestFirstName } from "@/lib/conciergeStore";
 import { generateRecommendation, LunaRecommendation } from "@/lib/lunaBrain";
 import { startSession } from "@/lib/sessionManager";
 import { useLuna } from "@/contexts/LunaContext";
