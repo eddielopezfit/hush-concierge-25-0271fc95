@@ -7,7 +7,7 @@ import {
 import { ConciergeContext, ServiceCategoryId, ServiceSubtype, MultiServiceMode } from "@/types/concierge";
 import { setConciergeContext, setGuestFirstName } from "@/lib/conciergeStore";
 import { generateRecommendation, LunaRecommendation } from "@/lib/lunaBrain";
-import { saveSession } from "@/lib/saveSession";
+import { startSession } from "@/lib/sessionManager";
 import { useLuna } from "@/contexts/LunaContext";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -237,7 +237,7 @@ export const ExperienceFinderSection = () => {
     setConciergeContext(ctx);
     const rec = generateRecommendation(ctx);
     setRecommendation(rec);
-    saveSession(ctx);
+    startSession(ctx, "finder");
     try {
       sessionStorage.setItem("hush_luna_recommendation", JSON.stringify(rec));
     } catch { /* ignore */ }

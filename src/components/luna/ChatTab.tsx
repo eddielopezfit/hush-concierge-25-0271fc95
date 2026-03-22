@@ -5,6 +5,7 @@ import { getJourneyContextString } from "@/lib/journeyTracker";
 import { getConciergeContext } from "@/lib/conciergeStore";
 import { formatCategoryList, categoryLabels, goalLabels, timingLabels } from "@/lib/conciergeLabels";
 import { saveLead } from "@/lib/saveSession";
+import { getConversationId, startSession } from "@/lib/sessionManager";
 import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
 import ReactMarkdown from "react-markdown";
 
@@ -201,7 +202,7 @@ export const ChatTab = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
-  // Build contextual greeting + chips
+  // Build contextual greeting + chips, ensure session exists
   useEffect(() => {
     if (initialized) return;
     const ctx = getConciergeContext();
@@ -210,6 +211,11 @@ export const ChatTab = () => {
     setContextPills(getContextPills(ctx));
     setSmartChips(getSmartChips(ctx));
     setInitialized(true);
+
+    // Ensure a conversation exists for this chat session
+    if (!getConversationId()) {
+      startSession(ctx, "chat");
+    }
   }, [initialized]);
 
   useEffect(() => {
@@ -227,13 +233,14 @@ export const ChatTab = () => {
     }));
 
     try {
+      const conversationId = getConversationId();
       const resp = await fetch(CHAT_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({ messages: apiMessages, journeyContext }),
+        body: JSON.stringify({ messages: apiMessages, journeyContext, conversation_id: conversationId }),
         signal: abortRef.current.signal,
       });
 

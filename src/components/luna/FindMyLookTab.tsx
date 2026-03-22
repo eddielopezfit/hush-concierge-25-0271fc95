@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, Sparkles, ArrowRight } from "lucide-react";
 import { generateRecommendation, LunaRecommendation } from "@/lib/lunaBrain";
 import { setConciergeContext } from "@/lib/conciergeStore";
-import { saveSession } from "@/lib/saveSession";
+import { startSession } from "@/lib/sessionManager";
 import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
 
 const categories: { id: ServiceCategoryId; label: string; emoji: string }[] = [
@@ -59,7 +59,7 @@ export const FindMyLookTab = ({ onSwitchTab }: FindMyLookTabProps) => {
       timing: id,
     };
     setConciergeContext(context);
-    saveSession(context);
+    startSession(context, "find_my_look");
     const rec = generateRecommendation(context);
     setRecommendation(rec);
     setTimeout(() => setStep(4), 300);
