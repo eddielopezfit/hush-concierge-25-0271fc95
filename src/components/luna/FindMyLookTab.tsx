@@ -58,13 +58,15 @@ export const FindMyLookTab = ({ onSwitchTab }: FindMyLookTabProps) => {
     const context: ConciergeContext = {
       source: "Find My Look",
       categories: selectedCategories,
-      goal: id === selectedTiming ? selectedGoal : selectedGoal,
+      goal: selectedGoal,
       timing: id,
     };
     setConciergeContext(context);
     startSession(context, "find_my_look");
     const rec = generateRecommendation(context);
     setRecommendation(rec);
+    const reveal = buildRevealData(context);
+    setRevealData(reveal);
     setTimeout(() => setStep(4), 300);
   };
 
