@@ -368,7 +368,7 @@ export const ChatTab = () => {
     setLeadCaptured(true);
     setShowLeadForm(false);
 
-    const ctx = getConciergeContext();
+    const ctx = conciergeContext;
     await saveLead({
       name: leadName,
       phone: leadPhone,

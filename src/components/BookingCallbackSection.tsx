@@ -112,7 +112,7 @@ export const BookingCallbackSection = () => {
       timing: formData.timing || undefined,
       message: formData.message || undefined,
       source: "callback_form",
-      concierge_context: getConciergeContext() || {},
+      concierge_context: conciergeContext || {},
     });
 
     setIsSubmitting(false);

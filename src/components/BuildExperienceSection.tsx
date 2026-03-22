@@ -296,10 +296,7 @@ export const BuildExperienceSection = () => {
               <>
                 <span className="text-border">·</span>
                 <button
-                  onClick={() => {
-                    localStorage.removeItem("hush_concierge_context");
-                    refreshSnap();
-                  }}
+                  onClick={() => clearConcierge()}
                   className="font-body text-xs text-muted-foreground/60 hover:text-destructive transition-colors inline-flex items-center gap-1"
                 >
                   <RotateCcw className="w-3 h-3" />

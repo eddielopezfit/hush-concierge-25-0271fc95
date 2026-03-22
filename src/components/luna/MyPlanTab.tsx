@@ -64,8 +64,7 @@ export const MyPlanTab = ({ onSwitchTab }: MyPlanTabProps) => {
     );
   }
 
-  const ctx = getConciergeContext();
-  const categoryNames = ctx?.categories ? formatCategoryList(ctx.categories) : "";
+  // categoryNames already computed above
 
   const urgencyConfig = {
     high: {
