@@ -1,33 +1,45 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-// ── CORS allowlist ──────────────────────────────────────────────────────────
-const ALLOWED_ORIGINS = [
+// ── Environment ─────────────────────────────────────────────────────────────
+const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+// ── CORS ────────────────────────────────────────────────────────────────────
+const allowedOrigins = [
   "https://hush-salon.lovable.app",
   "http://localhost:5173",
 ];
 
-function isAllowedOrigin(origin: string | null): boolean {
-  if (!origin) return false;
-  if (ALLOWED_ORIGINS.includes(origin)) return true;
-  // Allow any *.lovable.app preview URL
-  if (/^https:\/\/[a-z0-9\-]+\.lovable\.app$/.test(origin)) return true;
-  return false;
+function resolveOrigin(origin: string | null): string | null {
+  if (!origin) return null;
+  if (allowedOrigins.includes(origin)) return origin;
+  if (/^https:\/\/.*\.lovable\.app$/.test(origin)) return origin;
+  return null;
 }
 
-function getCorsHeaders(req: Request): Record<string, string> {
-  const origin = req.headers.get("origin");
-  const allowed = isAllowedOrigin(origin);
-  if (!allowed && origin) {
-    console.warn(`[luna-chat] Blocked origin: ${origin}`);
-  }
+function corsHeaders(origin: string | null) {
+  const allowedOrigin = resolveOrigin(origin);
   return {
-    "Access-Control-Allow-Origin": allowed && origin ? origin : ALLOWED_ORIGINS[0],
-    "Access-Control-Allow-Headers":
-      "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-    "Vary": "Origin",
+    allowedOrigin,
+    headers: {
+      "Access-Control-Allow-Origin": allowedOrigin ?? "null",
+      "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      "Connection": "keep-alive",
+      "Vary": "Origin",
+    },
   };
 }
+
+// ── Types ───────────────────────────────────────────────────────────────────
+type ChatBody = {
+  messages: Array<{ role: "user" | "assistant" | "system"; content: string }>;
+  journeyContext?: string;
+  conversation_id?: string;
+};
 
 // ── System prompt ───────────────────────────────────────────────────────────
 const SYSTEM_PROMPT = `You are Luna, the AI concierge for Hush Salon & Day Spa in Tucson, Arizona. You are warm, confident, conversational, and stylist-aware. You speak like a knowledgeable, trusted beauty advisor — never robotic, never generic.
@@ -158,67 +170,41 @@ When the journey context mentions "comparing stylists" or "Team Compare" or "com
 ## JOURNEY CONTEXT
 The user may have browsed specific sections of our website. Use this context to personalize your responses. If they've looked at specific artists or services, reference those naturally.`;
 
-// ── DB client (service role) ────────────────────────────────────────────────
-function getServiceDb() {
-  const url = Deno.env.get("SUPABASE_URL")!;
-  const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-  return createClient(url, key);
-}
-
-// ── Persist messages ────────────────────────────────────────────────────────
-async function persistMessages(
-  conversationId: string,
-  userContent: string,
-  assistantContent: string,
-  latencyMs: number | null,
-) {
-  if (!conversationId) return;
-  try {
-    const db = getServiceDb();
-    const rows = [
-      {
-        conversation_id: conversationId,
-        role: "user" as const,
-        content: userContent,
-        source: "chat",
-      },
-      {
-        conversation_id: conversationId,
-        role: "assistant" as const,
-        content: assistantContent,
-        source: "chat",
-        latency_ms: latencyMs,
-      },
-    ];
-    const { error } = await db.from("messages").insert(rows);
-    if (error) console.error("[luna-chat] message persist error:", error.message);
-  } catch (e) {
-    console.error("[luna-chat] message persist exception:", e);
-  }
-}
-
 // ── Main handler ────────────────────────────────────────────────────────────
-serve(async (req) => {
-  const cors = getCorsHeaders(req);
+Deno.serve(async (req) => {
+  const origin = req.headers.get("origin");
+  const { allowedOrigin, headers } = corsHeaders(origin);
 
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: cors });
+    return new Response(null, { status: allowedOrigin ? 204 : 403, headers });
   }
 
-  // Block disallowed origins
-  const origin = req.headers.get("origin");
-  if (origin && !isAllowedOrigin(origin)) {
-    return new Response(
-      JSON.stringify({ error: "Origin not allowed" }),
-      { status: 403, headers: { ...cors, "Content-Type": "application/json" } }
-    );
+  if (!allowedOrigin) {
+    console.warn("[luna-chat] Blocked origin:", origin);
+    return new Response(JSON.stringify({ error: "Origin not allowed" }), {
+      status: 403,
+      headers: { ...headers, "Content-Type": "application/json" },
+    });
   }
+
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405,
+      headers: { ...headers, "Content-Type": "application/json" },
+    });
+  }
+
+  const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
   try {
-    const { messages, journeyContext, conversation_id } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+    const body = (await req.json()) as ChatBody;
+    const { messages, journeyContext, conversation_id } = body;
+
+    if (!messages?.length) {
+      return new Response(JSON.stringify({ error: "messages required" }), {
+        status: 400,
+        headers: { ...headers, "Content-Type": "application/json" },
+      });
     }
 
     // Build system prompt with journey context
@@ -227,118 +213,129 @@ serve(async (req) => {
       systemPrompt += `\n\n## CURRENT USER JOURNEY\n${journeyContext}`;
     }
 
-    // Extract latest user message for persistence
-    const latestUserMessage = messages?.length
-      ? messages[messages.length - 1]?.content || ""
-      : "";
+    // Find the latest user message for persistence
+    const lastUserMessage = [...messages].reverse().find((m) => m.role === "user");
+    const startedAt = Date.now();
 
-    const startTime = Date.now();
+    // Call AI gateway
+    const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
+        messages: [
+          { role: "system", content: systemPrompt },
+          ...messages,
+        ],
+        stream: true,
+      }),
+    });
 
-    const response = await fetch(
-      "https://ai.gateway.lovable.dev/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "google/gemini-3-flash-preview",
-          messages: [
-            { role: "system", content: systemPrompt },
-            ...messages,
-          ],
-          stream: true,
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      if (response.status === 429) {
+    if (!upstream.ok) {
+      if (upstream.status === 429) {
         return new Response(
           JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }),
-          { status: 429, headers: { ...cors, "Content-Type": "application/json" } }
+          { status: 429, headers: { ...headers, "Content-Type": "application/json" } }
         );
       }
-      if (response.status === 402) {
+      if (upstream.status === 402) {
         return new Response(
           JSON.stringify({ error: "Service temporarily unavailable." }),
-          { status: 402, headers: { ...cors, "Content-Type": "application/json" } }
+          { status: 402, headers: { ...headers, "Content-Type": "application/json" } }
         );
       }
-      const t = await response.text();
-      console.error("AI gateway error:", response.status, t);
+      const errText = await upstream.text();
+      console.error("[luna-chat] AI gateway error:", upstream.status, errText);
       return new Response(
         JSON.stringify({ error: "AI service error" }),
-        { status: 500, headers: { ...cors, "Content-Type": "application/json" } }
+        { status: 500, headers: { ...headers, "Content-Type": "application/json" } }
       );
     }
 
-    // We need to both stream to client AND capture full response for persistence.
-    // Use TransformStream to tee the data.
-    const { readable, writable } = new TransformStream();
-    const writer = writable.getWriter();
-    let fullAssistantContent = "";
+    if (!upstream.body) {
+      return new Response(
+        JSON.stringify({ error: "No response body from AI" }),
+        { status: 500, headers: { ...headers, "Content-Type": "application/json" } }
+      );
+    }
 
-    // Process stream in background
-    (async () => {
-      const reader = response.body!.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
+    // Stream to client while capturing assistant content for persistence
+    let assistantFullText = "";
 
-      try {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
+    const stream = new ReadableStream({
+      async start(controller) {
+        const reader = upstream.body!.getReader();
+        const decoder = new TextDecoder();
+        const encoder = new TextEncoder();
+        let buffer = "";
 
-          const chunk = decoder.decode(value, { stream: true });
-          buffer += chunk;
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
 
-          // Forward raw chunk to client
-          await writer.write(value);
+            const chunk = decoder.decode(value, { stream: true });
+            buffer += chunk;
 
-          // Parse for content capture
-          let idx: number;
-          while ((idx = buffer.indexOf("\n")) !== -1) {
-            let line = buffer.slice(0, idx);
-            buffer = buffer.slice(idx + 1);
-            if (line.endsWith("\r")) line = line.slice(0, -1);
-            if (!line.startsWith("data: ")) continue;
-            const jsonStr = line.slice(6).trim();
-            if (jsonStr === "[DONE]") continue;
-            try {
-              const parsed = JSON.parse(jsonStr);
-              const content = parsed.choices?.[0]?.delta?.content;
-              if (content) fullAssistantContent += content;
-            } catch { /* partial JSON, skip */ }
+            // Forward raw chunk to client immediately
+            controller.enqueue(value);
+
+            // Parse SSE lines for content capture
+            let idx: number;
+            while ((idx = buffer.indexOf("\n")) !== -1) {
+              let line = buffer.slice(0, idx);
+              buffer = buffer.slice(idx + 1);
+              if (line.endsWith("\r")) line = line.slice(0, -1);
+              if (!line.startsWith("data: ")) continue;
+              const jsonStr = line.slice(6).trim();
+              if (jsonStr === "[DONE]") continue;
+              try {
+                const parsed = JSON.parse(jsonStr);
+                const content = parsed.choices?.[0]?.delta?.content;
+                if (content) assistantFullText += content;
+              } catch { /* partial JSON across chunks, skip */ }
+            }
+          }
+        } catch (e) {
+          console.error("[luna-chat] stream read error:", e);
+          controller.error(e);
+        } finally {
+          controller.close();
+
+          // Persist messages after stream completes
+          if (conversation_id && lastUserMessage?.content) {
+            const latencyMs = Date.now() - startedAt;
+            await supabase.from("messages").insert([
+              {
+                conversation_id,
+                role: "user",
+                content: lastUserMessage.content,
+                source: "chat",
+              },
+              {
+                conversation_id,
+                role: "assistant",
+                content: assistantFullText,
+                latency_ms: latencyMs,
+                source: "chat",
+              },
+            ]).then(({ error }) => {
+              if (error) console.error("[luna-chat] message persist error:", error.message);
+            });
           }
         }
-      } catch (e) {
-        console.error("[luna-chat] stream read error:", e);
-      } finally {
-        await writer.close();
-
-        // Persist messages after stream completes
-        const latencyMs = Date.now() - startTime;
-        if (conversation_id && latestUserMessage) {
-          await persistMessages(
-            conversation_id,
-            latestUserMessage,
-            fullAssistantContent,
-            latencyMs,
-          );
-        }
-      }
-    })();
-
-    return new Response(readable, {
-      headers: { ...cors, "Content-Type": "text/event-stream" },
+      },
     });
-  } catch (e) {
-    console.error("luna-chat error:", e);
+
+    return new Response(stream, { status: 200, headers });
+  } catch (error) {
+    console.error("[luna-chat] error:", error);
     return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
-      { status: 500, headers: { ...cors, "Content-Type": "application/json" } }
+      JSON.stringify({ error: "Internal server error" }),
+      { status: 500, headers: { ...headers, "Content-Type": "application/json" } }
     );
   }
 });
