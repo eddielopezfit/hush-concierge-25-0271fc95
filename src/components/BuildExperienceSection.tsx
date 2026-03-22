@@ -89,24 +89,13 @@ function getTimeEstimate(snap: ExperienceSnapshot): string | null {
 // ── Component ────────────────────────────────────────────────────────────────
 
 export const BuildExperienceSection = () => {
-  const { openModal } = useLuna();
-  const [snap, setSnap] = useState<ExperienceSnapshot>({ categories: [], goal: null, timing: null });
+  const { openModal, conciergeContext, clearConcierge } = useLuna();
 
-  const refreshSnap = useCallback(() => {
-    const ctx = getConciergeContext();
-    setSnap({
-      categories: ctx?.categories || [],
-      goal: ctx?.goal || null,
-      timing: ctx?.timing || null,
-    });
-  }, []);
-
-  // Poll localStorage for context changes (set by ExperienceFinder)
-  useEffect(() => {
-    refreshSnap();
-    const interval = setInterval(refreshSnap, 1500);
-    return () => clearInterval(interval);
-  }, [refreshSnap]);
+  const snap = useMemo<ExperienceSnapshot>(() => ({
+    categories: conciergeContext?.categories || [],
+    goal: conciergeContext?.goal || null,
+    timing: conciergeContext?.timing || null,
+  }), [conciergeContext]);
 
   const depth = getDepthLevel(snap);
   const interpretation = getInterpretation(snap);
