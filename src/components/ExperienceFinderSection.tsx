@@ -5,7 +5,7 @@ import {
   Mic, MessageSquare, Check, ArrowLeft, HelpCircle, Layers,
 } from "lucide-react";
 import { ConciergeContext, ServiceCategoryId, ServiceSubtype, MultiServiceMode } from "@/types/concierge";
-import { setConciergeContext, setGuestFirstName } from "@/lib/conciergeStore";
+import { setGuestFirstName } from "@/lib/conciergeStore";
 import { generateRecommendation, LunaRecommendation } from "@/lib/lunaBrain";
 import { startSession } from "@/lib/sessionManager";
 import { useLuna } from "@/contexts/LunaContext";
@@ -122,7 +122,7 @@ export const ExperienceFinderSection = () => {
   const [recommendation, setRecommendation] = useState<LunaRecommendation | null>(null);
   const [revealData, setRevealData] = useState<RevealData | null>(null);
   const [guestName, setGuestName] = useState("");
-  const { openModal, markInteracted } = useLuna();
+  const { openModal, markInteracted, setConcierge } = useLuna();
 
   const isMultiService = selection.services.length > 1;
 
@@ -230,14 +230,13 @@ export const ExperienceFinderSection = () => {
 
   const handleLunaAction = () => {
     const ctx = buildContext();
-    setConciergeContext(ctx);
+    setConcierge(ctx);
     const rec = generateRecommendation(ctx);
     setRecommendation(rec);
     startSession(ctx, "finder");
     try {
       sessionStorage.setItem("hush_luna_recommendation", JSON.stringify(rec));
     } catch { /* ignore */ }
-    // Build reveal data and show the reveal card inline
     const reveal = buildRevealData(ctx);
     setRevealData(reveal);
     setCurrentStep("reveal");

@@ -1,12 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, Sparkles, ArrowRight, Clock, DollarSign, Users, Phone, MessageSquare } from "lucide-react";
+import { ChevronLeft, Sparkles, ArrowRight, Clock, DollarSign, Users, Phone, MessageSquare, RotateCcw } from "lucide-react";
 import { generateRecommendation, LunaRecommendation } from "@/lib/lunaBrain";
-import { setConciergeContext } from "@/lib/conciergeStore";
 import { startSession } from "@/lib/sessionManager";
 import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
 import { buildRevealData, RevealData } from "@/lib/experienceReveal";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { useLuna } from "@/contexts/LunaContext";
 
 const categories: { id: ServiceCategoryId; label: string; emoji: string }[] = [
   { id: "hair", label: "Hair", emoji: "✂️" },
@@ -35,12 +35,31 @@ interface FindMyLookTabProps {
 }
 
 export const FindMyLookTab = ({ onSwitchTab }: FindMyLookTabProps) => {
+  const { conciergeContext, setConcierge } = useLuna();
   const [step, setStep] = useState(1);
   const [selectedCategories, setSelectedCategories] = useState<ServiceCategoryId[]>([]);
   const [selectedGoal, setSelectedGoal] = useState<string | null>(null);
   const [selectedTiming, setSelectedTiming] = useState<string | null>(null);
   const [recommendation, setRecommendation] = useState<LunaRecommendation | null>(null);
   const [revealData, setRevealData] = useState<RevealData | null>(null);
+  const [resumedFromContext, setResumedFromContext] = useState(false);
+
+  // If context already has categories from another surface, skip to reveal
+  useEffect(() => {
+    if (conciergeContext?.categories?.length && !resumedFromContext && step === 1) {
+      const reveal = buildRevealData(conciergeContext);
+      if (reveal) {
+        setSelectedCategories(conciergeContext.categories);
+        setSelectedGoal(conciergeContext.goal ?? null);
+        setSelectedTiming(conciergeContext.timing ?? null);
+        setRevealData(reveal);
+        setRecommendation(generateRecommendation(conciergeContext));
+        setStep(4);
+        setResumedFromContext(true);
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const toggleCategory = (id: ServiceCategoryId) => {
     setSelectedCategories(prev =>
@@ -61,7 +80,7 @@ export const FindMyLookTab = ({ onSwitchTab }: FindMyLookTabProps) => {
       goal: selectedGoal,
       timing: id,
     };
-    setConciergeContext(context);
+    setConcierge(context);
     startSession(context, "find_my_look");
     const rec = generateRecommendation(context);
     setRecommendation(rec);
@@ -77,6 +96,7 @@ export const FindMyLookTab = ({ onSwitchTab }: FindMyLookTabProps) => {
     setSelectedTiming(null);
     setRecommendation(null);
     setRevealData(null);
+    setResumedFromContext(false);
   };
 
   const stepLabels = ["Services", "Goal", "Timing", "Your Look"];

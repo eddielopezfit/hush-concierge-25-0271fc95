@@ -8,6 +8,7 @@ import { saveLead } from "@/lib/saveSession";
 import { getConversationId, startSession } from "@/lib/sessionManager";
 import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
 import ReactMarkdown from "react-markdown";
+import { useLuna } from "@/contexts/LunaContext";
 
 interface ChatMessage {
   id: string;
@@ -187,6 +188,7 @@ function getContextPills(ctx: ConciergeContext | null): string[] {
 }
 
 export const ChatTab = () => {
+  const { conciergeContext } = useLuna();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
@@ -202,21 +204,26 @@ export const ChatTab = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
-  // Build contextual greeting + chips, ensure session exists
+  // Build contextual greeting + chips on first render using live context
   useEffect(() => {
     if (initialized) return;
-    const ctx = getConciergeContext();
+    const ctx = conciergeContext;
     const greeting = buildContextGreeting(ctx);
     setMessages([{ id: "greeting", role: "assistant", content: greeting }]);
     setContextPills(getContextPills(ctx));
     setSmartChips(getSmartChips(ctx));
     setInitialized(true);
 
-    // Ensure a conversation exists for this chat session
     if (!getConversationId()) {
       startSession(ctx, "chat");
     }
-  }, [initialized]);
+  }, [initialized, conciergeContext]);
+
+  // Update context pills reactively when concierge context changes after init
+  useEffect(() => {
+    if (!initialized) return;
+    setContextPills(getContextPills(conciergeContext));
+  }, [conciergeContext, initialized]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -361,7 +368,7 @@ export const ChatTab = () => {
     setLeadCaptured(true);
     setShowLeadForm(false);
 
-    const ctx = getConciergeContext();
+    const ctx = conciergeContext;
     await saveLead({
       name: leadName,
       phone: leadPhone,

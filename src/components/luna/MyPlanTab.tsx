@@ -1,32 +1,24 @@
-import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, ArrowRight, RefreshCw, Phone, MessageCircle, Calendar, Star, Clock, User } from "lucide-react";
-import { getConciergeContext } from "@/lib/conciergeStore";
+import { useMemo } from "react";
+import { motion } from "framer-motion";
+import { Sparkles, ArrowRight, RefreshCw, Phone, MessageCircle, Calendar, Star, Clock } from "lucide-react";
 import { generateRecommendation, LunaRecommendation } from "@/lib/lunaBrain";
 import { formatCategoryList } from "@/lib/conciergeLabels";
-import { useState, useEffect } from "react";
+import { useLuna } from "@/contexts/LunaContext";
 
 interface MyPlanTabProps {
   onSwitchTab: (tab: string) => void;
 }
 
 export const MyPlanTab = ({ onSwitchTab }: MyPlanTabProps) => {
-  const [recommendation, setRecommendation] = useState<LunaRecommendation | null>(null);
-  const [hasContext, setHasContext] = useState(false);
+  const { conciergeContext } = useLuna();
 
-  const loadPlan = () => {
-    const ctx = getConciergeContext();
-    if (ctx && ctx.categories && ctx.categories.length > 0) {
-      setHasContext(true);
-      setRecommendation(generateRecommendation(ctx));
-    } else {
-      setHasContext(false);
-      setRecommendation(null);
-    }
-  };
+  const hasContext = !!(conciergeContext?.categories?.length);
+  const recommendation = useMemo<LunaRecommendation | null>(() => {
+    if (!hasContext || !conciergeContext) return null;
+    return generateRecommendation(conciergeContext);
+  }, [conciergeContext, hasContext]);
 
-  useEffect(() => {
-    loadPlan();
-  }, []);
+  const categoryNames = conciergeContext?.categories ? formatCategoryList(conciergeContext.categories) : "";
 
   if (!hasContext || !recommendation) {
     return (
@@ -72,8 +64,7 @@ export const MyPlanTab = ({ onSwitchTab }: MyPlanTabProps) => {
     );
   }
 
-  const ctx = getConciergeContext();
-  const categoryNames = ctx?.categories ? formatCategoryList(ctx.categories) : "";
+  // categoryNames already computed above
 
   const urgencyConfig = {
     high: {

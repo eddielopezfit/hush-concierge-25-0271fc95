@@ -1,10 +1,9 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, ArrowRight, RotateCcw, ChevronRight, Clock, Layers } from "lucide-react";
 import { useLuna } from "@/contexts/LunaContext";
-import { getConciergeContext } from "@/lib/conciergeStore";
 import { categoryLabels, goalLabels, timingLabels } from "@/lib/conciergeLabels";
 import { ServiceCategoryId } from "@/types/concierge";
-import { useState, useEffect, useCallback } from "react";
+import { useMemo } from "react";
 
 // ── Interpretation engine ────────────────────────────────────────────────────
 
@@ -90,24 +89,13 @@ function getTimeEstimate(snap: ExperienceSnapshot): string | null {
 // ── Component ────────────────────────────────────────────────────────────────
 
 export const BuildExperienceSection = () => {
-  const { openModal } = useLuna();
-  const [snap, setSnap] = useState<ExperienceSnapshot>({ categories: [], goal: null, timing: null });
+  const { openModal, conciergeContext, clearConcierge } = useLuna();
 
-  const refreshSnap = useCallback(() => {
-    const ctx = getConciergeContext();
-    setSnap({
-      categories: ctx?.categories || [],
-      goal: ctx?.goal || null,
-      timing: ctx?.timing || null,
-    });
-  }, []);
-
-  // Poll localStorage for context changes (set by ExperienceFinder)
-  useEffect(() => {
-    refreshSnap();
-    const interval = setInterval(refreshSnap, 1500);
-    return () => clearInterval(interval);
-  }, [refreshSnap]);
+  const snap = useMemo<ExperienceSnapshot>(() => ({
+    categories: conciergeContext?.categories || [],
+    goal: conciergeContext?.goal || null,
+    timing: conciergeContext?.timing || null,
+  }), [conciergeContext]);
 
   const depth = getDepthLevel(snap);
   const interpretation = getInterpretation(snap);
@@ -308,10 +296,7 @@ export const BuildExperienceSection = () => {
               <>
                 <span className="text-border">·</span>
                 <button
-                  onClick={() => {
-                    localStorage.removeItem("hush_concierge_context");
-                    refreshSnap();
-                  }}
+                  onClick={() => clearConcierge()}
                   className="font-body text-xs text-muted-foreground/60 hover:text-destructive transition-colors inline-flex items-center gap-1"
                 >
                   <RotateCcw className="w-3 h-3" />
