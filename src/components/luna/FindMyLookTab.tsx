@@ -80,7 +80,7 @@ export const FindMyLookTab = ({ onSwitchTab }: FindMyLookTabProps) => {
       goal: selectedGoal,
       timing: id,
     };
-    setConciergeContext(context);
+    setConcierge(context);
     startSession(context, "find_my_look");
     const rec = generateRecommendation(context);
     setRecommendation(rec);
