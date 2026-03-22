@@ -9,10 +9,12 @@ import { setConciergeContext, setGuestFirstName } from "@/lib/conciergeStore";
 import { generateRecommendation, LunaRecommendation } from "@/lib/lunaBrain";
 import { startSession } from "@/lib/sessionManager";
 import { useLuna } from "@/contexts/LunaContext";
+import { buildRevealData, RevealData } from "@/lib/experienceReveal";
+import { ExperienceRevealCard } from "@/components/ExperienceRevealCard";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type Step = 1 | 2 | 3 | 4 | 5;
+type Step = 1 | 2 | 3 | 4 | 5 | "reveal";
 
 interface Selection {
   services:  string[];
@@ -118,6 +120,7 @@ export const ExperienceFinderSection = () => {
     primaryCategory: null, multiServiceMode: null,
   });
   const [recommendation, setRecommendation] = useState<LunaRecommendation | null>(null);
+  const [revealData, setRevealData] = useState<RevealData | null>(null);
   const [guestName, setGuestName] = useState("");
   const { openModal, markInteracted } = useLuna();
 
@@ -227,13 +230,6 @@ export const ExperienceFinderSection = () => {
 
   const handleLunaAction = () => {
     const ctx = buildContext();
-    console.debug("[ExperienceFinder] launching Luna with:", {
-      categories: ctx.categories,
-      primary_category: ctx.primary_category,
-      service_subtype: ctx.service_subtype,
-      multi_service_mode: ctx.multi_service_mode,
-      is_multi_service: ctx.is_multi_service,
-    });
     setConciergeContext(ctx);
     const rec = generateRecommendation(ctx);
     setRecommendation(rec);
@@ -241,7 +237,10 @@ export const ExperienceFinderSection = () => {
     try {
       sessionStorage.setItem("hush_luna_recommendation", JSON.stringify(rec));
     } catch { /* ignore */ }
-    openModal(ctx);
+    // Build reveal data and show the reveal card inline
+    const reveal = buildRevealData(ctx);
+    setRevealData(reveal);
+    setCurrentStep("reveal");
   };
 
   // ── Multi-service priority handlers ────────────────────────────────────────
@@ -320,8 +319,9 @@ export const ExperienceFinderSection = () => {
 
   // ── Step indicator ────────────────────────────────────────────────────────
 
-  const TOTAL_VISUAL_STEPS = 4; // always show 4 dots visually
-  const visualStep = currentStep === 5 ? 4 : currentStep; // step 5 maps to dot 4
+  const TOTAL_VISUAL_STEPS = 4;
+  const numericStep: number = currentStep === "reveal" ? 5 : currentStep;
+  const visualStep: number = numericStep >= 4 ? 4 : numericStep;
 
   return (
     <section
@@ -648,11 +648,23 @@ export const ExperienceFinderSection = () => {
               />
             )}
 
+            {/* ── REVEAL — Experience Reveal Card ────────────────────── */}
+            {currentStep === "reveal" && revealData && (
+              <motion.div
+                key="step-reveal"
+                variants={stepVariants}
+                initial="initial" animate="animate" exit="exit"
+                className="w-full"
+              >
+                <ExperienceRevealCard data={revealData} />
+              </motion.div>
+            )}
+
           </AnimatePresence>
         </div>
 
         {/* Reset link */}
-        {currentStep > 1 && (
+        {currentStep !== 1 && currentStep !== "reveal" && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center mt-4">
             <button
               onClick={handleReset}
