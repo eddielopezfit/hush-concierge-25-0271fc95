@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Phone, MessageSquare, ArrowRight, CheckCircle, Loader2, Sparkles } from "lucide-react";
 import { RevealData, BookingMode, getBookingModeConfig, deriveBookingMode } from "@/lib/experienceReveal";
 import { ConciergeContext } from "@/types/concierge";
 import { useLuna } from "@/contexts/LunaContext";
-import { saveLead } from "@/lib/saveSession";
+import { saveLead, saveCallbackRequest } from "@/lib/saveSession";
 import { Input } from "@/components/ui/input";
 
 interface BookingDecisionCardProps {
@@ -25,39 +25,59 @@ export const BookingDecisionCard = ({
   const mode = deriveBookingMode(revealData, context);
   const config = getBookingModeConfig(mode, context?.timing);
 
-  // Inline capture state for direct_or_callback
+  // Inline capture state — used by ALL modes now
   const [showCapture, setShowCapture] = useState(false);
   const [captureName, setCaptureName] = useState("");
   const [captureContact, setCaptureContact] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const submittedRef = useRef(false); // idempotency guard
 
   const handlePrimary = () => {
-    if (mode === "direct_or_callback") {
-      setShowCapture(true);
-    } else {
-      // Consultation or guided → scroll to callback
-      const el = document.getElementById("callback");
-      if (el) el.scrollIntoView({ behavior: "smooth" });
-    }
+    setShowCapture(true);
   };
 
   const handleSubmitCapture = async () => {
     if (!captureName.trim() || !captureContact.trim()) return;
+    if (submittedRef.current || submitting) return; // prevent double submit
     setSubmitting(true);
+    submittedRef.current = true;
 
     const isEmail = captureContact.includes("@");
-    const success = await saveLead({
+    const phone = isEmail ? "" : captureContact.trim();
+    const email = isEmail ? captureContact.trim() : undefined;
+
+    // Fire both in parallel — saveLead for Slack routing, saveCallbackRequest for ops record
+    const leadPromise = saveLead({
       name: captureName.trim(),
-      phone: isEmail ? "" : captureContact.trim(),
-      email: isEmail ? captureContact.trim() : undefined,
+      phone,
+      email,
       category: context?.categories?.join(", "),
       goal: context?.goal ?? undefined,
       timing: context?.timing ?? undefined,
     });
 
+    // Only save callback if we have a phone (required by callback_requests schema)
+    const callbackPromise = phone
+      ? saveCallbackRequest({
+          full_name: captureName.trim(),
+          phone,
+          email,
+          interested_in: context?.categories?.join(", "),
+          timing: context?.timing,
+          source: `booking_${mode}`,
+          concierge_context: context,
+        })
+      : Promise.resolve(true);
+
+    const [leadOk] = await Promise.all([leadPromise, callbackPromise]);
+
     setSubmitting(false);
-    if (success) setSubmitted(true);
+    if (leadOk) {
+      setSubmitted(true);
+    } else {
+      submittedRef.current = false; // allow retry on failure
+    }
   };
 
   const handleSecondary = () => {
@@ -75,6 +95,15 @@ export const BookingDecisionCard = ({
 
   const py = compact ? "py-2.5" : "py-3";
   const textSm = compact ? "text-xs" : "text-sm";
+
+  // Context reminder for inline form
+  const contextLines: string[] = [];
+  if (revealData.experienceLabel) contextLines.push(revealData.experienceLabel);
+  if (context?.timing) {
+    const timingLabel = context.timing === "today" ? "Same day" : context.timing === "week" ? "This week" : context.timing;
+    contextLines.push(timingLabel);
+  }
+  if (revealData.timeEstimate) contextLines.push(revealData.timeEstimate);
 
   return (
     <motion.div
@@ -102,7 +131,7 @@ export const BookingDecisionCard = ({
         </p>
       </div>
 
-      {/* Inline capture form for direct_or_callback */}
+      {/* Inline capture form — ALL modes */}
       <AnimatePresence mode="wait">
         {showCapture && !submitted && (
           <motion.div
@@ -112,6 +141,15 @@ export const BookingDecisionCard = ({
             exit={{ opacity: 0, height: 0 }}
             className="space-y-2 overflow-hidden"
           >
+            {/* Context reminder */}
+            {contextLines.length > 0 && (
+              <div className="rounded-lg bg-primary/5 border border-primary/10 px-3 py-2">
+                <p className="text-[10px] font-body uppercase tracking-wider text-muted-foreground mb-1">You're requesting</p>
+                {contextLines.map((line, i) => (
+                  <p key={i} className="text-xs font-body text-foreground">• {line}</p>
+                ))}
+              </div>
+            )}
             <Input
               placeholder="Your name"
               value={captureName}
@@ -134,7 +172,7 @@ export const BookingDecisionCard = ({
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <>
-                  Check Availability
+                  {config.primaryLabel}
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
@@ -153,10 +191,10 @@ export const BookingDecisionCard = ({
               <CheckCircle className="w-6 h-6 text-primary" />
             </div>
             <p className="font-display text-sm text-foreground">
-              Got it — Hush is checking availability for you now
+              {config.confirmHeadline}
             </p>
             <p className="text-[11px] font-body text-muted-foreground">
-              Someone will reach out shortly to lock this in
+              {config.confirmSubcopy}
             </p>
           </motion.div>
         )}

@@ -185,7 +185,8 @@ export interface BookingModeConfig {
   primaryLabel: string;
   secondaryLabel: string;
   tertiaryLabel: string;
-  showInlineCapture: boolean;
+  confirmHeadline: string;
+  confirmSubcopy: string;
 }
 
 export function getBookingModeConfig(mode: BookingMode, timing?: string | null): BookingModeConfig {
@@ -204,7 +205,8 @@ export function getBookingModeConfig(mode: BookingMode, timing?: string | null):
         primaryLabel: "Request Consultation",
         secondaryLabel: "Call Front Desk",
         tertiaryLabel: "Chat with Luna",
-        showInlineCapture: false,
+        confirmHeadline: "Your consultation request is in — the front desk is reviewing it now",
+        confirmSubcopy: "We'll usually reach out within a few hours",
       };
     case "guided_front_desk":
       return {
@@ -214,7 +216,8 @@ export function getBookingModeConfig(mode: BookingMode, timing?: string | null):
         primaryLabel: "Request Callback",
         secondaryLabel: "Call Front Desk",
         tertiaryLabel: "Chat with Luna",
-        showInlineCapture: false,
+        confirmHeadline: "Got it — Hush is confirming availability for you now",
+        confirmSubcopy: "The front desk will reach out shortly to lock this in",
       };
     case "direct_or_callback":
       return {
@@ -224,7 +227,8 @@ export function getBookingModeConfig(mode: BookingMode, timing?: string | null):
         primaryLabel: "Check Availability",
         secondaryLabel: "Call Front Desk",
         tertiaryLabel: "Chat with Luna",
-        showInlineCapture: true,
+        confirmHeadline: "Got it — Hush is checking availability for you now",
+        confirmSubcopy: "Someone will reach out shortly to confirm your time",
       };
   }
 }
