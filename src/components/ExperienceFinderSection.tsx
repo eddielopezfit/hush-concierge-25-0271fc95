@@ -120,6 +120,7 @@ export const ExperienceFinderSection = () => {
     primaryCategory: null, multiServiceMode: null,
   });
   const [recommendation, setRecommendation] = useState<LunaRecommendation | null>(null);
+  const [revealData, setRevealData] = useState<RevealData | null>(null);
   const [guestName, setGuestName] = useState("");
   const { openModal, markInteracted } = useLuna();
 
