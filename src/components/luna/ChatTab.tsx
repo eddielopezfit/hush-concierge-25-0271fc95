@@ -233,13 +233,14 @@ export const ChatTab = () => {
     }));
 
     try {
+      const conversationId = getConversationId();
       const resp = await fetch(CHAT_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({ messages: apiMessages, journeyContext }),
+        body: JSON.stringify({ messages: apiMessages, journeyContext, conversation_id: conversationId }),
         signal: abortRef.current.signal,
       });
 
