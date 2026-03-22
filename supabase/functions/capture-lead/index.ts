@@ -1,21 +1,19 @@
 /**
  * capture-lead — Luna voice tool endpoint
  *
- * Called by ElevenLabs during a voice call when Luna captures
- * a guest's contact information and intent.
- *
- * Responsibilities:
- *   1. Write to Supabase leads + callback_requests tables
- *   2. Score intent and route to correct Slack channel immediately
- *   3. Return confirmation text Luna reads aloud, then calls end_call
- *
- * Fixes applied (v2):
- *   - Confirmation language: all paths close cleanly, no "is there anything else?"
- *   - Idempotency: dedup callback_requests by (phone + session_id) in 2-min window
- *   - close_after flag returned so system prompt knows to trigger end_call
+ * Now imports shared booking rules from _shared/booking-rules.ts
  */
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  derivePriority,
+  resolveSlackChannel,
+  getInternalBookingPath,
+  PRIORITY_EMOJI,
+  PRIORITY_LABEL,
+  getUrgencyAction,
+  type Priority,
+} from "../_shared/booking-rules.ts";
 
 const SUPABASE_URL     = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -45,9 +43,7 @@ interface CaptureLeadBody {
   elevenlabs_session_id?: string;
 }
 
-type Priority = "P1" | "P2" | "P3" | "P4";
-
-// ── Priority scoring ──────────────────────────────────────────────────────────
+// ── Priority scoring (uses shared derivePriority + local intent calc) ────────
 function scorePriority(body: CaptureLeadBody): { priority: Priority; intent_score: number } {
   let score = 30;
   if (body.timing === "today")         score += 40;
@@ -58,44 +54,20 @@ function scorePriority(body: CaptureLeadBody): { priority: Priority; intent_scor
   if (body.phone && body.guest_name !== "Unknown") score += 10;
   score = Math.min(score, 100);
 
-  const priority: Priority =
-    body.callback_requested || body.timing === "today" || score >= 80 ? "P1" :
-    body.timing === "this week" || score >= 55                         ? "P2" :
-    body.timing === "planning"  || score >= 30                         ? "P3" : "P4";
+  const priority = derivePriority(
+    body.timing ?? null,
+    body.callback_requested ?? false,
+    body.consultation_required ?? false,
+    score
+  );
 
   return { priority, intent_score: score };
 }
 
-// ── Booking path display ──────────────────────────────────────────────────────
-const BOOKING_PATHS: Record<string, string> = {
-  hair:     "Front Desk: (520) 327-6753",
-  nails:    "Direct: Anita (520) 591-0208 · Kelly (520) 488-7149 · Jackie (520) 501-6861",
-  lashes:   "Direct: Allison (520) 250-6606",
-  skincare: "Direct: Patty (520) 870-6048 · Lori (520) 400-5091",
-  massage:  "Direct: Tammi (520) 370-3018",
-};
-function bookingPath(cat?: string): string {
-  return BOOKING_PATHS[cat?.toLowerCase() ?? ""] || BOOKING_PATHS.hair;
-}
-
-// ── Slack channel routing ─────────────────────────────────────────────────────
-function slackChannel(body: CaptureLeadBody): string {
-  if (body.callback_requested) return "callbacks";
-  const ch: Record<string, string> = {
-    nails: "nails", lashes: "lashes", skincare: "skin", massage: "massage",
-  };
-  return ch[body.service_category?.toLowerCase() ?? ""] ?? "leads";
-}
-
 // ── Slack Block Kit message ───────────────────────────────────────────────────
 function buildSlackMessage(body: CaptureLeadBody, priority: Priority, intent_score: number): object {
-  const emoji: Record<Priority, string> = { P1: "🔴", P2: "🟠", P3: "🟡", P4: "⚪" };
-  const label: Record<Priority, string> = { P1: "HIGH PRIORITY", P2: "MEDIUM", P3: "STANDARD", P4: "LOW" };
-
-  const action =
-    priority === "P1" ? "🚨 *Action:* @Kendell — Call within 10 minutes" :
-    priority === "P2" ? "⏰ *Action:* @Kendell — Follow up today" :
-                        "📋 *Action:* @Kendell — Add to follow-up queue";
+  const bookingPathDisplay = getInternalBookingPath(body.service_category);
+  const action = getUrgencyAction(priority);
 
   const flags: string[] = [];
   if (body.consultation_required)      flags.push("⚠️ Consultation required — no price until consult");
@@ -113,7 +85,7 @@ function buildSlackMessage(body: CaptureLeadBody, priority: Priority, intent_sco
         type: "header",
         text: {
           type: "plain_text",
-          text: `${emoji[priority]} ${label[priority]} — ${body.callback_requested ? "Callback Request" : "New Lead"} captured by Luna`,
+          text: `${PRIORITY_EMOJI[priority]} ${PRIORITY_LABEL[priority]} — ${body.callback_requested ? "Callback Request" : "New Lead"} captured by Luna`,
         },
       },
       {
@@ -123,7 +95,7 @@ function buildSlackMessage(body: CaptureLeadBody, priority: Priority, intent_sco
           { type: "mrkdwn", text: `*Phone:*\n${phoneDisplay}` },
           { type: "mrkdwn", text: `*Service:*\n${body.service_name || body.service_category || "General inquiry"}` },
           { type: "mrkdwn", text: `*Timing:*\n${body.timing || "Not specified"}` },
-          { type: "mrkdwn", text: `*Booking Path:*\n${bookingPath(body.service_category)}` },
+          { type: "mrkdwn", text: `*Booking Path:*\n${bookingPathDisplay}` },
           { type: "mrkdwn", text: `*Intent Score:*\n${intent_score}/100` },
         ],
       },
@@ -148,10 +120,7 @@ function buildSlackMessage(body: CaptureLeadBody, priority: Priority, intent_sco
   };
 }
 
-// ── Spoken confirmation Luna reads aloud ──────────────────────────────────────
-// FIX v2: All paths close cleanly. No "is there anything else?" re-opener.
-// Luna reads this, then immediately calls end_call.
-// The close_after:true flag in the response tells the system prompt to end the call.
+// ── Spoken confirmation ──────────────────────────────────────────────────────
 function buildConfirmation(body: CaptureLeadBody, priority: Priority): string {
   const firstName  = body.guest_name !== "Unknown"
     ? body.guest_name.trim().split(/\s+/)[0]
@@ -197,29 +166,28 @@ Deno.serve(async (req) => {
     const db = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
     // ── 1. Upsert lead ────────────────────────────────────────────────────────
-    const { data: leadData, error: leadErr } = await db
+    // Note: leads.phone lacks a unique index — using manual dedup instead of upsert
+    const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const { data: existingLead } = await db
       .from("leads")
-      .upsert(
-        {
-          name:     body.guest_name.trim(),
-          phone:    body.phone.trim(),
-          email:    body.email?.trim() || null,
-          category: body.service_category || null,
-          goal:     body.timing || null,
-          timing:   body.timing || null,
-        },
-        { onConflict: "phone", ignoreDuplicates: false }
-      )
       .select("id")
-      .single();
+      .eq("phone", body.phone.trim())
+      .gte("created_at", since24h)
+      .limit(1);
 
-    if (leadErr) {
-      console.error("[capture-lead] leads upsert:", leadErr.message);
+    if (!existingLead?.length) {
+      const { error: leadErr } = await db.from("leads").insert({
+        name:     body.guest_name.trim(),
+        phone:    body.phone.trim(),
+        email:    body.email?.trim() || null,
+        category: body.service_category || null,
+        goal:     body.timing || null,
+        timing:   body.timing || null,
+      });
+      if (leadErr) console.error("[capture-lead] leads insert:", leadErr.message);
     }
 
     // ── 2. Write callback_requests with idempotency guard ─────────────────────
-    // Deduplicate: same phone + same ElevenLabs session within 2 minutes = skip.
-    // Prevents duplicate rows and duplicate Slack alerts on Luna tool retry.
     if (body.callback_requested) {
       let shouldInsert = true;
 
@@ -263,8 +231,9 @@ Deno.serve(async (req) => {
     }
 
     // ── 3. Slack alert (fire-and-forget) ──────────────────────────────────────
-    const channel  = slackChannel(body);
-    const webhook  = getSlackWebhook(channel);
+    const channel = resolveSlackChannel(body.service_category ?? null, body.callback_requested ?? false);
+    const channelName = channel === "callbacks" ? "CALLBACKS" : channel.toUpperCase();
+    const webhook = getSlackWebhook(channelName) || getSlackWebhook(channel);
     const slackMsg = buildSlackMessage(body, priority, intent_score);
 
     if (webhook) {
@@ -278,19 +247,16 @@ Deno.serve(async (req) => {
     }
 
     // ── 4. Return confirmation + close_after flag ─────────────────────────────
-    // close_after: true tells the system prompt to read confirmation then call end_call.
-    // Luna NEVER re-opens the conversation after this tool fires.
     const confirmation = buildConfirmation(body, priority);
 
     return new Response(
       JSON.stringify({
         success:       true,
-        lead_id:       leadData?.id || null,
         priority,
         intent_score,
         slack_channel: channel,
         confirmation,
-        close_after:   true, // Luna reads confirmation then calls end_call
+        close_after:   true,
       }),
       { status: 200, headers: corsHeaders }
     );

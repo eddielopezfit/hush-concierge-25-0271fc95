@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { CONSULTATION_SERVICES } from "../_shared/booking-rules.ts";
 
 // ── Environment ─────────────────────────────────────────────────────────────
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
@@ -16,6 +17,9 @@ const corsHeaders = {
 const LEAD_QUALIFY_THRESHOLD = 60;
 
 // ── Extraction Prompt ───────────────────────────────────────────────────────
+// Uses CONSULTATION_SERVICES from shared booking-rules for consistency
+const consultationList = CONSULTATION_SERVICES.join(", ");
+
 const EXTRACTION_PROMPT = `You are a salon operations analyst for Hush Salon & Day Spa in Tucson, AZ.
 
 Analyze the following conversation transcript and extract structured information.
@@ -24,7 +28,7 @@ RULES:
 - category must be one of: hair, nails, lashes, skincare, massage, or null
 - urgency must be one of: today, week, planning, browsing, or null
 - callback_requested: true if the guest asked for a callback, left their number, or asked to be contacted
-- consultation_required: true if the service discussed requires a consultation (balayage, foilayage, corrective color, fantasy color, block color, extensions)
+- consultation_required: true if the service discussed requires a consultation (${consultationList})
 - intent_score: 0-100 where 100 = ready to book now
   - 80-100: explicitly wants to book, mentioned date/time, gave contact info
   - 60-79: strong interest, asking detailed questions about specific services
@@ -33,10 +37,10 @@ RULES:
   - 0-19: unrelated or very low engagement
 - internal_routing_suggestion: who should handle this next
   - Hair bookings → "Route to Kendell / Front Desk at (520) 327-6753"
-  - Nails → "Direct booking: Anita (520) 591-0208, Kelly (520) 488-7149, Jackie (520) 501-6861"
-  - Lashes → "Direct booking: Allison (520) 250-6606"
-  - Skincare → "Direct booking: Patty (520) 870-6048"
-  - Massage → "Direct booking: Tammi (520) 370-3018"
+  - Nails → "Route to nail team"
+  - Lashes → "Route to Allison"
+  - Skincare → "Route to skincare team"
+  - Massage → "Route to Tammi"
   - Consultation-based → "Route to Kendell for consultation booking"
 - Never recommend a specific hair artist
 - Never expose hair stylist direct phone numbers
@@ -174,7 +178,6 @@ Deno.serve(async (req) => {
 
     // 7. Update guest_profiles with accumulated memory
     if (convo.guest_profile_id) {
-      // Fetch current profile for merging
       const { data: profile } = await supabase
         .from("guest_profiles")
         .select("notes, preferred_categories, intent_score")
@@ -188,14 +191,12 @@ Deno.serve(async (req) => {
         ? `${existingNotes}\n${newNote}`
         : newNote;
 
-      // Merge preferred_categories
       const existingCats: string[] = profile?.preferred_categories ?? [];
-      const newCat = intentSignals.category;
+      const newCat = intentSignals.category as string;
       const mergedCats = newCat && !existingCats.includes(newCat)
         ? [...existingCats, newCat]
         : existingCats;
 
-      // Take the higher intent_score
       const currentScore = profile?.intent_score ?? 0;
       const newScore = (intentSignals.intent_score as number) ?? 0;
 
@@ -204,13 +205,13 @@ Deno.serve(async (req) => {
         .update({
           notes: updatedNotes,
           preferred_categories: mergedCats.length ? mergedCats : null,
-          intent_score: Math.max(currentScore, newScore),
+          intent_score: Math.max(Number(currentScore), newScore),
           updated_at: new Date().toISOString(),
         })
         .eq("id", convo.guest_profile_id);
     }
 
-    // 8. FIX #6: Trigger lead-qualify on high intent OR callback OR same-day urgency
+    // 8. Trigger lead-qualify on high intent OR callback OR same-day urgency
     const intentScore = (intentSignals.intent_score as number) ?? 0;
     const shouldQualify =
       intentScore >= LEAD_QUALIFY_THRESHOLD ||
@@ -218,7 +219,6 @@ Deno.serve(async (req) => {
       intentSignals.urgency === "today";
 
     if (shouldQualify) {
-      // Get guest info for lead-qualify
       let guestPhone: string | null = null;
       let guestEmail: string | null = null;
       let guestName = (intentSignals.guest_name as string) ?? null;
@@ -234,7 +234,6 @@ Deno.serve(async (req) => {
         guestName = guestName || gp?.first_name || null;
       }
 
-      // Fire-and-forget to lead-qualify
       const leadPayload = {
         conversation_id,
         guest_profile_id: convo.guest_profile_id,
