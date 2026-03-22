@@ -1,48 +1,22 @@
-import { supabase } from "@/integrations/supabase/client";
 import { ConciergeContext } from "@/types/concierge";
 import type { Json } from "@/integrations/supabase/types";
 import { normalizeTiming, normalizeGoal, normalizeCategory } from "@/lib/conciergeLabels";
 
+const SUBMIT_LEAD_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/submit-lead`;
+
 /**
- * Save a concierge session to the database.
- * Normalizes context values before persisting.
+ * Save a concierge session to the database via edge function.
  * Never throws — returns null on failure.
  */
 export async function saveSession(context: ConciergeContext | null | undefined): Promise<string | null> {
-  if (!context) {
-    console.debug("[saveSession] No context to save, skipping.");
-    return null;
-  }
-
-  try {
-    // Normalize before persisting
-    const normalized: ConciergeContext = {
-      ...context,
-      goal: normalizeGoal(context.goal) ?? context.goal ?? null,
-      timing: normalizeTiming(context.timing) ?? context.timing ?? null,
-    };
-
-    const { data, error } = await supabase
-      .from("sessions")
-      .insert([{ context: JSON.parse(JSON.stringify(normalized)) as Json }])
-      .select("id")
-      .single();
-
-    if (error) {
-      console.error("[saveSession] DB error:", error.message, error.code);
-      return null;
-    }
-
-    console.debug("[saveSession] Session saved:", data.id);
-    return data.id;
-  } catch (err) {
-    console.error("[saveSession] Unexpected error:", err instanceof Error ? err.message : err);
-    return null;
-  }
+  // Sessions are now handled by session-start edge function.
+  // This function is kept for backward compatibility but is a no-op.
+  console.debug("[saveSession] Sessions now managed by session-start edge function.");
+  return null;
 }
 
 /**
- * Save a lead to the database.
+ * Save a lead to the database via edge function.
  * Normalizes category and timing values before persisting.
  * Never throws — returns false on failure.
  */
@@ -60,11 +34,9 @@ export async function saveLead(lead: {
   }
 
   try {
-    // Normalize timing if it uses a legacy format
     const normalizedTiming = normalizeTiming(lead.timing) ?? lead.timing ?? null;
     const normalizedGoal = normalizeGoal(lead.goal) ?? lead.goal ?? null;
 
-    // Normalize category list: split comma-separated, normalize each, rejoin
     let normalizedCategory: string | null = null;
     if (lead.category) {
       const parts = lead.category.split(",").map(s => s.trim()).filter(Boolean);
@@ -72,17 +44,25 @@ export async function saveLead(lead: {
       normalizedCategory = normalized.join(", ");
     }
 
-    const { error } = await supabase.from("leads").insert({
-      name: lead.name.trim(),
-      phone: lead.phone.trim(),
-      email: lead.email?.trim() || null,
-      category: normalizedCategory,
-      goal: normalizedGoal,
-      timing: normalizedTiming,
+    const resp = await fetch(SUBMIT_LEAD_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      },
+      body: JSON.stringify({
+        type: "lead",
+        name: lead.name.trim(),
+        phone: lead.phone.trim(),
+        email: lead.email?.trim() || null,
+        category: normalizedCategory,
+        goal: normalizedGoal,
+        timing: normalizedTiming,
+      }),
     });
 
-    if (error) {
-      console.error("[saveLead] DB error:", error.message, error.code);
+    if (!resp.ok) {
+      console.error("[saveLead] Edge function error:", resp.status);
       return false;
     }
 
@@ -90,6 +70,51 @@ export async function saveLead(lead: {
     return true;
   } catch (err) {
     console.error("[saveLead] Unexpected error:", err instanceof Error ? err.message : err);
+    return false;
+  }
+}
+
+/**
+ * Submit a callback request via edge function.
+ * Never throws — returns false on failure.
+ */
+export async function saveCallbackRequest(data: {
+  full_name: string;
+  phone: string;
+  email?: string;
+  interested_in?: string;
+  timing?: string;
+  message?: string;
+  source?: string;
+  concierge_context?: any;
+}): Promise<boolean> {
+  if (!data.full_name?.trim() || !data.phone?.trim()) {
+    console.warn("[saveCallbackRequest] Missing required fields, skipping.");
+    return false;
+  }
+
+  try {
+    const resp = await fetch(SUBMIT_LEAD_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      },
+      body: JSON.stringify({
+        type: "callback",
+        ...data,
+      }),
+    });
+
+    if (!resp.ok) {
+      console.error("[saveCallbackRequest] Edge function error:", resp.status);
+      return false;
+    }
+
+    console.debug("[saveCallbackRequest] Callback request saved successfully");
+    return true;
+  } catch (err) {
+    console.error("[saveCallbackRequest] Unexpected error:", err instanceof Error ? err.message : err);
     return false;
   }
 }
