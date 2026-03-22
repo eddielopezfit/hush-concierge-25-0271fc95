@@ -133,3 +133,109 @@ export function buildRevealData(context: ConciergeContext | null | undefined): R
     categories: context.categories,
   };
 }
+
+// ── Booking Mode Logic ──────────────────────────────────────────────────────
+
+export type BookingMode = "consultation" | "guided_front_desk" | "direct_or_callback";
+
+const CONSULTATION_SUBTYPES = new Set([
+  "color", "both",
+]);
+
+const CONSULTATION_KEYWORDS = [
+  "balayage", "foilayage", "corrective", "fantasy", "vivid",
+  "block color", "extensions", "transformation",
+];
+
+export function deriveBookingMode(
+  revealData: RevealData,
+  context: ConciergeContext | null | undefined,
+): BookingMode {
+  // 1. Consultation-required from reveal
+  if (revealData.consultationRequired) return "consultation";
+
+  const primaryCat = context?.primary_category || context?.categories?.[0];
+  const subtype = context?.service_subtype;
+
+  // 2. Subtype-based consultation check
+  if (subtype && CONSULTATION_SUBTYPES.has(subtype)) return "consultation";
+
+  // 3. Multi-service with hair as primary → consultation
+  if (revealData.isMultiService && primaryCat === "hair") return "consultation";
+
+  // 4. Service name keyword match
+  const serviceName = (context?.item || context?.group || "").toLowerCase();
+  if (CONSULTATION_KEYWORDS.some(k => serviceName.includes(k))) return "consultation";
+
+  // 5. Direct-eligible categories
+  if (primaryCat && ["nails", "lashes", "skincare", "massage"].includes(primaryCat)) {
+    return "direct_or_callback";
+  }
+
+  // 6. Default for hair and everything else
+  return "guided_front_desk";
+}
+
+// ── Booking mode UI config ──────────────────────────────────────────────────
+
+export interface BookingModeConfig {
+  badge: string;
+  headline: string;
+  subcopy: string;
+  primaryLabel: string;
+  secondaryLabel: string;
+  tertiaryLabel: string;
+  showInlineCapture: boolean;
+}
+
+export function getBookingModeConfig(mode: BookingMode, timing?: string | null): BookingModeConfig {
+  const urgencyNote = timing === "today"
+    ? " We'll prioritize same-day availability."
+    : timing === "week"
+    ? " We'll check this week's openings for you."
+    : "";
+
+  switch (mode) {
+    case "consultation":
+      return {
+        badge: "Consultation",
+        headline: "This experience starts with a quick consultation",
+        subcopy: `For a service like this, the best next step is a quick conversation so Hush can match timing, pricing, and the right stylist fit.${urgencyNote}`,
+        primaryLabel: "Request Consultation",
+        secondaryLabel: "Call Front Desk",
+        tertiaryLabel: "Chat with Luna",
+        showInlineCapture: false,
+      };
+    case "guided_front_desk":
+      return {
+        badge: "Guided Booking",
+        headline: "Let Hush help you lock this in",
+        subcopy: `You already know what you want — the fastest next step is to have Hush confirm the best fit and availability.${urgencyNote}`,
+        primaryLabel: "Request Callback",
+        secondaryLabel: "Call Front Desk",
+        tertiaryLabel: "Chat with Luna",
+        showInlineCapture: false,
+      };
+    case "direct_or_callback":
+      return {
+        badge: "Direct Booking",
+        headline: "You can book this directly",
+        subcopy: `We'll match you with the best time and stylist for this service.${urgencyNote}`,
+        primaryLabel: "Check Availability",
+        secondaryLabel: "Call Front Desk",
+        tertiaryLabel: "Chat with Luna",
+        showInlineCapture: true,
+      };
+  }
+}
+
+/** Map categories to Slack channel slugs for routing */
+export function getSlackChannel(category: string | null | undefined): string {
+  switch (category) {
+    case "nails": return "nails";
+    case "lashes": return "lashes";
+    case "skincare": return "skin";
+    case "massage": return "massage";
+    default: return "leads";
+  }
+}
