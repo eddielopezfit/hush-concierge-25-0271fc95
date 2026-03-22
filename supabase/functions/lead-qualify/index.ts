@@ -1,4 +1,23 @@
+/**
+ * lead-qualify — Lead scoring, Slack routing, CRM/SMS integration
+ *
+ * Now imports shared booking rules from _shared/booking-rules.ts
+ */
+
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  requiresConsultation,
+  derivePriority,
+  resolveSlackChannel,
+  getRoutingRule,
+  getInternalBookingPath,
+  deriveInternalRouting,
+  PRIORITY_EMOJI,
+  PRIORITY_LABEL,
+  getUrgencyAction,
+  type Priority,
+  type SlackChannel,
+} from "../_shared/booking-rules.ts";
 
 // ── Environment ─────────────────────────────────────────────────────────────
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -17,106 +36,7 @@ const corsHeaders = {
   "Content-Type": "application/json",
 };
 
-// ── Operational Routing Rules ───────────────────────────────────────────────
-
-type BookingPath = "front_desk" | "direct" | "consultation";
-type Priority = "P1" | "P2" | "P3" | "P4";
-
-interface RoutingRule {
-  booking_path: BookingPath;
-  action_owner: string;
-  consultation_required?: boolean;
-  direct_contacts?: string[];
-}
-
-const BOOKING_RULES: Record<string, RoutingRule> = {
-  hair: {
-    booking_path: "front_desk",
-    action_owner: "Kendell / Front Desk",
-    consultation_required: false,
-  },
-  nails: {
-    booking_path: "direct",
-    action_owner: "Nail Tech (direct)",
-    direct_contacts: ["Anita (520) 591-0208", "Kelly (520) 488-7149", "Jackie (520) 501-6861"],
-  },
-  lashes: {
-    booking_path: "direct",
-    action_owner: "Allison (520) 250-6606",
-    direct_contacts: ["Allison (520) 250-6606"],
-  },
-  skincare: {
-    booking_path: "direct",
-    action_owner: "Skincare Specialist (direct)",
-    direct_contacts: ["Patty (520) 870-6048"],
-  },
-  massage: {
-    booking_path: "direct",
-    action_owner: "Tammi (520) 370-3018",
-    direct_contacts: ["Tammi (520) 370-3018"],
-  },
-};
-
-const CONSULTATION_SERVICES = [
-  "balayage", "foilayage", "corrective color", "fantasy color",
-  "block color", "extensions", "corrective",
-];
-
-function requiresConsultation(service: string | null): boolean {
-  if (!service) return false;
-  const lower = service.toLowerCase();
-  return CONSULTATION_SERVICES.some((s) => lower.includes(s));
-}
-
-// ── FIX #3: Priority logic aligned with operational rules ───────────────────
-function derivePriority(
-  urgency: string | null,
-  callbackRequested: boolean,
-  consultationRequired: boolean,
-  intentScore: number
-): Priority {
-  // Callbacks are always P1 — they explicitly asked for contact
-  if (callbackRequested) return "P1";
-  // Same-day urgency = P1
-  if (urgency === "today") return "P1";
-  // Consultation + this week = P1 (needs scheduling coordination)
-  if (consultationRequired && urgency === "week") return "P1";
-  // High intent score
-  if (intentScore >= 80) return "P1";
-  // This week or strong interest
-  if (urgency === "week" || intentScore >= 60) return "P2";
-  // Planning ahead
-  if (urgency === "planning" || intentScore >= 40) return "P3";
-  return "P4";
-}
-
-function deriveInternalRouting(
-  category: string | null,
-  service: string | null
-): string {
-  const cat = category?.toLowerCase() ?? "hair";
-  const rule = BOOKING_RULES[cat] ?? BOOKING_RULES.hair;
-
-  if (requiresConsultation(service)) {
-    return `Route to Kendell for consultation booking. Service "${service}" requires in-person evaluation before pricing.`;
-  }
-
-  if (rule.booking_path === "direct" && rule.direct_contacts?.length) {
-    return `Direct booking available: ${rule.direct_contacts.join(", ")}. Action owner: ${rule.action_owner}.`;
-  }
-
-  return `Route to Kendell / Front Desk at (520) 327-6753. Action owner: ${rule.action_owner}.`;
-}
-
-// ── FIX #1: Booking path display + consultation/urgency notes ───────────────
-function formatBookingPathDisplay(rule: RoutingRule): string {
-  if (rule.booking_path === "front_desk") {
-    return "Call Front Desk: (520) 327-6753";
-  }
-  return rule.direct_contacts?.join(", ") ?? "Call Front Desk: (520) 327-6753";
-}
-
-// ── Slack Alert Formatting ──────────────────────────────────────────────────
+// ── Types ───────────────────────────────────────────────────────────────────
 
 interface LeadPayload {
   conversation_id?: string;
@@ -135,28 +55,14 @@ interface LeadPayload {
   source?: string;
 }
 
+// ── Slack Alert Formatting ──────────────────────────────────────────────────
+
 function formatSlackMessage(lead: LeadPayload, priority: Priority): object {
-  const cat = lead.category?.toLowerCase() ?? "unknown";
-  const rule = BOOKING_RULES[cat] ?? BOOKING_RULES.hair;
   const routing = deriveInternalRouting(lead.category ?? null, lead.service ?? null);
-  const bookingDisplay = formatBookingPathDisplay(rule);
+  const bookingDisplay = getInternalBookingPath(lead.category);
+  const rule = getRoutingRule(lead.category);
+  const urgencyAction = getUrgencyAction(priority);
 
-  const priorityEmoji: Record<Priority, string> = {
-    P1: "🔴", P2: "🟠", P3: "🟡", P4: "⚪",
-  };
-
-  const priorityLabel: Record<Priority, string> = {
-    P1: "HIGH PRIORITY", P2: "MEDIUM", P3: "STANDARD", P4: "LOW",
-  };
-
-  // Urgency-based action instructions with Kendell ownership
-  const urgencyAction = priority === "P1"
-    ? "🚨 *Action:* @Kendell — Call within 10 minutes"
-    : priority === "P2"
-    ? "⏰ *Action:* @Kendell — Follow up today"
-    : "📋 *Action:* @Kendell — Add to follow-up queue";
-
-  // Consultation + urgency notes block
   const notesLines: string[] = [];
   if (lead.consultation_required) {
     notesLines.push("⚠️ Consultation required before pricing.");
@@ -177,7 +83,7 @@ function formatSlackMessage(lead: LeadPayload, priority: Priority): object {
       type: "header",
       text: {
         type: "plain_text",
-        text: `${priorityEmoji[priority]} ${priorityLabel[priority]} — ${priority} — New ${lead.callback_requested ? "Callback Request" : "Lead"}`,
+        text: `${PRIORITY_EMOJI[priority]} ${PRIORITY_LABEL[priority]} — ${priority} — New ${lead.callback_requested ? "Callback Request" : "Lead"}`,
       },
     },
     {
@@ -234,24 +140,7 @@ function formatSlackMessage(lead: LeadPayload, priority: Priority): object {
   return { blocks };
 }
 
-// ── Category-specific Slack channel mapping ─────────────────────────────────
-
-type SlackChannel = "callbacks" | "leads" | "nails" | "lashes" | "skin" | "massage" | "voice";
-
-function resolveSlackChannel(
-  category: string | null,
-  callbackRequested: boolean,
-): SlackChannel {
-  if (callbackRequested) return "callbacks";
-  const cat = category?.toLowerCase();
-  switch (cat) {
-    case "nails":    return "nails";
-    case "lashes":   return "lashes";
-    case "skincare": return "skin";
-    case "massage":  return "massage";
-    default:         return "leads";
-  }
-}
+// ── Slack Send ──────────────────────────────────────────────────────────────
 
 async function sendSlackAlert(
   lead: LeadPayload,
@@ -263,7 +152,6 @@ async function sendSlackAlert(
     return;
   }
 
-  // Try channel-specific webhook first, fall back to default
   const channelWebhookKey = `SLACK_WEBHOOK_URL_${channel.toUpperCase()}`;
   const webhookUrl = Deno.env.get(channelWebhookKey) || SLACK_WEBHOOK_URL;
 
@@ -369,7 +257,6 @@ Deno.serve(async (req) => {
     const intentScore = lead.intent_score ?? 50;
     const callbackRequested = lead.callback_requested ?? false;
     const consultationRequired = lead.consultation_required ?? requiresConsultation(lead.service ?? null);
-    // FIX #3: Pass consultationRequired to priority derivation
     const priority = derivePriority(lead.urgency ?? null, callbackRequested, consultationRequired, intentScore);
 
     const enrichedLead: LeadPayload = {
