@@ -145,14 +145,18 @@ function formatSlackMessage(lead: LeadPayload, priority: Priority): object {
     P1: "🔴", P2: "🟠", P3: "🟡", P4: "⚪",
   };
 
-  // FIX #2: Urgency-based action instructions with Kendell ownership
+  const priorityLabel: Record<Priority, string> = {
+    P1: "HIGH PRIORITY", P2: "MEDIUM", P3: "STANDARD", P4: "LOW",
+  };
+
+  // Urgency-based action instructions with Kendell ownership
   const urgencyAction = priority === "P1"
     ? "🚨 *Action:* @Kendell — Call within 10 minutes"
     : priority === "P2"
     ? "⏰ *Action:* @Kendell — Follow up today"
     : "📋 *Action:* @Kendell — Add to follow-up queue";
 
-  // FIX #1: Consultation + urgency notes block
+  // Consultation + urgency notes block
   const notesLines: string[] = [];
   if (lead.consultation_required) {
     notesLines.push("⚠️ Consultation required before pricing.");
@@ -173,7 +177,7 @@ function formatSlackMessage(lead: LeadPayload, priority: Priority): object {
       type: "header",
       text: {
         type: "plain_text",
-        text: `${priorityEmoji[priority]} ${priority} — New ${lead.callback_requested ? "Callback Request" : "Lead"}`,
+        text: `${priorityEmoji[priority]} ${priorityLabel[priority]} — ${priority} — New ${lead.callback_requested ? "Callback Request" : "Lead"}`,
       },
     },
     {
@@ -181,6 +185,7 @@ function formatSlackMessage(lead: LeadPayload, priority: Priority): object {
       fields: [
         { type: "mrkdwn", text: `*Guest:*\n${lead.guest_name || "Unknown"}` },
         { type: "mrkdwn", text: `*Phone:*\n${lead.phone || "Not provided"}` },
+        { type: "mrkdwn", text: `*Email:*\n${lead.email || "Not provided"}` },
         { type: "mrkdwn", text: `*Category:*\n${lead.category || "Unknown"}` },
         { type: "mrkdwn", text: `*Service:*\n${lead.service || "General inquiry"}` },
         { type: "mrkdwn", text: `*Timing:*\n${lead.timing || "Not specified"}` },
