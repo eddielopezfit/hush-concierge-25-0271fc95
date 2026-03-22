@@ -6,8 +6,7 @@ import { ConciergeContext } from "@/types/concierge";
 import { setConciergeContext, setGuestFirstName } from "@/lib/conciergeStore";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { saveLead } from "@/lib/saveSession";
-import { supabase } from "@/integrations/supabase/client";
+import { saveCallbackRequest } from "@/lib/saveSession";
 import { getConciergeContext } from "@/lib/conciergeStore";
 import { callbackServiceOptions as serviceOptions, callbackTimingOptions as timingOptions } from "@/data/categoryData";
 
