@@ -63,16 +63,17 @@ serve(async (req) => {
         throw cbErr;
       }
 
-      // Also insert into leads for backward compat
-      try {
-        await db.from("leads").insert({
-          name: full_name.trim(),
-          phone: phone.trim(),
-          email: email?.trim() || null,
-          category: interested_in || null,
-          timing: timing || null,
-        });
-      } catch { /* ignore */ }
+      // Also insert into leads for unified tracking
+      const { error: leadErr } = await db.from("leads").insert({
+        name: full_name.trim(),
+        phone: phone.trim(),
+        email: email?.trim() || null,
+        category: interested_in || null,
+        timing: timing || null,
+      });
+      if (leadErr) {
+        console.warn("[submit-lead] leads cross-write failed:", leadErr.message);
+      }
 
       return new Response(
         JSON.stringify({ success: true }),
