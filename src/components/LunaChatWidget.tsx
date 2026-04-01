@@ -47,10 +47,6 @@ export const LunaChatWidget = () => {
   const handleOpen = () => {
     setIsOpen(true);
     setShowBadge(false);
-    if (proactiveMessage) {
-      setActiveTab("chat");
-      setProactiveMessage(null);
-    }
   };
 
   const handleClose = () => setIsOpen(false);
