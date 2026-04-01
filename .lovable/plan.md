@@ -1,37 +1,33 @@
 
+# Interior Vibe Video — About Section Background
 
-# Team Photo Placement — Community / Inner Circle Section
+## Strategic Decision
 
-## Decision
+This interior walkthrough video belongs in the **About / "The Hush Story" section**. Here's why:
 
-The **Inner Circle section** is the clear winner. Here's the strategic reasoning:
-
-- **About section** already has the founders photo — adding a second image there creates visual clutter
-- **Artists section** features individual artist cards — a group shot competes with the per-artist layout
-- **Inner Circle section has ZERO imagery** — it's all text and icon cards. A team photo here is the single highest-impact visual upgrade available on the page
-
-The team photo answers the question every visitor subconsciously asks when they see "Join the Inner Circle": **who am I joining?** Showing the full crew transforms an abstract loyalty pitch into a visible community.
+- **Hero already has a video** (Fashion Friday) — two video backgrounds compete and hurt performance
+- **The About section is currently static** with just a founders photo and text — it's the weakest visual section on the page
+- **This video IS the Hush story** — warm tones, the actual space, the energy. It literally illustrates what the copy describes
+- **Conversion psychology**: by the time visitors reach "The Hush Story," they need an emotional anchor. This video delivers it
 
 ## Implementation
 
-### 1. Copy photo to `public/images/hush-team.jpg`
+### 1. Save video to `public/videos/hush-interior.mp4`
 
-### 2. Update `CommunitySection.tsx`
-Add a full-width team photo between the section header and the perks cards grid:
+### 2. Update `AboutSection.tsx`
+- Add a **contained video background** behind the entire section (not full-bleed like hero — contained within the `max-w-5xl` wrapper)
+- Video plays muted, autoplay, loop — same pattern as hero
+- Dark overlay gradient ensures the text + founders photo remain fully readable
+- `object-cover` with `object-center` since this is interior/environment footage (no face-framing needed)
+- The video sits as an atmospheric backdrop, not a competing visual — think "living wallpaper" behind the existing content
 
-- Rounded container with the signature `glow-gold-subtle` treatment (matching the About section style)
-- Gentle gradient overlay from bottom for text readability
-- A short caption: *"The crew behind the chair"* in display italic
-- `object-cover` with `object-[center_30%]` to keep faces in frame
-- Max height ~280px to stay proportional without dominating the section
-- Responsive: slightly taller on desktop, tighter crop on mobile
-
-### 3. No other section changes
-The perks cards, email form, and all existing content stay exactly as-is — the photo slots in above them.
+### 3. Responsive handling
+- On mobile: video hidden, replaced with a single poster frame (saves bandwidth, avoids performance issues with two autoplay videos)
+- On tablet+: video plays as ambient background
+- This keeps the page at exactly one autoplay video on mobile (hero) and two on desktop (hero + about)
 
 ## Files Changed
 | File | Change |
 |------|--------|
-| `public/images/hush-team.jpg` | New asset |
-| `src/components/CommunitySection.tsx` | Add team photo block between header and perks grid |
-
+| `public/videos/hush-interior.mp4` | New asset — copied from upload |
+| `src/components/AboutSection.tsx` | Add contained video background with overlay, hidden on mobile |
