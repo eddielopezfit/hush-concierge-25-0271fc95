@@ -3,9 +3,6 @@ import { motion } from "framer-motion";
 import { Scissors, Sparkles, Heart, Eye, Hand } from "lucide-react";
 import { ServiceMenuModal } from "./ServiceMenuModal";
 import { getCategoryById } from "@/data/servicesMenuData";
-import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
-import { setConciergeContext } from "@/lib/conciergeStore";
-import { useLuna } from "@/contexts/LunaContext";
 
 const services = [
   {
