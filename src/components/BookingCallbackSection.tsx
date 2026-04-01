@@ -10,7 +10,7 @@ import { saveCallbackRequest } from "@/lib/saveSession";
 import { callbackServiceOptions as serviceOptions, callbackTimingOptions as timingOptions } from "@/data/categoryData";
 
 export const BookingCallbackSection = () => {
-  const { openModal, openChatWidget, conciergeContext } = useLuna();
+  const { conciergeContext } = useLuna();
 
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
