@@ -146,7 +146,7 @@ export const BookingCallbackSection = () => {
             Ready to <span className="text-gold-gradient">Book?</span>
           </h2>
           <p className="font-body text-base text-muted-foreground max-w-lg mx-auto">
-            Choose what works for you. Luna can guide you, or reach out directly.
+            Drop your info and we'll reach out personally — or call us anytime.
           </p>
         </motion.div>
 

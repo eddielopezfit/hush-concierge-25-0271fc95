@@ -152,12 +152,6 @@ export const ServicesSection = () => {
                     {service.description}
                   </p>
                   <button
-                    onClick={(e) => handleLetLunaGuide(service, e)}
-                    className="btn-outline-gold text-xs py-3 px-6 w-full group-hover:bg-gold/8 focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2"
-                  >
-                    Ask Luna About This
-                  </button>
-                  <button
                     onClick={(e) => handleViewMenu(service.id, e)}
                     className="mt-3 font-body text-sm text-muted-foreground hover:text-gold transition-colors underline underline-offset-4 w-full text-center block"
                   >

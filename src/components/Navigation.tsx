@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { Phone, Menu, X, PhoneCall } from "lucide-react";
 
 const navLinks = [
-  { label: "Services", href: "#services" },
+  { label: "Menu", href: "#services" },
   { label: "Team", href: "#artists" },
   { label: "About", href: "#about" },
   { label: "Contact", href: "#callback" },

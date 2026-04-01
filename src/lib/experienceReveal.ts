@@ -1,5 +1,4 @@
 import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
-import { getArtistsByCategory, TeamMember } from "@/data/teamData";
 
 // ── Experience Type Labels ──────────────────────────────────────────────────
 
