@@ -234,29 +234,16 @@ export const FindMyLookTab = ({ onSwitchTab }: FindMyLookTabProps) => {
                 </div>
               </div>
 
-              {/* Stylist fits */}
-              {revealData.stylistFits.length > 0 && (
-                <div className="rounded-lg border border-gold/10 bg-gold/[0.03] p-3 space-y-2">
-                  <div className="flex items-center gap-1.5">
-                    <Users className="w-3.5 h-3.5 text-gold" />
-                    <span className="text-[10px] font-body uppercase tracking-wider text-gold">Great fits for your goals</span>
-                  </div>
-                  {revealData.stylistFits.map(fit => (
-                    <div key={fit.name} className="flex items-center gap-2">
-                      <Avatar className="w-6 h-6 border border-gold/20">
-                        {fit.photo && <AvatarImage src={fit.photo} alt={fit.name} />}
-                        <AvatarFallback className="bg-secondary text-gold text-[9px] font-display">
-                          {fit.name.split(" ").map(n => n[0]).join("")}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="min-w-0">
-                        <p className="text-xs font-display text-foreground truncate">{fit.name}</p>
-                        <p className="text-[10px] font-body text-muted-foreground truncate">{fit.specialty}</p>
-                      </div>
-                    </div>
-                  ))}
+              {/* Neutral artist matching */}
+              <div className="rounded-lg border border-gold/10 bg-gold/[0.03] p-3 text-center">
+                <div className="flex items-center justify-center gap-1.5 mb-1">
+                  <Users className="w-3.5 h-3.5 text-gold" />
+                  <span className="text-[10px] font-body uppercase tracking-wider text-gold">Artist Matching</span>
                 </div>
-              )}
+                <p className="text-[11px] font-body text-muted-foreground leading-relaxed">
+                  Our front desk will pair you with the perfect artist for your needs.
+                </p>
+              </div>
 
               {/* Booking Decision */}
               <BookingDecisionCard

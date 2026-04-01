@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Scissors, Hand, Sparkles, Eye, Heart,
-  Mic, MessageSquare, Check, ArrowLeft, HelpCircle, Layers,
+  Check, ArrowLeft, HelpCircle, Layers,
 } from "lucide-react";
 import { ConciergeContext, ServiceCategoryId, ServiceSubtype, MultiServiceMode } from "@/types/concierge";
 import { setGuestFirstName } from "@/lib/conciergeStore";

@@ -60,17 +60,6 @@ export const ServicesSection = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isMenuModalOpen, setIsMenuModalOpen] = useState(false);
 
-  const handleLetLunaGuide = (service: typeof services[0], e: React.MouseEvent) => {
-    e.stopPropagation();
-    const lunaContext: ConciergeContext = {
-      source: `Service: ${service.title}`,
-      categories: [service.id as ServiceCategoryId],
-      goal: null,
-      timing: null,
-    };
-    setConciergeContext(lunaContext);
-    openModal(lunaContext);
-  };
 
   const handleViewMenu = (serviceId: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();

@@ -56,20 +56,6 @@ export const BookingCallbackSection = () => {
 
   const isFormValid = formData.fullName.trim().length > 0 && formData.phone.trim().length > 0;
 
-  const handleSpeakWithLuna = () => {
-    const ctx: ConciergeContext = {
-      source: "Booking Section",
-      categories: [],
-      goal: null,
-      timing: null,
-    };
-    setConciergeContext(ctx);
-    openModal(ctx);
-  };
-
-  const handleChatWithLuna = () => {
-    openChatWidget();
-  };
 
   const handleInputChange = (field: string, value: string) => {
     setUserTouched(true);
