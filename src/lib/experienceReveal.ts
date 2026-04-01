@@ -83,14 +83,11 @@ export function buildRevealData(context: ConciergeContext | null | undefined): R
   const priceRange = profile?.priceRange || (isMulti ? "Varies by combination" : "$45–$150+");
   const consultationRequired = profile?.consultationRequired ?? (primaryCat === "hair" && (subtype === "color" || subtype === "both"));
 
-  const stylistFits = getStylistFits(context);
-
   return {
     experienceLabel,
     timeEstimate,
     priceRange,
     consultationRequired,
-    stylistFits,
     isMultiService: isMulti,
     categories: context.categories,
   };
