@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Mic, Phone, MessageCircle, CheckCircle, Check } from "lucide-react";
+import { Phone, CheckCircle, Check } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLuna } from "@/contexts/LunaContext";
 import { ConciergeContext } from "@/types/concierge";
