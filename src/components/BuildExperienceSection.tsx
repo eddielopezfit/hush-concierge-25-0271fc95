@@ -129,9 +129,24 @@ export const BuildExperienceSection = () => {
   };
 
   return (
-    <section className="py-20 md:py-24 px-6 bg-gradient-to-b from-background to-card relative overflow-hidden">
-      {/* Background glow */}
-      <div className="absolute inset-0 pointer-events-none">
+    <section className="py-20 md:py-24 px-6 relative overflow-hidden">
+      {/* Video background — hidden on mobile, ambient on tablet+ */}
+      <div className="absolute inset-0 hidden md:block">
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="w-full h-full object-cover object-center"
+          poster="/videos/hush-interior-poster.jpg"
+        >
+          <source src="/videos/hush-interior.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-background/85" />
+      </div>
+
+      {/* Mobile fallback glow */}
+      <div className="absolute inset-0 pointer-events-none md:hidden">
         <div className="absolute top-1/3 right-1/4 w-72 h-72 bg-primary/[0.03] rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 left-1/3 w-64 h-64 bg-accent/[0.02] rounded-full blur-3xl" />
       </div>
