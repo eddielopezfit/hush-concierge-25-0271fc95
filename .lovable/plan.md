@@ -1,62 +1,37 @@
 
 
-# Video Background for Hero Section
+# Team Photo Placement — Community / Inner Circle Section
 
-## What This Does
-Replace the static `hero-salon.jpg` background image with the uploaded Fashion Friday video, creating an immersive, luxury video backdrop behind the "Welcome to Hush" hero content.
+## Decision
 
-## Strategic Placement
+The **Inner Circle section** is the clear winner. Here's the strategic reasoning:
 
-The hero section is the **only correct placement**. Here's why:
+- **About section** already has the founders photo — adding a second image there creates visual clutter
+- **Artists section** features individual artist cards — a group shot competes with the per-artist layout
+- **Inner Circle section has ZERO imagery** — it's all text and icon cards. A team photo here is the single highest-impact visual upgrade available on the page
 
-- **Hero is full-bleed, full-viewport** — the video fills the entire screen naturally
-- **The existing dark overlay** (`.video-overlay`) already handles text readability over dynamic backgrounds
-- **First impression impact** — visitors immediately see real stylists, real work, real energy
-- **Brand proof** — Fashion Friday content shows the culture, not just the building
-- The video loops silently behind the text, CTAs, and scroll indicator — all existing elements stay exactly where they are
+The team photo answers the question every visitor subconsciously asks when they see "Join the Inner Circle": **who am I joining?** Showing the full crew transforms an abstract loyalty pitch into a visible community.
 
-## Technical Plan
+## Implementation
 
-### 1. Copy the video to `public/videos/`
-The video must go in `public/` (not `src/assets/`) because:
-- Video files are large and should NOT be bundled by Vite
-- `public/` serves them as static files with no processing overhead
-- Referenced via `/videos/fashion-friday-hero.mp4`
+### 1. Copy photo to `public/images/hush-team.jpg`
 
-### 2. Update `HeroSection.tsx`
-Replace the `<img>` tag with a `<video>` element:
+### 2. Update `CommunitySection.tsx`
+Add a full-width team photo between the section header and the perks cards grid:
 
-```tsx
-<video
-  autoPlay
-  muted
-  loop
-  playsInline
-  poster={heroImage}          // keep the JPG as poster/fallback
-  className="w-full h-full object-cover"
->
-  <source src="/videos/fashion-friday-hero.mp4" type="video/mp4" />
-</video>
-```
+- Rounded container with the signature `glow-gold-subtle` treatment (matching the About section style)
+- Gentle gradient overlay from bottom for text readability
+- A short caption: *"The crew behind the chair"* in display italic
+- `object-cover` with `object-[center_30%]` to keep faces in frame
+- Max height ~280px to stay proportional without dominating the section
+- Responsive: slightly taller on desktop, tighter crop on mobile
 
-Key attributes:
-- **`autoPlay` + `muted`** — required for browsers to allow autoplay (Chrome blocks autoplay with audio)
-- **`loop`** — seamless repeat
-- **`playsInline`** — prevents iOS from hijacking into fullscreen
-- **`poster={heroImage}`** — shows the current salon image while video loads (no blank flash)
-- The existing `.video-overlay` gradient stays on top — ensures text remains readable
-
-### 3. No other changes needed
-- All CTAs, animations, scroll indicator, and overlay remain untouched
-- Mobile: video plays inline and performs well; `object-cover` handles aspect ratio across all viewports
-- The dark gradient overlay ensures the gold text and CTAs stay legible regardless of video content
+### 3. No other section changes
+The perks cards, email form, and all existing content stay exactly as-is — the photo slots in above them.
 
 ## Files Changed
 | File | Change |
 |------|--------|
-| `public/videos/fashion-friday-hero.mp4` | New — copied from upload |
-| `src/components/HeroSection.tsx` | `<img>` → `<video>` with poster fallback |
-
-## Performance Note
-The video file size matters. If the uploaded clip is large (>10MB), we should consider compressing it for web delivery. The poster image ensures instant visual content while the video streams in.
+| `public/images/hush-team.jpg` | New asset |
+| `src/components/CommunitySection.tsx` | Add team photo block between header and perks grid |
 
