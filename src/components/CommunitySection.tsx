@@ -75,6 +75,28 @@ export const CommunitySection = () => {
           </p>
         </motion.div>
 
+        {/* Team photo */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7, delay: 0.15 }}
+          className="relative rounded-xl overflow-hidden mb-12 mx-auto w-full max-w-3xl glow-gold-subtle"
+        >
+          <div className="relative h-[220px] sm:h-[260px] md:h-[280px]">
+            <img
+              src="/images/hush-team.jpg"
+              alt="The Hush Salon team together"
+              className="w-full h-full object-cover object-[center_30%]"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent" />
+            <p className="absolute bottom-4 left-0 right-0 text-center font-display italic text-sm text-cream/80">
+              The crew behind the chair
+            </p>
+          </div>
+        </motion.div>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           {perks.map((perk, index) => {
             const Icon = perk.icon;
