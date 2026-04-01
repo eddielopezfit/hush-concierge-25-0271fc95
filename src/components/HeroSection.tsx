@@ -23,7 +23,7 @@ export const HeroSection = () => {
           loop
           playsInline
           poster={heroImage}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover object-[center_20%] md:object-[center_25%] lg:object-[center_30%]"
         >
           <source src="/videos/fashion-friday-hero.mp4" type="video/mp4" />
         </video>
