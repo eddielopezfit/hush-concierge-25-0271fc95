@@ -1,5 +1,4 @@
 import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
-import { getArtistsByCategory, TeamMember } from "@/data/teamData";
 
 // ── Experience Type Labels ──────────────────────────────────────────────────
 
@@ -41,43 +40,6 @@ const goalCategoryLabels: Record<string, Record<string, string>> = {
   event:     { hair: "Event-Ready Experience", nails: "Event Nail Session", skincare: "Red Carpet Glow", lashes: "Event Lash Set", massage: "Pre-Event Unwind" },
 };
 
-// ── Stylist Fit Mapping ─────────────────────────────────────────────────────
-
-interface StylistFit {
-  name: string;
-  specialty: string;
-  photo: string | null;
-}
-
-const subtypeStylistOverrides: Record<string, string[]> = {
-  color:       ["Michelle Yrigolla", "Whitney Hernandez", "Charly Camano"],
-  both:        ["Michelle Yrigolla", "Silviya Warren", "Ana Moreno"],
-  cut:         ["Kathy Charette", "Priscilla", "Ana Moreno"],
-};
-
-function getStylistFits(context: ConciergeContext): StylistFit[] {
-  const subtype = context.service_subtype;
-  const primaryCat = context.primary_category || context.categories?.[0];
-
-  // Check subtype overrides first
-  if (subtype && subtype !== "unsure" && subtypeStylistOverrides[subtype]) {
-    const names = subtypeStylistOverrides[subtype];
-    const allArtists = primaryCat ? getArtistsByCategory(primaryCat) : [];
-    return names.slice(0, 3).map(name => {
-      const artist = allArtists.find(a => a.name === name);
-      return { name, specialty: artist?.fitStatement || artist?.specialty || "", photo: artist?.photo || null };
-    });
-  }
-
-  // Default: pull from category
-  if (!primaryCat) return [];
-  const artists = getArtistsByCategory(primaryCat);
-  return artists.slice(0, 3).map(a => ({
-    name: a.name,
-    specialty: a.fitStatement || a.specialty,
-    photo: a.photo || null,
-  }));
-}
 
 // ── Main Reveal Builder ─────────────────────────────────────────────────────
 
@@ -86,7 +48,6 @@ export interface RevealData {
   timeEstimate: string;
   priceRange: string;
   consultationRequired: boolean;
-  stylistFits: StylistFit[];
   isMultiService: boolean;
   categories: ServiceCategoryId[];
 }
@@ -121,14 +82,11 @@ export function buildRevealData(context: ConciergeContext | null | undefined): R
   const priceRange = profile?.priceRange || (isMulti ? "Varies by combination" : "$45–$150+");
   const consultationRequired = profile?.consultationRequired ?? (primaryCat === "hair" && (subtype === "color" || subtype === "both"));
 
-  const stylistFits = getStylistFits(context);
-
   return {
     experienceLabel,
     timeEstimate,
     priceRange,
     consultationRequired,
-    stylistFits,
     isMultiService: isMulti,
     categories: context.categories,
   };

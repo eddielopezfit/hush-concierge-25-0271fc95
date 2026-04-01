@@ -1,7 +1,6 @@
 import { motion } from "framer-motion";
 import { Sparkles, Clock, DollarSign, Users } from "lucide-react";
 import { RevealData } from "@/lib/experienceReveal";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useLuna } from "@/contexts/LunaContext";
 import { getConciergeContext } from "@/lib/conciergeStore";
 import { BookingDecisionCard } from "@/components/BookingDecisionCard";
@@ -58,44 +57,21 @@ export const ExperienceRevealCard = ({ data, onBook }: ExperienceRevealCardProps
             </div>
           </motion.div>
 
-          {/* Stylist fits */}
-          {data.stylistFits.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.45 }}
-              className="rounded-xl border border-gold/10 bg-gold/[0.03] p-4 md:p-5"
-            >
-              <div className="flex items-center gap-2 mb-3">
-                <Users className="w-4 h-4 text-gold" />
-                <span className="text-xs font-body uppercase tracking-wider text-gold">Great fits for your goals</span>
-              </div>
-              <div className="space-y-2.5">
-                {data.stylistFits.map((fit, i) => (
-                  <motion.div
-                    key={fit.name}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.5 + i * 0.1 }}
-                    className="flex items-center gap-3"
-                  >
-                    <Avatar className="w-8 h-8 border border-gold/20">
-                      {fit.photo ? (
-                        <AvatarImage src={fit.photo} alt={fit.name} />
-                      ) : null}
-                      <AvatarFallback className="bg-secondary text-gold text-xs font-display">
-                        {fit.name.split(" ").map(n => n[0]).join("")}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0">
-                      <p className="text-sm font-display text-cream truncate">{fit.name}</p>
-                      <p className="text-[11px] font-body text-muted-foreground truncate">{fit.specialty}</p>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          )}
+          {/* Neutral artist matching message */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.45 }}
+            className="rounded-xl border border-gold/10 bg-gold/[0.03] p-4 md:p-5 text-center"
+          >
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <Users className="w-4 h-4 text-gold" />
+              <span className="text-xs font-body uppercase tracking-wider text-gold">Artist Matching</span>
+            </div>
+            <p className="font-body text-sm text-cream/70 leading-relaxed">
+              Your artist match depends on your unique needs — our front desk will pair you with the perfect fit.
+            </p>
+          </motion.div>
 
           {/* Booking Decision */}
           <motion.div

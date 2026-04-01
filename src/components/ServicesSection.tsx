@@ -3,9 +3,6 @@ import { motion } from "framer-motion";
 import { Scissors, Sparkles, Heart, Eye, Hand } from "lucide-react";
 import { ServiceMenuModal } from "./ServiceMenuModal";
 import { getCategoryById } from "@/data/servicesMenuData";
-import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
-import { setConciergeContext } from "@/lib/conciergeStore";
-import { useLuna } from "@/contexts/LunaContext";
 
 const services = [
   {
@@ -56,21 +53,9 @@ const cardVariants = {
 };
 
 export const ServicesSection = () => {
-  const { openModal } = useLuna();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isMenuModalOpen, setIsMenuModalOpen] = useState(false);
 
-  const handleLetLunaGuide = (service: typeof services[0], e: React.MouseEvent) => {
-    e.stopPropagation();
-    const lunaContext: ConciergeContext = {
-      source: `Service: ${service.title}`,
-      categories: [service.id as ServiceCategoryId],
-      goal: null,
-      timing: null,
-    };
-    setConciergeContext(lunaContext);
-    openModal(lunaContext);
-  };
 
   const handleViewMenu = (serviceId: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
@@ -101,9 +86,18 @@ export const ServicesSection = () => {
             <h2 className="font-display text-4xl md:text-5xl font-semibold text-cream mb-4">
               What We <span className="text-gold-gradient">Do</span>
             </h2>
-            <p className="font-body text-base text-muted-foreground max-w-lg mx-auto">
+            <p className="font-body text-base text-muted-foreground max-w-lg mx-auto mb-4">
               Five departments. One team. Everything you need to look and feel your best.
             </p>
+            <button
+              onClick={() => {
+                setSelectedCategory("hair");
+                setIsMenuModalOpen(true);
+              }}
+              className="font-body text-sm text-gold hover:text-gold/80 transition-colors underline underline-offset-4"
+            >
+              View All Services & Pricing
+            </button>
           </motion.div>
 
           <motion.div
@@ -142,12 +136,6 @@ export const ServicesSection = () => {
                   <p className="font-body text-muted-foreground text-sm leading-relaxed mb-5">
                     {service.description}
                   </p>
-                  <button
-                    onClick={(e) => handleLetLunaGuide(service, e)}
-                    className="btn-outline-gold text-xs py-3 px-6 w-full group-hover:bg-gold/8 focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2"
-                  >
-                    Ask Luna About This
-                  </button>
                   <button
                     onClick={(e) => handleViewMenu(service.id, e)}
                     className="mt-3 font-body text-sm text-muted-foreground hover:text-gold transition-colors underline underline-offset-4 w-full text-center block"

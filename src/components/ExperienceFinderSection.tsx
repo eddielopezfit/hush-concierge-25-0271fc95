@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Scissors, Hand, Sparkles, Eye, Heart,
-  Mic, MessageSquare, Check, ArrowLeft, HelpCircle, Layers,
+  Check, ArrowLeft, HelpCircle, Layers,
 } from "lucide-react";
 import { ConciergeContext, ServiceCategoryId, ServiceSubtype, MultiServiceMode } from "@/types/concierge";
 import { setGuestFirstName } from "@/lib/conciergeStore";
@@ -726,27 +726,17 @@ const QualifierStep = ({ step, title, subtitle, category, selectedSubtype, onSel
     <motion.div
       initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.5 }}
-      className="flex flex-col md:flex-row items-center justify-center gap-4 mt-10"
+      className="flex justify-center mt-10"
     >
       <motion.button
         onClick={onLunaAction}
         disabled={!selectedSubtype}
-        className={`btn-gold py-4 px-8 flex items-center gap-3 ${!selectedSubtype ? "opacity-40 cursor-not-allowed" : ""}`}
+        className={`btn-gold py-4 px-10 flex items-center gap-3 ${!selectedSubtype ? "opacity-40 cursor-not-allowed" : ""}`}
         whileHover={selectedSubtype ? { scale: 1.02 } : {}}
         whileTap={selectedSubtype ? { scale: 0.98 } : {}}
       >
-        <Mic className="w-5 h-5" />
-        Speak with Luna
-      </motion.button>
-      <motion.button
-        onClick={onLunaAction}
-        disabled={!selectedSubtype}
-        className={`btn-outline-gold py-4 px-8 flex items-center gap-3 ${!selectedSubtype ? "opacity-40 cursor-not-allowed" : ""}`}
-        whileHover={selectedSubtype ? { scale: 1.02 } : {}}
-        whileTap={selectedSubtype ? { scale: 0.98 } : {}}
-      >
-        <MessageSquare className="w-5 h-5" />
-        Chat with Luna
+        <Sparkles className="w-5 h-5" />
+        See My Results
       </motion.button>
     </motion.div>
     <BackButton onClick={onBack} className="mt-4" />
