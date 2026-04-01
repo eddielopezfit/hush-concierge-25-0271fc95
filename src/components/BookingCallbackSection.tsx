@@ -229,6 +229,37 @@ export const BookingCallbackSection = () => {
           </motion.div>
         </div>
 
+        {/* First-Visit Reassurance */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="mb-16"
+        >
+          <div className="bg-charcoal/30 border border-gold/8 rounded-2xl p-8 md:p-10 max-w-4xl mx-auto">
+            <h3 className="font-display text-xl md:text-2xl text-cream mb-6 text-center">
+              Your First Visit at <span className="text-gold-gradient">Hush</span>
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+              {[
+                { label: "Free consultations", detail: "Every new client gets a one-on-one with their artist before we start — no charge, no pressure." },
+                { label: "Flexible cancellation", detail: "24-hour notice to cancel or reschedule. Life happens — we get it." },
+                { label: "Easy parking", detail: "Free lot parking right outside the door. No meters, no stress." },
+                { label: "What to expect", detail: "Plan for a warm welcome, a beverage, and a stylist who actually listens. That's the Hush standard." },
+              ].map((item) => (
+                <div key={item.label} className="flex gap-3">
+                  <Check className="w-4 h-4 text-gold mt-1 shrink-0" />
+                  <div>
+                    <span className="font-body text-sm text-cream font-medium">{item.label}</span>
+                    <p className="font-body text-xs text-muted-foreground mt-0.5 leading-relaxed">{item.detail}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+
         {/* Callback Form */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
