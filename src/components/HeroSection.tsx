@@ -17,11 +17,16 @@ export const HeroSection = () => {
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
-        <img
-          src={heroImage}
-          alt="Hush Salon Interior"
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          poster={heroImage}
           className="w-full h-full object-cover"
-        />
+        >
+          <source src="/videos/fashion-friday-hero.mp4" type="video/mp4" />
+        </video>
         <div className="absolute inset-0 video-overlay" />
       </div>
 
