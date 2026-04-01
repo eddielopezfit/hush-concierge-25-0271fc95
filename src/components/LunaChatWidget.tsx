@@ -36,41 +36,13 @@ export const LunaChatWidget = () => {
     }
   }, [chatWidgetRequested, clearChatWidgetRequest]);
 
-  // Show notification badge after 8s
+  // Show subtle badge dot after 15s — passive, no pop-ups
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!isOpen) setShowBadge(true);
-    }, 8000);
+    }, 15000);
     return () => clearTimeout(timer);
   }, [isOpen]);
-
-  // Auto-open after 12s — only if user hasn't interacted with any Luna CTA
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (!hasAutoOpened && !isOpen && !hasInteracted) {
-        setIsOpen(true);
-        setHasAutoOpened(true);
-      }
-    }, 12000);
-    return () => clearTimeout(timer);
-  }, [hasAutoOpened, isOpen, hasInteracted]);
-
-  // Proactive engagement — check every 15s after 30s on page
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      const interval = setInterval(() => {
-        if (isOpen || proactiveMessage) return;
-        const suggestion = getProactiveSuggestion();
-        if (suggestion) {
-          setProactiveMessage(suggestion.message);
-          setShowBadge(true);
-          clearInterval(interval);
-        }
-      }, 15000);
-      return () => clearInterval(interval);
-    }, 30000);
-    return () => clearTimeout(timer);
-  }, [isOpen, proactiveMessage]);
 
   const handleOpen = () => {
     setIsOpen(true);
