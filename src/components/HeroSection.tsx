@@ -42,8 +42,23 @@ export const HeroSection = () => {
             <span className="text-gold-gradient">Hush</span>
           </h1>
           <p className="font-display text-xl md:text-2xl text-cream/70 mb-2 italic">
-            Salon & Day Spa
+            Where Tucson Comes to Feel Legendary
           </p>
+        </motion.div>
+
+        {/* Trust Badge Strip */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1, delay: 0.2 }}
+          className="flex items-center justify-center gap-2 text-cream/50 font-body text-sm mb-4"
+        >
+          <Star className="w-3.5 h-3.5 text-gold fill-gold" />
+          <span>4.7 on Google</span>
+          <span className="text-gold/30">·</span>
+          <span>315+ Reviews</span>
+          <span className="text-gold/30">·</span>
+          <span>Est. 2002</span>
         </motion.div>
 
         <motion.p
