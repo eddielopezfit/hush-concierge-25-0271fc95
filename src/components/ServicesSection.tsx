@@ -101,9 +101,18 @@ export const ServicesSection = () => {
             <h2 className="font-display text-4xl md:text-5xl font-semibold text-cream mb-4">
               What We <span className="text-gold-gradient">Do</span>
             </h2>
-            <p className="font-body text-base text-muted-foreground max-w-lg mx-auto">
+            <p className="font-body text-base text-muted-foreground max-w-lg mx-auto mb-4">
               Five departments. One team. Everything you need to look and feel your best.
             </p>
+            <button
+              onClick={() => {
+                setSelectedCategory("hair");
+                setIsMenuModalOpen(true);
+              }}
+              className="font-body text-sm text-gold hover:text-gold/80 transition-colors underline underline-offset-4"
+            >
+              View All Services & Pricing
+            </button>
           </motion.div>
 
           <motion.div
