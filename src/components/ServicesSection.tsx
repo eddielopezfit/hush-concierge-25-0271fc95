@@ -53,7 +53,6 @@ const cardVariants = {
 };
 
 export const ServicesSection = () => {
-  const { openModal } = useLuna();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isMenuModalOpen, setIsMenuModalOpen] = useState(false);
 
