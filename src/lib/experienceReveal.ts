@@ -49,7 +49,6 @@ export interface RevealData {
   timeEstimate: string;
   priceRange: string;
   consultationRequired: boolean;
-  stylistFits: StylistFit[];
   isMultiService: boolean;
   categories: ServiceCategoryId[];
 }
