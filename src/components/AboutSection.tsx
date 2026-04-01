@@ -4,8 +4,23 @@ import foundersPhoto from "@/assets/Founders_Hush.jpg";
 export const AboutSection = () => {
   return (
     <section id="about" className="py-20 md:py-24 px-6 relative overflow-hidden">
+      {/* Video background — hidden on mobile, ambient on tablet+ */}
+      <div className="absolute inset-0 hidden md:block">
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="w-full h-full object-cover object-center"
+          poster="/videos/hush-interior-poster.jpg"
+        >
+          <source src="/videos/hush-interior.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-background/85" />
+      </div>
+
       <div 
-        className="absolute top-0 right-0 w-[600px] h-[600px] opacity-15 pointer-events-none blur-3xl"
+        className="absolute top-0 right-0 w-[600px] h-[600px] opacity-15 pointer-events-none blur-3xl md:hidden"
         style={{ background: "radial-gradient(circle, hsl(38 50% 55% / 0.25), transparent 70%)" }}
       />
 
