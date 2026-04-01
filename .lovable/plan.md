@@ -1,3 +1,4 @@
+
 # Research-Driven Hub Optimization — Phase 1
 
 Based on the Perplexity deep research, here are the highest-ROI changes we can ship now — no external assets or integrations needed.
