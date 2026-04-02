@@ -1,10 +1,17 @@
-# KB12 — Luna Recommendation Engine
+# KB12 — Luna Recommendation Engine (DEPRECATED)
+
+> ⚠️ **INTERNAL REFERENCE ONLY — Updated April 2026**
+>
+> **Luna does NOT use this document to recommend specific artists.** All artist matching for multi-provider services (hair, nails, general skincare) is handled by the front desk team, led by Kendell Barraza. Luna only names single-provider specialists factually (Allison for lashes, Tammi for massage, Patty for microneedling/spray tan).
+>
+> This document is preserved for internal team reference only.
+
 ## Cross-Stylist Intelligence · Matching Logic · Fallback Rules · Multi-Option Framing
-### The document that makes Luna sound like: "Based on what you're describing..."
+### Historical reference — Luna no longer uses the matching matrix below
 
 ---
 
-> **Purpose:** This is the decision layer that sits above the individual team profiles in KB11. It tells Luna HOW to compare stylists, WHEN to name one vs. offer options, WHAT to say when multiple people are equally strong, and HOW to handle every edge case without bias or favoritism. This is the engine. KB11 is the fuel.
+> **Original Purpose:** This was the decision layer that sat above the individual team profiles in KB11. It told Luna HOW to compare stylists, WHEN to name one vs. offer options. **This logic has been retired to avoid AI bias in artist recommendations.**
 
 ---
 

@@ -15,33 +15,8 @@ export interface LunaRecommendation {
   priceRange: string | null;
 }
 
-// Artist mapping by category for deterministic recommendations
-const artistsByCategory: Record<ServiceCategoryId, { name: string; specialty: string }[]> = {
-  hair: [
-    { name: "Michelle Yrigolla", specialty: "Master Stylist & Color Educator" },
-    { name: "Silviya Warren", specialty: "High Fashion Color" },
-    { name: "Whitney Hernandez", specialty: "Dimensional Blondes & Updos" },
-    { name: "Charly Camano", specialty: "Color & Waves" },
-    { name: "Melissa Brunty", specialty: "Extensions & Long Hair" },
-    { name: "Ana Moreno", specialty: "Color, Cuts & Styling" },
-  ],
-  nails: [
-    { name: "Anita Apodaca", specialty: "Nail Tech & Educator" },
-    { name: "Kelly Vishnevetsky", specialty: "Pedicures & Extensions" },
-    { name: "Jackie", specialty: "Nail Art & Extensions" },
-  ],
-  lashes: [
-    { name: "Allison Griessel", specialty: "Creative Color, Esthetics & Lashes" },
-  ],
-  skincare: [
-    { name: "Patty", specialty: "Facials & Skincare" },
-    { name: "Lori", specialty: "Facials & Skincare" },
-    { name: "Allison Griessel", specialty: "Creative Color & Esthetics" },
-  ],
-  massage: [
-    { name: "Tammi", specialty: "Massage Therapist" },
-  ],
-};
+// Artist recommendations removed — Luna no longer recommends specific stylists
+// Single-provider services are handled factually in the system prompt
 
 // Goal-based service suggestions per category
 const goalServiceMap: Record<string, Record<ServiceCategoryId, string>> = {
@@ -202,28 +177,10 @@ export function generateChatResponse(message: string, context: ConciergeContext 
   try {
     const lower = (message || "").toLowerCase();
 
-    // Team Compare mode — comparison-first responses
+    // Team Compare mode removed — Luna no longer recommends specific artists
+    // Guide guests to the front desk for personalized matching
     if (context?.source === "Team Compare") {
-      const categoryId = context.categories?.[0];
-      const artists = categoryId ? artistsByCategory[categoryId] : [];
-      const viewedName = context.group || "";
-
-      if (lower.includes("compare") || lower.includes("differ") || lower.includes("which")) {
-        const list = artists.map(a => `**${a.name}** — ${a.specialty}`).join("\n");
-        return `You have a few strong options here. Here's how they compare:\n\n${list}\n\nAre you looking for something bold or lower-maintenance? That'll help me narrow it down.`;
-      }
-
-      if (viewedName) {
-        const viewed = artists.find(a => a.name === viewedName);
-        if (viewed) {
-          const others = artists.filter(a => a.name !== viewedName).slice(0, 2);
-          const othersStr = others.map(a => `**${a.name}** (${a.specialty})`).join(" and ");
-          return `I see you were looking at **${viewed.name}** — they're known for ${viewed.specialty.toLowerCase()}. You might also consider ${othersStr}. What matters most to you — artistry, comfort, or a specific look?`;
-        }
-      }
-
-      const list = artists.map(a => `**${a.name}** — ${a.specialty}`).join("\n");
-      return `You have a few strong options here. I can help you compare them:\n\n${list}\n\nDo you already have someone in mind, or are you open?`;
+      return "Our team has stylists with a wide range of specialties — from vivid color to precision blonding, extensions, curly hair, and more. The front desk team knows everyone's strengths and will match you perfectly. Call (520) 327-6753 or let me help connect you!";
     }
 
     // If we have context with categories, generate smart responses
