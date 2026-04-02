@@ -15,33 +15,8 @@ export interface LunaRecommendation {
   priceRange: string | null;
 }
 
-// Artist mapping by category for deterministic recommendations
-const artistsByCategory: Record<ServiceCategoryId, { name: string; specialty: string }[]> = {
-  hair: [
-    { name: "Michelle Yrigolla", specialty: "Master Stylist & Color Educator" },
-    { name: "Silviya Warren", specialty: "High Fashion Color" },
-    { name: "Whitney Hernandez", specialty: "Dimensional Blondes & Updos" },
-    { name: "Charly Camano", specialty: "Color & Waves" },
-    { name: "Melissa Brunty", specialty: "Extensions & Long Hair" },
-    { name: "Ana Moreno", specialty: "Color, Cuts & Styling" },
-  ],
-  nails: [
-    { name: "Anita Apodaca", specialty: "Nail Tech & Educator" },
-    { name: "Kelly Vishnevetsky", specialty: "Pedicures & Extensions" },
-    { name: "Jackie", specialty: "Nail Art & Extensions" },
-  ],
-  lashes: [
-    { name: "Allison Griessel", specialty: "Creative Color, Esthetics & Lashes" },
-  ],
-  skincare: [
-    { name: "Patty", specialty: "Facials & Skincare" },
-    { name: "Lori", specialty: "Facials & Skincare" },
-    { name: "Allison Griessel", specialty: "Creative Color & Esthetics" },
-  ],
-  massage: [
-    { name: "Tammi", specialty: "Massage Therapist" },
-  ],
-};
+// Artist recommendations removed — Luna no longer recommends specific stylists
+// Single-provider services are handled factually in the system prompt
 
 // Goal-based service suggestions per category
 const goalServiceMap: Record<string, Record<ServiceCategoryId, string>> = {
