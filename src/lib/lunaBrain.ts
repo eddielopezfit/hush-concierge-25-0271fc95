@@ -177,28 +177,10 @@ export function generateChatResponse(message: string, context: ConciergeContext 
   try {
     const lower = (message || "").toLowerCase();
 
-    // Team Compare mode — comparison-first responses
+    // Team Compare mode removed — Luna no longer recommends specific artists
+    // Guide guests to the front desk for personalized matching
     if (context?.source === "Team Compare") {
-      const categoryId = context.categories?.[0];
-      const artists = categoryId ? artistsByCategory[categoryId] : [];
-      const viewedName = context.group || "";
-
-      if (lower.includes("compare") || lower.includes("differ") || lower.includes("which")) {
-        const list = artists.map(a => `**${a.name}** — ${a.specialty}`).join("\n");
-        return `You have a few strong options here. Here's how they compare:\n\n${list}\n\nAre you looking for something bold or lower-maintenance? That'll help me narrow it down.`;
-      }
-
-      if (viewedName) {
-        const viewed = artists.find(a => a.name === viewedName);
-        if (viewed) {
-          const others = artists.filter(a => a.name !== viewedName).slice(0, 2);
-          const othersStr = others.map(a => `**${a.name}** (${a.specialty})`).join(" and ");
-          return `I see you were looking at **${viewed.name}** — they're known for ${viewed.specialty.toLowerCase()}. You might also consider ${othersStr}. What matters most to you — artistry, comfort, or a specific look?`;
-        }
-      }
-
-      const list = artists.map(a => `**${a.name}** — ${a.specialty}`).join("\n");
-      return `You have a few strong options here. I can help you compare them:\n\n${list}\n\nDo you already have someone in mind, or are you open?`;
+      return "Our team has stylists with a wide range of specialties — from vivid color to precision blonding, extensions, curly hair, and more. The front desk team knows everyone's strengths and will match you perfectly. Call (520) 327-6753 or let me help connect you!";
     }
 
     // If we have context with categories, generate smart responses
