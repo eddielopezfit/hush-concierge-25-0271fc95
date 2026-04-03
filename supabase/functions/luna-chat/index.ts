@@ -81,11 +81,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Build system prompt with journey context
-    let systemPrompt = SYSTEM_PROMPT;
-    if (journeyContext) {
-      systemPrompt += `\n\n## CURRENT USER JOURNEY\n${journeyContext}`;
-    }
+    // Build system prompt from canonical shared brain
+    const systemPrompt = buildChatSystemPrompt(journeyContext);
 
     // Find the latest user message for persistence
     const lastUserMessage = [...messages].reverse().find((m) => m.role === "user");
