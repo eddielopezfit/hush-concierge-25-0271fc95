@@ -115,9 +115,7 @@ export const ServicesSection = () => {
             viewport={{ once: true, margin: "-100px" }}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6"
           >
-            {services.slice(0, 3).map((service) => (
-              <ServiceCard key={service.title} service={service} onViewMenu={handleViewMenu} onCardClick={handleCardClick} getPricePreview={getPricePreview} />
-            ))}
+            {services.slice(0, 3).map((service) => renderCard(service))}
           </motion.div>
 
           {/* Bottom row: 2 cards centered */}
@@ -126,51 +124,9 @@ export const ServicesSection = () => {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
-            className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-[calc(66.666%+0.75rem)] mx-auto"
+            className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:max-w-[calc(66.666%+0.75rem)] mx-auto"
           >
-            {services.map((service) => (
-              <motion.div
-                key={service.title}
-                variants={cardVariants}
-                onClick={() => handleCardClick(service.id)}
-                className="group card-luxury rounded-lg overflow-hidden cursor-pointer"
-              >
-                <div className="relative h-44 overflow-hidden">
-                  <img
-                    src={service.image}
-                    alt={service.title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
-                  <div className="absolute bottom-4 left-4">
-                    <service.icon className="w-7 h-7 text-gold" />
-                  </div>
-                </div>
-
-                <div className="p-6">
-                  <h3 className="font-display text-2xl text-cream mb-2 group-hover:text-gold transition-colors">
-                    {service.title}
-                  </h3>
-                  <p className="font-body text-sm text-gold/70 mb-3">
-                    {getPricePreview(service.id)}
-                  </p>
-                  <p className="font-body text-muted-foreground text-sm leading-relaxed mb-3">
-                    {service.description}
-                  </p>
-                  {service.testimonial && (
-                    <p className="font-body text-[11px] text-cream/50 italic leading-relaxed mb-3">
-                      "{service.testimonial.text}" — <span className="text-gold/50 not-italic">{service.testimonial.author}</span>
-                    </p>
-                  )}
-                  <button
-                    onClick={(e) => handleViewMenu(service.id, e)}
-                    className="mt-1 font-body text-sm text-muted-foreground hover:text-gold transition-colors underline underline-offset-4 w-full text-center block"
-                  >
-                    View full menu & pricing
-                  </button>
-                </div>
-              </motion.div>
-            ))}
+            {services.slice(3).map((service) => renderCard(service))}
           </motion.div>
         </div>
       </section>
