@@ -1,8 +1,10 @@
 import { useEffect } from "react";
 import { Navigation } from "@/components/Navigation";
 import { HeroSection } from "@/components/HeroSection";
+import { TrustBar } from "@/components/TrustBar";
 import { ExperienceFinderSection } from "@/components/ExperienceFinderSection";
 import { ServicesSection } from "@/components/ServicesSection";
+import { InlineCallbackCTA } from "@/components/InlineCallbackCTA";
 import { ArtistsSection } from "@/components/ArtistsSection";
 import { BuildExperienceSection } from "@/components/BuildExperienceSection";
 import { TestimonialsSection } from "@/components/TestimonialsSection";
