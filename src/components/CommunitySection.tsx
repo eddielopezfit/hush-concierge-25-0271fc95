@@ -11,8 +11,8 @@ const perks = [
   },
   {
     icon: Crown,
-    title: "Priority Booking",
-    description: "Inner Circle members get early access to new openings and peak-time slots."
+    title: "Insider Access",
+    description: "Stay in the loop on new services, seasonal specials, and exclusive offers before anyone else."
   },
   {
     icon: Heart,

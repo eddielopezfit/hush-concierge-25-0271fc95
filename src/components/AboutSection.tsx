@@ -42,7 +42,7 @@ export const AboutSection = () => {
 
             <div className="mt-10 flex flex-wrap gap-8">
               <div className="text-center">
-                <div className="font-display text-4xl text-gold mb-1">23+</div>
+                <div className="font-display text-4xl text-gold mb-1">24+</div>
                 <div className="text-sm text-muted-foreground uppercase tracking-wider">Years</div>
               </div>
               <div className="text-center">

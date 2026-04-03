@@ -112,7 +112,7 @@ export const ServicesSection = () => {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 [&>*:nth-child(n+4)]:lg:col-span-1 [&>*:nth-child(4)]:lg:col-start-1 lg:[&>*:nth-last-child(2)]:justify-self-end lg:[&>*:last-child]:justify-self-start"
           >
             {services.map((service) => (
               <motion.div

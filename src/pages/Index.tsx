@@ -27,6 +27,10 @@ const Index = () => {
 
   return (
     <main className="bg-background min-h-screen overflow-x-hidden pb-24 md:pb-0">
+      {/* Skip navigation for accessibility */}
+      <a href="#experience-finder" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:bg-primary focus:text-primary-foreground focus:px-4 focus:py-2 focus:rounded-lg font-body text-sm">
+        Skip to main content
+      </a>
       <Navigation />
       {/* 1. Hero — value prop + dual CTA */}
       <HeroSection />
