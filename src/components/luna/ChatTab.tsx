@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Mic, Send, Loader2, ArrowRight, Sparkles, ExternalLink, Phone, Calendar, ChevronRight } from "lucide-react";
+import { Mic, Send, Loader2, ArrowRight, Sparkles, ExternalLink, Phone, Calendar, ChevronRight, RotateCcw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getJourneyContextString } from "@/lib/journeyTracker";
 import { getConciergeContext } from "@/lib/conciergeStore";
@@ -25,6 +25,25 @@ interface ChatAction {
 }
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/luna-chat`;
+
+// Known error fallback phrases used to detect error responses
+const ERROR_PHRASES = [
+  "having trouble connecting",
+  "give me just a moment and try again",
+];
+
+function isErrorResponse(content: string): boolean {
+  const lower = content.toLowerCase();
+  return ERROR_PHRASES.some(p => lower.includes(p));
+}
+
+// ── Error-specific quick replies ────────────────────────────────────────────
+const ERROR_QUICK_REPLIES = [
+  "Try again",
+  "Call (520) 327-6753",
+  "Browse services",
+  "Help me choose",
+];
 
 // ── Context-aware greeting builder ──────────────────────────────────────────
 function buildContextGreeting(ctx: ConciergeContext | null): string {
@@ -104,26 +123,26 @@ function getQuickReplies(ctx: ConciergeContext | null, lastAssistantMsg: string)
 
   // Contextual variants based on conversation state
   if (lower.includes("price") || lower.includes("cost") || lower.includes("pricing")) {
-    return ["Book my appointment", "What affects price?", "Help me choose", "Talk to someone"];
+    return ["Book my appointment", "What affects price?", "Help me choose", "Call the front desk"];
   }
   if (lower.includes("stylist") || lower.includes("artist") || lower.includes("specialist")) {
-    return ["Book my appointment", "Help me choose a service", "See pricing", "Talk to someone"];
+    return ["Book my appointment", "Help me choose a service", "See pricing", "Call the front desk"];
   }
   if (lower.includes("event") || lower.includes("wedding") || lower.includes("occasion")) {
-    return ["Plan my full look", "Book my appointment", "See pricing", "Talk to someone"];
+    return ["Plan my full look", "Book my appointment", "See pricing", "Call the front desk"];
   }
   if (lower.includes("option") || lower.includes("explore") || lower.includes("browse")) {
-    return ["Show me options", "Book my appointment", "See pricing", "Talk to someone"];
+    return ["Show me options", "Book my appointment", "See pricing", "Call the front desk"];
   }
   if (lower.includes("recommend") || lower.includes("suggest")) {
-    return ["Book that service", "Tell me more", "See pricing", "Talk to someone"];
+    return ["Book that service", "Tell me more", "See pricing", "Call the front desk"];
   }
   if (lower.includes("ready") || lower.includes("lock") || lower.includes("reserve") || lower.includes("book")) {
     return ["Reserve my experience", "Get a quick call back", "Help me choose", "See pricing"];
   }
 
   // Default persistent set
-  return ["Book my appointment", "Help me choose", "See pricing", "Talk to someone"];
+  return ["Book my appointment", "Help me choose", "See pricing", "Call the front desk"];
 }
 
 // ── Detect intent from assistant message for in-chat CTAs ───────────────────
@@ -303,6 +322,7 @@ export const ChatTab = () => {
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [userMessageCount, setUserMessageCount] = useState(0);
+  const [successfulExchangeCount, setSuccessfulExchangeCount] = useState(0);
   const [leadCaptured, setLeadCaptured] = useState(false);
   const [showLeadForm, setShowLeadForm] = useState(false);
   const [leadDismissed, setLeadDismissed] = useState(false);
@@ -316,18 +336,31 @@ export const ChatTab = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
+  // ── Reset / New conversation ────────────────────────────────────────────────
+  const resetChat = useCallback(() => {
+    const ctx = conciergeContext;
+    const greeting = buildContextGreeting(ctx);
+    setMessages([{ id: "greeting", role: "assistant", content: greeting }]);
+    setInput("");
+    setUserMessageCount(0);
+    setSuccessfulExchangeCount(0);
+    setLeadCaptured(false);
+    setShowLeadForm(false);
+    setLeadDismissed(false);
+    setLeadName("");
+    setLeadPhone("");
+    setContextPills(getContextPills(ctx));
+    setSmartChips(getSmartChips(ctx));
+    setQuickReplies(getQuickReplies(ctx, greeting));
+  }, [conciergeContext]);
+
   // Build contextual greeting + chips on first render using live context
   useEffect(() => {
     if (initialized) return;
     const ctx = conciergeContext;
     const greeting = buildContextGreeting(ctx);
-    const greetingActions = ctx?.categories?.length
-      ? [
-          { label: "Build my personalized plan", type: "tab" as const, target: "plan" },
-          { label: "See our team", type: "tab" as const, target: "artists" },
-        ]
-      : [];
-    setMessages([{ id: "greeting", role: "assistant", content: greeting, actions: greetingActions }]);
+    // No greeting action buttons — smart chips handle initial guidance
+    setMessages([{ id: "greeting", role: "assistant", content: greeting }]);
     setContextPills(getContextPills(ctx));
     setSmartChips(getSmartChips(ctx));
     setQuickReplies(getQuickReplies(ctx, greeting));
@@ -358,10 +391,18 @@ export const ChatTab = () => {
       const el = document.getElementById(action.target);
       if (el) el.scrollIntoView({ behavior: "smooth" });
     } else if (action.type === "tab" && action.target) {
-      // Navigate to a different tab in the widget
       const tabEvent = new CustomEvent("luna-switch-tab", { detail: action.target });
       window.dispatchEvent(tabEvent);
     }
+  }, []);
+
+  // ── Handle "Call the front desk" quick reply specially ─────────────────────
+  const handleQuickReply = useCallback((reply: string) => {
+    if (reply === "Call the front desk" || reply === "Call (520) 327-6753") {
+      window.open("tel:+15203276753", "_self");
+      return;
+    }
+    handleSendInternal(reply);
   }, []);
 
   const streamChat = useCallback(async (allMessages: ChatMessage[]) => {
@@ -388,10 +429,12 @@ export const ChatTab = () => {
 
       if (!resp.ok || !resp.body) {
         if (resp.status === 429) {
+          const errorContent = "I'm getting a lot of questions right now — give me just a moment and try again!";
           setMessages((prev) => [
             ...prev,
-            { id: `err-${Date.now()}`, role: "assistant", content: "I'm getting a lot of questions right now — give me just a moment and try again!" },
+            { id: `err-${Date.now()}`, role: "assistant", content: errorContent },
           ]);
+          setQuickReplies(ERROR_QUICK_REPLIES);
           setIsStreaming(false);
           return;
         }
@@ -469,23 +512,25 @@ export const ChatTab = () => {
       );
       setQuickReplies(getQuickReplies(conciergeContext, assistantContent));
 
+      // Count as a successful exchange (for lead form timing)
+      setSuccessfulExchangeCount(prev => prev + 1);
+
     } catch (err: any) {
       if (err?.name === "AbortError") return;
       console.error("[ChatTab] Stream error:", err);
+      const errorContent = "I'm having trouble connecting right now. You can always call us directly at (520) 327-6753 — Kendell at the front desk will take great care of you!";
       setMessages((prev) => [
         ...prev,
-        {
-          id: `err-${Date.now()}`,
-          role: "assistant",
-          content: "I'm having trouble connecting right now. You can always call us directly at (520) 327-6753 — Kendell at the front desk will take great care of you!",
-        },
+        { id: `err-${Date.now()}`, role: "assistant", content: errorContent },
       ]);
+      // Show error-specific quick replies instead of generic ones
+      setQuickReplies(ERROR_QUICK_REPLIES);
     } finally {
       setIsStreaming(false);
     }
   }, [conciergeContext]);
 
-  const handleSend = useCallback(
+  const handleSendInternal = useCallback(
     (text?: string) => {
       const msg = text || input.trim();
       if (!msg || isStreaming) return;
@@ -499,11 +544,17 @@ export const ChatTab = () => {
 
       streamChat(newMessages.filter((m) => m.id !== "greeting"));
 
-      if (newCount >= 4 && !leadCaptured && !showLeadForm && !leadDismissed) {
+      // Use successfulExchangeCount for lead form trigger, not raw message count
+      if (successfulExchangeCount >= 3 && !leadCaptured && !showLeadForm && !leadDismissed) {
         setTimeout(() => setShowLeadForm(true), 3000);
       }
     },
-    [input, isStreaming, messages, userMessageCount, leadCaptured, showLeadForm, leadDismissed, streamChat]
+    [input, isStreaming, messages, userMessageCount, successfulExchangeCount, leadCaptured, showLeadForm, leadDismissed, streamChat]
+  );
+
+  const handleSend = useCallback(
+    (text?: string) => handleSendInternal(text),
+    [handleSendInternal]
   );
 
   const handleLeadSubmit = async () => {
@@ -540,10 +591,10 @@ export const ChatTab = () => {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Context Bar */}
-      {contextPills.length > 0 && (
-        <div className="px-3 py-2 border-b border-border bg-background/30">
-          <div className="flex items-center gap-1.5 flex-wrap">
+      {/* Context Bar + New Conversation */}
+      <div className="px-3 py-2 border-b border-border bg-background/30 flex items-center justify-between gap-2">
+        {contextPills.length > 0 ? (
+          <div className="flex items-center gap-1.5 flex-wrap flex-1 min-w-0">
             <span className="text-[10px] font-body text-muted-foreground mr-0.5">You're exploring:</span>
             {contextPills.map((pill, i) => (
               <span
@@ -554,8 +605,21 @@ export const ChatTab = () => {
               </span>
             ))}
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="flex-1" />
+        )}
+        {/* New conversation button */}
+        {messages.length > 1 && (
+          <button
+            onClick={resetChat}
+            className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-body text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors flex-shrink-0"
+            title="New conversation"
+          >
+            <RotateCcw className="w-3 h-3" />
+            New chat
+          </button>
+        )}
+      </div>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
@@ -650,7 +714,7 @@ export const ChatTab = () => {
             {quickReplies.map((reply) => (
               <button
                 key={reply}
-                onClick={() => handleSend(reply)}
+                onClick={() => handleQuickReply(reply)}
                 className="px-3 py-2 rounded-full border border-primary/25 text-primary text-xs font-body font-medium hover:bg-primary/10 active:scale-95 transition-all"
               >
                 {reply}
