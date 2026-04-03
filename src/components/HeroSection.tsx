@@ -17,30 +17,38 @@ export const HeroSection = () => {
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Video (desktop/tablet) + Image fallback (mobile) */}
       <div className="absolute inset-0 z-0 overflow-hidden bg-background">
-        {/* Desktop/tablet — full-res video */}
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="auto"
-          poster={heroImage}
-          className="absolute inset-0 h-full w-full object-cover object-[center_30%] hidden sm:block"
+        {/* Ken Burns slow zoom wrapper */}
+        <motion.div
+          initial={{ scale: 1 }}
+          animate={{ scale: 1.08 }}
+          transition={{ duration: 20, ease: "easeInOut", repeat: Infinity, repeatType: "reverse" }}
+          className="absolute inset-0"
         >
-          <source src="/videos/hero-backdrop.mp4" type="video/mp4" />
-        </video>
-        {/* Mobile — compressed smaller video for cellular data */}
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="auto"
-          poster={heroImage}
-          className="absolute inset-0 h-full w-full object-cover object-[center_30%] sm:hidden"
-        >
-          <source src="/videos/hero-backdrop-mobile.mp4" type="video/mp4" />
-        </video>
+          {/* Desktop/tablet — full-res video */}
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
+            poster={heroImage}
+            className="absolute inset-0 h-full w-full object-cover object-[center_30%] hidden sm:block"
+          >
+            <source src="/videos/hero-backdrop.mp4" type="video/mp4" />
+          </video>
+          {/* Mobile — compressed smaller video */}
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
+            poster={heroImage}
+            className="absolute inset-0 h-full w-full object-cover object-[center_30%] sm:hidden"
+          >
+            <source src="/videos/hero-backdrop-mobile.mp4" type="video/mp4" />
+          </video>
+        </motion.div>
         {/* Multi-layer overlay for text readability */}
         <div className="absolute inset-0 bg-background/50" />
         <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/40 to-background/85" />
