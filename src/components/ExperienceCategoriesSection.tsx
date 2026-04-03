@@ -21,25 +21,25 @@ const categories: Category[] = [
     id: "nails",
     name: "Nails",
     icon: Sparkles,
-    subcategories: ["Classic Manicure", "Gel Manicure", "Classic Pedicure", "Gel Pedicure", "Nail Art", "Dip Powder"]
+    subcategories: ["Classic Manicure", "Gel Manicure", "Classic Pedicure", "Gel Pedicure", "Nail Set", "Nail Set w/Gel"]
   },
   {
     id: "lashes",
     name: "Lashes",
     icon: Eye,
-    subcategories: ["Classic Full Set", "Volume Full Set", "Hybrid Set", "Lash Fill", "Lash Lift & Tint", "Brow Lamination"]
+    subcategories: ["Classic Full Set", "Volume Full Set", "Hybrid Set", "Lash Fill", "Lash Lift & Perm", "Lash Tint"]
   },
   {
     id: "skincare",
     name: "Skincare & Spray Tan",
     icon: Droplets,
-    subcategories: ["Signature Facial", "HydraFacial", "Chemical Peel", "Dermaplaning", "Spray Tan", "LED Therapy"]
+    subcategories: ["Signature Facial", "HydraFacial", "Dermaplaning", "Microneedling", "Spray Tan", "Brow Wax"]
   },
   {
     id: "massage",
     name: "Massage",
     icon: Heart,
-    subcategories: ["Swedish Massage", "Deep Tissue", "Hot Stone", "Aromatherapy", "Couples Massage", "Prenatal"]
+    subcategories: ["60 min Massage", "90 min Massage", "120 min Massage"]
   }
 ];
 
