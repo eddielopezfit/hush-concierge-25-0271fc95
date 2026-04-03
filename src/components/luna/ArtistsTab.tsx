@@ -1,5 +1,6 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
+import { ArrowLeft, Sparkles, Phone } from "lucide-react";
 import { teamMembers, photoMap, getBookableArtists, departmentLabels, TeamMember } from "@/data/teamData";
 
 const departments = ["All", "Hair", "Nails", "Skincare", "Lashes", "Massage"];
@@ -19,11 +20,109 @@ interface ArtistsTabProps {
 
 export const ArtistsTab = ({ onSwitchTab }: ArtistsTabProps) => {
   const [filter, setFilter] = useState("All");
+  const [selectedArtist, setSelectedArtist] = useState<TeamMember | null>(null);
 
   const bookable = getBookableArtists();
   const filtered = filter === "All"
     ? bookable
     : bookable.filter(a => a.department === departmentFilterMap[filter]);
+
+  // Inline detail view
+  if (selectedArtist) {
+    const deptLabel = departmentLabels[selectedArtist.department] || selectedArtist.department;
+    return (
+      <div className="flex flex-col h-full">
+        {/* Back header */}
+        <button
+          onClick={() => setSelectedArtist(null)}
+          className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-body text-muted-foreground hover:text-foreground transition-colors border-b border-border"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          Back to artists
+        </button>
+
+        <div className="flex-1 overflow-y-auto px-4 py-4">
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col items-center text-center space-y-3"
+          >
+            {/* Photo */}
+            <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-primary/30 flex-shrink-0">
+              {photoMap[selectedArtist.id] ? (
+                <img src={photoMap[selectedArtist.id]} alt={selectedArtist.name} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-secondary flex items-center justify-center">
+                  <span className="font-display text-2xl text-primary">{selectedArtist.name.charAt(0)}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Name & title */}
+            <div>
+              <h3 className="font-display text-lg text-foreground">{selectedArtist.name}</h3>
+              <p className="text-[11px] font-body text-primary">{selectedArtist.specialty}</p>
+              <span className="text-[10px] font-body text-muted-foreground">{deptLabel}</span>
+            </div>
+
+            {/* Legacy bio */}
+            {selectedArtist.legacyBio && (
+              <p className="text-xs font-body text-foreground/70 italic leading-relaxed border-l-2 border-primary/30 pl-3 text-left">
+                {selectedArtist.legacyBio}
+              </p>
+            )}
+
+            {/* Short description fallback */}
+            {!selectedArtist.legacyBio && (
+              <p className="text-xs font-body text-muted-foreground">{selectedArtist.description}</p>
+            )}
+
+            {/* Known for tags */}
+            {selectedArtist.knownFor.length > 0 && (
+              <div className="w-full bg-primary/5 border border-primary/10 rounded-lg p-2.5">
+                <p className="text-[9px] font-body text-primary uppercase tracking-wider mb-1.5">Known for</p>
+                <div className="flex flex-wrap justify-center gap-1">
+                  {selectedArtist.knownFor.map(tag => (
+                    <span key={tag} className="text-[10px] font-body text-primary/80 bg-primary/8 border border-primary/15 px-2 py-0.5 rounded-full">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Fit statement */}
+            {selectedArtist.fitStatement && (
+              <p className="text-[11px] font-body text-muted-foreground italic">
+                {selectedArtist.fitStatement}
+              </p>
+            )}
+
+            {/* CTAs */}
+            <div className="w-full space-y-2 pt-1">
+              <button
+                onClick={() => {
+                  const callbackSection = document.getElementById("callback");
+                  if (callbackSection) callbackSection.scrollIntoView({ behavior: "smooth" });
+                }}
+                className="w-full flex items-center justify-center gap-2 text-xs font-body py-2.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                Book with {selectedArtist.name.split(" ")[0]}
+              </button>
+              <a
+                href="tel:+15203276753"
+                className="w-full flex items-center justify-center gap-1.5 text-[11px] font-body text-muted-foreground hover:text-foreground transition-colors py-1.5"
+              >
+                <Phone className="w-3 h-3" />
+                Call front desk for matching
+              </a>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full">
@@ -64,7 +163,7 @@ export const ArtistsTab = ({ onSwitchTab }: ArtistsTabProps) => {
                     <img src={photoMap[artist.id]} alt={artist.name} className="w-full h-full object-cover" loading="lazy" />
                   ) : (
                     <div className="w-full h-full bg-secondary flex items-center justify-center">
-                      <span className="font-display text-lg text-gold">{artist.name.charAt(0)}</span>
+                      <span className="font-display text-lg text-primary">{artist.name.charAt(0)}</span>
                     </div>
                   )}
                 </div>
@@ -90,10 +189,7 @@ export const ArtistsTab = ({ onSwitchTab }: ArtistsTabProps) => {
                   Book
                 </button>
                 <button
-                  onClick={() => {
-                    const artistsSection = document.getElementById("artists");
-                    if (artistsSection) artistsSection.scrollIntoView({ behavior: "smooth" });
-                  }}
+                  onClick={() => setSelectedArtist(artist)}
                   className="flex-1 text-xs font-body py-2 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-primary/30 transition-colors"
                 >
                   Full Profile
