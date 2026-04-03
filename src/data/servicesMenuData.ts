@@ -141,7 +141,7 @@ export const servicesMenuData: ServiceCategory[] = [
     notes: ["Please allow 24 hrs. for cancellations."],
     directContacts: [
       { name: "Anita", phone: "(520) 591-0208" },
-      { name: "Kelly", phone: "(520) 488-7149" },
+      { name: "Kelli", phone: "(520) 488-7149" },
       { name: "Jackie", phone: "(520) 501-6861" },
     ],
   },
