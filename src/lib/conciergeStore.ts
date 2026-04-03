@@ -1,9 +1,20 @@
 import { ConciergeContext } from "@/types/concierge";
 
 const STORAGE_KEY = "hush_concierge_context";
+const STORAGE_KEY_TIMESTAMP = "hush_concierge_context_ts";
+const TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 export const getConciergeContext = (): ConciergeContext | null => {
   try {
+    const timestamp = localStorage.getItem(STORAGE_KEY_TIMESTAMP);
+    if (timestamp) {
+      const age = Date.now() - parseInt(timestamp, 10);
+      if (age > TTL_MS) {
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(STORAGE_KEY_TIMESTAMP);
+        return null;
+      }
+    }
     const stored = localStorage.getItem(STORAGE_KEY);
     if (!stored) return null;
     return JSON.parse(stored) as ConciergeContext;
@@ -15,6 +26,7 @@ export const getConciergeContext = (): ConciergeContext | null => {
 export const setConciergeContext = (ctx: ConciergeContext): void => {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(ctx));
+    localStorage.setItem(STORAGE_KEY_TIMESTAMP, Date.now().toString());
   } catch {
     console.error("Failed to save concierge context");
   }
@@ -23,6 +35,7 @@ export const setConciergeContext = (ctx: ConciergeContext): void => {
 export const clearConciergeContext = (): void => {
   try {
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(STORAGE_KEY_TIMESTAMP);
   } catch {
     console.error("Failed to clear concierge context");
   }
