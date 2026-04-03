@@ -27,7 +27,7 @@ const services = [
     title: "Skincare & Spray Tan",
     description: "Results-driven facials, peels, and a sun-kissed glow — your skin will thank you.",
     image: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80",
-    testimonial: null,
+    testimonial: { text: "Patty's facials are incredible. My skin has never looked this good.", author: "Sarah M." },
   },
   {
     icon: Eye,
