@@ -13,6 +13,7 @@ interface ExperienceRevealCardProps {
 
 export const ExperienceRevealCard = ({ data, onBook }: ExperienceRevealCardProps) => {
   const { conciergeContext } = useLuna();
+  const topUpsells = getUpsells(conciergeContext, 2);
   return (
     <motion.div
       initial={{ opacity: 0, y: 30, scale: 0.97 }}
