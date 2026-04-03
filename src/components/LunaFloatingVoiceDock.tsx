@@ -122,11 +122,24 @@ export const LunaFloatingVoiceDock = () => {
 
   const stopConversation = useCallback(async () => {
     console.log("[LunaFloatingDock] Ending session");
-    await conversation.endSession();
+    if (connectTimeoutRef.current) {
+      clearTimeout(connectTimeoutRef.current);
+      connectTimeoutRef.current = null;
+    }
+    // If still connecting (not yet connected), just reset state directly
+    if (isConnecting && conversation.status !== "connected") {
+      cancelConnection();
+      return;
+    }
+    try {
+      await conversation.endSession();
+    } catch (e) {
+      console.warn("[LunaFloatingDock] endSession error (ignored):", e);
+    }
     endVoiceSession();
     setIsMuted(false);
     setIsMinimized(false);
-  }, [conversation]);
+  }, [conversation, isConnecting, cancelConnection]);
 
   // Listen for voice bus events — this is THE primary voice controller
   useEffect(() => {
