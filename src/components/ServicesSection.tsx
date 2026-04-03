@@ -10,35 +10,40 @@ const services = [
     id: "hair",
     title: "Hair",
     description: "Precision cuts, lived-in color, blonding, extensions — whatever your vision, we'll bring it to life.",
-    image: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80"
+    image: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80",
+    testimonial: { text: "Whitney is the best with blondes!! She nailed it.", author: "Andrea M." },
   },
   {
     icon: Hand,
     id: "nails",
     title: "Nails",
     description: "From clean classics to creative nail art. Walk out feeling polished and put-together.",
-    image: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=800&q=80"
+    image: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=800&q=80",
+    testimonial: { text: "My nails have never looked this good. Clean, precise, and they actually last.", author: "Brianna L." },
   },
   {
     icon: Sparkles,
     id: "skincare",
     title: "Skincare & Spray Tan",
     description: "Results-driven facials, peels, and a sun-kissed glow — your skin will thank you.",
-    image: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80"
+    image: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80",
+    testimonial: null,
   },
   {
     icon: Eye,
     id: "lashes",
     title: "Lashes",
     description: "Subtle enhancement or full drama — lash extensions and lifts tailored to your eye shape.",
-    image: "https://images.unsplash.com/photo-1583001931096-959e9a1a6223?auto=format&fit=crop&w=800&q=80"
+    image: "https://images.unsplash.com/photo-1583001931096-959e9a1a6223?auto=format&fit=crop&w=800&q=80",
+    testimonial: { text: "Came in for lash extensions and left feeling like a whole new person.", author: "Taylor W." },
   },
   {
     icon: Heart,
     id: "massage",
     title: "Massage",
     description: "Deep tissue, hot stone, relaxation — leave feeling reset and completely renewed.",
-    image: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=800&q=80"
+    image: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=800&q=80",
+    testimonial: { text: "Best spa day I've ever had. The whole atmosphere melts your stress.", author: "Diana K." },
   },
 ];
 
