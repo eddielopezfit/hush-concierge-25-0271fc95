@@ -36,6 +36,8 @@ export interface TeamMember {
   /** "Known for" / "Guests often choose for" tags */
   knownFor: string[];
   badge?: string;
+  /** Rich personality bio from legacy site */
+  legacyBio?: string;
   /** Primary service category for concierge context */
   serviceCategory: ServiceCategoryId | null;
   /** Additional service categories this team member covers */
