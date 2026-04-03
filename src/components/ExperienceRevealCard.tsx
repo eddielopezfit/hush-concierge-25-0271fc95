@@ -1,9 +1,10 @@
 import { motion } from "framer-motion";
-import { Sparkles, Clock, DollarSign, Users } from "lucide-react";
+import { Sparkles, Clock, DollarSign, Users, Plus } from "lucide-react";
 import { RevealData } from "@/lib/experienceReveal";
 import { useLuna } from "@/contexts/LunaContext";
 import { getConciergeContext } from "@/lib/conciergeStore";
 import { BookingDecisionCard } from "@/components/BookingDecisionCard";
+import { getUpsells } from "@/lib/upsellEngine";
 
 interface ExperienceRevealCardProps {
   data: RevealData;
@@ -12,6 +13,7 @@ interface ExperienceRevealCardProps {
 
 export const ExperienceRevealCard = ({ data, onBook }: ExperienceRevealCardProps) => {
   const { conciergeContext } = useLuna();
+  const topUpsells = getUpsells(conciergeContext, 2);
   return (
     <motion.div
       initial={{ opacity: 0, y: 30, scale: 0.97 }}
@@ -56,6 +58,23 @@ export const ExperienceRevealCard = ({ data, onBook }: ExperienceRevealCardProps
               <span className="text-xs font-body text-cream">{data.priceRange}</span>
             </div>
           </motion.div>
+
+          {/* Upsell hints */}
+          {topUpsells.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="flex flex-wrap justify-center gap-2"
+            >
+              {topUpsells.map(u => (
+                <span key={u.name} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-gold/15 bg-gold/[0.04] text-[11px] font-body text-gold/80">
+                  <Plus className="w-3 h-3" />
+                  {u.name} {u.price}
+                </span>
+              ))}
+            </motion.div>
+          )}
 
           {/* Neutral artist matching message */}
           <motion.div
