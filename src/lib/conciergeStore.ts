@@ -8,6 +8,8 @@ import {
 
 // ── Storage keys ─────────────────────────────────────────────────────────────
 const STORAGE_KEY    = "hush_concierge_context";
+const STORAGE_TS_KEY = "hush_concierge_context_ts";
+const TTL_MS         = 24 * 60 * 60 * 1000; // 24 hours
 const REC_KEY        = "hush_luna_recommendation";
 const FIRST_NAME_KEY = "hush_guest_first_name";
 const SESSION_ID_KEY = "hush_session_id";
