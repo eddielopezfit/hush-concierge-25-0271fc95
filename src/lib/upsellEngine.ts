@@ -9,35 +9,33 @@ export interface UpsellItem {
 
 const upsellMap: Record<string, UpsellItem[]> = {
   "hair:color": [
-    { name: "Gloss Finish", price: "+$40", description: "Mirror-shine seal for lasting vibrancy", category: "hair" },
-    { name: "Deep Conditioning", price: "+$25", description: "Restore moisture after chemical services", category: "hair" },
+    { name: "Conditioning Treatment", price: "+$30", description: "Restore moisture after chemical services", category: "hair" },
+    { name: "Brazilian Blowout Split End Treatment", price: "+$55", description: "Seal and protect color-treated ends", category: "hair" },
   ],
   "hair:both": [
-    { name: "Gloss Finish", price: "+$40", description: "Mirror-shine seal for lasting vibrancy", category: "hair" },
-    { name: "Scalp Treatment", price: "+$25", description: "Detox and nourish from the root", category: "hair" },
+    { name: "Conditioning Treatment", price: "+$30", description: "Hydrate and protect between services", category: "hair" },
+    { name: "Luxury Wash and Blowout", price: "+$35", description: "Salon-perfect finish with styling", category: "hair" },
   ],
   "hair:cut": [
-    { name: "Luxury Blowout", price: "+$35", description: "Salon-perfect finish with styling", category: "hair" },
-    { name: "Scalp Treatment", price: "+$25", description: "Detox and nourish from the root", category: "hair" },
+    { name: "Luxury Wash and Blowout", price: "+$35", description: "Salon-perfect finish with styling", category: "hair" },
+    { name: "Added Heat Style", price: "+$15", description: "Flat iron or curling iron finish", category: "hair" },
   ],
   hair: [
-    { name: "Deep Conditioning", price: "+$25", description: "Hydrate and protect between services", category: "hair" },
-    { name: "Luxury Blowout", price: "+$35", description: "Salon-perfect finish with styling", category: "hair" },
+    { name: "Conditioning Treatment", price: "+$30", description: "Hydrate and protect between services", category: "hair" },
+    { name: "Luxury Wash and Blowout", price: "+$35", description: "Salon-perfect finish with styling", category: "hair" },
   ],
   nails: [
-    { name: "Gel Upgrade", price: "+$15", description: "Chip-free shine that lasts 2–3 weeks", category: "nails" },
-    { name: "Nail Art", price: "+$20", description: "Custom designs for a statement look", category: "nails" },
+    { name: "Gel Upgrade", price: "+$20", description: "Chip-free shine that lasts 2–3 weeks", category: "nails" },
   ],
   lashes: [
-    { name: "Lash Serum", price: "+$25", description: "Strengthen and condition natural lashes", category: "lashes" },
+    { name: "Lash or Brow Tint", price: "+$20", description: "Define and enhance your natural lashes or brows", category: "lashes" },
   ],
   massage: [
-    { name: "Hot Stones", price: "+$20", description: "Deep warmth for tension release", category: "massage" },
-    { name: "Aromatherapy", price: "+$15", description: "Custom essential oil blend for your session", category: "massage" },
+    { name: "Upgrade to 90 min", price: "+$35", description: "Extended session for deeper relaxation", category: "massage" },
   ],
   skincare: [
-    { name: "LED Light Therapy", price: "+$30", description: "Boost collagen and reduce inflammation", category: "skincare" },
-    { name: "Enzyme Peel Add-On", price: "+$25", description: "Gentle exfoliation for instant glow", category: "skincare" },
+    { name: "Brow Wax", price: "+$20", description: "Clean, shaped brows to complete your look", category: "skincare" },
+    { name: "Airbrush Spray Tan", price: "+$35", description: "Sun-kissed glow with no UV exposure", category: "skincare" },
   ],
 };
 

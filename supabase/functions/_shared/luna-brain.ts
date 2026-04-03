@@ -44,9 +44,11 @@ export const BRAIN_CONSTANTS = {
     "fantasy/vivid color", "extensions",
   ],
   servicesDoNotExist: [
-    "hot stone massage", "prenatal massage", "aromatherapy massage",
+    "hot stone massage", "prenatal massage", "aromatherapy",
     "body scrubs", "body wraps", "sauna", "steam", "pool",
     "couples massage", "fixed-price packages",
+    "LED light therapy", "enzyme peel", "scalp treatment",
+    "gloss finish", "nail art add-on", "lash serum treatment",
   ],
 } as const;
 
