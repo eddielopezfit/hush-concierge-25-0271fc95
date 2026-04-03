@@ -30,7 +30,7 @@ export const AboutSection = () => {
                 Hush with a simple idea: build a place where people feel taken care of.
               </p>
               <p>
-                23 years later, all three founders are still here — still behind the chair, 
+                24 years later, all three founders are still here — still behind the chair, 
                 still setting the standard, still building relationships that last. 
                 That consistency is rare. And it's what makes Hush different.
               </p>
