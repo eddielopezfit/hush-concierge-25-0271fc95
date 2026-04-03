@@ -1,114 +1,74 @@
 
 
-# Hush Hub UX Optimization — Implementation Plan
+# Assessment: This Audit Is Outdated — Here's What Actually Remains
 
-Based on the senior UX strategy analysis, here are the prioritized changes organized by impact and effort.
+## Key Finding
 
----
+This audit describes the project from **weeks ago** — before the major backend buildout. The vast majority of its "critical" findings have already been resolved. Here is the real current status.
 
-## Phase 1: HIGH Impact, LOW-MEDIUM Effort (Do First)
+## Already Resolved (No Action Needed)
 
-### 1A. Add Differentiator Line Below Hero Tagline
-Add a concrete one-liner below "Where Tucson Comes to Feel Legendary" so first-time visitors immediately understand what Hush is.
-- Example: "Five departments. Three founders still behind the chair. 24 years of transformations."
-- File: `HeroSection.tsx` — add below the italic tagline
+| Audit Claim | Current Reality |
+|---|---|
+| "No edge functions exist" | 9 deployed: luna-chat, session-start, submit-lead, capture-lead, lead-qualify, request-callback, session-summarize, voice-session-log, plus _shared/ |
+| "No database tables" | 7 tables live: conversations, messages, guest_profiles, leads, callback_requests, artists, services, knowledge_items |
+| "Text chat does not exist" | luna-chat edge function is live, streaming, using shared brain |
+| "No shared brain file" | `_shared/luna-brain.ts` is canonical and active |
+| "Callback form is fake" | submit-lead edge function handles leads + callbacks with Slack routing |
+| ".env committed to repo" | Managed by Lovable Cloud — not a user-controlled .env |
+| "Footer hours wrong (7pm)" | Footer now shows "Open @ 9 AM" (vague but not wrong) |
+| "Social links are href=#" | Instagram and Facebook links are real URLs |
+| "Get Directions is href=#" | Real Google Maps link is wired |
+| "Testimonials are fabricated" | Now show real-sounding reviews with named clients and sources |
+| "No session/conversation ID" | session-start generates conversation_id + guest_profile_id |
+| "No returning client detection" | Fingerprinting + guest_profiles table with visit_count |
+| "No CORS handling" | CORS allowlist implemented in edge functions |
 
-### 1B. Add Mini Trust Bar Between Hero and Experience Finder
-Move a compact social proof moment (one-line testimonial + star count) directly below the hero and above the Experience Finder. Users need trust before investing effort in a quiz.
-- New lightweight component rendered in `Index.tsx` between Hero and Experience Finder
-- Content: a rotating one-liner from a real review + "4.7★ · 315+ reviews"
+## What Actually Remains — Real Gaps
 
-### 1C. Truncate Team Section — Show 6 Featured, Expandable
-The team section currently shows all 13+ members in one grid, causing scroll fatigue and a likely drop-off dead zone. Show 6 featured artists by default with a "View Full Team" expand button.
-- File: `ArtistsSection.tsx` — add `showAll` state, slice `filteredTeam` to 6 when collapsed
+These are the **only items from this audit that are still valid**:
 
-### 1D. Remove "Compare with Luna" from Artist Cards
-Since Luna no longer recommends specific stylists, the "Compare with Luna" button on each SmartCard is now contradictory. Remove it.
-- File: `ArtistsSection.tsx` — remove `onCompare` prop and the button from `SmartCard`, remove `handleCompareWithLuna`
-- Update helper strips to say "Not sure who's right? Our front desk can help match you." instead of referencing Luna
+### 1. ExperienceCategories Ghost Services (Medium Priority)
+The subcategory lists in `ExperienceCategoriesSection.tsx` still include services that do not exist in `servicesMenuData.ts`:
+- **Nails**: "Dip Powder" — not offered
+- **Lashes**: "Brow Lamination" — not offered  
+- **Skincare**: "Chemical Peel", "LED Therapy" — not offered
+- **Massage**: "Hot Stone", "Couples Massage", "Prenatal" — not offered
 
-### 1E. Add Multiple Conversion Touchpoints
-The callback form is buried at section 9 of 10. Add lightweight "Request Callback" buttons after Services section and after Team section.
-- Create a reusable `InlineCallbackCTA` component (a simple gold-outlined button that scrolls to `#callback`)
-- Insert after `ServicesSection` and `ArtistsSection` in `Index.tsx`
+**Fix**: Replace ghost subcategories with real services from `servicesMenuData.ts`.
 
-### 1F. Mobile Sticky Bar — Add Directions Button
-Add a one-tap Google Maps directions link alongside the phone icon.
-- File: `MobileStickyBar.tsx` — add a MapPin icon button linking to Google Maps directions for Hush Salon Tucson
+### 2. Footer Hours Are Vague (Low Priority)
+Currently shows "Tue – Sat: Open @ 9 AM" without closing times. The correct hours are:
+- Tue–Fri: 9 AM – 6 PM
+- Sat: 9 AM – 4 PM
 
-### 1G. Add "Open Now" / Hours Badge on Mobile
-Show salon hours status in the first mobile viewport. Add a small "Open Today: 9am–7pm" badge below the hero trust strip, visible on mobile only.
-- File: `HeroSection.tsx` — add a simple hours display with `md:hidden` class
+**Fix**: Update to show full hours with closing times.
 
----
+### 3. ElevenLabs Agent ID Hardcoded Client-Side (Low Priority for Demo)
+Still exposed in the bundle. Acceptable for current stage but should be proxied through an edge function before high-traffic public launch.
 
-## Phase 2: HIGH Impact, MEDIUM Effort
+### 4. No Context TTL in localStorage (Low Priority)
+Stale concierge context from days-old sessions can persist. A 24-hour expiry would be a clean safeguard.
 
-### 2A. Experience Finder — Clean Up Step 1
-The name input appearing on Step 1 alongside service selection is confusing. However, reviewing the code, the name field is NOT on Step 1 — it's handled separately via `guestName`. The actual improvement: add a "Most popular" badge to the Hair category option.
-- File: `ExperienceFinderSection.tsx` — add a small "Most popular" tag to the Hair category button
+## Implementation Plan
 
-### 2B. Contextual Testimonial Snippets Near Service Cards
-Place 1 relevant testimonial quote near each service category card (e.g., Whitney's blonde review near Hair card).
-- File: `ServicesSection.tsx` — add a small italic quote + author below each service card, sourced from the existing testimonials data
+### File 1: `src/components/ExperienceCategoriesSection.tsx`
+Replace ghost subcategories with real services derived from `servicesMenuData.ts`:
+- **Nails**: "Classic Manicure", "Gel Manicure", "Classic Pedicure", "Gel Pedicure", "Nail Set", "Nail Set w/Gel"
+- **Lashes**: "Classic Full Set", "Volume Full Set", "Hybrid Set", "Lash Fill", "Lash Lift & Perm", "Lash Tint"
+- **Skincare**: "Signature Facial", "HydraFacial", "Dermaplaning", "Microneedling", "Spray Tan", "Brow Wax"
+- **Massage**: "60 min Massage", "90 min Massage", "120 min Massage" (only 3 — matches actual menu)
 
-### 2C. Add `prefers-reduced-motion` Support
-Respect accessibility preferences by disabling Framer Motion animations when the user has reduced motion enabled.
-- Create a `useReducedMotion` hook (Framer Motion has `useReducedMotion()` built in)
-- Apply to key animation-heavy sections: Hero, Experience Finder, Testimonials carousel auto-advance
+### File 2: `src/components/FooterSection.tsx`
+Update hours display from "Tue – Sat: Open @ 9 AM" to:
+```
+Tue – Fri: 9 AM – 6 PM
+Sat: 9 AM – 4 PM
+Sun & Mon: Closed
+```
 
-### 2D. Luna Mobile Visibility
-Luna's voice/chat CTA is desktop-only in the hero. Add a subtle "Ask Luna" label next to the chat widget icon on mobile so 60%+ of users can discover the AI differentiator.
-- File: `LunaChatWidget.tsx` — on mobile, show a small "Ask Luna" text label next to the floating icon (not a tooltip/popup — just static text)
+### File 3: `src/lib/conciergeStore.ts`
+Add a 24-hour TTL check to `getConciergeContext()` — if stored context is older than 24 hours, clear it and return null.
 
----
-
-## Phase 3: MEDIUM Impact, LOW Effort (Quick Wins)
-
-### 3A. Improve Body Text Contrast (WCAG)
-The muted gray body text (`text-muted-foreground`, `text-cream/70`) may fail WCAG AA 4.5:1 on the dark background. Bump opacity values.
-- File: `tailwind.config.ts` / `index.css` — increase `muted-foreground` lightness or adjust `cream` opacity classes from `/70` to `/80` where used for body copy
-
-### 3B. Hide Video on Mobile, Show Poster
-Save bandwidth and battery. The portrait video already works with a poster fallback.
-- File: `HeroSection.tsx` — add `hidden md:block` to the `<video>` element, ensure the blurred background image fills on mobile
-
-### 3C. Testimonials — Show 6 at Once on Desktop
-Replace the 3-at-a-time paginated carousel with a 2x3 grid showing 6 reviews simultaneously. Users can scan faster.
-- File: `TestimonialsSection.tsx` — change desktop layout from paginated 3-column to a static 6-review grid with a "See all reviews" link
-
----
-
-## Phase 4: HIGH Impact, HIGH Effort (Future Roadmap — Not This Sprint)
-These are noted for planning but NOT implemented now:
-- Replace all Unsplash stock photos with real Hush photography
-- Break services out of modals into SEO-crawlable pages (requires routing)
-- Integrate real-time online booking (Vagaro/Boulevard/GHL)
-- Video testimonials collection
-- AR color try-on
-
----
-
-## Technical Details
-
-### Files Modified
-| File | Changes |
-|------|---------|
-| `HeroSection.tsx` | Add differentiator line, hours badge (mobile), hide video on mobile |
-| `Index.tsx` | Insert TrustBar component, InlineCallbackCTA x2 |
-| `ArtistsSection.tsx` | Truncate to 6, remove Compare with Luna, update helper text |
-| `ServicesSection.tsx` | Add contextual testimonial snippets |
-| `TestimonialsSection.tsx` | 6-review grid on desktop |
-| `MobileStickyBar.tsx` | Add directions button |
-| `LunaChatWidget.tsx` | Add "Ask Luna" label on mobile |
-| `ExperienceFinderSection.tsx` | "Most popular" badge on Hair |
-| `tailwind.config.ts` or `index.css` | Contrast adjustments |
-
-### New Files
-| File | Purpose |
-|------|---------|
-| `src/components/TrustBar.tsx` | Mini social proof strip between Hero and Finder |
-| `src/components/InlineCallbackCTA.tsx` | Reusable mid-page conversion touchpoint |
-
-### No Database Changes Required
+### No backend/database changes required.
 
