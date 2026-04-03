@@ -67,8 +67,16 @@ export const FooterSection = () => {
                 <div className="flex items-start gap-3">
                   <MapPin className="w-4 h-4 text-gold flex-shrink-0 mt-0.5" />
                   <span>
-                    Tucson, Arizona<br />
-                    <a href="#" className="text-gold hover:underline">Get Directions</a>
+                    4635 E Fort Lowell Ave<br />
+                    Tucson, AZ 85712<br />
+                    <a
+                      href="https://maps.google.com/?q=4635+E+Fort+Lowell+Ave,+Tucson,+AZ+85712"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gold hover:underline"
+                    >
+                      Get Directions
+                    </a>
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
@@ -80,8 +88,9 @@ export const FooterSection = () => {
                 <div className="flex items-start gap-3">
                   <Clock className="w-4 h-4 text-gold flex-shrink-0 mt-0.5" />
                   <span>
-                    Tue - Sat: 9am - 7pm<br />
-                    Sun - Mon: Closed
+                    Tue – Fri: 9 AM – 6 PM<br />
+                    Sat: 9 AM – 4 PM<br />
+                    Sun &amp; Mon: Closed
                   </span>
                 </div>
               </div>
@@ -92,13 +101,17 @@ export const FooterSection = () => {
               <h4 className="font-display text-lg text-cream mb-4">Connect</h4>
               <div className="flex items-center gap-4">
                 <a 
-                  href="#" 
+                  href="https://www.instagram.com/hushsalonaz"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-10 h-10 rounded-full border border-gold/30 flex items-center justify-center hover:bg-gold/10 transition-colors"
                 >
                   <Instagram className="w-5 h-5 text-gold" />
                 </a>
                 <a 
-                  href="#" 
+                  href="https://www.facebook.com/hushsalonandspa"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-10 h-10 rounded-full border border-gold/30 flex items-center justify-center hover:bg-gold/10 transition-colors"
                 >
                   <Facebook className="w-5 h-5 text-gold" />
