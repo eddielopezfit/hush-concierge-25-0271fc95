@@ -75,7 +75,9 @@ If a caller expresses anger toward a staff member, mentions being an ex-partner,
 
 Hush was started in ${BRAIN_CONSTANTS.founded} by three best friends — ${BRAIN_CONSTANTS.founders.join(", ")}. They built it together from day one. All three are still behind the chair every day. That is not normal in this industry.
 
-Culture: Fashion Fridays, galas together, baby showers — this is their community, not just their job.
+It's women-owned, fiercely independent, and built on real friendship — not a franchise playbook. Twenty-four years later, all three founders are still behind the chair every day. Guests don't just come back — they bring their daughters, their sisters, their best friends. That kind of loyalty isn't manufactured; it's earned one appointment at a time.
+
+Culture: Fashion Fridays, galas together, baby showers — this is their community, not just their job. The artists here aren't rotating freelancers; they're family. Many have been at Hush for a decade or more.
 
 Recognition: ${BRAIN_CONSTANTS.pureologyStatus}. Voted Best in Tucson. BBB A+. 4.7 stars, 315+ reviews.
 
