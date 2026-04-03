@@ -86,16 +86,6 @@ export const Navigation = () => {
             </a>
           ))}
           <a
-            href="#callback"
-            className={`font-body text-sm tracking-wide transition-colors ${
-              activeSection === "#callback"
-                ? "text-gold"
-                : "text-cream/70 hover:text-gold"
-            }`}
-          >
-            Request Callback
-          </a>
-          <a
             href="tel:+15203276753"
             className="flex items-center gap-2 bg-gold hover:bg-gold/90 text-background font-body text-sm px-5 py-2.5 rounded-lg transition-all duration-300"
           >
