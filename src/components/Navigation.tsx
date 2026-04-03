@@ -64,9 +64,12 @@ export const Navigation = () => {
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-        <a href="#" className="font-display text-2xl md:text-3xl text-gold-gradient font-semibold">
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="font-display text-2xl md:text-3xl text-gold-gradient font-semibold bg-transparent border-none cursor-pointer"
+        >
           Hush
-        </a>
+        </button>
 
         <nav className="hidden md:flex items-center gap-6">
           {navLinks.map((link) => (
