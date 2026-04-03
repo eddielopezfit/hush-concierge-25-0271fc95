@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import { Scissors, Sparkles, Heart, Eye, Hand } from "lucide-react";
 import { ServiceMenuModal } from "./ServiceMenuModal";
 import { getCategoryById } from "@/data/servicesMenuData";
+import hairHero from "@/assets/hair-hero.jpg";
+import lashesHero from "@/assets/lashes-hero.jpg";
 
 const services = [
   {
