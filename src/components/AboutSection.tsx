@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
 import foundersPhoto from "@/assets/Founders_Hush.jpg";
-import salonInterior from "@/assets/salon-interior.jpg";
 
 export const AboutSection = () => {
   return (
@@ -63,13 +62,13 @@ export const AboutSection = () => {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="relative space-y-6"
+            className="relative"
           >
             <div className="relative rounded-lg overflow-hidden glow-gold-subtle">
               <img
                 src={foundersPhoto}
                 alt="Hush Salon Founders — Sheri Turner, Danielle Colucci, and Kathy Crawford"
-                className="w-full h-[340px] object-cover object-top"
+                className="w-full h-[500px] object-cover object-top"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
               <div className="absolute bottom-6 left-6 right-6">
@@ -77,18 +76,6 @@ export const AboutSection = () => {
                   "We built Hush to be the place we'd want to go."
                 </p>
                 <p className="font-body text-sm text-gold/70 mt-2">— The Founders</p>
-              </div>
-            </div>
-
-            <div className="relative rounded-lg overflow-hidden">
-              <img
-                src={salonInterior}
-                alt="Inside Hush Salon — styling stations, coffee bar, and art wall"
-                className="w-full h-[200px] object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent" />
-              <div className="absolute bottom-4 left-4">
-                <p className="font-body text-xs text-cream/60 uppercase tracking-wider">Our Space</p>
               </div>
             </div>
           </motion.div>
