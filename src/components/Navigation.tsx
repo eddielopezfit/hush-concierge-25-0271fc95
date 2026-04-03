@@ -52,6 +52,26 @@ export const Navigation = () => {
     };
   }, []);
 
+  // Focus trap for mobile menu
+  const menuRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!isMobileMenuOpen || !menuRef.current) return;
+    const menu = menuRef.current;
+    const focusable = menu.querySelectorAll<HTMLElement>('a, button');
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    const trap = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { setIsMobileMenuOpen(false); return; }
+      if (e.key !== 'Tab') return;
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
+    first.focus();
+    document.addEventListener('keydown', trap);
+    return () => document.removeEventListener('keydown', trap);
+  }, [isMobileMenuOpen]);
+
   return (
     <motion.header
       initial={{ opacity: 0, y: -20 }}
