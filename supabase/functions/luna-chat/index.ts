@@ -15,6 +15,7 @@ function resolveOrigin(origin: string | null): string | null {
   if (!origin) return null;
   if (allowedOrigins.includes(origin)) return origin;
   if (/^https:\/\/.*\.lovable\.app$/.test(origin)) return origin;
+  if (/^https:\/\/.*\.lovableproject\.com$/.test(origin)) return origin;
   return null;
 }
 
