@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Phone, Sparkles } from "lucide-react";
+import { Phone, Sparkles, MapPin } from "lucide-react";
 
 export const MobileStickyBar = () => {
   const handleFindExperience = () => {
