@@ -18,6 +18,13 @@ const SESSION_ID_KEY = "hush_session_id";
 
 export const getConciergeContext = (): ConciergeContext | null => {
   try {
+    // Check TTL — clear stale context older than 24 hours
+    const ts = localStorage.getItem(STORAGE_TS_KEY);
+    if (ts && Date.now() - Number(ts) > TTL_MS) {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(STORAGE_TS_KEY);
+      return null;
+    }
     const s = localStorage.getItem(STORAGE_KEY);
     return s ? (JSON.parse(s) as ConciergeContext) : null;
   } catch { return null; }

@@ -50,7 +50,8 @@ export const FooterSection = () => {
                 <div className="flex items-start gap-3">
                   <Clock className="w-4 h-4 text-gold flex-shrink-0 mt-0.5" />
                   <span>
-                    Tue – Sat: Open @ 9 AM<br />
+                    Tue – Fri: 9 AM – 6 PM<br />
+                    Sat: 9 AM – 4 PM<br />
                     Sun & Mon: Closed
                   </span>
                 </div>
