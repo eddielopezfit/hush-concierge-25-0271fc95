@@ -9,7 +9,7 @@ import { ArtistsSection } from "@/components/ArtistsSection";
 import { PersonalizedPlanSection } from "@/components/PersonalizedPlanSection";
 import { TestimonialsSection } from "@/components/TestimonialsSection";
 import { AboutSection } from "@/components/AboutSection";
-import { CommunitySection } from "@/components/CommunitySection";
+
 import { BookingCallbackSection } from "@/components/BookingCallbackSection";
 import { FooterSection } from "@/components/FooterSection";
 import { MobileStickyBar } from "@/components/MobileStickyBar";
@@ -50,8 +50,6 @@ const Index = () => {
       <TestimonialsSection />
       {/* 7. About — the Hush story */}
       <AboutSection />
-      {/* 8. Community — loyalty / belonging */}
-      <CommunitySection />
       {/* 9. Booking + Callback — unified conversion */}
       <BookingCallbackSection />
       {/* 10. Footer */}

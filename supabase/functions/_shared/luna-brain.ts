@@ -94,7 +94,7 @@ Front desk: ${BRAIN_CONSTANTS.frontDesk}
 Instagram: @hushsalonaz
 Cancellation: 24-hour notice required
 
-Loyalty — Hush Inner Circle (Groupies): Refer a friend → both get $10 off. Cards at the front desk.
+Referral Program: Refer a friend → both get $10 off. Cards available at the front desk.
 
 Massage Perk: ${BRAIN_CONSTANTS.massagePerk}
 60 min: $105 → $84 · 90 min: $140 → $112 · 120 min: $190 → $152

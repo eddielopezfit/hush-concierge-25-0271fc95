@@ -104,7 +104,7 @@ export function getJourneyContextString(): string {
       portfolio: "Portfolio / Real Results",
       testimonials: "Testimonials",
       about: "About Hush",
-      community: "Community / Inner Circle",
+      community: "Community",
       booking: "Booking",
     };
     const viewed = Array.from(state.sectionsViewed)
