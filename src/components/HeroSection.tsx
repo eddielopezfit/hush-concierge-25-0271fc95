@@ -108,6 +108,18 @@ export const HeroSection = () => {
             Speak with Luna
           </motion.button>
         </motion.div>
+
+        {/* Mobile hours badge */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.8 }}
+          className="md:hidden mt-6 flex justify-center"
+        >
+          <span className="font-body text-xs text-cream/40 bg-card/60 border border-border px-3 py-1.5 rounded-full backdrop-blur-sm">
+            Open Today · 9am – 7pm
+          </span>
+        </motion.div>
       </div>
 
       {/* Scroll Indicator */}

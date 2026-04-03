@@ -25,7 +25,7 @@ export const MobileStickyBar = () => {
           <span>Find Your Experience</span>
         </motion.button>
 
-        {/* Secondary CTA — phone icon only */}
+        {/* Secondary — phone */}
         <motion.a
           href="tel:+15203276753"
           className="w-12 h-12 rounded-lg border border-gold/30 flex items-center justify-center text-gold shrink-0"
@@ -33,6 +33,18 @@ export const MobileStickyBar = () => {
           aria-label="Call Hush Salon"
         >
           <Phone className="w-5 h-5" />
+        </motion.a>
+
+        {/* Tertiary — directions */}
+        <motion.a
+          href="https://www.google.com/maps/dir/?api=1&destination=Hush+Salon+%26+Day+Spa+Tucson+AZ"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-12 h-12 rounded-lg border border-gold/30 flex items-center justify-center text-gold shrink-0"
+          whileTap={{ scale: 0.95 }}
+          aria-label="Get directions"
+        >
+          <MapPin className="w-5 h-5" />
         </motion.a>
       </div>
     </motion.div>
