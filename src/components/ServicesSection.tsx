@@ -41,7 +41,7 @@ const services = [
     icon: Heart,
     id: "massage",
     title: "Massage",
-    description: "Deep tissue, hot stone, relaxation — leave feeling reset and completely renewed.",
+    description: "Deep tissue, Swedish, therapeutic, and relaxation — leave feeling reset and completely renewed.",
     image: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=800&q=80",
     testimonial: { text: "Best spa day I've ever had. The whole atmosphere melts your stress.", author: "Diana K." },
   },

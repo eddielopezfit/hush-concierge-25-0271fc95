@@ -123,13 +123,6 @@ export const Navigation = () => {
               </a>
             ))}
             <a
-              href="#callback"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="font-body text-lg text-cream/70 hover:text-gold transition-colors"
-            >
-              Request Callback
-            </a>
-            <a
               href="tel:+15203276753"
               className="flex items-center gap-2 bg-gold text-background font-body px-6 py-3 rounded-lg"
             >
