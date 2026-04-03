@@ -33,7 +33,7 @@ Each service category contains 10 sections:
 
 ## 1. Service Overview
 
-Hair services are the foundation of Hush. It's what built the reputation, what's kept guests coming back for 23+ years, and what the founders — Sheri, Danielle, and Kathy — still do behind the chair every day. A haircut at Hush is not a quick trim. It's a conversation first, then precision craft. The goal is hair that works for the guest's life — their texture, their schedule, their face, their confidence.
+Hair services are the foundation of Hush. It's what built the reputation, what's kept guests coming back for 24 years, and what the founders — Sheri, Danielle, and Kathy — still do behind the chair every day. A haircut at Hush is not a quick trim. It's a conversation first, then precision craft. The goal is hair that works for the guest's life — their texture, their schedule, their face, their confidence.
 
 Guests come here because something was wrong somewhere else. Wrong length. Wrong shape. Stylist who didn't listen. Hair that looked great in the chair and fell flat at home. The Hush difference is a team that cuts for the person, not for the mirror moment.
 
@@ -938,7 +938,7 @@ None required. First-time guests should tell Patty their skin tone and whether t
 6. **Balayage, Foilayage, Corrective Color, Vivid Color = consultation required, no price given over the phone.**
 7. **Phone numbers: only share if there is a relationship with the specialist** (nails, lashes, massage, esthetics direct lines are provided; hair stylists are NOT given direct numbers — all hair routes through front desk).
 8. **Hush is closed Sunday and Monday.** Open Tue–Fri 9AM–7PM, Sat 9AM–4PM.
-9. **Hush Inner Circle (legacy: "Groupies Only"):** $10 off for the guest who refers + $10 off for the new guest's first visit.
+9. **Referral Reward (Groupies):** When an existing guest refers someone new, both the referrer and the new guest receive $10 off their next visit.
 
 ---
 

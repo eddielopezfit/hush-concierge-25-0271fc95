@@ -48,12 +48,12 @@
 **1. Name + Role**
 - Name: Sheri Turner
 - Role: Co-Founder / Master Hair Stylist
-- At Hush since: Day one (2002 — 23+ years)
+- At Hush since: Day one (2002 — 24 years)
 
 ---
 
 **2. Specialties**
-- Hair color (all types) — built over 23 years behind the chair
+- Hair color (all types) — built over 24 years behind the chair
 - Haircuts — precision and lifestyle-focused
 - Full-service hair: color, cut, finish
 - Known for the uncanny ability to know exactly what a client needs, sometimes before they say it
@@ -112,7 +112,7 @@
 
 **9. Safe Recommendation Language**
 ✅ "Sheri is one of the original founders — she's been there since day one and she still works every day. Guests have been going to her for years and they always describe her the same way: she just knows. There's a real trust factor there."
-✅ "If you want someone who's going to read your hair and read you and know exactly what you need — Sheri has that. She's been building that expertise for 23 years."
+✅ "If you want someone who's going to read your hair and read you and know exactly what you need — Sheri has that. She's been building that expertise for 24 years."
 ✅ "A lot of long-term Hush guests have their stylist and that's it. Sheri has a lot of those."
 ❌ "You should book Sheri."
 ❌ "She's the best."
@@ -130,7 +130,7 @@
 **1. Name + Role**
 - Name: Danielle Colucci
 - Role: Co-Founder / Hair Stylist
-- At Hush since: Day one (2002 — 23+ years)
+- At Hush since: Day one (2002 — 24 years)
 
 ---
 
@@ -206,7 +206,7 @@
 **1. Name + Role**
 - Name: Kathy Crawford (also listed as Kathy Crawford Basile in some docs)
 - Role: Co-Founder / Master Stylist
-- At Hush since: Day one (2002 — 23+ years)
+- At Hush since: Day one (2002 — 24 years)
 
 ---
 
@@ -271,7 +271,7 @@
 **9. Safe Recommendation Language**
 ✅ "Kathy is one of the co-founders and she's really known for tackling challenging hair — thick hair, fine hair, textures that other stylists struggle with. There's a review from someone who'd been searching for three years across multiple cities and finally found her person. That's Kathy."
 ✅ "If your hair has been a frustration and you feel like no one's quite solved it — Kathy is the one I'd point you toward."
-✅ "She's got 23 years behind the chair and a real skill for cuts that actually work with your specific hair."
+✅ "She's got 24 years behind the chair and a real skill for cuts that actually work with your specific hair."
 ❌ "She's better than the other Kathy."
 ❌ "You need Kathy."
 
@@ -1410,7 +1410,7 @@ The team has four distinct blonde/color specialists covering different lanes: Si
 Three team members are the only provider for their service: Allison (lashes), Tammi (massage), Patty (microneedling at Hush). These are automatic routing decisions — no ambiguity.
 
 **3. Founders still active behind the chair**
-Sheri, Danielle, and Kathy have been there 23+ years and still work daily. This is genuinely unusual in the salon industry and a real differentiator. Guests who book with a founder are getting over two decades of accumulated expertise and craft.
+Sheri, Danielle, and Kathy have been there 24 years and still work daily. This is genuinely unusual in the salon industry and a real differentiator. Guests who book with a founder are getting over two decades of accumulated expertise and craft.
 
 **4. A specialist for nervous guests**
 Between Michelle (reassures anxious color clients), Priscilla (gentle, peaceful energy), and the founders' deep trust factor — Hush has multiple landing spots for guests who are scared or have had bad experiences. This is a culture, not an accident.
@@ -1444,7 +1444,7 @@ Allison can do hair + lashes + skincare in one visit. Hush positions itself as a
 
 ## Luna's Team Culture Framing
 
-> "The thing about Hush is — it's not just a salon. These women have been together for 23 years. The founders are still behind the chair every day. The team throws each other baby showers and does Fashion Fridays together. When you walk in, you feel that. It's not a transactional place. It's a community, and guests feel like they're part of it once they come in."
+> "The thing about Hush is — it's not just a salon. These women have been together for 24 years. The founders are still behind the chair every day. The team throws each other baby showers and does Fashion Fridays together. When you walk in, you feel that. It's not a transactional place. It's a community, and guests feel like they're part of it once they come in."
 
 ---
 

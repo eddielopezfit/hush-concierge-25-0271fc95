@@ -15,7 +15,7 @@
  * voice tools (capture_lead, request_callback).
  *
  * Knowledge sources:
- * - SYSTEM_PROMPT_v5.md (Sections 0-18)
+ * - SYSTEM_PROMPT_v6.md (Sections 0-23)
  * - KB10_service_intelligence.md (946 lines)
  * - KB11_team_intelligence.md (1453 lines)
  * - KB12_recommendation_engine.md (420 lines)
