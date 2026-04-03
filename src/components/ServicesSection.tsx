@@ -36,7 +36,7 @@ const services = [
     id: "lashes",
     title: "Lashes",
     description: "Subtle enhancement or full drama — lash extensions and lifts tailored to your eye shape.",
-    image: "https://images.unsplash.com/photo-1583001931096-959e9a1a6223?auto=format&fit=crop&w=800&q=80",
+    image: lashesHero,
     testimonial: { text: "Allison G is magical. I've gotten nonstop compliments on my hair since seeing her.", author: "Megan Petersen" },
   },
   {
