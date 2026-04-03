@@ -114,7 +114,7 @@ export const TestimonialsSection = () => {
         </motion.div>
 
         {/* Desktop: 2x3 grid showing 6 reviews at once */}
-        <div className="hidden md:block">
+        <div className="hidden md:block" onMouseEnter={() => setIsAutoPlaying(false)} onMouseLeave={() => setIsAutoPlaying(true)}>
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
             {testimonials.slice(0, 6).map((testimonial, index) => (
               <motion.div
