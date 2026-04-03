@@ -109,18 +109,19 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
     }
   };
 
-  const handleLeadSubmit = () => {
+  const handleLeadSubmit = async () => {
     if (leadPhone.trim().length >= 10) {
-      // Save phone + context to localStorage for now (GHL webhook optional)
+      // Persist lead to backend via edge function
       try {
-        const leads = JSON.parse(localStorage.getItem("hush_leads") || "[]");
-        leads.push({
+        const { saveLead } = await import("@/lib/saveSession");
+        await saveLead({
+          name: "Website Visitor",
           phone: leadPhone.trim(),
-          context,
-          timestamp: new Date().toISOString(),
+          category: context?.categories?.join(", "),
+          goal: context?.goal ?? undefined,
+          timing: context?.timing ?? undefined,
         });
-        localStorage.setItem("hush_leads", JSON.stringify(leads));
-      } catch { /* ignore */ }
+      } catch { /* graceful degradation */ }
       setLeadSubmitted(true);
       setTimeout(() => {
         setShowLeadCapture(false);

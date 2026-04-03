@@ -117,7 +117,12 @@ export const HeroSection = () => {
           className="md:hidden mt-6 flex justify-center"
         >
           <span className="font-body text-xs text-cream/40 bg-card/60 border border-border px-3 py-1.5 rounded-full backdrop-blur-sm">
-            Open Today · 9am – 7pm
+            {(() => {
+              const day = new Date().getDay();
+              if (day === 0 || day === 1) return "Closed Today";
+              if (day === 6) return "Open Today · 9 AM – 4 PM";
+              return "Open Today · 9 AM – 6 PM";
+            })()}
           </span>
         </motion.div>
       </div>
