@@ -1,9 +1,10 @@
 import { motion } from "framer-motion";
-import { Sparkles, Clock, DollarSign, Users } from "lucide-react";
+import { Sparkles, Clock, DollarSign, Users, Plus } from "lucide-react";
 import { RevealData } from "@/lib/experienceReveal";
 import { useLuna } from "@/contexts/LunaContext";
 import { getConciergeContext } from "@/lib/conciergeStore";
 import { BookingDecisionCard } from "@/components/BookingDecisionCard";
+import { getUpsells } from "@/lib/upsellEngine";
 
 interface ExperienceRevealCardProps {
   data: RevealData;
