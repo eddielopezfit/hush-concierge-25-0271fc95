@@ -81,7 +81,7 @@ export const HeroSection = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.6, ease: "easeOut" }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8 px-4"
+          className="hidden sm:flex flex-col sm:flex-row items-center justify-center gap-4 mb-8 px-4"
         >
           {/* Primary CTA — guided discovery */}
           <motion.button
@@ -111,7 +111,7 @@ export const HeroSection = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
-          className="md:hidden mt-6 flex justify-center"
+          className="hidden"
         >
           <span className="font-body text-xs text-cream/40 bg-card/60 border border-border px-3 py-1.5 rounded-full backdrop-blur-sm">
             {(() => {
