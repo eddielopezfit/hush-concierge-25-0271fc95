@@ -17,6 +17,7 @@ export const HeroSection = () => {
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Video (desktop/tablet) + Image fallback (mobile) */}
       <div className="absolute inset-0 z-0 overflow-hidden bg-background">
+        {/* Desktop/tablet — full-res video */}
         <video
           autoPlay
           loop
@@ -24,9 +25,21 @@ export const HeroSection = () => {
           playsInline
           preload="auto"
           poster={heroImage}
-          className="absolute inset-0 h-full w-full object-cover object-[center_30%]"
+          className="absolute inset-0 h-full w-full object-cover object-[center_30%] hidden sm:block"
         >
           <source src="/videos/hero-backdrop.mp4" type="video/mp4" />
+        </video>
+        {/* Mobile — compressed smaller video for cellular data */}
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+          poster={heroImage}
+          className="absolute inset-0 h-full w-full object-cover object-[center_30%] sm:hidden"
+        >
+          <source src="/videos/hero-backdrop-mobile.mp4" type="video/mp4" />
         </video>
         {/* Multi-layer overlay for text readability */}
         <div className="absolute inset-0 bg-background/50" />
