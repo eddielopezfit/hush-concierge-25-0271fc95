@@ -31,7 +31,10 @@ export const getConciergeContext = (): ConciergeContext | null => {
 };
 
 export const setConciergeContext = (ctx: ConciergeContext): void => {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(ctx)); }
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(ctx));
+    localStorage.setItem(STORAGE_TS_KEY, String(Date.now()));
+  }
   catch { console.error("[conciergeStore] write failed"); }
 };
 
