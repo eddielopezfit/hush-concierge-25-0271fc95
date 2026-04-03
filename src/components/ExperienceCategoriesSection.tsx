@@ -13,10 +13,10 @@ interface Category {
 
 const categories: Category[] = [
   { id: "hair", name: "Hair", icon: Scissors, subcategories: ["Haircut & Style", "Lived-in Color", "Blonde", "Extensions", "Corrective / Refresh", "Event & Bridal"] },
-  { id: "nails", name: "Nails", icon: Sparkles, subcategories: ["Classic Manicure", "Gel Manicure", "Classic Pedicure", "Gel Pedicure", "Nail Art", "Dip Powder"] },
-  { id: "lashes", name: "Lashes", icon: Eye, subcategories: ["Classic Full Set", "Volume Full Set", "Hybrid Set", "Lash Fill", "Lash Lift & Tint", "Brow Lamination"] },
-  { id: "skincare", name: "Skincare & Spray Tan", icon: Droplets, subcategories: ["Signature Facial", "HydraFacial", "Chemical Peel", "Dermaplaning", "Spray Tan", "LED Therapy"] },
-  { id: "massage", name: "Massage", icon: Heart, subcategories: ["Swedish Massage", "Deep Tissue", "Hot Stone", "Aromatherapy", "Couples Massage", "Prenatal"] },
+  { id: "nails", name: "Nails", icon: Sparkles, subcategories: ["Classic Manicure", "Gel Manicure", "Classic Pedicure", "Gel Pedicure", "Nail Set", "Nail Set w/Gel"] },
+  { id: "lashes", name: "Lashes", icon: Eye, subcategories: ["Classic Full Set", "Volume Full Set", "Hybrid Set", "Lash Fill", "Lash Lift & Perm", "Lash Tint"] },
+  { id: "skincare", name: "Skincare & Spray Tan", icon: Droplets, subcategories: ["Signature Facial", "HydraFacial", "Dermaplaning", "Microneedling", "Spray Tan", "Brow Wax"] },
+  { id: "massage", name: "Massage", icon: Heart, subcategories: ["60 min Massage", "90 min Massage", "120 min Massage"] },
 ];
 
 export const ExperienceCategoriesSection = () => {

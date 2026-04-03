@@ -8,6 +8,8 @@ import {
 
 // ── Storage keys ─────────────────────────────────────────────────────────────
 const STORAGE_KEY    = "hush_concierge_context";
+const STORAGE_TS_KEY = "hush_concierge_context_ts";
+const TTL_MS         = 24 * 60 * 60 * 1000; // 24 hours
 const REC_KEY        = "hush_luna_recommendation";
 const FIRST_NAME_KEY = "hush_guest_first_name";
 const SESSION_ID_KEY = "hush_session_id";
@@ -16,13 +18,23 @@ const SESSION_ID_KEY = "hush_session_id";
 
 export const getConciergeContext = (): ConciergeContext | null => {
   try {
+    // Check TTL — clear stale context older than 24 hours
+    const ts = localStorage.getItem(STORAGE_TS_KEY);
+    if (ts && Date.now() - Number(ts) > TTL_MS) {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(STORAGE_TS_KEY);
+      return null;
+    }
     const s = localStorage.getItem(STORAGE_KEY);
     return s ? (JSON.parse(s) as ConciergeContext) : null;
   } catch { return null; }
 };
 
 export const setConciergeContext = (ctx: ConciergeContext): void => {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(ctx)); }
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(ctx));
+    localStorage.setItem(STORAGE_TS_KEY, String(Date.now()));
+  }
   catch { console.error("[conciergeStore] write failed"); }
 };
 
