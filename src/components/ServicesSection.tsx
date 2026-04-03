@@ -29,7 +29,7 @@ const services = [
     title: "Skincare & Spray Tan",
     description: "Results-driven facials, peels, and a sun-kissed glow — your skin will thank you.",
     image: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80",
-    testimonial: { text: "FINALLY! I have found a great stylist in Arizona! Kathy is AMAZING!", author: "Alicia Robinson" },
+    testimonial: null,
   },
   {
     icon: Eye,
