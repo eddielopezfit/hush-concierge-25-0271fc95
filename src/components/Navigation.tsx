@@ -64,9 +64,12 @@ export const Navigation = () => {
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-        <a href="#" className="font-display text-2xl md:text-3xl text-gold-gradient font-semibold">
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="font-display text-2xl md:text-3xl text-gold-gradient font-semibold bg-transparent border-none cursor-pointer"
+        >
           Hush
-        </a>
+        </button>
 
         <nav className="hidden md:flex items-center gap-6">
           {navLinks.map((link) => (
@@ -82,16 +85,6 @@ export const Navigation = () => {
               {link.label}
             </a>
           ))}
-          <a
-            href="#callback"
-            className={`font-body text-sm tracking-wide transition-colors ${
-              activeSection === "#callback"
-                ? "text-gold"
-                : "text-cream/70 hover:text-gold"
-            }`}
-          >
-            Request Callback
-          </a>
           <a
             href="tel:+15203276753"
             className="flex items-center gap-2 bg-gold hover:bg-gold/90 text-background font-body text-sm px-5 py-2.5 rounded-lg transition-all duration-300"
@@ -129,13 +122,6 @@ export const Navigation = () => {
                 {link.label}
               </a>
             ))}
-            <a
-              href="#callback"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="font-body text-lg text-cream/70 hover:text-gold transition-colors"
-            >
-              Request Callback
-            </a>
             <a
               href="tel:+15203276753"
               className="flex items-center gap-2 bg-gold text-background font-body px-6 py-3 rounded-lg"

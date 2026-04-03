@@ -19,7 +19,7 @@ const filterChips: { id: string; label: string; icon?: typeof Scissors }[] = [
 ];
 
 const helperStrips: Record<string, string> = {
-  all: "Each artist has a different style and strength — call our front desk to find your perfect match.",
+  all: "Tap any artist to learn more about their specialties and style.",
   hair: "Not sure who fits best for your hair goals? Our front desk can help match you.",
   nails: "Our nail artists each specialize in different techniques — call us for a recommendation.",
   lashes: "Whether it's your first set or a fill, our team can help match the right approach.",

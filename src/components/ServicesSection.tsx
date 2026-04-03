@@ -27,7 +27,7 @@ const services = [
     title: "Skincare & Spray Tan",
     description: "Results-driven facials, peels, and a sun-kissed glow — your skin will thank you.",
     image: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80",
-    testimonial: null,
+    testimonial: { text: "Patty's facials are incredible. My skin has never looked this good.", author: "Sarah M." },
   },
   {
     icon: Eye,
@@ -41,7 +41,7 @@ const services = [
     icon: Heart,
     id: "massage",
     title: "Massage",
-    description: "Deep tissue, hot stone, relaxation — leave feeling reset and completely renewed.",
+    description: "Deep tissue, Swedish, therapeutic, and relaxation — leave feeling reset and completely renewed.",
     image: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=800&q=80",
     testimonial: { text: "Best spa day I've ever had. The whole atmosphere melts your stress.", author: "Diana K." },
   },

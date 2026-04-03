@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowDown, Sparkles, Mic, Star } from "lucide-react";
+import { ArrowDown, Sparkles, Mic } from "lucide-react";
 import heroImage from "@/assets/hero-salon.jpg";
 import { requestVoiceStart } from "@/lib/lunaVoiceBus";
 
@@ -54,20 +54,6 @@ export const HeroSection = () => {
           </p>
         </motion.div>
 
-        {/* Trust Badge Strip */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 0.2 }}
-          className="flex items-center justify-center gap-2 text-cream/50 font-body text-sm mb-4"
-        >
-          <Star className="w-3.5 h-3.5 text-gold fill-gold" />
-          <span>4.7 on Google</span>
-          <span className="text-gold/30">·</span>
-          <span>315+ Reviews</span>
-          <span className="text-gold/30">·</span>
-          <span>Est. 2002</span>
-        </motion.div>
 
         <motion.p
           initial={{ opacity: 0, y: 20 }}
