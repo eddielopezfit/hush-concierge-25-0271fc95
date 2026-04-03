@@ -22,6 +22,7 @@ export const LunaFloatingVoiceDock = () => {
   const [isMuted, setIsMuted] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const isStartingRef = useRef(false);
+  const connectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const conversation = useConversation({
     onConnect: () => {
