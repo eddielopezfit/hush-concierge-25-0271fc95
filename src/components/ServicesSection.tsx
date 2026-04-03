@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import { Scissors, Sparkles, Heart, Eye, Hand } from "lucide-react";
 import { ServiceMenuModal } from "./ServiceMenuModal";
 import { getCategoryById } from "@/data/servicesMenuData";
+import hairHero from "@/assets/hair-hero.jpg";
+import lashesHero from "@/assets/lashes-hero.jpg";
 
 const services = [
   {
@@ -10,7 +12,7 @@ const services = [
     id: "hair",
     title: "Hair",
     description: "Precision cuts, lived-in color, blonding, extensions — whatever your vision, we'll bring it to life.",
-    image: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80",
+    image: hairHero,
     testimonial: { text: "Whitney is the best with blondes!! She nailed it.", author: "Andrea Mitchell" },
   },
   {
@@ -34,7 +36,7 @@ const services = [
     id: "lashes",
     title: "Lashes",
     description: "Subtle enhancement or full drama — lash extensions and lifts tailored to your eye shape.",
-    image: "https://images.unsplash.com/photo-1583001931096-959e9a1a6223?auto=format&fit=crop&w=800&q=80",
+    image: lashesHero,
     testimonial: { text: "Allison G is magical. I've gotten nonstop compliments on my hair since seeing her.", author: "Megan Petersen" },
   },
   {
