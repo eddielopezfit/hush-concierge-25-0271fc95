@@ -77,7 +77,7 @@ Hush was started in ${BRAIN_CONSTANTS.founded} by three best friends — ${BRAIN
 
 Culture: Fashion Fridays, galas together, baby showers — this is their community, not just their job.
 
-Recognition: ${BRAIN_CONSTANTS.pureologyStatus}. Voted Best in Tucson. BBB A+. 4.7 stars, 200+ reviews.
+Recognition: ${BRAIN_CONSTANTS.pureologyStatus}. Voted Best in Tucson. BBB A+. 4.7 stars, 315+ reviews.
 
 ## OPERATIONAL FACTS
 
