@@ -1,10 +1,10 @@
 import { motion } from "framer-motion";
-import { Sparkles, Clock, DollarSign, Users, Plus } from "lucide-react";
+import { Sparkles, Clock, DollarSign, Users, Plus, ChevronDown, CalendarClock } from "lucide-react";
 import { RevealData } from "@/lib/experienceReveal";
 import { useLuna } from "@/contexts/LunaContext";
-import { getConciergeContext } from "@/lib/conciergeStore";
 import { BookingDecisionCard } from "@/components/BookingDecisionCard";
 import { getUpsells } from "@/lib/upsellEngine";
+import { getCadenceRecommendations } from "@/lib/cadenceEngine";
 
 interface ExperienceRevealCardProps {
   data: RevealData;
@@ -14,6 +14,14 @@ interface ExperienceRevealCardProps {
 export const ExperienceRevealCard = ({ data, onBook }: ExperienceRevealCardProps) => {
   const { conciergeContext } = useLuna();
   const topUpsells = getUpsells(conciergeContext, 2);
+  const categories = conciergeContext?.categories || [];
+  const primaryCadence = categories.length > 0 ? getCadenceRecommendations(categories)[0] : null;
+
+  const handleScrollToPlan = () => {
+    const el = document.getElementById("personalized-plan");
+    if (el) el.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 30, scale: 0.97 }}
@@ -76,6 +84,21 @@ export const ExperienceRevealCard = ({ data, onBook }: ExperienceRevealCardProps
             </motion.div>
           )}
 
+          {/* Cadence teaser */}
+          {primaryCadence && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.42 }}
+              className="flex items-center justify-center gap-1.5"
+            >
+              <CalendarClock className="w-3 h-3 text-gold/60" />
+              <span className="font-body text-[11px] text-cream/50 italic">
+                Pro tip: Most guests refresh this every {primaryCadence.intervalWeeks[0]}–{primaryCadence.intervalWeeks[1]} weeks to keep it looking its best.
+              </span>
+            </motion.div>
+          )}
+
           {/* Neutral artist matching message */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -88,7 +111,7 @@ export const ExperienceRevealCard = ({ data, onBook }: ExperienceRevealCardProps
               <span className="text-xs font-body uppercase tracking-wider text-gold">Artist Matching</span>
             </div>
             <p className="font-body text-sm text-cream/70 leading-relaxed">
-              Your artist match depends on your unique needs — our front desk will pair you with the perfect fit.
+              For this experience, our team will pair you with a stylist who specializes in exactly what you're looking for.
             </p>
           </motion.div>
 
@@ -102,6 +125,22 @@ export const ExperienceRevealCard = ({ data, onBook }: ExperienceRevealCardProps
               revealData={data}
               context={conciergeContext}
             />
+          </motion.div>
+
+          {/* Scroll link to full plan */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.75 }}
+            className="text-center"
+          >
+            <button
+              onClick={handleScrollToPlan}
+              className="inline-flex items-center gap-1.5 font-body text-xs text-gold/70 hover:text-gold transition-colors group"
+            >
+              See your full personalized plan
+              <ChevronDown className="w-3.5 h-3.5 group-hover:translate-y-0.5 transition-transform" />
+            </button>
           </motion.div>
         </div>
       </div>
