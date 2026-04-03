@@ -51,11 +51,35 @@ export const LunaFloatingVoiceDock = () => {
   const isConnected = conversation.status === "connected";
 
   // Listen for voice-start-request events from anywhere on the site
+  const cancelConnection = useCallback(() => {
+    if (connectTimeoutRef.current) {
+      clearTimeout(connectTimeoutRef.current);
+      connectTimeoutRef.current = null;
+    }
+    setIsConnecting(false);
+    setError(null);
+    isStartingRef.current = false;
+    endVoiceSession();
+    setIsMuted(false);
+    setIsMinimized(false);
+  }, []);
+
   const startConversation = useCallback(async () => {
     if (isStartingRef.current || conversation.status === "connected") return;
     isStartingRef.current = true;
     setError(null);
     setIsConnecting(true);
+
+    // 12-second timeout for connection
+    connectTimeoutRef.current = setTimeout(() => {
+      if (isStartingRef.current) {
+        console.warn("[LunaFloatingDock] Connection timeout after 12s");
+        setError("Luna is unavailable right now — try chat or call (520) 327-6753");
+        setIsConnecting(false);
+        isStartingRef.current = false;
+        endVoiceSession();
+      }
+    }, 12000);
 
     try {
       await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -76,8 +100,18 @@ export const LunaFloatingVoiceDock = () => {
           },
         },
       });
+
+      // Clear timeout on successful connection
+      if (connectTimeoutRef.current) {
+        clearTimeout(connectTimeoutRef.current);
+        connectTimeoutRef.current = null;
+      }
     } catch (err) {
       console.error("[LunaFloatingDock] Voice start failed:", err);
+      if (connectTimeoutRef.current) {
+        clearTimeout(connectTimeoutRef.current);
+        connectTimeoutRef.current = null;
+      }
       setError(String(err));
       endVoiceSession();
     } finally {
