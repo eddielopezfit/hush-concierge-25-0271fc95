@@ -138,12 +138,17 @@ export const ServicesSection = () => {
                   <p className="font-body text-sm text-gold/70 mb-3">
                     {getPricePreview(service.id)}
                   </p>
-                  <p className="font-body text-muted-foreground text-sm leading-relaxed mb-5">
+                  <p className="font-body text-muted-foreground text-sm leading-relaxed mb-3">
                     {service.description}
                   </p>
+                  {service.testimonial && (
+                    <p className="font-body text-[11px] text-cream/50 italic leading-relaxed mb-3">
+                      "{service.testimonial.text}" — <span className="text-gold/50 not-italic">{service.testimonial.author}</span>
+                    </p>
+                  )}
                   <button
                     onClick={(e) => handleViewMenu(service.id, e)}
-                    className="mt-3 font-body text-sm text-muted-foreground hover:text-gold transition-colors underline underline-offset-4 w-full text-center block"
+                    className="mt-1 font-body text-sm text-muted-foreground hover:text-gold transition-colors underline underline-offset-4 w-full text-center block"
                   >
                     View full menu & pricing
                   </button>

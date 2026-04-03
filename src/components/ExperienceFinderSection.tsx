@@ -424,6 +424,9 @@ export const ExperienceFinderSection = () => {
                         <span className={`font-display text-lg transition-colors ${sel ? "text-gold" : "text-cream group-hover:text-gold"}`}>
                           {cat.label}
                         </span>
+                        {cat.id === "hair" && (
+                          <span className="block text-[9px] font-body text-gold/60 mt-1 uppercase tracking-wider">Most popular</span>
+                        )}
                       </motion.button>
                     );
                   })}
