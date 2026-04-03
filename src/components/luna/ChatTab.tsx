@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Mic, Send, Loader2, ArrowRight, Sparkles, ExternalLink } from "lucide-react";
+import { Mic, Send, Loader2, ArrowRight, Sparkles, ExternalLink, Phone, Calendar, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getJourneyContextString } from "@/lib/journeyTracker";
 import { getConciergeContext } from "@/lib/conciergeStore";
@@ -14,6 +14,14 @@ interface ChatMessage {
   id: string;
   role: "user" | "assistant";
   content: string;
+  /** Optional in-chat action buttons rendered below the message */
+  actions?: ChatAction[];
+}
+
+interface ChatAction {
+  label: string;
+  type: "scroll" | "tab" | "callback" | "phone";
+  target?: string;
 }
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/luna-chat`;
@@ -21,7 +29,7 @@ const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/luna-chat`;
 // ── Context-aware greeting builder ──────────────────────────────────────────
 function buildContextGreeting(ctx: ConciergeContext | null): string {
   if (!ctx?.categories?.length) {
-    return "Hey — I'm Luna, your Hush concierge. I know every service, every artist, every price. What are you looking for today?";
+    return "Hi — I'm Luna, your Hush concierge.\n\nI'll help you find the right service, the right stylist, and the best way to get exactly the look you want.\n\nTell me what you're thinking — or I can guide you.";
   }
 
   const cats = ctx.categories;
@@ -90,7 +98,76 @@ function buildContextGreeting(ctx: ConciergeContext | null): string {
   return `You're exploring ${names.toLowerCase()}${timingStr ? " — " + timingStr : ""}. I know everything about our services and team. What would be most helpful?`;
 }
 
-// ── Dynamic smart chips based on context ────────────────────────────────────
+// ── Persistent quick replies — shown after EVERY Luna response ──────────────
+function getQuickReplies(ctx: ConciergeContext | null, lastAssistantMsg: string): string[] {
+  const lower = (lastAssistantMsg || "").toLowerCase();
+
+  // Contextual variants based on conversation state
+  if (lower.includes("price") || lower.includes("cost") || lower.includes("pricing")) {
+    return ["Book my appointment", "What affects price?", "Help me choose", "Talk to someone"];
+  }
+  if (lower.includes("stylist") || lower.includes("artist") || lower.includes("specialist")) {
+    return ["Book my appointment", "Help me choose a service", "See pricing", "Talk to someone"];
+  }
+  if (lower.includes("event") || lower.includes("wedding") || lower.includes("occasion")) {
+    return ["Plan my full look", "Book my appointment", "See pricing", "Talk to someone"];
+  }
+  if (lower.includes("option") || lower.includes("explore") || lower.includes("browse")) {
+    return ["Show me options", "Book my appointment", "See pricing", "Talk to someone"];
+  }
+  if (lower.includes("recommend") || lower.includes("suggest")) {
+    return ["Book that service", "Tell me more", "See pricing", "Talk to someone"];
+  }
+  if (lower.includes("ready") || lower.includes("lock") || lower.includes("reserve") || lower.includes("book")) {
+    return ["Reserve my experience", "Get a quick call back", "Help me choose", "See pricing"];
+  }
+
+  // Default persistent set
+  return ["Book my appointment", "Help me choose", "See pricing", "Talk to someone"];
+}
+
+// ── Detect intent from assistant message for in-chat CTAs ───────────────────
+function detectChatActions(msg: string, ctx: ConciergeContext | null): ChatAction[] {
+  const lower = msg.toLowerCase();
+  const actions: ChatAction[] = [];
+
+  // Service identified → offer booking + explore
+  if (lower.includes("i'd suggest") || lower.includes("i'd recommend") || lower.includes("great option") || lower.includes("perfect for")) {
+    actions.push({ label: "Reserve this service", type: "scroll", target: "callback" });
+    actions.push({ label: "Build my personalized plan", type: "tab", target: "plan" });
+  }
+
+  // Stylist mentioned → offer artist browse
+  if (lower.includes("stylist") || lower.includes("specialist") || lower.includes("artist") || lower.includes("our team")) {
+    if (!actions.find(a => a.label.includes("Reserve"))) {
+      actions.push({ label: "See our team", type: "tab", target: "artists" });
+    }
+  }
+
+  // Booking/ready signals
+  if (lower.includes("ready to book") || lower.includes("lock in") || lower.includes("reserve") || lower.includes("help you book")) {
+    if (!actions.find(a => a.type === "scroll")) {
+      actions.push({ label: "Reserve your experience", type: "scroll", target: "callback" });
+    }
+    actions.push({ label: "Get a quick call back", type: "callback" });
+  }
+
+  // Pricing mentioned → offer plan view
+  if (lower.includes("pricing") || lower.includes("price range") || lower.includes("starts at")) {
+    if (!actions.find(a => a.label.includes("plan"))) {
+      actions.push({ label: "See my personalized plan", type: "tab", target: "plan" });
+    }
+  }
+
+  // Call prompt
+  if (lower.includes("(520) 327-6753") || lower.includes("call us") || lower.includes("front desk")) {
+    actions.push({ label: "Call (520) 327-6753", type: "phone" });
+  }
+
+  return actions.slice(0, 3); // max 3 actions
+}
+
+// ── Initial smart chips for greeting only ───────────────────────────────────
 function getSmartChips(ctx: ConciergeContext | null): string[] {
   if (!ctx?.categories?.length) {
     return [
@@ -187,8 +264,41 @@ function getContextPills(ctx: ConciergeContext | null): string[] {
   return pills;
 }
 
+// ── In-Chat Action Button Component ─────────────────────────────────────────
+function ChatActionButtons({
+  actions,
+  onAction,
+}: {
+  actions: ChatAction[];
+  onAction: (action: ChatAction) => void;
+}) {
+  if (!actions.length) return null;
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 4 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.3 }}
+      className="flex flex-wrap gap-1.5 mt-2 ml-3.5"
+    >
+      {actions.map((action, i) => (
+        <button
+          key={i}
+          onClick={() => onAction(action)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20 text-primary text-xs font-body font-medium hover:bg-primary/20 transition-colors"
+        >
+          {action.type === "phone" && <Phone className="w-3 h-3" />}
+          {action.type === "callback" && <Phone className="w-3 h-3" />}
+          {action.type === "scroll" && <Calendar className="w-3 h-3" />}
+          {action.type === "tab" && <ChevronRight className="w-3 h-3" />}
+          {action.label}
+        </button>
+      ))}
+    </motion.div>
+  );
+}
+
 export const ChatTab = () => {
-  const { conciergeContext } = useLuna();
+  const { conciergeContext, openChatWidget } = useLuna();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
@@ -201,6 +311,7 @@ export const ChatTab = () => {
   const [initialized, setInitialized] = useState(false);
   const [contextPills, setContextPills] = useState<string[]>([]);
   const [smartChips, setSmartChips] = useState<string[]>([]);
+  const [quickReplies, setQuickReplies] = useState<string[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -210,9 +321,16 @@ export const ChatTab = () => {
     if (initialized) return;
     const ctx = conciergeContext;
     const greeting = buildContextGreeting(ctx);
-    setMessages([{ id: "greeting", role: "assistant", content: greeting }]);
+    const greetingActions = ctx?.categories?.length
+      ? [
+          { label: "Build my personalized plan", type: "tab" as const, target: "plan" },
+          { label: "See our team", type: "tab" as const, target: "artists" },
+        ]
+      : [];
+    setMessages([{ id: "greeting", role: "assistant", content: greeting, actions: greetingActions }]);
     setContextPills(getContextPills(ctx));
     setSmartChips(getSmartChips(ctx));
+    setQuickReplies(getQuickReplies(ctx, greeting));
     setInitialized(true);
 
     if (!getConversationId()) {
@@ -229,6 +347,22 @@ export const ChatTab = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isStreaming]);
+
+  // ── Handle in-chat action buttons ──────────────────────────────────────────
+  const handleChatAction = useCallback((action: ChatAction) => {
+    if (action.type === "phone") {
+      window.open("tel:+15203276753", "_self");
+    } else if (action.type === "callback") {
+      setShowLeadForm(true);
+    } else if (action.type === "scroll" && action.target) {
+      const el = document.getElementById(action.target);
+      if (el) el.scrollIntoView({ behavior: "smooth" });
+    } else if (action.type === "tab" && action.target) {
+      // Navigate to a different tab in the widget
+      const tabEvent = new CustomEvent("luna-switch-tab", { detail: action.target });
+      window.dispatchEvent(tabEvent);
+    }
+  }, []);
 
   const streamChat = useCallback(async (allMessages: ChatMessage[]) => {
     setIsStreaming(true);
@@ -327,6 +461,14 @@ export const ChatTab = () => {
           } catch { /* ignore */ }
         }
       }
+
+      // After streaming completes — attach actions + update quick replies
+      const actions = detectChatActions(assistantContent, conciergeContext);
+      setMessages((prev) =>
+        prev.map((m) => (m.id === assistantId ? { ...m, actions } : m))
+      );
+      setQuickReplies(getQuickReplies(conciergeContext, assistantContent));
+
     } catch (err: any) {
       if (err?.name === "AbortError") return;
       console.error("[ChatTab] Stream error:", err);
@@ -341,7 +483,7 @@ export const ChatTab = () => {
     } finally {
       setIsStreaming(false);
     }
-  }, []);
+  }, [conciergeContext]);
 
   const handleSend = useCallback(
     (text?: string) => {
@@ -393,6 +535,9 @@ export const ChatTab = () => {
     if (el) el.scrollIntoView({ behavior: "smooth" });
   };
 
+  // Find the last assistant message for quick reply context
+  const lastAssistantMsg = [...messages].reverse().find(m => m.role === "assistant");
+
   return (
     <div className="flex flex-col h-full">
       {/* Context Bar */}
@@ -415,25 +560,31 @@ export const ChatTab = () => {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
         {messages.map((msg) => (
-          <div key={msg.id} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-            {msg.role === "assistant" && (
-              <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2.5 mr-2 flex-shrink-0" />
-            )}
-            <div
-              className={`max-w-[80%] px-3.5 py-2.5 rounded-2xl text-sm font-body leading-relaxed ${
-                msg.role === "user"
-                  ? "bg-muted text-foreground rounded-br-sm"
-                  : "bg-card text-foreground/90 rounded-bl-sm border border-border"
-              }`}
-            >
-              {msg.role === "assistant" ? (
-                <div className="prose prose-sm prose-invert max-w-none [&_p]:mb-1 [&_p:last-child]:mb-0 [&_strong]:text-primary [&_a]:text-primary [&_ul]:my-1 [&_li]:my-0">
-                  <ReactMarkdown>{msg.content || "…"}</ReactMarkdown>
-                </div>
-              ) : (
-                msg.content
+          <div key={msg.id}>
+            <div className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+              {msg.role === "assistant" && (
+                <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2.5 mr-2 flex-shrink-0" />
               )}
+              <div
+                className={`max-w-[80%] px-3.5 py-2.5 rounded-2xl text-sm font-body leading-relaxed ${
+                  msg.role === "user"
+                    ? "bg-muted text-foreground rounded-br-sm"
+                    : "bg-card text-foreground/90 rounded-bl-sm border border-border"
+                }`}
+              >
+                {msg.role === "assistant" ? (
+                  <div className="prose prose-sm prose-invert max-w-none [&_p]:mb-1 [&_p:last-child]:mb-0 [&_strong]:text-primary [&_a]:text-primary [&_ul]:my-1 [&_li]:my-0">
+                    <ReactMarkdown>{msg.content || "…"}</ReactMarkdown>
+                  </div>
+                ) : (
+                  msg.content
+                )}
+              </div>
             </div>
+            {/* In-chat action buttons */}
+            {msg.role === "assistant" && msg.actions && !isStreaming && (
+              <ChatActionButtons actions={msg.actions} onAction={handleChatAction} />
+            )}
           </div>
         ))}
 
@@ -449,7 +600,7 @@ export const ChatTab = () => {
           </div>
         )}
 
-        {/* Smart Chips — shown after greeting */}
+        {/* Smart Chips — shown after greeting only (first message) */}
         {messages.length === 1 && !isStreaming && (
           <div className="space-y-2 mt-1">
             <div className="flex flex-wrap gap-1.5">
@@ -485,6 +636,27 @@ export const ChatTab = () => {
               </button>
             </div>
           </div>
+        )}
+
+        {/* Persistent Quick Replies — shown after EVERY assistant response (except greeting) */}
+        {messages.length > 1 && !isStreaming && lastAssistantMsg && (
+          <motion.div
+            key={lastAssistantMsg.id}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="flex flex-wrap gap-1.5 mt-1 pb-1"
+          >
+            {quickReplies.map((reply) => (
+              <button
+                key={reply}
+                onClick={() => handleSend(reply)}
+                className="px-3 py-2 rounded-full border border-primary/25 text-primary text-xs font-body font-medium hover:bg-primary/10 active:scale-95 transition-all"
+              >
+                {reply}
+              </button>
+            ))}
+          </motion.div>
         )}
 
         {/* Lead capture form */}

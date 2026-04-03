@@ -51,6 +51,16 @@ export const LunaChatWidget = () => {
 
   const switchTab = (tab: string) => setActiveTab(tab as TabId);
 
+  // Listen for tab-switch events from ChatTab action buttons
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const target = (e as CustomEvent).detail;
+      if (target) setActiveTab(target as TabId);
+    };
+    window.addEventListener("luna-switch-tab", handler);
+    return () => window.removeEventListener("luna-switch-tab", handler);
+  }, []);
+
   return (
     <>
       {/* Collapsed Bubble + Label */}
