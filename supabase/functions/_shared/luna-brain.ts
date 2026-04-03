@@ -32,7 +32,7 @@ export const BRAIN_CONSTANTS = {
   booking: "Phone only — no online booking portal",
   founders: ["Sheri Turner", "Danielle Colucci", "Kathy Crawford"],
   founded: 2002,
-  yearsOpen: 23,
+  yearsOpen: 24,
   lashArtist: "Allison Griessel",
   massageTherapist: "Tammi",
   massagePerk: "20% off when guest names their Hush hair stylist",
