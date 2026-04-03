@@ -4,13 +4,13 @@ import { useState, useEffect, useCallback } from "react";
 
 const testimonials = [
   {
-    text: "Whitney is the best with blondes!! I asked for 'beige' hair, not golden, not ashy. And she nailed it.",
+    text: "Whitney is the best with blondes!! I asked for 'beige' hair, not golden, not ashy. And she nailed it!!!",
     author: "Andrea Mitchell",
     source: "Facebook Review",
     tag: "Color"
   },
   {
-    text: "Once Michelle took me back to her station we started talking about it and she reassured me it would look great... I'm glad I've found my new hair salon!",
+    text: "Once Michelle took me back to her station we started talking about it and she reassured me it would look great. I highly recommend this hair salon! All the ladies here was very welcoming and professional. I'm glad I've found my new hair salon!",
     author: "Cara B Foster",
     source: "Facebook Review",
     tag: "Transformation"
@@ -22,45 +22,45 @@ const testimonials = [
     tag: "Cut & Style"
   },
   {
-    text: "I've been going to Hush for over 10 years. The vibe, the people, the results — nowhere else compares in Tucson.",
-    author: "Samantha R.",
-    source: "Google Review",
-    tag: "Loyalty"
-  },
-  {
-    text: "Got a full balayage and it took about 3 hours but it was SO worth it. Whitney is a perfectionist and it shows.",
-    author: "Jess M.",
+    text: "Allison has so many tips and tricks. She really listens to what you want and even recommends certain hair coloring tips to personalize it. She knew I wear ponytails a lot so she dyed the back of my hair so it shows when I pull my hair up!",
+    author: "Kassandra Estrada",
     source: "Facebook Review",
-    tag: "Balayage"
+    tag: "Color"
   },
   {
-    text: "Best spa day I've ever had. The massage was incredible and the whole atmosphere just melts your stress away.",
-    author: "Diana K.",
-    source: "Google Review · Dec 2025",
-    tag: "Spa"
-  },
-  {
-    text: "Came in for lash extensions and left feeling like a whole new person. The attention to detail is unreal.",
-    author: "Taylor W.",
-    source: "Facebook Review",
-    tag: "Lashes"
-  },
-  {
-    text: "My nails have never looked this good. Clean, precise, and they actually last. Found my new nail artist!",
-    author: "Brianna L.",
-    source: "Google Review · Feb 2026",
-    tag: "Nails"
-  },
-  {
-    text: "I was terrified to go short but my stylist walked me through every step. I cried happy tears when I saw it. Life-changing.",
-    author: "Monica T.",
+    text: "I have not cut my hair in 4 years!!! Blonde highlights and bangs later!! I have to say I am looking hot as hell!! Thank you to Sherry for helping me get a better look!! I will be back soon 😘",
+    author: "Brittie King",
     source: "Facebook Review",
     tag: "Transformation"
   },
   {
-    text: "They remembered my name on my second visit. That's the Hush difference — you're not a number, you're family.",
-    author: "Kristin P.",
-    source: "Google Review · Mar 2026",
+    text: "FINALLY! I have found a great stylist in Arizona! Kathy is AMAZING! She is very skilled and knew exactly how to cut my thick, but fine hair. I am very pleased and will be screaming from the rooftops about how fabulous Hush is!",
+    author: "Alicia Robinson",
+    source: "Facebook Review",
+    tag: "Cut & Style"
+  },
+  {
+    text: "Absolutely LOVE Hush Salon and my stylist Silviya!!!",
+    author: "Amber Eghtesadi",
+    source: "Facebook Review",
+    tag: "Loyalty"
+  },
+  {
+    text: "Everyone in this salon is sooo nice! Bria did my nails and I am way above satisfied!",
+    author: "Kelly N Gilbert Rodriguez",
+    source: "Facebook Review",
+    tag: "Nails"
+  },
+  {
+    text: "All of the women are so friendly!! Sheri has done my hair for many years and ALWAYS knows just what to do. Susie cuts my hair when Sheri can't and she is just as amazing!!",
+    author: "Janette Lleonart",
+    source: "Facebook Review",
+    tag: "Loyalty"
+  },
+  {
+    text: "Priscilla is such a sweet soul. She made me feel so comfortable and my hair turned out beautiful. I will definitely be coming back!",
+    author: "Megan Petersen",
+    source: "Google Review · Jan 2026",
     tag: "Experience"
   },
 ];
@@ -109,7 +109,7 @@ export const TestimonialsSection = () => {
             ))}
           </div>
           <p className="font-body text-muted-foreground">
-            4.7 stars on Google · 315+ Facebook reviews · 10 real voices below
+            4.8 stars · 206+ verified reviews across Google & Facebook
           </p>
         </motion.div>
 
@@ -147,12 +147,12 @@ export const TestimonialsSection = () => {
           {/* See all link */}
           <div className="text-center mt-8">
             <a
-              href="https://www.google.com/maps/place/Hush+Salon+%26+Day+Spa"
+              href="https://www.google.com/maps/place/Hush+Salon+%26+Day+Spa/@32.2537155,-110.8837433,17z/"
               target="_blank"
               rel="noopener noreferrer"
               className="font-body text-sm text-muted-foreground hover:text-gold transition-colors underline underline-offset-4"
             >
-              See all 315+ reviews →
+              See all 206+ reviews →
             </a>
           </div>
         </div>
@@ -230,7 +230,7 @@ export const TestimonialsSection = () => {
           className="text-center mt-10"
         >
           <a
-            href="https://www.google.com/maps/place/Hush+Salon+%26+Day+Spa"
+            href="https://www.google.com/maps/place/Hush+Salon+%26+Day+Spa/@32.2537155,-110.8837433,17z/"
             target="_blank"
             rel="noopener noreferrer"
             className="font-body text-sm text-muted-foreground hover:text-gold transition-colors underline underline-offset-4"
