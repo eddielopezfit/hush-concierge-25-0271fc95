@@ -16,14 +16,19 @@ export const HeroSection = () => {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image */}
-      <div className="absolute inset-0 z-0">
+      <div className="absolute inset-0 z-0 overflow-hidden bg-background">
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 scale-110 bg-cover bg-center opacity-35 blur-2xl"
+          style={{ backgroundImage: `url(${heroImage})` }}
+        />
         <video
           autoPlay
           muted
           loop
           playsInline
           poster={heroImage}
-          className="w-full h-full object-cover object-[center_30%] md:object-[center_35%] lg:object-[center_55%]"
+          className="absolute inset-0 h-full w-full object-cover object-[center_30%] md:object-[center_35%] lg:object-contain"
         >
           <source src="/videos/fashion-friday-hero.mp4" type="video/mp4" />
         </video>
