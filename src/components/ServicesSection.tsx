@@ -11,7 +11,7 @@ const services = [
     title: "Hair",
     description: "Precision cuts, lived-in color, blonding, extensions — whatever your vision, we'll bring it to life.",
     image: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80",
-    testimonial: { text: "Whitney is the best with blondes!! She nailed it.", author: "Andrea M." },
+    testimonial: { text: "Whitney is the best with blondes!! She nailed it.", author: "Andrea Mitchell" },
   },
   {
     icon: Hand,
@@ -19,7 +19,7 @@ const services = [
     title: "Nails",
     description: "From clean classics to creative nail art. Walk out feeling polished and put-together.",
     image: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=800&q=80",
-    testimonial: { text: "My nails have never looked this good. Clean, precise, and they actually last.", author: "Brianna L." },
+    testimonial: { text: "Bria did my nails and I am way above satisfied!", author: "Kelly N Gilbert Rodriguez" },
   },
   {
     icon: Sparkles,
@@ -27,7 +27,7 @@ const services = [
     title: "Skincare & Spray Tan",
     description: "Results-driven facials, peels, and a sun-kissed glow — your skin will thank you.",
     image: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80",
-    testimonial: { text: "Patty's facials are incredible. My skin has never looked this good.", author: "Sarah M." },
+    testimonial: { text: "FINALLY! I have found a great stylist in Arizona! Kathy is AMAZING!", author: "Alicia Robinson" },
   },
   {
     icon: Eye,
@@ -35,7 +35,7 @@ const services = [
     title: "Lashes",
     description: "Subtle enhancement or full drama — lash extensions and lifts tailored to your eye shape.",
     image: "https://images.unsplash.com/photo-1583001931096-959e9a1a6223?auto=format&fit=crop&w=800&q=80",
-    testimonial: { text: "Came in for lash extensions and left feeling like a whole new person.", author: "Taylor W." },
+    testimonial: { text: "Allison G is magical. I've gotten nonstop compliments on my hair since seeing her.", author: "Megan Petersen" },
   },
   {
     icon: Heart,
@@ -43,7 +43,7 @@ const services = [
     title: "Massage",
     description: "Deep tissue, Swedish, therapeutic, and relaxation — leave feeling reset and completely renewed.",
     image: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=800&q=80",
-    testimonial: { text: "Best spa day I've ever had. The whole atmosphere melts your stress.", author: "Diana K." },
+    testimonial: { text: "Absolutely LOVE Hush Salon and my stylist Silviya!!!", author: "Amber Eghtesadi" },
   },
 ];
 
