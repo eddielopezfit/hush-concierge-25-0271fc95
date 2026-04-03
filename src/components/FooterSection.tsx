@@ -99,7 +99,7 @@ export const FooterSection = () => {
               </button>
             </div>
             <p className="text-sm text-muted-foreground font-body">
-              Powered by <span className="text-gold">Luna</span>
+              Powered by AI
             </p>
           </div>
         </div>

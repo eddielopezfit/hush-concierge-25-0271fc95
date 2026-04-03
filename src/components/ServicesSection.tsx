@@ -29,7 +29,7 @@ const services = [
     title: "Skincare & Spray Tan",
     description: "Results-driven facials, peels, and a sun-kissed glow — your skin will thank you.",
     image: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80",
-    testimonial: { text: "FINALLY! I have found a great stylist in Arizona! Kathy is AMAZING!", author: "Alicia Robinson" },
+    testimonial: null,
   },
   {
     icon: Eye,
@@ -37,7 +37,7 @@ const services = [
     title: "Lashes",
     description: "Subtle enhancement or full drama — lash extensions and lifts tailored to your eye shape.",
     image: lashesHero,
-    testimonial: { text: "Allison G is magical. I've gotten nonstop compliments on my hair since seeing her.", author: "Megan Petersen" },
+    testimonial: null,
   },
   {
     icon: Heart,
@@ -45,7 +45,7 @@ const services = [
     title: "Massage",
     description: "Deep tissue, Swedish, therapeutic, and relaxation — leave feeling reset and completely renewed.",
     image: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=800&q=80",
-    testimonial: { text: "Absolutely LOVE Hush Salon and my stylist Silviya!!!", author: "Amber Eghtesadi" },
+    testimonial: null,
   },
 ];
 
@@ -79,6 +79,49 @@ export const ServicesSection = () => {
     return category?.pricePreview || "";
   };
 
+  const renderCard = (service: typeof services[0]) => (
+    <motion.div
+      key={service.title}
+      variants={cardVariants}
+      onClick={() => handleCardClick(service.id)}
+      className="group card-luxury rounded-lg overflow-hidden cursor-pointer"
+    >
+      <div className="relative h-44 overflow-hidden">
+        <img
+          src={service.image}
+          alt={service.title}
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
+        <div className="absolute bottom-4 left-4">
+          <service.icon className="w-7 h-7 text-gold" />
+        </div>
+      </div>
+      <div className="p-6">
+        <h3 className="font-display text-2xl text-cream mb-2 group-hover:text-gold transition-colors">
+          {service.title}
+        </h3>
+        <p className="font-body text-sm text-gold/70 mb-3">
+          {getPricePreview(service.id)}
+        </p>
+        <p className="font-body text-muted-foreground text-sm leading-relaxed mb-3">
+          {service.description}
+        </p>
+        {service.testimonial && (
+          <p className="font-body text-[11px] text-cream/50 italic leading-relaxed mb-3">
+            "{service.testimonial.text}" — <span className="text-gold/50 not-italic">{service.testimonial.author}</span>
+          </p>
+        )}
+        <button
+          onClick={(e) => handleViewMenu(service.id, e)}
+          className="mt-1 font-body text-sm text-muted-foreground hover:text-gold transition-colors underline underline-offset-4 w-full text-center block"
+        >
+          View full menu & pricing
+        </button>
+      </div>
+    </motion.div>
+  );
+
   return (
     <>
       <section id="services" className="py-20 md:py-24 px-6 bg-gradient-to-b from-background to-card">
@@ -107,56 +150,26 @@ export const ServicesSection = () => {
             </button>
           </motion.div>
 
+          {/* Top row: 3 cards */}
           <motion.div
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6"
           >
-            {services.map((service) => (
-              <motion.div
-                key={service.title}
-                variants={cardVariants}
-                onClick={() => handleCardClick(service.id)}
-                className="group card-luxury rounded-lg overflow-hidden cursor-pointer"
-              >
-                <div className="relative h-44 overflow-hidden">
-                  <img
-                    src={service.image}
-                    alt={service.title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
-                  <div className="absolute bottom-4 left-4">
-                    <service.icon className="w-7 h-7 text-gold" />
-                  </div>
-                </div>
+            {services.slice(0, 3).map((service) => renderCard(service))}
+          </motion.div>
 
-                <div className="p-6">
-                  <h3 className="font-display text-2xl text-cream mb-2 group-hover:text-gold transition-colors">
-                    {service.title}
-                  </h3>
-                  <p className="font-body text-sm text-gold/70 mb-3">
-                    {getPricePreview(service.id)}
-                  </p>
-                  <p className="font-body text-muted-foreground text-sm leading-relaxed mb-3">
-                    {service.description}
-                  </p>
-                  {service.testimonial && (
-                    <p className="font-body text-[11px] text-cream/50 italic leading-relaxed mb-3">
-                      "{service.testimonial.text}" — <span className="text-gold/50 not-italic">{service.testimonial.author}</span>
-                    </p>
-                  )}
-                  <button
-                    onClick={(e) => handleViewMenu(service.id, e)}
-                    className="mt-1 font-body text-sm text-muted-foreground hover:text-gold transition-colors underline underline-offset-4 w-full text-center block"
-                  >
-                    View full menu & pricing
-                  </button>
-                </div>
-              </motion.div>
-            ))}
+          {/* Bottom row: 2 cards centered */}
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:max-w-[calc(66.666%+0.75rem)] mx-auto"
+          >
+            {services.slice(3).map((service) => renderCard(service))}
           </motion.div>
         </div>
       </section>

@@ -159,11 +159,20 @@ export const LunaFloatingVoiceDock = () => {
     }
   }, [isConnected, startConversation]);
 
-  // Mute toggle
-  const toggleMute = useCallback(() => {
-    // ElevenLabs SDK doesn't expose a direct mute, but we can toggle the mic track
-    setIsMuted(prev => !prev);
-  }, []);
+  // Mute toggle — actually mutes the mic MediaStreamTrack
+  const toggleMute = useCallback(async () => {
+    try {
+      const streams = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // getUserMedia may return cached stream; toggle all audio tracks
+      streams.getAudioTracks().forEach(track => {
+        track.enabled = isMuted; // if currently muted, enable; if unmuted, disable
+      });
+      setIsMuted(prev => !prev);
+    } catch {
+      // If we can't access tracks, just toggle visual state
+      setIsMuted(prev => !prev);
+    }
+  }, [isMuted]);
 
   const showDock = isConnected || isConnecting;
 

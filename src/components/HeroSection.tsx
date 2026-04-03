@@ -55,16 +55,8 @@ export const HeroSection = () => {
         </motion.div>
 
 
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
-          className="font-body text-base md:text-lg text-muted-foreground max-w-xl mx-auto mb-10 tracking-wide"
-        >
-          Tucson's trusted beauty destination for 24+ years.
-          <br className="hidden md:block" />
-          Real stylists. Real transformations. Your next level of confidence.
-        </motion.p>
+        {/* Spacer — redundant copy removed (P1 #6) */}
+        <div className="mb-10" />
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}

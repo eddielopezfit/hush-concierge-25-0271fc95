@@ -53,7 +53,9 @@ export const BookingCallbackSection = () => {
     });
   }, [conciergeContext, userTouched]);
 
-  const isFormValid = formData.fullName.trim().length > 0 && formData.phone.trim().length > 0;
+  const phoneDigits = formData.phone.replace(/\D/g, "");
+  const isPhoneValid = phoneDigits.length >= 10;
+  const isFormValid = formData.fullName.trim().length > 0 && isPhoneValid;
 
 
   const handleInputChange = (field: string, value: string) => {
@@ -227,10 +229,13 @@ export const BookingCallbackSection = () => {
                       }`}
                       maxLength={20}
                     />
-                    {isFieldValid("phone") && (
+                    {isPhoneValid && (
                       <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gold" />
                     )}
                   </div>
+                  {formData.phone.trim().length > 0 && !isPhoneValid && (
+                    <p className="font-body text-xs text-destructive mt-1">Please enter a valid 10-digit phone number</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">

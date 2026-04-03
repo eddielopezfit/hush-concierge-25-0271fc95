@@ -114,7 +114,7 @@ export const TestimonialsSection = () => {
         </motion.div>
 
         {/* Desktop: 2x3 grid showing 6 reviews at once */}
-        <div className="hidden md:block">
+        <div className="hidden md:block" onMouseEnter={() => setIsAutoPlaying(false)} onMouseLeave={() => setIsAutoPlaying(true)}>
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
             {testimonials.slice(0, 6).map((testimonial, index) => (
               <motion.div
@@ -197,18 +197,9 @@ export const TestimonialsSection = () => {
             </button>
 
             <div className="flex items-center gap-1.5">
-              {testimonials.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => { setCurrentIndex(i); handleInteraction(); }}
-                  className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
-                    currentIndex === i
-                      ? "bg-gold w-4"
-                      : "bg-gold/25"
-                  }`}
-                  aria-label={`Review ${i + 1}`}
-                />
-              ))}
+              <span className="font-body text-xs text-cream/50">
+                {currentIndex + 1} / {testimonials.length}
+              </span>
             </div>
 
             <button
