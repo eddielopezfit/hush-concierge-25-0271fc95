@@ -107,12 +107,26 @@ export const ServicesSection = () => {
             </button>
           </motion.div>
 
+          {/* Top row: 3 cards */}
           <motion.div
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 [&>*:nth-child(n+4)]:lg:col-span-1 [&>*:nth-child(4)]:lg:col-start-1 lg:[&>*:nth-last-child(2)]:justify-self-end lg:[&>*:last-child]:justify-self-start"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6"
+          >
+            {services.slice(0, 3).map((service) => (
+              <ServiceCard key={service.title} service={service} onViewMenu={handleViewMenu} onCardClick={handleCardClick} getPricePreview={getPricePreview} />
+            ))}
+          </motion.div>
+
+          {/* Bottom row: 2 cards centered */}
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-[calc(66.666%+0.75rem)] mx-auto"
           >
             {services.map((service) => (
               <motion.div
