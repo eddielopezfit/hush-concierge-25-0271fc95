@@ -325,27 +325,39 @@ export const ArtistsSection = () => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className={`grid gap-4 md:gap-5 ${
+              >
+                <div className={`grid gap-4 md:gap-5 ${
                   isFiltered
                     ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
                     : "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"
-                }`}
-              >
-                {filteredTeam.map((artist, index) => (
-                  <motion.div
-                    key={artist.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.35, delay: index * 0.04 }}
-                  >
-                    <SmartCard
-                      artist={artist}
-                      isFiltered={isFiltered}
-                      onClick={() => { trackArtistClick(artist.name); setSelectedArtist(artist); }}
-                      onCompare={() => handleCompareWithLuna(artist)}
-                    />
-                  </motion.div>
-                ))}
+                }`}>
+                  {(showAll || isFiltered ? filteredTeam : filteredTeam.slice(0, 6)).map((artist, index) => (
+                    <motion.div
+                      key={artist.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.35, delay: index * 0.04 }}
+                    >
+                      <SmartCard
+                        artist={artist}
+                        isFiltered={isFiltered}
+                        onClick={() => { trackArtistClick(artist.name); setSelectedArtist(artist); }}
+                      />
+                    </motion.div>
+                  ))}
+                </div>
+
+                {/* Expand button — only when unfiltered and more than 6 */}
+                {!isFiltered && filteredTeam.length > 6 && !showAll && (
+                  <div className="text-center mt-8">
+                    <button
+                      onClick={() => setShowAll(true)}
+                      className="font-body text-sm text-muted-foreground hover:text-gold transition-colors underline underline-offset-4"
+                    >
+                      View Full Team ({filteredTeam.length} artists)
+                    </button>
+                  </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
