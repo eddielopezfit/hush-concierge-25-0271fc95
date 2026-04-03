@@ -19,12 +19,12 @@ const filterChips: { id: string; label: string; icon?: typeof Scissors }[] = [
 ];
 
 const helperStrips: Record<string, string> = {
-  all: "Each artist has a different style and strength — Luna can walk you through the options.",
-  hair: "Not sure who fits best for your hair goals? Luna can help you compare.",
-  nails: "Our nail artists each specialize in different techniques — Luna can help narrow it down.",
-  lashes: "Whether it's your first set or a fill, Luna can help match the right approach.",
-  skincare: "Our estheticians each bring a different focus — Luna can help you decide.",
-  massage: "Luna can help you figure out the right pressure and approach for your visit.",
+  all: "Each artist has a different style and strength — call our front desk to find your perfect match.",
+  hair: "Not sure who fits best for your hair goals? Our front desk can help match you.",
+  nails: "Our nail artists each specialize in different techniques — call us for a recommendation.",
+  lashes: "Whether it's your first set or a fill, our team can help match the right approach.",
+  skincare: "Our estheticians each bring a different focus — the front desk can help you decide.",
+  massage: "Our front desk can help you figure out the right pressure and approach for your visit.",
 };
 
 /** Check if a team member matches a category */
