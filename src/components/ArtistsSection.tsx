@@ -408,6 +408,13 @@ export const ArtistsSection = () => {
                   {selectedArtist.description}
                 </p>
 
+                {/* Rich legacy bio */}
+                {selectedArtist.legacyBio && (
+                  <p className="font-body text-sm text-foreground/70 italic leading-relaxed mb-4 max-w-xs border-l-2 border-primary/30 pl-3 text-left">
+                    {selectedArtist.legacyBio}
+                  </p>
+                )}
+
                 {/* Fit statement */}
                 {selectedArtist.fitStatement && (
                   <p className="font-body text-xs text-foreground/60 italic mb-4 max-w-xs">
