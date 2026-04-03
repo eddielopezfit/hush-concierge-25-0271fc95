@@ -236,7 +236,6 @@ export const BookingCallbackSection = () => {
                   {formData.phone.trim().length > 0 && !isPhoneValid && (
                     <p className="font-body text-xs text-destructive mt-1">Please enter a valid 10-digit phone number</p>
                   )}
-                  </div>
                 </div>
 
                 <div className="space-y-2">
