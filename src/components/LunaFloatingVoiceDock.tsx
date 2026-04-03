@@ -195,13 +195,14 @@ export const LunaFloatingVoiceDock = () => {
             exit={{ opacity: 0, y: 10, scale: 0.9 }}
             transition={{ type: "spring", stiffness: 260, damping: 22 }}
             onClick={handleActivate}
-            className="fixed bottom-24 right-6 z-[9998] hidden md:flex items-center gap-2.5 px-5 py-3 rounded-full
+            className="fixed bottom-[7.5rem] md:bottom-24 left-6 md:left-auto md:right-6 z-[9998] flex items-center gap-2.5 px-5 py-3 rounded-full
               bg-gradient-to-r from-primary to-primary/90 shadow-[var(--shadow-gold)]
               hover:shadow-[0_0_50px_hsl(38_50%_55%/0.45)] transition-shadow cursor-pointer
               font-body text-sm font-medium text-primary-foreground tracking-wide"
           >
             <Mic className="w-4 h-4" />
-            Speak with Luna
+            <span className="hidden md:inline">AI Concierge</span>
+            <span className="md:hidden">AI Concierge</span>
           </motion.button>
         )}
       </AnimatePresence>

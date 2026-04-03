@@ -98,9 +98,6 @@ export const FooterSection = () => {
                 Privacy Policy
               </button>
             </div>
-            <p className="text-sm text-muted-foreground font-body">
-              Powered by AI
-            </p>
           </div>
         </div>
       </div>
