@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useMemo, useEffect } from "react";
-import { X, Sparkles, Scissors, Hand, Eye, Heart, MessageSquare } from "lucide-react";
+import { X, Sparkles, Scissors, Hand, Eye, Heart, Phone } from "lucide-react";
 import { useLuna } from "@/contexts/LunaContext";
 import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
 import { photoMap, getFounders, getTeam, TeamMember } from "@/data/teamData";
