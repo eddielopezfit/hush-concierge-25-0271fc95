@@ -70,10 +70,9 @@ interface SmartCardProps {
   artist: TeamMember;
   isFiltered: boolean;
   onClick: () => void;
-  onCompare: () => void;
 }
 
-const SmartCard = ({ artist, isFiltered, onClick, onCompare }: SmartCardProps) => (
+const SmartCard = ({ artist, isFiltered, onClick }: SmartCardProps) => (
   <div className="group cursor-pointer flex flex-col">
     <div
       className="relative aspect-[3/4] rounded-t-lg overflow-hidden border border-b-0 border-border hover:border-primary/30 transition-all duration-500 group-hover:shadow-[0_0_25px_-5px_hsl(38_50%_55%/0.2)]"
