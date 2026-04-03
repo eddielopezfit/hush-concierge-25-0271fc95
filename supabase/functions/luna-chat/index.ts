@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
+import { buildChatSystemPrompt } from "../_shared/luna-brain.ts";
 // ── Environment ─────────────────────────────────────────────────────────────
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
