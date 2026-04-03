@@ -1,74 +1,102 @@
 
 
-# Assessment: This Audit Is Outdated — Here's What Actually Remains
+# Full UI/UX & End-User Experience Audit
 
-## Key Finding
+## Critical Issue: Dual Panel Conflict (User-Reported)
 
-This audit describes the project from **weeks ago** — before the major backend buildout. The vast majority of its "critical" findings have already been resolved. Here is the real current status.
+**Root cause found.** In `BookingDecisionCard.tsx` line 87-93, `handleTertiary()` calls BOTH `openChatWidget()` AND `openModal(context)`:
 
-## Already Resolved (No Action Needed)
+```typescript
+const handleTertiary = () => {
+  if (onChatWithLuna) {
+    onChatWithLuna();
+  } else {
+    openChatWidget();          // Opens LunaChatWidget panel
+    if (context) openModal(context);  // ALSO opens LunaModal overlay
+  }
+};
+```
 
-| Audit Claim | Current Reality |
-|---|---|
-| "No edge functions exist" | 9 deployed: luna-chat, session-start, submit-lead, capture-lead, lead-qualify, request-callback, session-summarize, voice-session-log, plus _shared/ |
-| "No database tables" | 7 tables live: conversations, messages, guest_profiles, leads, callback_requests, artists, services, knowledge_items |
-| "Text chat does not exist" | luna-chat edge function is live, streaming, using shared brain |
-| "No shared brain file" | `_shared/luna-brain.ts` is canonical and active |
-| "Callback form is fake" | submit-lead edge function handles leads + callbacks with Slack routing |
-| ".env committed to repo" | Managed by Lovable Cloud — not a user-controlled .env |
-| "Footer hours wrong (7pm)" | Footer now shows "Open @ 9 AM" (vague but not wrong) |
-| "Social links are href=#" | Instagram and Facebook links are real URLs |
-| "Get Directions is href=#" | Real Google Maps link is wired |
-| "Testimonials are fabricated" | Now show real-sounding reviews with named clients and sources |
-| "No session/conversation ID" | session-start generates conversation_id + guest_profile_id |
-| "No returning client detection" | Fingerprinting + guest_profiles table with visit_count |
-| "No CORS handling" | CORS allowlist implemented in edge functions |
+This means when a user completes the Experience Finder quiz, sees the Reveal Card, and clicks "Chat with Luna" — both the full-screen LunaModal AND the bottom-right LunaChatWidget open simultaneously, exactly as shown in the screenshot.
 
-## What Actually Remains — Real Gaps
+**Fix:** Remove the `openModal(context)` call from `handleTertiary`. The intent is to open the chat widget, not both.
 
-These are the **only items from this audit that are still valid**:
+---
 
-### 1. ExperienceCategories Ghost Services (Medium Priority)
-The subcategory lists in `ExperienceCategoriesSection.tsx` still include services that do not exist in `servicesMenuData.ts`:
-- **Nails**: "Dip Powder" — not offered
-- **Lashes**: "Brow Lamination" — not offered  
-- **Skincare**: "Chemical Peel", "LED Therapy" — not offered
-- **Massage**: "Hot Stone", "Couples Massage", "Prenatal" — not offered
+## All Issues Found (Priority Order)
 
-**Fix**: Replace ghost subcategories with real services from `servicesMenuData.ts`.
+### 1. DUAL PANEL BUG (Critical — Blocks Presentation)
+- **File:** `BookingDecisionCard.tsx` line 91-93
+- **Fix:** `handleTertiary` should only call `openChatWidget()`, not also `openModal(context)`
 
-### 2. Footer Hours Are Vague (Low Priority)
-Currently shows "Tue – Sat: Open @ 9 AM" without closing times. The correct hours are:
-- Tue–Fri: 9 AM – 6 PM
-- Sat: 9 AM – 4 PM
+### 2. HERO MOBILE HOURS BADGE WRONG (High)
+- **File:** `HeroSection.tsx` line 119
+- Shows "Open Today · 9am – 7pm" — hardcoded and incorrect
+- Salon closes at 6 PM (Tue-Fri) and 4 PM (Sat), and is closed Sun/Mon
+- **Fix:** Make this dynamic based on day of week, or remove it. At minimum change to correct hours.
 
-**Fix**: Update to show full hours with closing times.
+### 3. FLOATING ELEMENTS OVERLAP ON MOBILE (High)
+Three fixed-position elements compete for bottom-right space:
+- `MobileStickyBar` — `bottom-0`, `z-40`
+- `LunaChatWidget` bubble — `bottom-24 md:bottom-6 right-6`, `z-[9999]`
+- `LunaFloatingVoiceDock` pill — `bottom-24 right-6`, `z-[9998]`, `hidden md:flex`
 
-### 3. ElevenLabs Agent ID Hardcoded Client-Side (Low Priority for Demo)
-Still exposed in the bundle. Acceptable for current stage but should be proxied through an edge function before high-traffic public launch.
+The voice dock is desktop-only (`hidden md:flex`), but the chat widget bubble sits at `bottom-24` on mobile which puts it right above the sticky bar. When the chat panel opens on mobile (`max-md:h-[92vh]`), it covers almost the full screen — this is correct. But the bubble + sticky bar stack looks cramped.
 
-### 4. No Context TTL in localStorage (Low Priority)
-Stale concierge context from days-old sessions can persist. A 24-hour expiry would be a clean safeguard.
+**Fix:** On mobile, the chat bubble should sit higher (e.g., `bottom-28`) to clear the sticky bar padding, or integrate the "Ask Luna" action into the sticky bar itself.
+
+### 4. LUNA MODAL + EXPERIENCE REVEAL CARD REDUNDANCY (Medium)
+When the quiz completes, both the ExperienceRevealCard (inline) and the LunaModal (if triggered via "Chat with Luna" or "Speak with Luna") show the same context chips and "soft direction" text. The user sees their selections twice in different formats. This creates visual clutter rather than progressive disclosure.
+
+**Fix:** The LunaModal should not re-render context chips when coming from the reveal card — it should go straight to CTAs.
+
+### 5. LEAD CAPTURE IN LUNAMODAL SAVES TO LOCALSTORAGE ONLY (Medium)
+- **File:** `LunaModal.tsx` line 115-123
+- The exit-intent lead capture (`handleLeadSubmit`) saves phone + context to `localStorage` only — NOT to the database
+- Meanwhile `BookingDecisionCard` correctly uses `saveLead()` and `saveCallbackRequest()` to persist to the backend
+- **Fix:** Replace the localStorage save with the same `saveLead()` call used elsewhere
+
+### 6. VOICE DOCK MUTE BUTTON IS A NO-OP (Medium)
+- **File:** `LunaFloatingVoiceDock.tsx` line 115-118
+- `toggleMute` only toggles React state — it does not actually mute the microphone track
+- Comment says "ElevenLabs SDK doesn't expose a direct mute" but the actual mic track from `getUserMedia` could be disabled
+- **Fix:** Access the audio track and set `enabled = false` on mute
+
+### 7. NO "START OVER" ON REVEAL STEP (Low)
+- **File:** `ExperienceFinderSection.tsx` line 668-678
+- The "Start over" link is shown on steps 2-5 but NOT on the reveal step (`currentStep !== "reveal"` is excluded)
+- If a user wants to redo the quiz after seeing results, there's no obvious reset
+- **Fix:** Show "Start over" on the reveal step too
+
+### 8. PERSONALIZED PLAN SECTION INVISIBLE WITHOUT QUIZ (Low — Correct Behavior)
+- `PersonalizedPlanSection` returns `null` when `categories.length === 0` — this is correct but means first-time visitors see a gap in page flow between ExperienceFinder and Services sections
+
+### 9. EXPERIENCE FINDER MIN-HEIGHT CREATES DEAD SPACE (Low)
+- Line 380: `min-h-[420px]` with `pb-24 md:pb-0` — on desktop after quiz completion, the reveal card may leave significant whitespace below due to the fixed min-height container
+
+---
 
 ## Implementation Plan
 
-### File 1: `src/components/ExperienceCategoriesSection.tsx`
-Replace ghost subcategories with real services derived from `servicesMenuData.ts`:
-- **Nails**: "Classic Manicure", "Gel Manicure", "Classic Pedicure", "Gel Pedicure", "Nail Set", "Nail Set w/Gel"
-- **Lashes**: "Classic Full Set", "Volume Full Set", "Hybrid Set", "Lash Fill", "Lash Lift & Perm", "Lash Tint"
-- **Skincare**: "Signature Facial", "HydraFacial", "Dermaplaning", "Microneedling", "Spray Tan", "Brow Wax"
-- **Massage**: "60 min Massage", "90 min Massage", "120 min Massage" (only 3 — matches actual menu)
+### File 1: `src/components/BookingDecisionCard.tsx`
+- Remove `openModal(context)` from `handleTertiary` (line 92)
+- Keep only `openChatWidget()`
 
-### File 2: `src/components/FooterSection.tsx`
-Update hours display from "Tue – Sat: Open @ 9 AM" to:
-```
-Tue – Fri: 9 AM – 6 PM
-Sat: 9 AM – 4 PM
-Sun & Mon: Closed
-```
+### File 2: `src/components/HeroSection.tsx`
+- Replace hardcoded "Open Today · 9am – 7pm" (line 119) with day-aware logic:
+  - Mon/Sun: "Closed Today"
+  - Tue-Fri: "Open Today · 9 AM – 6 PM"
+  - Sat: "Open Today · 9 AM – 4 PM"
 
-### File 3: `src/lib/conciergeStore.ts`
-Add a 24-hour TTL check to `getConciergeContext()` — if stored context is older than 24 hours, clear it and return null.
+### File 3: `src/components/LunaModal.tsx`
+- Replace localStorage lead save (lines 115-123) with `saveLead()` from `@/lib/saveSession`
 
-### No backend/database changes required.
+### File 4: `src/components/ExperienceFinderSection.tsx`
+- Change line 669 condition to also show "Start over" on the reveal step:
+  `{currentStep !== 1 && (` instead of `{currentStep !== 1 && currentStep !== "reveal" && (`
+
+### File 5: `src/components/LunaChatWidget.tsx`
+- Adjust mobile bubble position from `bottom-24` to `bottom-[6.5rem]` to better clear the MobileStickyBar
+
+### No backend or database changes required.
 
