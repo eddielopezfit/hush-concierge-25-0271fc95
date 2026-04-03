@@ -666,7 +666,7 @@ export const ExperienceFinderSection = () => {
         </div>
 
         {/* Reset link */}
-        {currentStep !== 1 && currentStep !== "reveal" && (
+        {currentStep !== 1 && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center mt-4">
             <button
               onClick={handleReset}

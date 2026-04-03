@@ -89,7 +89,6 @@ export const BookingDecisionCard = ({
       onChatWithLuna();
     } else {
       openChatWidget();
-      if (context) openModal(context);
     }
   };
 
