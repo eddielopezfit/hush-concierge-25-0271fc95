@@ -49,6 +49,9 @@ export const HeroSection = () => {
           <p className="font-display text-xl md:text-2xl text-cream/70 mb-2 italic">
             Where Tucson Comes to Feel Legendary
           </p>
+          <p className="font-body text-sm text-cream/45 tracking-wide">
+            Five departments · Three founders still behind the chair · 24 years of transformations
+          </p>
         </motion.div>
 
         {/* Trust Badge Strip */}
