@@ -210,7 +210,7 @@ export const ArtistsSection = () => {
               Meet the <span className="text-gold-gradient">Rockstars</span>
             </h2>
             <p className="font-body text-muted-foreground text-base max-w-lg mx-auto">
-              Real people with real talent. Not sure who's right for you? Luna can help you compare.
+              Real people with real talent. Not sure who's right for you? Our front desk can help match you.
             </p>
           </motion.div>
 
