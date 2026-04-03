@@ -61,7 +61,7 @@ export const LunaChatWidget = () => {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
             transition={{ type: "spring", stiffness: 260, damping: 20 }}
-            className="fixed bottom-20 md:bottom-6 right-6 z-[9999] flex flex-col items-center gap-1.5"
+            className="fixed bottom-24 md:bottom-6 right-6 z-[9999] flex flex-col items-center gap-1.5"
           >
             <motion.button
               onClick={handleOpen}

@@ -32,27 +32,25 @@ const Index = () => {
       <HeroSection />
       {/* Trust bar — social proof before quiz */}
       <TrustBar />
-      {/* 2. Experience Finder — guided discovery (central feature) */}
+      {/* 2. Experience Finder — guided discovery */}
       <ExperienceFinderSection />
-      {/* 3. Services — what we do */}
+      {/* 3. Personalized Plan — immediately after quiz reveal */}
+      <PersonalizedPlanSection />
+      {/* 4. Services — what we do */}
       <ServicesSection />
       {/* Conversion touchpoint */}
       <InlineCallbackCTA />
-      {/* 4. Team — stylist trust + matching */}
+      {/* 5. Team — stylist trust + matching */}
       <ArtistsSection />
-      {/* Conversion touchpoint */}
-      <InlineCallbackCTA />
-      {/* 5. Build Experience — custom packages via Luna */}
-      <PersonalizedPlanSection />
       {/* 6. Testimonials — social proof */}
       <TestimonialsSection />
-      {/* 6. About — the Hush story */}
+      {/* 7. About — the Hush story */}
       <AboutSection />
-      {/* 7. Community — loyalty / belonging */}
+      {/* 8. Community — loyalty / belonging */}
       <CommunitySection />
-      {/* 8. Booking + Callback — unified conversion */}
+      {/* 9. Booking + Callback — unified conversion */}
       <BookingCallbackSection />
-      {/* 9. Footer */}
+      {/* 10. Footer */}
       <FooterSection />
       <MobileStickyBar />
 

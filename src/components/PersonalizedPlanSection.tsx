@@ -5,6 +5,7 @@ import { categoryLabels, goalLabels, timingLabels } from "@/lib/conciergeLabels"
 import { ServiceCategoryId } from "@/types/concierge";
 import { getUpsells, UpsellItem } from "@/lib/upsellEngine";
 import { getCadenceRecommendations, CadenceRecommendation } from "@/lib/cadenceEngine";
+import { getEmotionalLine } from "@/lib/emotionalCopy";
 import { useMemo } from "react";
 
 const visitTypeMap: Record<string, { label: string; emoji: string }> = {
@@ -38,6 +39,7 @@ export const PersonalizedPlanSection = () => {
   const upsells = useMemo(() => getUpsells(conciergeContext), [conciergeContext]);
   const cadence = useMemo(() => getCadenceRecommendations(categories), [categories]);
   const timeEstimate = getTimeEstimate(categories);
+  const emotionalLine = getEmotionalLine(goal);
 
   if (categories.length === 0) return null;
 
@@ -53,7 +55,7 @@ export const PersonalizedPlanSection = () => {
   };
 
   return (
-    <section className="py-12 md:py-16 px-6 relative overflow-hidden">
+    <section id="personalized-plan" className="py-12 md:py-16 px-6 relative overflow-hidden">
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/3 right-1/4 w-72 h-72 bg-primary/[0.03] rounded-full blur-3xl" />
       </div>
@@ -87,6 +89,12 @@ export const PersonalizedPlanSection = () => {
               <h3 className="font-display text-xl md:text-2xl text-cream mb-2">
                 {visitType.emoji} {visitType.label} Visit
               </h3>
+              {/* Emotional opening line */}
+              {emotionalLine && (
+                <p className="font-body text-sm text-cream/60 leading-relaxed max-w-md mx-auto italic">
+                  {emotionalLine}
+                </p>
+              )}
             </motion.div>
 
             {/* Service + context pills */}
@@ -151,13 +159,18 @@ export const PersonalizedPlanSection = () => {
                 </div>
                 <div className="space-y-2">
                   {upsells.map((item: UpsellItem) => (
-                    <div key={item.name} className="flex items-center justify-between py-2 px-3 rounded-lg bg-background/50 border border-border/50">
+                    <motion.div
+                      key={item.name}
+                      className="flex items-center justify-between py-2 px-3 rounded-lg bg-background/50 border border-border/50 transition-colors hover:border-gold/20 hover:bg-gold/[0.02]"
+                      whileHover={{ x: 2 }}
+                      transition={{ duration: 0.15 }}
+                    >
                       <div className="flex-1 min-w-0">
                         <span className="font-body text-sm text-cream">{item.name}</span>
                         <p className="font-body text-xs text-muted-foreground mt-0.5">{item.description}</p>
                       </div>
                       <span className="font-body text-xs text-gold ml-3 shrink-0">{item.price}</span>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
                 <p className="font-body text-[10px] text-muted-foreground/60 mt-3 text-center">
@@ -199,6 +212,19 @@ export const PersonalizedPlanSection = () => {
               </motion.div>
             )}
 
+            {/* Artist matching — neutral */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.55 }}
+              className="rounded-xl border border-gold/10 bg-gold/[0.02] p-4 text-center"
+            >
+              <p className="font-body text-sm text-cream/70 leading-relaxed">
+                For this experience, our team will pair you with a stylist who specializes in exactly what you're looking for.
+              </p>
+            </motion.div>
+
             {/* CTA */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
@@ -210,7 +236,7 @@ export const PersonalizedPlanSection = () => {
                 onClick={handleScrollToBooking}
                 className="btn-gold py-3 px-8 text-sm w-full flex items-center justify-center gap-2"
               >
-                Request Your Appointment
+                Reserve Your Experience
                 <ChevronRight className="w-4 h-4" />
               </button>
             </motion.div>
