@@ -451,14 +451,14 @@ export const ArtistsSection = () => {
                   <span>Book with {selectedArtist.name.split(" ")[0]}</span>
                 </motion.button>
 
-                {/* Compare CTA */}
-                <button
-                  onClick={() => { setSelectedArtist(null); handleCompareWithLuna(selectedArtist); }}
+                {/* Call CTA */}
+                <a
+                  href="tel:+15203276753"
                   className="flex items-center justify-center gap-2 text-xs font-body text-muted-foreground hover:text-primary transition-colors py-2"
                 >
-                  <MessageSquare className="w-3.5 h-3.5" />
-                  Compare options with Luna
-                </button>
+                  <Phone className="w-3.5 h-3.5" />
+                  Call front desk for matching
+                </a>
               </div>
             </motion.div>
           </motion.div>
