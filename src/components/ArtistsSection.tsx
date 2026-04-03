@@ -118,14 +118,6 @@ const SmartCard = ({ artist, isFiltered, onClick }: SmartCardProps) => (
           </div>
         )}
 
-        {/* Compare with Luna */}
-        <button
-          onClick={(e) => { e.stopPropagation(); onCompare(); }}
-          className="flex items-center gap-1.5 text-[10px] font-body text-muted-foreground hover:text-primary transition-colors pt-0.5"
-        >
-          <MessageSquare className="w-3 h-3" />
-          Compare with Luna
-        </button>
       </motion.div>
     )}
   </div>
