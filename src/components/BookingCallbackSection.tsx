@@ -53,7 +53,9 @@ export const BookingCallbackSection = () => {
     });
   }, [conciergeContext, userTouched]);
 
-  const isFormValid = formData.fullName.trim().length > 0 && formData.phone.trim().length > 0;
+  const phoneDigits = formData.phone.replace(/\D/g, "");
+  const isPhoneValid = phoneDigits.length >= 10;
+  const isFormValid = formData.fullName.trim().length > 0 && isPhoneValid;
 
 
   const handleInputChange = (field: string, value: string) => {
