@@ -1,8 +1,10 @@
 import { useEffect } from "react";
 import { Navigation } from "@/components/Navigation";
 import { HeroSection } from "@/components/HeroSection";
+import { TrustBar } from "@/components/TrustBar";
 import { ExperienceFinderSection } from "@/components/ExperienceFinderSection";
 import { ServicesSection } from "@/components/ServicesSection";
+import { InlineCallbackCTA } from "@/components/InlineCallbackCTA";
 import { ArtistsSection } from "@/components/ArtistsSection";
 import { BuildExperienceSection } from "@/components/BuildExperienceSection";
 import { TestimonialsSection } from "@/components/TestimonialsSection";
@@ -28,12 +30,18 @@ const Index = () => {
       <Navigation />
       {/* 1. Hero — value prop + dual CTA */}
       <HeroSection />
+      {/* Trust bar — social proof before quiz */}
+      <TrustBar />
       {/* 2. Experience Finder — guided discovery (central feature) */}
       <ExperienceFinderSection />
       {/* 3. Services — what we do */}
       <ServicesSection />
+      {/* Conversion touchpoint */}
+      <InlineCallbackCTA />
       {/* 4. Team — stylist trust + matching */}
       <ArtistsSection />
+      {/* Conversion touchpoint */}
+      <InlineCallbackCTA />
       {/* 5. Build Experience — custom packages via Luna */}
       <BuildExperienceSection />
       {/* 6. Testimonials — social proof */}

@@ -113,19 +113,16 @@ export const TestimonialsSection = () => {
           </p>
         </motion.div>
 
-        {/* Desktop: 3-column grid showing 3 at a time, paginated */}
+        {/* Desktop: 2x3 grid showing 6 reviews at once */}
         <div className="hidden md:block">
-          <div className="grid grid-cols-3 gap-6">
-            {testimonials.slice(
-              Math.floor(currentIndex / 3) * 3,
-              Math.floor(currentIndex / 3) * 3 + 3
-            ).map((testimonial, index) => (
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+            {testimonials.slice(0, 6).map((testimonial, index) => (
               <motion.div
                 key={testimonial.author}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.6, delay: index * 0.15 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
                 className="card-luxury rounded-lg p-8 relative"
               >
                 <Quote className="absolute top-6 right-6 w-8 h-8 text-gold/15" />
@@ -147,20 +144,16 @@ export const TestimonialsSection = () => {
             ))}
           </div>
 
-          {/* Desktop pagination dots */}
-          <div className="flex items-center justify-center gap-2 mt-8">
-            {Array.from({ length: Math.ceil(testimonials.length / 3) }).map((_, i) => (
-              <button
-                key={i}
-                onClick={() => { setCurrentIndex(i * 3); handleInteraction(); }}
-                className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                  Math.floor(currentIndex / 3) === i
-                    ? "bg-gold w-6"
-                    : "bg-gold/25 hover:bg-gold/40"
-                }`}
-                aria-label={`Page ${i + 1}`}
-              />
-            ))}
+          {/* See all link */}
+          <div className="text-center mt-8">
+            <a
+              href="https://www.google.com/maps/place/Hush+Salon+%26+Day+Spa"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-body text-sm text-muted-foreground hover:text-gold transition-colors underline underline-offset-4"
+            >
+              See all 315+ reviews →
+            </a>
           </div>
         </div>
 

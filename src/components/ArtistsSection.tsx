@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useMemo, useEffect } from "react";
-import { X, Sparkles, Scissors, Hand, Eye, Heart, MessageSquare } from "lucide-react";
+import { X, Sparkles, Scissors, Hand, Eye, Heart, Phone } from "lucide-react";
 import { useLuna } from "@/contexts/LunaContext";
 import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
 import { photoMap, getFounders, getTeam, TeamMember } from "@/data/teamData";
@@ -19,12 +19,12 @@ const filterChips: { id: string; label: string; icon?: typeof Scissors }[] = [
 ];
 
 const helperStrips: Record<string, string> = {
-  all: "Each artist has a different style and strength — Luna can walk you through the options.",
-  hair: "Not sure who fits best for your hair goals? Luna can help you compare.",
-  nails: "Our nail artists each specialize in different techniques — Luna can help narrow it down.",
-  lashes: "Whether it's your first set or a fill, Luna can help match the right approach.",
-  skincare: "Our estheticians each bring a different focus — Luna can help you decide.",
-  massage: "Luna can help you figure out the right pressure and approach for your visit.",
+  all: "Each artist has a different style and strength — call our front desk to find your perfect match.",
+  hair: "Not sure who fits best for your hair goals? Our front desk can help match you.",
+  nails: "Our nail artists each specialize in different techniques — call us for a recommendation.",
+  lashes: "Whether it's your first set or a fill, our team can help match the right approach.",
+  skincare: "Our estheticians each bring a different focus — the front desk can help you decide.",
+  massage: "Our front desk can help you figure out the right pressure and approach for your visit.",
 };
 
 /** Check if a team member matches a category */
@@ -70,10 +70,9 @@ interface SmartCardProps {
   artist: TeamMember;
   isFiltered: boolean;
   onClick: () => void;
-  onCompare: () => void;
 }
 
-const SmartCard = ({ artist, isFiltered, onClick, onCompare }: SmartCardProps) => (
+const SmartCard = ({ artist, isFiltered, onClick }: SmartCardProps) => (
   <div className="group cursor-pointer flex flex-col">
     <div
       className="relative aspect-[3/4] rounded-t-lg overflow-hidden border border-b-0 border-border hover:border-primary/30 transition-all duration-500 group-hover:shadow-[0_0_25px_-5px_hsl(38_50%_55%/0.2)]"
@@ -119,14 +118,6 @@ const SmartCard = ({ artist, isFiltered, onClick, onCompare }: SmartCardProps) =
           </div>
         )}
 
-        {/* Compare with Luna */}
-        <button
-          onClick={(e) => { e.stopPropagation(); onCompare(); }}
-          className="flex items-center gap-1.5 text-[10px] font-body text-muted-foreground hover:text-primary transition-colors pt-0.5"
-        >
-          <MessageSquare className="w-3 h-3" />
-          Compare with Luna
-        </button>
       </motion.div>
     )}
   </div>
@@ -137,6 +128,7 @@ const SmartCard = ({ artist, isFiltered, onClick, onCompare }: SmartCardProps) =
 export const ArtistsSection = () => {
   const [selectedArtist, setSelectedArtist] = useState<TeamMember | null>(null);
   const [activeFilter, setActiveFilter] = useState("all");
+  const [showAll, setShowAll] = useState(false);
   const { openModal } = useLuna();
 
   // Auto-filter from concierge context
@@ -218,7 +210,7 @@ export const ArtistsSection = () => {
               Meet the <span className="text-gold-gradient">Rockstars</span>
             </h2>
             <p className="font-body text-muted-foreground text-base max-w-lg mx-auto">
-              Real people with real talent. Not sure who's right for you? Luna can help you compare.
+              Real people with real talent. Not sure who's right for you? Our front desk can help match you.
             </p>
           </motion.div>
 
@@ -333,27 +325,39 @@ export const ArtistsSection = () => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className={`grid gap-4 md:gap-5 ${
+              >
+                <div className={`grid gap-4 md:gap-5 ${
                   isFiltered
                     ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
                     : "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"
-                }`}
-              >
-                {filteredTeam.map((artist, index) => (
-                  <motion.div
-                    key={artist.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.35, delay: index * 0.04 }}
-                  >
-                    <SmartCard
-                      artist={artist}
-                      isFiltered={isFiltered}
-                      onClick={() => { trackArtistClick(artist.name); setSelectedArtist(artist); }}
-                      onCompare={() => handleCompareWithLuna(artist)}
-                    />
-                  </motion.div>
-                ))}
+                }`}>
+                  {(showAll || isFiltered ? filteredTeam : filteredTeam.slice(0, 6)).map((artist, index) => (
+                    <motion.div
+                      key={artist.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.35, delay: index * 0.04 }}
+                    >
+                      <SmartCard
+                        artist={artist}
+                        isFiltered={isFiltered}
+                        onClick={() => { trackArtistClick(artist.name); setSelectedArtist(artist); }}
+                      />
+                    </motion.div>
+                  ))}
+                </div>
+
+                {/* Expand button — only when unfiltered and more than 6 */}
+                {!isFiltered && filteredTeam.length > 6 && !showAll && (
+                  <div className="text-center mt-8">
+                    <button
+                      onClick={() => setShowAll(true)}
+                      className="font-body text-sm text-muted-foreground hover:text-gold transition-colors underline underline-offset-4"
+                    >
+                      View Full Team ({filteredTeam.length} artists)
+                    </button>
+                  </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
@@ -447,14 +451,14 @@ export const ArtistsSection = () => {
                   <span>Book with {selectedArtist.name.split(" ")[0]}</span>
                 </motion.button>
 
-                {/* Compare CTA */}
-                <button
-                  onClick={() => { setSelectedArtist(null); handleCompareWithLuna(selectedArtist); }}
+                {/* Call CTA */}
+                <a
+                  href="tel:+15203276753"
                   className="flex items-center justify-center gap-2 text-xs font-body text-muted-foreground hover:text-primary transition-colors py-2"
                 >
-                  <MessageSquare className="w-3.5 h-3.5" />
-                  Compare options with Luna
-                </button>
+                  <Phone className="w-3.5 h-3.5" />
+                  Call front desk for matching
+                </a>
               </div>
             </motion.div>
           </motion.div>

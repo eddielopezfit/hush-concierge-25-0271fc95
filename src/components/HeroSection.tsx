@@ -28,7 +28,7 @@ export const HeroSection = () => {
           loop
           playsInline
           poster={heroImage}
-          className="absolute inset-0 h-full w-full object-cover object-[center_30%] md:object-[center_35%] lg:object-contain"
+          className="hidden md:block absolute inset-0 h-full w-full object-cover object-[center_30%] md:object-[center_35%] lg:object-contain"
         >
           <source src="/videos/fashion-friday-hero.mp4" type="video/mp4" />
         </video>
@@ -48,6 +48,9 @@ export const HeroSection = () => {
           </h1>
           <p className="font-display text-xl md:text-2xl text-cream/70 mb-2 italic">
             Where Tucson Comes to Feel Legendary
+          </p>
+          <p className="font-body text-sm text-cream/45 tracking-wide">
+            Five departments · Three founders still behind the chair · 24 years of transformations
           </p>
         </motion.div>
 
@@ -104,6 +107,18 @@ export const HeroSection = () => {
             <Mic className="w-5 h-5" />
             Speak with Luna
           </motion.button>
+        </motion.div>
+
+        {/* Mobile hours badge */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.8 }}
+          className="md:hidden mt-6 flex justify-center"
+        >
+          <span className="font-body text-xs text-cream/40 bg-card/60 border border-border px-3 py-1.5 rounded-full backdrop-blur-sm">
+            Open Today · 9am – 7pm
+          </span>
         </motion.div>
       </div>
 
