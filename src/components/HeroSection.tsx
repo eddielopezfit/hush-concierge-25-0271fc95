@@ -74,7 +74,7 @@ export const HeroSection = () => {
             className="btn-outline-gold py-4 px-8 hidden sm:flex items-center gap-3"
           >
             <Mic className="w-5 h-5" />
-            Speak with Luna
+            Talk to Our AI Concierge
           </motion.button>
         </motion.div>
 

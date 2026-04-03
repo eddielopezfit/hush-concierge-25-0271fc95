@@ -240,6 +240,10 @@ export const ExperienceFinderSection = () => {
     const reveal = buildRevealData(ctx);
     setRevealData(reveal);
     setCurrentStep("reveal");
+    // Auto-scroll to the reveal card after render
+    setTimeout(() => {
+      document.getElementById("experience-reveal")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 400);
   };
 
   // ── Multi-service priority handlers ────────────────────────────────────────
