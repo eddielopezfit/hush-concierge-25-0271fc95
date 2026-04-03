@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import foundersPhoto from "@/assets/Founders_Hush.jpg";
+import salonInterior from "@/assets/salon-interior.jpg";
 
 export const AboutSection = () => {
   return (
