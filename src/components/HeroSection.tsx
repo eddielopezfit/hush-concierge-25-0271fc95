@@ -15,13 +15,26 @@ export const HeroSection = () => {
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Background Image */}
+      {/* Background Video (desktop/tablet) + Image fallback (mobile) */}
       <div className="absolute inset-0 z-0 overflow-hidden bg-background">
+        {/* Video — hidden on small mobile for performance */}
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="metadata"
+          poster={heroImage}
+          className="absolute inset-0 h-full w-full object-cover object-[center_30%] opacity-50 hidden sm:block"
+        >
+          <source src="/videos/hero-backdrop.mp4" type="video/mp4" />
+        </video>
+        {/* Static fallback for mobile */}
         <img
           src={heroImage}
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 h-full w-full object-cover object-[center_30%] opacity-50"
+          className="absolute inset-0 h-full w-full object-cover object-[center_30%] opacity-50 sm:hidden"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/30 to-background/80" />
       </div>
