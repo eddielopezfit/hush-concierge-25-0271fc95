@@ -59,6 +59,23 @@ export const ExperienceRevealCard = ({ data, onBook }: ExperienceRevealCardProps
             </div>
           </motion.div>
 
+          {/* Upsell hints */}
+          {topUpsells.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="flex flex-wrap justify-center gap-2"
+            >
+              {topUpsells.map(u => (
+                <span key={u.name} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-gold/15 bg-gold/[0.04] text-[11px] font-body text-gold/80">
+                  <Plus className="w-3 h-3" />
+                  {u.name} {u.price}
+                </span>
+              ))}
+            </motion.div>
+          )}
+
           {/* Neutral artist matching message */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
