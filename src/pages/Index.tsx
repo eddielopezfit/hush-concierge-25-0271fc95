@@ -6,7 +6,7 @@ import { ExperienceFinderSection } from "@/components/ExperienceFinderSection";
 import { ServicesSection } from "@/components/ServicesSection";
 import { InlineCallbackCTA } from "@/components/InlineCallbackCTA";
 import { ArtistsSection } from "@/components/ArtistsSection";
-import { BuildExperienceSection } from "@/components/BuildExperienceSection";
+import { PersonalizedPlanSection } from "@/components/PersonalizedPlanSection";
 import { TestimonialsSection } from "@/components/TestimonialsSection";
 import { AboutSection } from "@/components/AboutSection";
 import { CommunitySection } from "@/components/CommunitySection";
