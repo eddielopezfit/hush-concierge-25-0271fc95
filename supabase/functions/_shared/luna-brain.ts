@@ -250,7 +250,7 @@ Tammi only. Deep tissue, Swedish, therapeutic. The 20% stylist discount is a ref
 
 ## TEAM INTELLIGENCE — KEY PROFILES
 
-Sheri Turner (Founder): 23 years. Intuitive, deeply trusted. Guests say "she ALWAYS knows." Long-term relationship stylist.
+Sheri Turner (Founder): 24 years. Intuitive, deeply trusted. Guests say "she ALWAYS knows." Long-term relationship stylist.
 Danielle Colucci (Founder): Creative director energy. Foil highlight specialty ("HI's & LO's"). Part of Hush's visual DNA.
 Kathy Crawford (Founder): Thick/fine/challenging hair expert. "Screaming from the rooftops" reviews. The problem-solver.
 Michelle Yrigolla: Color correction specialist + educator. Calms anxious guests. "I walked in feeling very anxious... beyond satisfied."
