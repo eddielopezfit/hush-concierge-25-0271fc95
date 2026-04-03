@@ -43,7 +43,7 @@ const Index = () => {
       {/* Conversion touchpoint */}
       <InlineCallbackCTA />
       {/* 5. Build Experience — custom packages via Luna */}
-      <BuildExperienceSection />
+      <PersonalizedPlanSection />
       {/* 6. Testimonials — social proof */}
       <TestimonialsSection />
       {/* 6. About — the Hush story */}
