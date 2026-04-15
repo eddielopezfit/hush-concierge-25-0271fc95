@@ -109,7 +109,7 @@ export const TestimonialsSection = () => {
             ))}
           </div>
           <p className="font-body text-muted-foreground">
-            4.7 stars · 196+ verified reviews across Google & Facebook
+            4.7 stars · 315+ verified reviews across Google & Facebook
           </p>
         </motion.div>
 
@@ -152,7 +152,7 @@ export const TestimonialsSection = () => {
               rel="noopener noreferrer"
               className="font-body text-sm text-muted-foreground hover:text-gold transition-colors underline underline-offset-4"
             >
-              See all 196+ reviews →
+              See all 315+ reviews →
             </a>
           </div>
         </div>

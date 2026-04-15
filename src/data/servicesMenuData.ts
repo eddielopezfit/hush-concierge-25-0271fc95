@@ -142,7 +142,7 @@ export const servicesMenuData: ServiceCategory[] = [
     directContacts: [
       { name: "Anita", phone: "(520) 591-0208" },
       { name: "Kelli", phone: "(520) 488-7149" },
-      { name: "Jackie", phone: "(520) 501-6861" },
+      { name: "Jacky", phone: "(520) 501-6861" },
     ],
   },
   {
