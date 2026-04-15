@@ -48,7 +48,7 @@ const ERROR_QUICK_REPLIES = [
 // ── Context-aware greeting builder ──────────────────────────────────────────
 function buildContextGreeting(ctx: ConciergeContext | null): string {
   if (!ctx?.categories?.length) {
-    return "Hi — I'm Luna, your Hush concierge.\n\nI'll help you find the right service, the right stylist, and the best way to get exactly the look you want.\n\nTell me what you're thinking — or I can guide you.";
+    return "Hey there — welcome to Hush. I'm Luna.\n\nI know our entire team, every service we offer, and how to get you exactly what you're looking for. Think of me as your personal guide to the salon.\n\nWhat brings you in today?";
   }
 
   const cats = ctx.categories;
@@ -142,7 +142,7 @@ function getQuickReplies(ctx: ConciergeContext | null, lastAssistantMsg: string)
   }
 
   // Default persistent set
-  return ["Book my appointment", "Help me choose", "See pricing", "Call the front desk"];
+  return ["I'm ready to book", "Help me decide", "What will it cost?", "Connect me with the team"];
 }
 
 // ── Detect intent from assistant message for in-chat CTAs ───────────────────
@@ -190,9 +190,9 @@ function detectChatActions(msg: string, ctx: ConciergeContext | null): ChatActio
 function getSmartChips(ctx: ConciergeContext | null): string[] {
   if (!ctx?.categories?.length) {
     return [
-      "Help me figure out what I need",
-      "What's popular right now?",
-      "I'm planning a special occasion",
+      "I'm new — what should I know?",
+      "What's everyone loving right now?",
+      "I have something specific in mind",
     ];
   }
 
@@ -419,7 +419,7 @@ export const ChatTab = () => {
 
   // ── Handle "Call the front desk" quick reply specially ─────────────────────
   const handleQuickReply = useCallback((reply: string) => {
-    if (reply === "Call the front desk" || reply === "Call (520) 327-6753") {
+    if (reply === "Connect me with the team" || reply === "Call the front desk" || reply === "Call (520) 327-6753") {
       window.open("tel:+15203276753", "_self");
       return;
     }
@@ -616,7 +616,7 @@ export const ChatTab = () => {
       <div className="px-3 py-2 border-b border-border bg-background/30 flex items-center justify-between gap-2">
         {contextPills.length > 0 ? (
           <div className="flex items-center gap-1.5 flex-wrap flex-1 min-w-0">
-            <span className="text-[10px] font-body text-muted-foreground mr-0.5">You're exploring:</span>
+            <span className="text-[10px] font-body text-muted-foreground mr-0.5">Your vibe:</span>
             {contextPills.map((pill, i) => (
               <span
                 key={i}
@@ -734,7 +734,7 @@ export const ChatTab = () => {
               className="ml-4 p-3 rounded-xl border border-primary/20 bg-card/50 space-y-2"
             >
               <p className="text-xs text-muted-foreground font-body">
-                Want me to have someone reach out? Drop your info:
+                Love chatting with you — want me to have Kendell or the team follow up personally?
               </p>
               <input
                 type="text"
@@ -781,7 +781,7 @@ export const ChatTab = () => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            placeholder="Ask Luna anything..."
+            placeholder="Tell me what you're thinking..."
             disabled={isStreaming}
             className="flex-1 bg-background border border-border rounded-full px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:outline-none disabled:opacity-50"
           />

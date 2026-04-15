@@ -151,7 +151,7 @@ export const LunaChatWidget = () => {
                 <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-foreground rounded-full border-2 border-primary" />
               )}
             </motion.button>
-            <span className="font-body text-[10px] text-muted-foreground tracking-wide">AI Concierge</span>
+            <span className="font-body text-[10px] text-muted-foreground tracking-wide">Your Hush Guide</span>
           </motion.div>
         )}
       </AnimatePresence>
