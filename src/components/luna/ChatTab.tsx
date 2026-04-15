@@ -666,39 +666,19 @@ export const ChatTab = () => {
 
         {/* Smart Chips — shown after greeting only (first message) */}
         {messages.length === 1 && !isStreaming && (
-          <div className="space-y-2 mt-1">
-            <div className="flex flex-wrap gap-1.5">
-              {smartChips.map((chip) => (
-                <motion.button
-                  key={chip}
-                  initial={{ opacity: 0, y: 4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
-                  onClick={() => handleSend(chip)}
-                  className="px-3 py-1.5 rounded-full border border-primary/30 text-primary text-xs font-body hover:bg-primary/10 transition-colors"
-                >
-                  {chip}
-                </motion.button>
-              ))}
-            </div>
-
-            {/* Quick nav links */}
-            <div className="flex flex-wrap gap-1.5 pt-1">
-              <button
-                onClick={() => handleScrollToSection("services")}
-                className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-muted/50 text-muted-foreground text-[10px] font-body hover:text-foreground hover:bg-muted transition-colors"
+          <div className="flex flex-wrap gap-1.5 mt-1">
+            {smartChips.map((chip) => (
+              <motion.button
+                key={chip}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                onClick={() => handleSend(chip)}
+                className="px-3 py-2 rounded-full border border-primary/30 text-primary text-xs font-body hover:bg-primary/10 active:scale-95 transition-all"
               >
-                <ExternalLink className="w-3 h-3" />
-                Browse services
-              </button>
-              <button
-                onClick={() => handleScrollToSection("team")}
-                className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-muted/50 text-muted-foreground text-[10px] font-body hover:text-foreground hover:bg-muted transition-colors"
-              >
-                <ExternalLink className="w-3 h-3" />
-                Meet the team
-              </button>
-            </div>
+                {chip}
+              </motion.button>
+            ))}
           </div>
         )}
 
