@@ -188,7 +188,7 @@ export const LunaChatWidget = () => {
                   transition={{ delay: 0.35, duration: 0.3 }}
                 >
                   <span className="font-display text-base text-foreground">Luna</span>
-                  <span className="font-body text-[10px] text-muted-foreground ml-1.5">Hush Concierge</span>
+                  <span className="font-body text-[10px] text-muted-foreground ml-1.5">at Hush Salon & Day Spa</span>
                 </motion.div>
               </div>
               <button

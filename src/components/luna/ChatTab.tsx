@@ -123,22 +123,22 @@ function getQuickReplies(ctx: ConciergeContext | null, lastAssistantMsg: string)
 
   // Contextual variants based on conversation state
   if (lower.includes("price") || lower.includes("cost") || lower.includes("pricing")) {
-    return ["Book my appointment", "What affects price?", "Help me choose", "Call the front desk"];
+    return ["I'm ready to book", "What affects the price?", "Help me decide", "Connect me with the team"];
   }
   if (lower.includes("stylist") || lower.includes("artist") || lower.includes("specialist")) {
-    return ["Book my appointment", "Help me choose a service", "See pricing", "Call the front desk"];
+    return ["I'm ready to book", "Help me find the right service", "What will it cost?", "Connect me with the team"];
   }
   if (lower.includes("event") || lower.includes("wedding") || lower.includes("occasion")) {
-    return ["Plan my full look", "Book my appointment", "See pricing", "Call the front desk"];
+    return ["Let's plan my full look", "I'm ready to book", "What will it cost?", "Connect me with the team"];
   }
   if (lower.includes("option") || lower.includes("explore") || lower.includes("browse")) {
-    return ["Show me options", "Book my appointment", "See pricing", "Call the front desk"];
+    return ["Walk me through options", "I'm ready to book", "What will it cost?", "Connect me with the team"];
   }
   if (lower.includes("recommend") || lower.includes("suggest")) {
-    return ["Book that service", "Tell me more", "See pricing", "Call the front desk"];
+    return ["That sounds perfect — book it", "Tell me more about that", "What will it cost?", "Connect me with the team"];
   }
   if (lower.includes("ready") || lower.includes("lock") || lower.includes("reserve") || lower.includes("book")) {
-    return ["Reserve my experience", "Get a quick call back", "Help me choose", "See pricing"];
+    return ["Let's lock it in", "Have someone call me", "Help me decide", "What will it cost?"];
   }
 
   // Default persistent set
