@@ -1,16 +1,18 @@
 import { motion } from "framer-motion";
-import { ArrowDown, Sparkles, Mic } from "lucide-react";
+import { ArrowDown, Sparkles, MessageSquare } from "lucide-react";
 import heroImage from "@/assets/hero-salon.jpg";
-import { requestVoiceStart } from "@/lib/lunaVoiceBus";
+import { useLuna } from "@/contexts/LunaContext";
 
 export const HeroSection = () => {
+  const { openChatWidget } = useLuna();
+
   const handleDiscoverClick = () => {
     const finder = document.getElementById("experience-finder");
     if (finder) finder.scrollIntoView({ behavior: "smooth" });
   };
 
-  const handleSpeakWithLuna = () => {
-    requestVoiceStart("hero");
+  const handleTalkToLuna = () => {
+    openChatWidget();
   };
 
   return (
@@ -31,52 +33,55 @@ export const HeroSection = () => {
             muted
             playsInline
             preload="auto"
+            className="hidden md:block absolute inset-0 w-full h-full object-cover"
             poster={heroImage}
-            className="absolute inset-0 h-full w-full object-cover object-[center_30%] hidden sm:block"
           >
-            <source src="/videos/hero-backdrop.mp4" type="video/mp4" />
+            <source src="https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets//Hush_Hero_Cinematic.mp4" type="video/mp4" />
           </video>
-          {/* Mobile — compressed smaller video */}
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="auto"
-            poster={heroImage}
-            className="absolute inset-0 h-full w-full object-cover object-[center_30%] sm:hidden"
-          >
-            <source src="/videos/hero-backdrop-mobile.mp4" type="video/mp4" />
-          </video>
+
+          {/* Mobile — static image (saves bandwidth) */}
+          <img
+            src={heroImage}
+            alt="Hush Salon interior"
+            className="md:hidden absolute inset-0 w-full h-full object-cover"
+            loading="eager"
+          />
         </motion.div>
-        {/* Multi-layer overlay for text readability */}
-        <div className="absolute inset-0 bg-background/50" />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/40 to-background/85" />
+
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/30 to-background/90" />
       </div>
 
       {/* Content */}
-      <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
-        <motion.div
+      <div className="relative z-10 text-center px-4 max-w-4xl mx-auto pt-20 md:pt-0">
+        <motion.h1
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, ease: "easeOut" }}
+          transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
+          className="font-display text-5xl md:text-7xl lg:text-8xl font-bold text-cream mb-4"
         >
-          <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-semibold tracking-tight mb-4 text-cream">
-            Welcome to{" "}
-            <span className="text-gold-gradient">Hush</span>
-          </h1>
-          <p className="font-display text-xl md:text-2xl text-cream/70 mb-2 italic">
-            Where Tucson Comes to Feel Legendary
-          </p>
-          <p className="font-body text-sm text-cream/45 tracking-wide">
-            Five departments · Three founders still behind the chair · 24 years of transformations
-          </p>
-        </motion.div>
+          Welcome to <span className="text-gold-gradient">Hush</span>
+        </motion.h1>
 
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.35, ease: "easeOut" }}
+          className="font-display text-xl md:text-2xl text-cream/70 italic mb-3"
+        >
+          Where Tucson Comes to Feel Legendary
+        </motion.p>
 
-        {/* Spacer — redundant copy removed (P1 #6) */}
-        <div className="mb-10" />
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1, delay: 0.5 }}
+          className="font-body text-sm md:text-base text-cream/50 mb-10 tracking-wide"
+        >
+          Five departments · Three founders still behind the chair · 24 years of transformations
+        </motion.p>
 
+        {/* CTAs — hidden on mobile (sticky bar handles it) */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -94,14 +99,14 @@ export const HeroSection = () => {
             Find Your Experience
           </motion.button>
 
-          {/* Secondary CTA — speak with Luna (hidden on mobile, sticky bar handles it) */}
+          {/* Secondary CTA — chat with Luna */}
           <motion.button
-            onClick={handleSpeakWithLuna}
+            onClick={handleTalkToLuna}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className="btn-outline-gold py-4 px-8 hidden sm:flex items-center gap-3"
           >
-            <Mic className="w-5 h-5" />
+            <MessageSquare className="w-5 h-5" />
             Talk to Our AI Concierge
           </motion.button>
         </motion.div>

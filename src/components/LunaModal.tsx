@@ -1,9 +1,8 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Mic, MessageSquare, Phone } from "lucide-react";
+import { X, MessageSquare, Phone } from "lucide-react";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { ConciergeContext } from "@/types/concierge";
 import { setConciergeContext } from "@/lib/conciergeStore";
-import { requestVoiceStart, getVoiceActive, subscribeToVoiceState } from "@/lib/lunaVoiceBus";
 import { categoryLabels, goalLabels, timingLabels } from "@/lib/conciergeLabels";
 import { useLuna } from "@/contexts/LunaContext";
 
@@ -34,20 +33,11 @@ const subtypeDisplayLabels: Record<string, string> = {
 
 export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
   const { openChatWidget } = useLuna();
-  const [voiceAlreadyActive, setVoiceAlreadyActive] = useState(false);
   // Exit-intent lead capture
   const [showLeadCapture, setShowLeadCapture] = useState(false);
   const [leadPhone, setLeadPhone]             = useState("");
   const [leadSubmitted, setLeadSubmitted]     = useState(false);
   const ctaClickedRef                         = useRef(false);
-
-  // Voice state tracking
-  useEffect(() => {
-    if (!isOpen) return;
-    setVoiceAlreadyActive(getVoiceActive());
-    const unsub = subscribeToVoiceState(active => setVoiceAlreadyActive(active));
-    return unsub;
-  }, [isOpen]);
 
   // Reset CTA-clicked ref and lead capture state each time modal opens
   useEffect(() => {
@@ -67,15 +57,6 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
   }, [isOpen]);
 
   // ── Handlers ────────────────────────────────────────────────────────────────
-
-  const handleSpeakWithLuna = () => {
-    ctaClickedRef.current = true;
-    console.debug("[LunaModal] Speak with Luna clicked");
-    if (context) setConciergeContext(context);
-    onClose();
-    // Start voice via the floating dock — no scroll needed
-    requestVoiceStart("modal");
-  };
 
   const handleChatWithLuna = () => {
     ctaClickedRef.current = true;
@@ -111,7 +92,6 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
 
   const handleLeadSubmit = async () => {
     if (leadPhone.trim().length >= 10) {
-      // Persist lead to backend via edge function
       try {
         const { saveLead } = await import("@/lib/saveSession");
         await saveLead({
@@ -167,7 +147,6 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
   const softDirection = (() => {
     if (!context?.categories?.length) return null;
 
-    // Multi-service: bundle or unsure — no single-service recommendation
     if (isMultiBundle) {
       const catList = context.categories.map(c => categoryLabels[c] || c).join(", ");
       return `This looks more like a custom experience than a single service — you're interested in ${catList}. Luna can help map the best combination and next step.`;
@@ -177,7 +156,6 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
       return `You're exploring ${catList} and not sure where to start. Luna can help figure out what to prioritize.`;
     }
 
-    // Multi-service with primary focus
     if (isMultiService && context.primary_category) {
       const primaryLabel = categoryLabels[context.primary_category] || context.primary_category;
       const sub = context.service_subtype;
@@ -187,7 +165,6 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
       return `Based on what you shared, you may be leaning toward ${primaryLabel.toLowerCase()} services. Luna can help refine this and plan across your other interests.`;
     }
 
-    // Single service
     const cat = context.categories[0];
     const sub = context.service_subtype;
     if (!sub || sub === "unsure") return null;
@@ -226,7 +203,7 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
               <X className="w-4 h-4" />
             </button>
 
-            {/* ── EXIT-INTENT LEAD CAPTURE (slide-in overlay) ──────────── */}
+            {/* ── EXIT-INTENT LEAD CAPTURE ──────────── */}
             <AnimatePresence>
               {showLeadCapture && (
                 <motion.div
@@ -286,7 +263,7 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
               )}
             </AnimatePresence>
 
-            {/* ── SECTION 1 — Context reflection ────────────────────────── */}
+            {/* ── Context reflection ────────────────────────── */}
             {hasContext && (
               <motion.div
                 initial={{ opacity: 0, y: 8 }}
@@ -315,7 +292,7 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
               </motion.div>
             )}
 
-            {/* ── SECTION 2 — Soft direction ────────────────────────────── */}
+            {/* ── Soft direction ────────────────────────────── */}
             {softDirection && (
               <motion.div
                 initial={{ opacity: 0, y: 8 }}
@@ -332,7 +309,7 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
               </motion.div>
             )}
 
-            {/* ── SECTION 3 — Trust layer ───────────────────────────────── */}
+            {/* ── Trust layer ───────────────────────────────── */}
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -342,37 +319,27 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
               This isn't final — Luna can refine this with you based on your preferences, history, and desired outcome.
             </motion.p>
 
-            {/* ── SECTION 4 — Primary CTA ───────────────────────────────── */}
+            {/* ── Primary CTA — Chat ───────────────────────── */}
             <motion.button
-              onClick={handleSpeakWithLuna}
-              className={`w-full btn-gold py-4 px-6 flex items-center justify-center gap-3 text-base mb-3 ${voiceAlreadyActive ? "opacity-70" : ""}`}
+              onClick={handleChatWithLuna}
+              className="w-full btn-gold py-4 px-6 flex items-center justify-center gap-3 text-base mb-3"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <Mic className="w-5 h-5" />
-              {voiceAlreadyActive ? "Go to Luna" : "Speak with Luna to personalize this"}
+              <MessageSquare className="w-5 h-5" />
+              Chat with Luna to personalize this
             </motion.button>
 
-            {/* ── SECTION 5 — Secondary CTAs ───────────────────────────── */}
+            {/* ── Secondary CTA — Callback ─────────────────── */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.28 }}
               className="flex flex-col gap-2"
             >
-              <motion.button
-                onClick={handleChatWithLuna}
-                className="w-full btn-outline-gold py-3 px-6 flex items-center justify-center gap-3 text-sm"
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <MessageSquare className="w-4 h-4" />
-                Chat with Luna
-              </motion.button>
-
               <motion.button
                 onClick={handleRequestCallback}
                 className="w-full py-3 px-6 flex items-center justify-center gap-2 text-xs text-muted-foreground hover:text-gold transition-colors font-body"
