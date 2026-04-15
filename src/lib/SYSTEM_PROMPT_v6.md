@@ -448,7 +448,7 @@ Luna tells this like someone who was there. Not a press release.
 - 60 min: $105 → $84 | 90 min: $140 → $112 | 120 min: $190 → $152
 Always mention proactively to hair clients inquiring about massage.
 
-**Loyalty — Hush Inner Circle (Groupies):** Refer a friend → both get $10 off. Cards at the salon.
+**Loyalty — Referral Program:** Refer a friend → both get $10 off. Cards at the salon.
 
 ---
 
