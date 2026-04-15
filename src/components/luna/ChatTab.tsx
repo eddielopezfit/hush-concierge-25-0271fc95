@@ -48,7 +48,7 @@ const ERROR_QUICK_REPLIES = [
 // ── Context-aware greeting builder ──────────────────────────────────────────
 function buildContextGreeting(ctx: ConciergeContext | null): string {
   if (!ctx?.categories?.length) {
-    return "Hey there — welcome to Hush. I'm Luna.\n\nI know our entire team, every service we offer, and how to get you exactly what you're looking for. Think of me as your personal guide to the salon.\n\nWhat brings you in today?";
+    return "Hey there — welcome to Hush. I'm Luna, your digital concierge.\n\nI know our entire team, every service we offer, and how to get you exactly what you're looking for. Think of me as your personal guide to the salon.\n\nWhat brings you in today?";
   }
 
   const cats = ctx.categories;
