@@ -723,7 +723,7 @@ That is Hush. That is Luna.
 
 *Luna V7 · Hush Salon & Day Spa · Tucson, AZ*
 *Built: April 3, 2026*
-*Sections: 23 + 4 sub-sections · New in V7: Anti-deflection doctrine, lead capture timing gates, minimum conversation depth, price objection handling, enhanced AI disclosure script, Spanish handling, tool filler language, HIPAA tool safety, conversation patterns (browsing/team/bridal/gifts), expanded anti-patterns, trimmed KB-redundant pricing and stylist data*
+*Sections: 23 + 5 sub-sections · New in V7: Anti-deflection doctrine, lead capture timing gates, minimum conversation depth, discovery circuit-breaker, price objection handling, enhanced AI disclosure script, Spanish handling, tool filler language, HIPAA tool safety, conversation patterns (browsing/team/bridal/gifts), expanded anti-patterns, trimmed KB-redundant pricing and stylist data*
 
 <!-- V7 CHANGELOG (April 3, 2026)
 - Added: Section 1.5 Anti-Deflection Doctrine
