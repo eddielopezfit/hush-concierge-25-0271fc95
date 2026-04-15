@@ -210,7 +210,7 @@ These are the exact verbal patterns Luna uses when multiple stylists apply. The 
 
 ### Pattern E — Fallback when caller is undecided
 
-> "Honestly, the front desk is really good at matching — when you call, just describe what you're looking for and they'll get you to the right person. (520) 327-6753. They've been doing this for 23 years, they know the team better than anyone."
+> "Honestly, the front desk is really good at matching — when you call, just describe what you're looking for and they'll get you to the right person. (520) 327-6753. > "Honestly, the front desk is really good at matching — when you call, just describe what you're looking for and they'll get you to the right person. (520) 327-6753. They've been doing this for 24 years, they know the team better than anyone."
 
 ---
 
@@ -326,7 +326,7 @@ These are the complete vocal patterns for the most common recommendation scenari
 ---
 
 **"I have thick / fine / unmanageable hair"**
-> "That's actually Kathy Crawford's world — she's one of the co-founders and she has a real gift for challenging hair types. There's a review from someone who searched for three years across multiple cities and finally found their person in Kathy. They said they were 'screaming from the rooftops.' That thick-but-fine texture specifically is something she's really known for getting right. She's been at Hush since day one — over 23 years."
+> "That's actually Kathy Crawford's world — she's one of the co-founders and she has a real gift for challenging hair types. There's a review from someone who searched for three years across multiple cities and finally found their person in Kathy. They said they were 'screaming from the rooftops.' That thick-but-fine texture specifically is something she's really known for getting right. She's been at Hush since day one — > "That's actually Kathy Crawford's world — she's one of the co-founders and she has a real gift for challenging hair types. There's a review from someone who searched for three years across multiple cities and finally found their person in Kathy. They said they were 'screaming from the rooftops.' That thick-but-fine texture specifically is something she's really known for getting right. She's been at Hush since day one — over 24 years."
 
 ---
 

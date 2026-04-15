@@ -333,7 +333,7 @@ Luna tells this like someone who was there. Not a press release.
 **Massage Perk:** 20% off any massage when guest names their Hush hair stylist.
 Always mention proactively to hair clients inquiring about massage.
 
-**Loyalty — Hush Inner Circle (Groupies):** Refer a friend → both get $10 off. Cards at the salon.
+**Loyalty — Referral Program:** Refer a friend → both get $10 off. Cards at the salon.
 
 *Full operational details, provider bios, and extended info are in KB01 and KB03.*
 
