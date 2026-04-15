@@ -1,17 +1,17 @@
 import { motion } from "framer-motion";
 import { servicesMenuData } from "@/data/servicesMenuData";
-import { ChevronRight, ArrowLeft } from "lucide-react";
+import { ChevronRight, ArrowLeft, Sun, Heart, Palette, Scissors, Eye, Hand, Sparkles, Flower2 } from "lucide-react";
 import { useState } from "react";
 
 const lookCategories = [
-  { id: "blonde", label: "Blonde", emoji: "☀️", serviceId: "hair" },
-  { id: "brunette", label: "Brunette", emoji: "🤎", serviceId: "hair" },
-  { id: "bold-color", label: "Bold Color", emoji: "🎨", serviceId: "hair" },
-  { id: "extensions", label: "Extensions", emoji: "💇", serviceId: "hair" },
-  { id: "lashes", label: "Lashes", emoji: "👁️", serviceId: "lashes" },
-  { id: "nails", label: "Nails", emoji: "💅", serviceId: "nails" },
-  { id: "skincare", label: "Skincare", emoji: "✨", serviceId: "skincare" },
-  { id: "massage", label: "Massage", emoji: "🧖", serviceId: "massage" },
+  { id: "blonde", label: "Blonde", icon: Sun, serviceId: "hair" },
+  { id: "brunette", label: "Brunette", icon: Heart, serviceId: "hair" },
+  { id: "bold-color", label: "Bold Color", icon: Palette, serviceId: "hair" },
+  { id: "extensions", label: "Extensions", icon: Scissors, serviceId: "hair" },
+  { id: "lashes", label: "Lashes", icon: Eye, serviceId: "lashes" },
+  { id: "nails", label: "Nails", icon: Hand, serviceId: "nails" },
+  { id: "skincare", label: "Skincare", icon: Sparkles, serviceId: "skincare" },
+  { id: "massage", label: "Massage", icon: Flower2, serviceId: "massage" },
 ];
 
 interface ExploreTabProps {
@@ -84,20 +84,23 @@ export const ExploreTab = ({ onSwitchTab }: ExploreTabProps) => {
       </div>
       <div className="flex-1 overflow-y-auto px-4 pb-4">
         <div className="grid grid-cols-2 gap-2">
-          {lookCategories.map((cat, i) => (
-            <motion.button
-              key={cat.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.04 }}
-              onClick={() => setSelectedCategory(cat.id)}
-              className="flex items-center gap-2 px-3 py-3.5 rounded-lg border border-border bg-card text-sm font-body text-foreground hover:border-primary/30 hover:bg-primary/5 transition-all group"
-            >
-              <span className="text-base">{cat.emoji}</span>
-              <span className="flex-1 text-left">{cat.label}</span>
-              <ChevronRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
-            </motion.button>
-          ))}
+          {lookCategories.map((cat, i) => {
+            const Icon = cat.icon;
+            return (
+              <motion.button
+                key={cat.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.04 }}
+                onClick={() => setSelectedCategory(cat.id)}
+                className="flex items-center gap-2.5 px-3 py-3.5 rounded-lg border border-border bg-card text-sm font-body text-foreground hover:border-primary/30 hover:bg-primary/5 transition-all group"
+              >
+                <Icon className="w-4 h-4 text-primary/70 group-hover:text-primary transition-colors" />
+                <span className="flex-1 text-left">{cat.label}</span>
+                <ChevronRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
+              </motion.button>
+            );
+          })}
         </div>
       </div>
     </div>
