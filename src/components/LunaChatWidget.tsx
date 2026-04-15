@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, X, Minus, Sparkles, Search, Users, ClipboardList, MessageSquare } from "lucide-react";
 import { FindMyLookTab } from "./luna/FindMyLookTab";
@@ -8,6 +8,25 @@ import { MyPlanTab } from "./luna/MyPlanTab";
 import { ChatTab } from "./luna/ChatTab";
 import { useLuna } from "@/contexts/LunaContext";
 
+/** Encode an AudioBuffer to a WAV Blob */
+function encodeWav(buffer: AudioBuffer): Blob {
+  const sampleRate = buffer.sampleRate;
+  const data = buffer.getChannelData(0);
+  const dataSize = data.length * 2;
+  const buf = new ArrayBuffer(44 + dataSize);
+  const v = new DataView(buf);
+  const w = (o: number, s: string) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  w(0, "RIFF"); v.setUint32(4, 36 + dataSize, true); w(8, "WAVE"); w(12, "fmt ");
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, sampleRate, true); v.setUint32(28, sampleRate * 2, true);
+  v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, "data"); v.setUint32(40, dataSize, true);
+  let o = 44;
+  for (let i = 0; i < data.length; i++, o += 2) {
+    const s = Math.max(-1, Math.min(1, data[i]));
+    v.setInt16(o, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+  }
+  return new Blob([buf], { type: "audio/wav" });
+}
 
 type TabId = "find" | "explore" | "artists" | "plan" | "chat";
 
@@ -29,7 +48,36 @@ export const LunaChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showBadge, setShowBadge] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>("find");
+  const [isFirstOpen, setIsFirstOpen] = useState(true);
   const { chatWidgetRequested, clearChatWidgetRequest } = useLuna();
+  const chimeRef = useRef<HTMLAudioElement | null>(null);
+
+  // Pre-create a subtle chime using Web Audio API
+  useEffect(() => {
+    // Build a tiny warm chime — two sine tones faded together
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const sr = ctx.sampleRate;
+    const len = sr * 0.6; // 600ms
+    const buf = ctx.createBuffer(1, len, sr);
+    const data = buf.getChannelData(0);
+    const f1 = 880; // A5
+    const f2 = 1318.5; // E6 — a perfect fifth for warmth
+    for (let i = 0; i < len; i++) {
+      const t = i / sr;
+      const env = Math.exp(-t * 6) * 0.25; // quick decay, gentle volume
+      data[i] = env * (Math.sin(2 * Math.PI * f1 * t) * 0.6 + Math.sin(2 * Math.PI * f2 * t) * 0.4);
+    }
+    // Encode to WAV blob for HTMLAudioElement
+    const wavBlob = encodeWav(buf);
+    const url = URL.createObjectURL(wavBlob);
+    chimeRef.current = new Audio(url);
+    chimeRef.current.volume = 0.35;
+
+    return () => {
+      URL.revokeObjectURL(url);
+      ctx.close();
+    };
+  }, []);
 
   // Respond to external "open chat widget" requests
   useEffect(() => {
@@ -51,6 +99,11 @@ export const LunaChatWidget = () => {
   const handleOpen = () => {
     setIsOpen(true);
     setShowBadge(false);
+    // Play chime only on the very first open
+    if (isFirstOpen) {
+      setIsFirstOpen(false);
+      chimeRef.current?.play().catch(() => {});
+    }
   };
 
   const handleClose = () => setIsOpen(false);
@@ -107,22 +160,36 @@ export const LunaChatWidget = () => {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            initial={{ opacity: 0, y: 30, scale: 0.92 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
             className="fixed z-[9999] bottom-6 right-6 w-[390px] h-[560px] md:w-[390px] md:h-[560px] max-md:bottom-0 max-md:right-0 max-md:left-0 max-md:w-full max-md:h-[100dvh] max-md:rounded-none rounded-2xl border border-primary/25 bg-card flex flex-col overflow-hidden shadow-[var(--shadow-elegant)]"
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+            <motion.div
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15, duration: 0.3 }}
+              className="flex items-center justify-between px-4 py-3 border-b border-border"
+            >
               <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center">
+                <motion.div
+                  initial={{ scale: 0.5, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 0.25, type: "spring", stiffness: 300, damping: 15 }}
+                  className="w-7 h-7 rounded-full bg-primary flex items-center justify-center"
+                >
                   <span className="font-display text-xs text-primary-foreground font-semibold">L</span>
-                </div>
-                <div>
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.35, duration: 0.3 }}
+                >
                   <span className="font-display text-base text-foreground">Luna</span>
                   <span className="font-body text-[10px] text-muted-foreground ml-1.5">Hush Concierge</span>
-                </div>
+                </motion.div>
               </div>
               <button
                 onClick={handleClose}
@@ -138,7 +205,7 @@ export const LunaChatWidget = () => {
               >
                 <X className="w-4 h-4" />
               </button>
-            </div>
+            </motion.div>
 
             {/* Tab Navigation */}
             <div className="flex border-b border-border bg-background/50">
