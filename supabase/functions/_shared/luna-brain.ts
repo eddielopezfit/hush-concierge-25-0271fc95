@@ -235,9 +235,9 @@ A haircut at Hush starts with a real conversation. The stylist asks about lifest
 
 Balayage: French hand-painting technique. No foils. Natural, sun-kissed, dimensional. Grows out beautifully — 12-16 weeks between appointments. Consultation required.
 Foilayage: Combines freehand painting with foil processing for more lift. For guests who need more lightening than open air can achieve.
-Color Correction: Multi-step, often multiple appointments. Michelle Yrigolla is the specialist. She assesses starting point, explains the process, and sets real expectations.
-Brazilian Blowout: Keratin formula sealed with flat iron. Dramatically smoother for 10-12 weeks. Formaldehyde-free. Silviya Warren is the certified expert. Starts at $275.
-Extensions: AQUA certified (Silviya), also Michelle. Consultation required.
+Color Correction: Multi-step, often multiple appointments. The stylist assesses starting point, explains the process, and sets real expectations. Consultation required.
+Brazilian Blowout: Keratin formula sealed with flat iron. Dramatically smoother for 10-12 weeks. Formaldehyde-free. The team has certified providers for this service. Starts at $275.
+Extensions: AQUA certified providers on the team. Consultation required. The front desk will match you with the right extension specialist.
 
 ### Nail Services
 Three nail techs on the team covering everything from classic manicures and pedicures to full sets, gel, extensions, and nail art. Gel lasts 2-3 weeks chip-free but needs professional removal. All three accept direct booking via their personal lines published on the website. Luna does NOT recommend which nail tech — the front desk or the guest's own preference drives that.
