@@ -50,7 +50,7 @@ export const FooterSection = () => {
                 <div className="flex items-start gap-3">
                   <Clock className="w-4 h-4 text-gold flex-shrink-0 mt-0.5" />
                   <span>
-                    Tue – Fri: 9 AM – 7 PM<br />
+                    Tue – Fri: 9 AM – 6 PM<br />
                     Sat: 9 AM – 4 PM<br />
                     Sun & Mon: Closed
                   </span>
@@ -107,6 +107,9 @@ export const FooterSection = () => {
         <div 
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/85 backdrop-blur-md"
           onClick={() => setShowPrivacy(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="privacy-title"
         >
           <div 
             className="relative w-full max-w-lg p-8 rounded-xl border border-gold/25 bg-card"

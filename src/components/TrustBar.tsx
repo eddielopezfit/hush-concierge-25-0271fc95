@@ -31,9 +31,9 @@ export const TrustBar = () => {
           className="flex items-center gap-1.5 shrink-0 hover:opacity-80 transition-opacity"
         >
           <Star className="w-4 h-4 text-gold fill-gold" />
-          <span className="font-body text-sm text-cream/80 font-medium">4.8★</span>
+          <span className="font-body text-sm text-cream/80 font-medium">4.7★</span>
           <span className="text-border">·</span>
-          <span className="font-body text-sm text-muted-foreground">206+ reviews</span>
+          <span className="font-body text-sm text-muted-foreground">196+ reviews</span>
         </a>
 
         {/* Rotating mini review */}
