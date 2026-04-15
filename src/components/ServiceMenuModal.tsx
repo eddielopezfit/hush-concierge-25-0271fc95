@@ -1,7 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Mic, MessageSquare, Phone } from "lucide-react";
+import { X, MessageSquare, Phone } from "lucide-react";
 import { useEffect, useState } from "react";
-import { requestVoiceStart } from "@/lib/lunaVoiceBus";
 import {
   Accordion,
   AccordionContent,
@@ -56,14 +55,6 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
       item: itemName || null,
       price: itemPrice || null,
     };
-  };
-
-  const handleSpeakWithLuna = () => {
-    const ctx = buildCategoryContext();
-    setConciergeContext(ctx);
-    onClose();
-    // Start voice via the floating dock — no modal redirect needed
-    requestVoiceStart("service-menu");
   };
 
   const handleChatWithLuna = () => {
@@ -203,18 +194,8 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
             <div className="flex-shrink-0 p-6 md:p-8 border-t border-secondary bg-card">
               <div className="flex flex-col sm:flex-row gap-3">
                 <motion.button
-                  onClick={handleSpeakWithLuna}
-                  className="btn-gold py-4 px-6 flex items-center justify-center gap-3 flex-1"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Mic className="w-5 h-5" />
-                  <span>Speak with Luna</span>
-                </motion.button>
-
-                <motion.button
                   onClick={handleChatWithLuna}
-                  className="btn-outline-gold py-4 px-6 flex items-center justify-center gap-3 flex-1"
+                  className="btn-gold py-4 px-6 flex items-center justify-center gap-3 flex-1"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >

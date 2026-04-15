@@ -1,21 +1,9 @@
 import { motion } from "framer-motion";
-import { MessageCircle, Mic } from "lucide-react";
-import { LunaVoiceWidget } from "./LunaVoiceWidget";
+import { MessageCircle } from "lucide-react";
 import { useLuna } from "@/contexts/LunaContext";
-import { ConciergeContext } from "@/types/concierge";
 
 export const MeetLunaSection = () => {
-  const { openModal } = useLuna();
-
-  const handleChatWithLuna = () => {
-    const lunaContext: ConciergeContext = {
-      source: "Meet Luna Section",
-      categories: [],
-      goal: null,
-      timing: null,
-    };
-    openModal(lunaContext);
-  };
+  const { openChatWidget } = useLuna();
 
   return (
     <section id="luna" className="py-20 md:py-24 px-6 relative overflow-hidden">
@@ -50,40 +38,24 @@ export const MeetLunaSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="flex flex-col md:flex-row items-center justify-center gap-12"
+          className="flex flex-col items-center gap-6"
         >
-          {/* Voice Option */}
-          <div className="flex flex-col items-center gap-6 p-8 card-luxury rounded-lg w-full md:w-auto">
-            <div className="flex items-center gap-3 text-gold mb-2">
-              <Mic className="w-5 h-5" />
-              <span className="font-body text-sm uppercase tracking-widest">Voice</span>
-            </div>
-            <LunaVoiceWidget isPrimary />
-            <p className="text-muted-foreground text-sm text-center max-w-xs">
-              Talk to Luna like you'd call the front desk.
-            </p>
-          </div>
-
-          {/* Divider */}
-          <div className="hidden md:block w-px h-48 bg-gradient-to-b from-transparent via-gold/20 to-transparent" />
-          <div className="md:hidden h-px w-48 bg-gradient-to-r from-transparent via-gold/20 to-transparent" />
-
-          {/* Text Option */}
-          <div className="flex flex-col items-center gap-6 p-8 card-luxury rounded-lg w-full md:w-auto">
+          <div className="flex flex-col items-center gap-6 p-8 card-luxury rounded-lg w-full max-w-md">
             <div className="flex items-center gap-3 text-gold mb-2">
               <MessageCircle className="w-5 h-5" />
-              <span className="font-body text-sm uppercase tracking-widest">Text</span>
+              <span className="font-body text-sm uppercase tracking-widest">Chat</span>
             </div>
             <motion.button
-              onClick={handleChatWithLuna}
+              onClick={() => openChatWidget()}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="btn-outline-gold focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2"
+              className="btn-gold py-4 px-10 flex items-center gap-3"
             >
+              <MessageCircle className="w-5 h-5" />
               Chat with Luna
             </motion.button>
             <p className="text-muted-foreground text-sm text-center max-w-xs">
-              Prefer typing? Luna's just as helpful in text.
+              Luna can help you find the right service, the right stylist, and the best way to book.
             </p>
           </div>
         </motion.div>
