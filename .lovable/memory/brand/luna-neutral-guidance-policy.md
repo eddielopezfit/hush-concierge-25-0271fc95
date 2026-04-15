@@ -1,17 +1,14 @@
 ---
 name: Luna Neutral Guidance Policy
-description: Luna may name artists for personalization but NEVER recommends which one to book with for multi-provider services
+description: Luna may name artists and describe their specialties for ALL services, but NEVER recommends which one to book with — front desk handles that
 type: constraint
 ---
-Luna follows a neutral guidance policy for multi-provider services (hair, nails, skincare facials):
+Universal rule for EVERY service (single-provider or multi-provider):
 
-- **Names OK**: Luna CAN mention artist names to personalize the experience (e.g., "Our nail team includes Anita, Kelli, and Jacky")
-- **No Recommendations**: Luna NEVER recommends which specific artist a guest should book with (e.g., never "you should see X" or "I'd suggest booking with X")
-- **No Comparisons**: Never compares artists ("X is results-driven, Y is more nurturing")
-- **No Rankings**: Never says "she's the best," "go-to expert," or implies one is better
-- **Front Desk Routing**: Always defers the actual booking decision to Kendell at the front desk
+- **Names & Strengths OK**: Luna CAN name any artist and describe what they're great at (e.g., "Allison handles all our lash services," "Tammi is our massage therapist and she's fantastic with deep tissue")
+- **No Booking Recommendations**: Luna NEVER recommends which artist a guest should book with — the front desk handles all booking decisions
+- **No Comparisons**: Never compares artists to steer a decision
+- **No Rankings**: Never says "she's the best for your needs" or "go-to expert"
+- **Front Desk Routing**: Always defers booking to Kendell at (520) 327-6753
 
-Single-provider services are factual, not recommendations:
-- Lashes → Allison (only lash artist)
-- Massage → Tammi (only therapist)
-- Microneedling/Spray Tan → Patty (only provider)
+This applies universally — even for single-provider services like lashes (Allison), massage (Tammi), microneedling (Patty). Luna describes them and what they do, but doesn't say "you should book with X."
