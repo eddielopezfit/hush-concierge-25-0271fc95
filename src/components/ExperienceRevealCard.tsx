@@ -1,10 +1,8 @@
 import { motion } from "framer-motion";
-import { Sparkles, Clock, DollarSign, Users, Plus, ChevronDown, CalendarClock } from "lucide-react";
+import { Sparkles, Clock, DollarSign, ChevronDown } from "lucide-react";
 import { RevealData } from "@/lib/experienceReveal";
 import { useLuna } from "@/contexts/LunaContext";
 import { BookingDecisionCard } from "@/components/BookingDecisionCard";
-import { getUpsells } from "@/lib/upsellEngine";
-import { getCadenceRecommendations } from "@/lib/cadenceEngine";
 
 interface ExperienceRevealCardProps {
   data: RevealData;
@@ -13,9 +11,6 @@ interface ExperienceRevealCardProps {
 
 export const ExperienceRevealCard = ({ data, onBook }: ExperienceRevealCardProps) => {
   const { conciergeContext } = useLuna();
-  const topUpsells = getUpsells(conciergeContext, 2);
-  const categories = conciergeContext?.categories || [];
-  const primaryCadence = categories.length > 0 ? getCadenceRecommendations(categories)[0] : null;
 
   const handleScrollToPlan = () => {
     const el = document.getElementById("personalized-plan");
@@ -68,59 +63,11 @@ export const ExperienceRevealCard = ({ data, onBook }: ExperienceRevealCardProps
             </div>
           </motion.div>
 
-          {/* Upsell hints */}
-          {topUpsells.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className="flex flex-wrap justify-center gap-2"
-            >
-              {topUpsells.map(u => (
-                <span key={u.name} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-gold/15 bg-gold/[0.04] text-[11px] font-body text-gold/80">
-                  <Plus className="w-3 h-3" />
-                  {u.name} {u.price}
-                </span>
-              ))}
-            </motion.div>
-          )}
-
-          {/* Cadence teaser */}
-          {primaryCadence && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.42 }}
-              className="flex items-center justify-center gap-1.5"
-            >
-              <CalendarClock className="w-3 h-3 text-gold/60" />
-              <span className="font-body text-[11px] text-cream/50 italic">
-                Pro tip: Most guests refresh this every {primaryCadence.intervalWeeks[0]}–{primaryCadence.intervalWeeks[1]} weeks to keep it looking its best.
-              </span>
-            </motion.div>
-          )}
-
-          {/* Neutral artist matching message */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.45 }}
-            className="rounded-xl border border-gold/10 bg-gold/[0.03] p-4 md:p-5 text-center"
-          >
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <Users className="w-4 h-4 text-gold" />
-              <span className="text-xs font-body uppercase tracking-wider text-gold">Artist Matching</span>
-            </div>
-            <p className="font-body text-sm text-cream/70 leading-relaxed">
-              For this experience, our team will pair you with a stylist who specializes in exactly what you're looking for.
-            </p>
-          </motion.div>
-
           {/* Booking Decision */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.65 }}
+            transition={{ delay: 0.5 }}
           >
             <BookingDecisionCard
               revealData={data}
@@ -132,7 +79,7 @@ export const ExperienceRevealCard = ({ data, onBook }: ExperienceRevealCardProps
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.75 }}
+            transition={{ delay: 0.6 }}
             className="text-center"
           >
             <button
