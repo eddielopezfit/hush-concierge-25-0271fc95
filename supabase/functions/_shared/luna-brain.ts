@@ -276,7 +276,7 @@ Anita Apodaca: Nail art educator. Creative designs.
 Kelli: Pedicure specialist. Extensions.
 Jacky: Trendy/statement nails.
 Tammi: Massage therapist. Deep tissue + relaxation.
-Kendell Barraza: Guest Experience Coordinator (front desk).
+Kendell Barraza: Front Desk.
 
 ## APPROXIMATE SERVICE DURATIONS
 
