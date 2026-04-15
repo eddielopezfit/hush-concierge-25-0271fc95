@@ -19,6 +19,12 @@ const tabs: { id: TabId; label: string; icon: typeof Sparkles }[] = [
   { id: "chat", label: "Chat", icon: MessageSquare },
 ];
 
+const tabVariants = {
+  enter: { opacity: 0, y: 8 },
+  center: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -8 },
+};
+
 export const LunaChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showBadge, setShowBadge] = useState(false);
@@ -61,6 +67,16 @@ export const LunaChatWidget = () => {
     return () => window.removeEventListener("luna-switch-tab", handler);
   }, []);
 
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "find": return <FindMyLookTab onSwitchTab={switchTab} />;
+      case "explore": return <ExploreTab onSwitchTab={switchTab} />;
+      case "artists": return <ArtistsTab onSwitchTab={switchTab} />;
+      case "plan": return <MyPlanTab onSwitchTab={switchTab} />;
+      case "chat": return <ChatTab />;
+    }
+  };
+
   return (
     <>
       {/* Collapsed Bubble + Label */}
@@ -95,7 +111,7 @@ export const LunaChatWidget = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
-            className="fixed z-[9999] bottom-6 right-6 w-[390px] h-[560px] md:w-[390px] md:h-[560px] max-md:bottom-0 max-md:right-0 max-md:left-0 max-md:w-full max-md:h-[92vh] max-md:rounded-none rounded-2xl border border-primary/25 bg-card flex flex-col overflow-hidden shadow-[var(--shadow-elegant)]"
+            className="fixed z-[9999] bottom-6 right-6 w-[390px] h-[560px] md:w-[390px] md:h-[560px] max-md:bottom-0 max-md:right-0 max-md:left-0 max-md:w-full max-md:h-[100dvh] max-md:rounded-none rounded-2xl border border-primary/25 bg-card flex flex-col overflow-hidden shadow-[var(--shadow-elegant)]"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-border">
@@ -150,13 +166,21 @@ export const LunaChatWidget = () => {
               })}
             </div>
 
-            {/* Tab Content */}
+            {/* Tab Content with transitions */}
             <div className="flex-1 overflow-hidden">
-              {activeTab === "find" && <FindMyLookTab onSwitchTab={switchTab} />}
-              {activeTab === "explore" && <ExploreTab onSwitchTab={switchTab} />}
-              {activeTab === "artists" && <ArtistsTab onSwitchTab={switchTab} />}
-              {activeTab === "plan" && <MyPlanTab onSwitchTab={switchTab} />}
-              {activeTab === "chat" && <ChatTab />}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeTab}
+                  variants={tabVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ duration: 0.15, ease: "easeOut" }}
+                  className="h-full"
+                >
+                  {renderTabContent()}
+                </motion.div>
+              </AnimatePresence>
             </div>
           </motion.div>
         )}
