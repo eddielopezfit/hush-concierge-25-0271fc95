@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, Sparkles, ArrowRight, Clock, DollarSign, Users, RotateCcw } from "lucide-react";
+import { ChevronLeft, Sparkles, ArrowRight, Clock, DollarSign, Users, RotateCcw, Scissors, Hand, Eye, Heart, Flower2 } from "lucide-react";
 import { generateRecommendation, LunaRecommendation } from "@/lib/lunaBrain";
 import { startSession } from "@/lib/sessionManager";
 import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
@@ -9,12 +9,12 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useLuna } from "@/contexts/LunaContext";
 import { BookingDecisionCard } from "@/components/BookingDecisionCard";
 
-const categories: { id: ServiceCategoryId; label: string; emoji: string }[] = [
-  { id: "hair", label: "Hair", emoji: "✂️" },
-  { id: "nails", label: "Nails", emoji: "💅" },
-  { id: "lashes", label: "Lashes", emoji: "👁️" },
-  { id: "skincare", label: "Skincare", emoji: "✨" },
-  { id: "massage", label: "Massage", emoji: "🧖" },
+const categories: { id: ServiceCategoryId; label: string; icon: typeof Scissors }[] = [
+  { id: "hair", label: "Hair", icon: Scissors },
+  { id: "nails", label: "Nails", icon: Hand },
+  { id: "lashes", label: "Lashes", icon: Eye },
+  { id: "skincare", label: "Skincare", icon: Sparkles },
+  { id: "massage", label: "Massage", icon: Heart },
 ];
 
 const goals: { id: string; label: string }[] = [
@@ -142,20 +142,23 @@ export const FindMyLookTab = ({ onSwitchTab }: FindMyLookTabProps) => {
               <p className="font-body text-sm text-foreground">What are you looking for?</p>
               <p className="font-body text-xs text-muted-foreground">Select one or more</p>
               <div className="grid grid-cols-2 gap-2">
-                {categories.map(cat => (
-                  <button
-                    key={cat.id}
-                    onClick={() => toggleCategory(cat.id)}
-                    className={`flex items-center gap-2 px-3 py-3 rounded-lg border text-sm font-body transition-all ${
-                      selectedCategories.includes(cat.id)
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border bg-card text-foreground hover:border-primary/30"
-                    }`}
-                  >
-                    <span>{cat.emoji}</span>
-                    <span>{cat.label}</span>
-                  </button>
-                ))}
+                {categories.map(cat => {
+                  const Icon = cat.icon;
+                  return (
+                    <button
+                      key={cat.id}
+                      onClick={() => toggleCategory(cat.id)}
+                      className={`flex items-center gap-2.5 px-3 py-3 rounded-lg border text-sm font-body transition-all ${
+                        selectedCategories.includes(cat.id)
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border bg-card text-foreground hover:border-primary/30"
+                      }`}
+                    >
+                      <Icon className="w-4 h-4" />
+                      <span>{cat.label}</span>
+                    </button>
+                  );
+                })}
               </div>
               {selectedCategories.length > 0 && (
                 <motion.button
