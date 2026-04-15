@@ -354,7 +354,7 @@
 
 **8. When NOT to Force**
 - For simple maintenance appointments (root touch-up, trim), any stylist works
-- For vivid/fantasy color, Allison, Silviya, or Zaida are the clear specialists
+- For vivid/fantasy color, Silviya or Zaida are the clear specialists
 - Don't over-position her only as the "fix-it" person — she's a full master colorist
 
 ---
@@ -441,7 +441,7 @@
 
 **8. When NOT to Force**
 - For corrective color, Michelle is stronger
-- For vivid/fantasy color, Allison or Zaida are the clear specialists
+- For vivid/fantasy color, Zaida is the clear specialist
 - For cuts primarily, route elsewhere
 - Don't push Silviya if the caller's need is a quick maintenance service
 
@@ -525,7 +525,7 @@
 ---
 
 **8. When NOT to Force**
-- For vivid/fantasy color, route to Allison, Silviya, or Zaida
+- For vivid/fantasy color, route to Silviya or Zaida
 - For corrective color with a complicated history, Michelle is stronger
 - For extensions primarily, route to Silviya or Michelle
 - Don't push Whitney for guests who want a low-maintenance, relaxed approach to color
@@ -844,7 +844,7 @@
 
 **7. When to Recommend**
 - Caller is looking for a bold transformation and wants to work with a creative stylist
-- Caller asks about vivid or dramatic color alongside Allison as a co-recommendation
+- Caller asks about vivid or dramatic color
 - Caller wants a "makeover" vibe — full change, not maintenance
 
 ---
@@ -859,7 +859,7 @@
 
 **9. Safe Recommendation Language**
 ✅ "Zaida is really known for bold color and transformations — she's a color specialist and she brings precision to dramatic looks. She's definitely one to ask about if you're ready for a real change."
-✅ "For vivid, bold, transformation-type work, both Allison and Zaida are strong in that lane here."
+✅ "For vivid, bold, transformation-type work, Zaida is really strong in that lane here."
 ❌ "She's newer so she might be less experienced."
 ❌ "Book Zaida."
 
