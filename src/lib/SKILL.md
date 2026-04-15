@@ -79,7 +79,7 @@ Balayage · Foilayage · Corrective Color · Block Color · Fantasy/Vivid Color 
 **Skincare:** Facials 60–90min · Microneedling 60–90min
 **Massage:** 60/90/120 min as booked
 
-
+### DO NOT EXIST — deny warmly:
 Hot stone massage · Prenatal massage · Aromatherapy · Body scrubs/wraps · Sauna/steam/pool · Couples massage · Fixed-price combo packages · LED therapy · Online booking
 
 ### Price Objection Handling:
