@@ -354,16 +354,37 @@ export const ChatTab = () => {
     setQuickReplies(getQuickReplies(ctx, greeting));
   }, [conciergeContext]);
 
-  // Build contextual greeting + chips on first render using live context
+  // Track the context fingerprint to detect meaningful changes
+  const contextFingerprintRef = useRef<string>("");
+
+  const getContextFingerprint = (ctx: ConciergeContext | null): string => {
+    if (!ctx) return "none";
+    return `${ctx.categories?.join(",") || ""}_${ctx.service_subtype || ""}_${ctx.goal || ""}_${ctx.timing || ""}_${ctx.source || ""}`;
+  };
+
+  // Build contextual greeting + chips on first render AND when context changes meaningfully
   useEffect(() => {
-    if (initialized) return;
     const ctx = conciergeContext;
+    const newFingerprint = getContextFingerprint(ctx);
+
+    // Skip if already initialized with this exact context
+    if (initialized && newFingerprint === contextFingerprintRef.current) return;
+
+    contextFingerprintRef.current = newFingerprint;
+
     const greeting = buildContextGreeting(ctx);
-    // No greeting action buttons — smart chips handle initial guidance
     setMessages([{ id: "greeting", role: "assistant", content: greeting }]);
     setContextPills(getContextPills(ctx));
     setSmartChips(getSmartChips(ctx));
     setQuickReplies(getQuickReplies(ctx, greeting));
+    setInput("");
+    setUserMessageCount(0);
+    setSuccessfulExchangeCount(0);
+    setLeadCaptured(false);
+    setShowLeadForm(false);
+    setLeadDismissed(false);
+    setLeadName("");
+    setLeadPhone("");
     setInitialized(true);
 
     if (!getConversationId()) {

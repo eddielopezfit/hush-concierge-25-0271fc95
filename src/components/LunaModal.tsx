@@ -2,7 +2,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, MessageSquare, Phone } from "lucide-react";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { ConciergeContext } from "@/types/concierge";
-import { setConciergeContext } from "@/lib/conciergeStore";
 import { categoryLabels, goalLabels, timingLabels } from "@/lib/conciergeLabels";
 import { useLuna } from "@/contexts/LunaContext";
 
@@ -32,7 +31,7 @@ const subtypeDisplayLabels: Record<string, string> = {
 };
 
 export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
-  const { openChatWidget } = useLuna();
+  const { openChatWidget, setConcierge } = useLuna();
   // Exit-intent lead capture
   const [showLeadCapture, setShowLeadCapture] = useState(false);
   const [leadPhone, setLeadPhone]             = useState("");
@@ -60,9 +59,8 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
 
   const handleChatWithLuna = () => {
     ctaClickedRef.current = true;
-    if (context) setConciergeContext(context);
+    if (context) setConcierge(context);
     onClose();
-    // Open the real LunaChatWidget on the Chat tab
     openChatWidget();
   };
 

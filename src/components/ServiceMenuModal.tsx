@@ -10,7 +10,6 @@ import {
 import { ServiceCategory, getCategoryWithCrossRefs } from "@/data/servicesMenuData";
 import { useLuna } from "@/contexts/LunaContext";
 import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
-import { setConciergeContext } from "@/lib/conciergeStore";
 
 interface ServiceMenuModalProps {
   isOpen: boolean;
@@ -19,7 +18,7 @@ interface ServiceMenuModalProps {
 }
 
 export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModalProps) => {
-  const { openModal } = useLuna();
+  const { openModal, setConcierge } = useLuna();
   const [openAccordions, setOpenAccordions] = useState<string[]>([]);
 
   // Resolve category with cross-referenced items
@@ -59,7 +58,7 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
 
   const handleChatWithLuna = () => {
     const ctx = buildCategoryContext();
-    setConciergeContext(ctx);
+    setConcierge(ctx);
     onClose();
     setTimeout(() => openModal(ctx), 100);
   };
