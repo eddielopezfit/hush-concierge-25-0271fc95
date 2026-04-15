@@ -8,6 +8,26 @@ import { MyPlanTab } from "./luna/MyPlanTab";
 import { ChatTab } from "./luna/ChatTab";
 import { useLuna } from "@/contexts/LunaContext";
 
+/** Encode an AudioBuffer to a WAV Blob */
+function encodeWav(buffer: AudioBuffer): Blob {
+  const sampleRate = buffer.sampleRate;
+  const data = buffer.getChannelData(0);
+  const dataSize = data.length * 2;
+  const buf = new ArrayBuffer(44 + dataSize);
+  const v = new DataView(buf);
+  const w = (o: number, s: string) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  w(0, "RIFF"); v.setUint32(4, 36 + dataSize, true); w(8, "WAVE"); w(12, "fmt ");
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, sampleRate, true); v.setUint32(28, sampleRate * 2, true);
+  v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, "data"); v.setUint32(40, dataSize, true);
+  let o = 44;
+  for (let i = 0; i < data.length; i++, o += 2) {
+    const s = Math.max(-1, Math.min(1, data[i]));
+    v.setInt16(o, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+  }
+  return new Blob([buf], { type: "audio/wav" });
+}
+
 type TabId = "find" | "explore" | "artists" | "plan" | "chat";
 
 const tabs: { id: TabId; label: string; icon: typeof Sparkles }[] = [
