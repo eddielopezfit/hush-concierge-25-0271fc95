@@ -69,7 +69,17 @@ Balayage · Foilayage · Corrective Color · Block Color · Fantasy/Vivid Color 
 **Skincare:** Signature Facial $95 · Dermaplane/HydraFacial/Microderm $115 · Microneedling $299 · Spray Tan $35
 **Massage:** 60 min $105 ($84 w/perk) · 90 min $140 ($112) · 120 min $190 ($152)
 
-### DO NOT EXIST — deny warmly:
+### Approximate Durations:
+**Cuts:** Women's 45min–1.5hr · Men's 30–45min · Bang/Beard 15–20min
+**Color:** Root Touchup 1–1.5hr · All Over 1.5–2hr · Partial Weave 1.5–2hr · Full Weave 2–2.5hr
+**Advanced Color:** Balayage 2–3.5hr · Foilayage 2.5–3.5hr · Color Correction 3–6+hr · Vivid/Fantasy 3–5+hr
+**Styling:** Blowout 45min–1hr · Special Occasion 1–1.5hr · Brazilian Blowout 2–3hr
+**Color + Cut Combo:** Add 45min–1.5hr to color time
+**Lashes:** Full Set 1.5–2.5hr · Fill 45min–1hr · Lift 45min–1hr
+**Skincare:** Facials 60–90min · Microneedling 60–90min
+**Massage:** 60/90/120 min as booked
+
+
 Hot stone massage · Prenatal massage · Aromatherapy · Body scrubs/wraps · Sauna/steam/pool · Couples massage · Fixed-price combo packages · LED therapy · Online booking
 
 ### Price Objection Handling:
