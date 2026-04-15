@@ -122,7 +122,7 @@ export const FooterSection = () => {
             >
               ×
             </button>
-            <h3 className="font-display text-2xl text-gold-gradient mb-4">Privacy Policy</h3>
+            <h3 id="privacy-title" className="font-display text-2xl text-gold-gradient mb-4">Privacy Policy</h3>
             <p className="font-body text-cream/70 text-sm leading-relaxed">
               Hush Salon & Day Spa respects your privacy. Information submitted through our website 
               is used solely to contact you regarding salon services and appointments. We do not sell 
