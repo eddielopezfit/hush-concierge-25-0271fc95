@@ -151,7 +151,7 @@ export const LunaChatWidget = () => {
                 <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-foreground rounded-full border-2 border-primary" />
               )}
             </motion.button>
-            <span className="font-body text-[10px] text-muted-foreground tracking-wide">AI Concierge</span>
+            <span className="font-body text-[10px] text-muted-foreground tracking-wide">Your Hush Guide</span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -188,7 +188,7 @@ export const LunaChatWidget = () => {
                   transition={{ delay: 0.35, duration: 0.3 }}
                 >
                   <span className="font-display text-base text-foreground">Luna</span>
-                  <span className="font-body text-[10px] text-muted-foreground ml-1.5">Hush Concierge</span>
+                  <span className="font-body text-[10px] text-muted-foreground ml-1.5">at Hush Salon & Day Spa</span>
                 </motion.div>
               </div>
               <button
