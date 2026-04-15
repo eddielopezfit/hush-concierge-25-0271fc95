@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, X, Minus, Sparkles, Search, Users, ClipboardList, MessageSquare } from "lucide-react";
 import { FindMyLookTab } from "./luna/FindMyLookTab";
@@ -7,7 +7,6 @@ import { ArtistsTab } from "./luna/ArtistsTab";
 import { MyPlanTab } from "./luna/MyPlanTab";
 import { ChatTab } from "./luna/ChatTab";
 import { useLuna } from "@/contexts/LunaContext";
-
 
 type TabId = "find" | "explore" | "artists" | "plan" | "chat";
 
