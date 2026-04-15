@@ -33,7 +33,7 @@ export const TrustBar = () => {
           <Star className="w-4 h-4 text-gold fill-gold" />
           <span className="font-body text-sm text-cream/80 font-medium">4.7★</span>
           <span className="text-border">·</span>
-          <span className="font-body text-sm text-muted-foreground">196+ reviews</span>
+          <span className="font-body text-sm text-muted-foreground">315+ reviews</span>
         </a>
 
         {/* Rotating mini review */}
