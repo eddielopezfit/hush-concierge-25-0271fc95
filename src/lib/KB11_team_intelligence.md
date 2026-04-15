@@ -460,7 +460,7 @@
 
 ## STYLIST: Whitney Hernandez
 
-**Instagram:** @kcwiththecoolhair (note: this handle appears in the confirmed tag list as "kcwiththecoolhair" — handle may need verification; the whale bio on the website is specifically Whitney)
+**Instagram:** (handle to be verified — @kcwiththecoolhair may belong to Kathy Crawford)
 
 ---
 
@@ -551,8 +551,9 @@
 
 **1. Name + Role**
 - Name: Allison Griessel
-- Role: Lash Artist / Esthetician
+- Role: Hair Stylist / Lash Artist / Esthetician
 - ONLY lash specialist at Hush — all lash appointments route to her
+- Also does hair (vivid/fantasy color) and esthetics — the rare multi-service artist
 
 ---
 
@@ -560,6 +561,7 @@
 - Lash extensions — Classic, Hybrid, Volume sets and fills — the only provider at Hush
 - Lash lift & perm
 - Lash/brow tinting
+- Hair color — vivid/fantasy color specialist (confirmed on website and Instagram)
 - Esthetics — facials, skincare
 
 ---
@@ -591,12 +593,14 @@
 - ALL lash clients — she's the only provider
 - Guests who value an artist who personalizes deeply
 - Guests wanting lash + skincare in one visit
+- Vivid/fantasy color clients (alongside Zaida and Silviya)
 
 ---
 
 **7. When to Recommend**
 - ANY lash inquiry — she is the only option, route every lash call to her
 - Caller wants lash + facial in the same visit
+- Caller wants vivid/fantasy color work (she is one of the vivid color specialists)
 
 ---
 
@@ -607,7 +611,7 @@
 ---
 
 **9. Safe Recommendation Language**
-✅ "Allison is the only lash artist here at Hush — all lash appointments go through her. She does classic, hybrid, and volume sets, lash lifts, and tinting."
+✅ "Allison is the only lash artist here at Hush — all lash appointments go through her. She does classic, hybrid, and volume sets, lash lifts, and tinting. She also does vivid hair color and facials — she's a true multi-hyphenate."
 ✅ "The thing people say about Allison is that she thinks about your whole life, not just the appointment. That level of care is real."
 ❌ "Allison is the best at everything."
 ❌ "You have to see Allison."
@@ -1162,8 +1166,8 @@
 
 ---
 
-## NAIL TECH: Kelly Vishnevetsky
-
+## NAIL TECH: Kelli
+ 
 **Instagram:** @siekandfind (confirmed from tag list)
 
 ---
@@ -1173,16 +1177,16 @@
 - Nail extensions — full sets and fills
 - Gel services
 
-**Website bio:** "Kelly creates pedicures and nail extensions that 'shine like a diamond in the sky' — bold, beautiful, and built to last. Her style is calm, confident, and free-spirited."
+**Website bio:** "Kelli creates pedicures and nail extensions that 'shine like a diamond in the sky' — bold, beautiful, and built to last. Her style is calm, confident, and free-spirited."
 
 **Safe recommendation language:**
-✅ "Kelly is really known for pedicures and nail extensions — calm, confident work. She's a great option for both."
+✅ "Kelli is really known for pedicures and nail extensions — calm, confident work. She's a great option for both."
 
 ---
 
-## NAIL TECH: Jackie
+## NAIL TECH: Jacky
 
-**Instagram:** @seliajean_00 (confirmed from tag list — "eliajean_00" in the tag)
+**Instagram:** @seliajean_00 (confirmed from tag list)
 
 ---
 
@@ -1192,10 +1196,10 @@
 - Gel sets and fills
 - Trendy, bold nail looks
 
-**Website bio:** "Jackie's got 'the glam, the glitter, and the gallop' — turning every nail set into a power ballad for your hands."
+**Website bio:** "Jacky's got 'the glam, the glitter, and the gallop' — turning every nail set into a power ballad for your hands."
 
 **Safe recommendation language:**
-✅ "Jackie does trendy, statement nail sets — if you want something bold and glamorous, she's one to ask about."
+✅ "Jacky does trendy, statement nail sets — if you want something bold and glamorous, she's one to ask about."
 
 ---
 
