@@ -28,7 +28,36 @@ export const LunaChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showBadge, setShowBadge] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>("find");
+  const [isFirstOpen, setIsFirstOpen] = useState(true);
   const { chatWidgetRequested, clearChatWidgetRequest } = useLuna();
+  const chimeRef = useRef<HTMLAudioElement | null>(null);
+
+  // Pre-create a subtle chime using Web Audio API
+  useEffect(() => {
+    // Build a tiny warm chime — two sine tones faded together
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const sr = ctx.sampleRate;
+    const len = sr * 0.6; // 600ms
+    const buf = ctx.createBuffer(1, len, sr);
+    const data = buf.getChannelData(0);
+    const f1 = 880; // A5
+    const f2 = 1318.5; // E6 — a perfect fifth for warmth
+    for (let i = 0; i < len; i++) {
+      const t = i / sr;
+      const env = Math.exp(-t * 6) * 0.25; // quick decay, gentle volume
+      data[i] = env * (Math.sin(2 * Math.PI * f1 * t) * 0.6 + Math.sin(2 * Math.PI * f2 * t) * 0.4);
+    }
+    // Encode to WAV blob for HTMLAudioElement
+    const wavBlob = encodeWav(buf);
+    const url = URL.createObjectURL(wavBlob);
+    chimeRef.current = new Audio(url);
+    chimeRef.current.volume = 0.35;
+
+    return () => {
+      URL.revokeObjectURL(url);
+      ctx.close();
+    };
+  }, []);
 
   // Respond to external "open chat widget" requests
   useEffect(() => {
@@ -50,6 +79,11 @@ export const LunaChatWidget = () => {
   const handleOpen = () => {
     setIsOpen(true);
     setShowBadge(false);
+    // Play chime only on the very first open
+    if (isFirstOpen) {
+      setIsFirstOpen(false);
+      chimeRef.current?.play().catch(() => {});
+    }
   };
 
   const handleClose = () => setIsOpen(false);
