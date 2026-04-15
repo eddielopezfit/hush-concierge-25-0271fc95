@@ -118,7 +118,8 @@ export const HeroSection = () => {
               const day = new Date().getDay();
               if (day === 0 || day === 1) return "Closed Today";
               if (day === 6) return "Open Today · 9 AM – 4 PM";
-              return "Open Today · 9 AM – 6 PM";
+              if (day === 3 || day === 5) return "Open Today · 9 AM – 5 PM";
+              return "Open Today · 9 AM – 7 PM";
             })()}
           </span>
         </motion.div>
