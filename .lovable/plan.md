@@ -1,47 +1,19 @@
 
 
-# Reduce Mobile CTA Clutter
+# Optimized KB01 — Business Identity
 
-## Problem
-On mobile, the hero viewport shows **6 interactive elements** competing for attention:
-1. Hero "Find Your Experience" button
-2. "Open Today" hours badge
-3. AI Concierge voice pill (floating, bottom-left)
-4. Ask Luna chat bubble (floating, bottom-right)
-5. MobileStickyBar "Find Your Experience" (duplicate of #1)
-6. MobileStickyBar Phone + Directions icons
+I'll generate the corrected and streamlined KB01 as a downloadable document. Here's what's changing:
 
-This creates visual noise and violates the "Zero Dead Ends" principle by overwhelming rather than guiding.
+- **Hours**: Standardized to Tue–Fri 9–6, Sat 9–4 (per project memory)
+- **Years**: Updated to 24 (2002→2026)
+- **Reviews**: Updated to 4.7★ / 315+ reviews
+- **Referral Program**: "Groupies" replaced with "Referral Program"
+- **Front Desk**: "Mary, Kendall" → Kendell Barraza (Guest Experience Coordinator)
+- **Kathy's name**: Standardized to Kathy Crawford
+- **Added**: 20% massage perk, TCPA disclosure note
+- **Removed**: BirdEye platform name, redundant prose (~30% reduction)
 
-## Solution
+## Output
 
-**Hide the hero CTA on mobile** since the sticky bar already duplicates it. Keep the sticky bar as the single persistent action zone. Consolidate floating widgets so they don't stack on top of each other.
-
-### Changes
-
-**1. Hide hero "Find Your Experience" button on mobile**
-`src/components/HeroSection.tsx` — Add `hidden sm:flex` to the primary CTA wrapper so on mobile the hero is purely atmospheric (headline + tagline + hours badge). The sticky bar handles conversion.
-
-**2. Hide hero hours badge when sticky bar is visible**
-The sticky bar already signals "we're here." Remove the hours badge from the hero on mobile to reduce clutter — or move it into the sticky bar if desired.
-
-**3. Consolidate floating widgets on mobile**
-Combine the AI Concierge pill and Ask Luna bubble into a single floating action button on mobile. Tapping it opens the Luna chat widget (which already has voice access via the chat tabs). This removes one floating element.
-- `src/components/LunaFloatingVoiceDock.tsx` — Hide on mobile (`hidden md:flex`)
-- `src/components/LunaChatWidget.tsx` — Keep as the sole floating widget on mobile, relabel bubble to "Luna" or "AI Concierge" to cover both voice and chat entry points
-
-**4. Simplify MobileStickyBar**
-Keep it as-is — it's well-designed with the three-button thumb-zone layout (Find Experience + Call + Directions). This becomes the only persistent CTA bar on mobile.
-
-### Result: Mobile CTA count drops from 6 to 3
-- MobileStickyBar (Find Experience + Call + Directions) — persistent
-- Single Luna floating bubble — persistent
-- Hero becomes a clean brand moment with no competing buttons
-
-### Files Modified
-| File | Change |
-|---|---|
-| `src/components/HeroSection.tsx` | Hide primary CTA + hours badge on mobile |
-| `src/components/LunaFloatingVoiceDock.tsx` | Hide on mobile viewports |
-| `src/components/LunaChatWidget.tsx` | Update mobile bubble label to cover both voice/chat |
+A single `/mnt/documents/KB01_business_identity_optimized.md` file ready to copy-paste into ElevenLabs.
 
