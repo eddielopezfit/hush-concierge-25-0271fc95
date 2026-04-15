@@ -270,9 +270,7 @@ Zaida Delgado: Hair — bold transformations.
 Allison Griessel: Hair (vivid/fantasy color) + lashes (only lash artist) + esthetics.
 Patty: Esthetics — microneedling (only provider), spray tan (only provider), facials.
 Lori: Esthetics — facials.
-Anita Apodaca: Nails.
-Kelli: Nails.
-Jacky: Nails.
+Nail Team (3 techs): Manicures, pedicures, full sets, gel, extensions, nail art. Do NOT name individual nail techs — route to front desk.
 Tammi: Massage (only massage therapist).
 Kendell Barraza: Front Desk.
 
