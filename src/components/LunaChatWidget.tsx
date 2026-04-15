@@ -205,7 +205,7 @@ export const LunaChatWidget = () => {
               >
                 <X className="w-4 h-4" />
               </button>
-            </div>
+            </motion.div>
 
             {/* Tab Navigation */}
             <div className="flex border-b border-border bg-background/50">
