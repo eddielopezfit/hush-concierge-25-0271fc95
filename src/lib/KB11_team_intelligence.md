@@ -354,7 +354,7 @@
 
 **8. When NOT to Force**
 - For simple maintenance appointments (root touch-up, trim), any stylist works
-- For vivid/fantasy color, Allison, Silviya, or Zaida are the clear specialists
+- For vivid/fantasy color, Silviya or Zaida are the clear specialists
 - Don't over-position her only as the "fix-it" person — she's a full master colorist
 
 ---
@@ -441,7 +441,7 @@
 
 **8. When NOT to Force**
 - For corrective color, Michelle is stronger
-- For vivid/fantasy color, Allison or Zaida are the clear specialists
+- For vivid/fantasy color, Zaida is the clear specialist
 - For cuts primarily, route elsewhere
 - Don't push Silviya if the caller's need is a quick maintenance service
 
@@ -525,7 +525,7 @@
 ---
 
 **8. When NOT to Force**
-- For vivid/fantasy color, route to Allison, Silviya, or Zaida
+- For vivid/fantasy color, route to Silviya or Zaida
 - For corrective color with a complicated history, Michelle is stronger
 - For extensions primarily, route to Silviya or Michelle
 - Don't push Whitney for guests who want a low-maintenance, relaxed approach to color
@@ -551,80 +551,64 @@
 
 **1. Name + Role**
 - Name: Allison Griessel
-- Role: Hair Stylist / Lash Artist / Esthetician — the multi-service specialist
+- Role: Lash Artist / Esthetician
 - ONLY lash specialist at Hush — all lash appointments route to her
-- Website bio: "Dreaming of 'purple rain' or 'cherry bomb' reds? Let Allison 'rock you down the electric avenue' of full spectrum colors."
 
 ---
 
 **2. Specialties**
-- Vivid / fantasy / full-spectrum color — her creative signature in hair
 - Lash extensions — Classic, Hybrid, Volume sets and fills — the only provider at Hush
 - Lash lift & perm
 - Lash/brow tinting
 - Esthetics — facials, skincare
-- Multi-service appointments — hair + lashes + skincare in one visit
-- Color correction also in her portfolio (mentioned in Hush posts: "From compromised to revived" — Allison tagged)
 
 ---
 
 **3. Client Language (from reviews)**
-- "Allison has so many tips and tricks. She really listens to what you want and even recommends certain hair coloring tips to personalize it to what you normally do with your hair." — BirdEye
-- "She knows I wear ponytails a lot so she dyed the back of my hair so it shows when I pull my hair up!" — BirdEye (the single most vivid example of going beyond the chair)
-- "Allison G is magical. I've gotten nonstop compliments on my hair since seeing her" — prior KB research (Google review)
-- "Green with Envy — Allison brought this vivid dream to life with her signature bold brilliance. Obsessed is an understatement." — Hush Instagram caption
+- "Allison has so many tips and tricks. She really listens to what you want." — BirdEye
+- "Allison G is magical." — Google review
 - Hush Instagram post (March 2026): Fashion Fridays celebrated "Allie's baby shower" — indicates she is beloved by the team, not just clients
-- Pattern: clients describe her as magical, thoughtful, detail-obsessed, someone who thinks about your whole life
+- Pattern: clients describe her as magical, thoughtful, detail-obsessed
 
 ---
 
 **4. Personality / Vibe**
-- Artistic, bold, creative — her color work is not safe or subtle
-- Deeply thoughtful about the individual — she doesn't just do your hair, she thinks about how you live in it
-- Warm and community-embedded — the whole team threw her a baby shower themed Fashion Friday
-- Instagram energy: "POV: You just got your hair done to perfection ✨" — confident, fun, joyful
-- The team player who can do it all, but does each thing with genuine craft
+- Warm, detail-oriented, and deeply thoughtful about the individual
+- Community-embedded — the whole team threw her a baby shower themed Fashion Friday
+- Instagram energy: confident, fun, joyful
+- Genuine craft in everything she does
 
 ---
 
 **5. Experience Style**
-- Creative and collaborative — she brings ideas you hadn't thought of
-- Educational and consultative — she explains tips, tricks, and maintenance
 - For lash appointments: meditative, precise, most clients fall asleep
-- Multi-service: she can be your one-stop artist for hair + lashes + skin in a single visit
-- Personalized to the point of thinking about your ponytail, your morning routine, your lifestyle
+- Educational and consultative — she explains tips, tricks, and maintenance
+- Personalized to the point of thinking about your lifestyle and routine
 
 ---
 
 **6. Ideal Client Match**
-- Guests wanting vivid, fantasy, or bold color
 - ALL lash clients — she's the only provider
-- Guests who want multi-service efficiency (one artist, one day)
 - Guests who value an artist who personalizes deeply
-- Creative types, bold personalities, people who want their hair to be an expression
+- Guests wanting lash + skincare in one visit
 
 ---
 
 **7. When to Recommend**
 - ANY lash inquiry — she is the only option, route every lash call to her
-- Caller asks about vivid color, fantasy color, pink, blue, vivid red, color blocking
-- Caller wants to book hair + lashes or hair + facial in the same visit
-- Caller describes a creative vision that requires an artistic hand
-- Caller wants someone who thinks about their lifestyle, not just their look in the chair
+- Caller wants lash + facial in the same visit
 
 ---
 
 **8. When NOT to Force**
-- For classic, natural, low-key color (root touch-ups, natural balayage), there are other great options
-- For bridal/updo styling specifically, Whitney is stronger
-- For corrective color with very complex history, Michelle is the primary specialist
+- For bridal/updo styling specifically, route elsewhere
+- For hair services, route to hair stylists
 
 ---
 
 **9. Safe Recommendation Language**
-✅ "Allison is the only lash artist here at Hush — all lash appointments go through her. She does classic, hybrid, and volume sets, lash lifts, and tinting. She's also a hair stylist and esthetician, so if you want to do hair and lashes in one visit, she can make that happen."
-✅ "For vivid color — pink, electric blue, full-spectrum stuff — Allison is incredible. There's an Instagram post of hers captioned 'Green with Envy — obsessed is an understatement.' That's the energy she brings."
-✅ "The thing people say about Allison is that she thinks about your whole life, not just the chair moment. One client said she dyed the back of her hair so it shows when she wears a ponytail. That level of care is real."
+✅ "Allison is the only lash artist here at Hush — all lash appointments go through her. She does classic, hybrid, and volume sets, lash lifts, and tinting."
+✅ "The thing people say about Allison is that she thinks about your whole life, not just the appointment. That level of care is real."
 ❌ "Allison is the best at everything."
 ❌ "You have to see Allison."
 
@@ -860,7 +844,7 @@
 
 **7. When to Recommend**
 - Caller is looking for a bold transformation and wants to work with a creative stylist
-- Caller asks about vivid or dramatic color alongside Allison as a co-recommendation
+- Caller asks about vivid or dramatic color
 - Caller wants a "makeover" vibe — full change, not maintenance
 
 ---
@@ -875,7 +859,7 @@
 
 **9. Safe Recommendation Language**
 ✅ "Zaida is really known for bold color and transformations — she's a color specialist and she brings precision to dramatic looks. She's definitely one to ask about if you're ready for a real change."
-✅ "For vivid, bold, transformation-type work, both Allison and Zaida are strong in that lane here."
+✅ "For vivid, bold, transformation-type work, Zaida is really strong in that lane here."
 ❌ "She's newer so she might be less experienced."
 ❌ "Book Zaida."
 
