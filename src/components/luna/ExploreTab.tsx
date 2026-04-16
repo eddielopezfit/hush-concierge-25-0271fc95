@@ -1,7 +1,9 @@
 import { motion } from "framer-motion";
 import { servicesMenuData } from "@/data/servicesMenuData";
-import { ChevronRight, ArrowLeft, Sun, Heart, Palette, Scissors, Eye, Hand, Sparkles, Flower2 } from "lucide-react";
+import { ChevronRight, ArrowLeft, Sun, Heart, Palette, Scissors, Eye, Hand, Sparkles, Flower2, MessageSquare } from "lucide-react";
 import { useState } from "react";
+import { useLuna } from "@/contexts/LunaContext";
+import { trackServiceClick } from "@/lib/journeyTracker";
 
 const lookCategories = [
   { id: "blonde", label: "Blonde", icon: Sun, serviceId: "hair" },
@@ -20,10 +22,32 @@ interface ExploreTabProps {
 
 export const ExploreTab = ({ onSwitchTab }: ExploreTabProps) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const { mergeConcierge } = useLuna();
 
-  const selectedService = selectedCategory
-    ? servicesMenuData.find(s => s.id === lookCategories.find(c => c.id === selectedCategory)?.serviceId)
+  const selectedLookCat = selectedCategory ? lookCategories.find(c => c.id === selectedCategory) : null;
+  const selectedService = selectedLookCat
+    ? servicesMenuData.find(s => s.id === selectedLookCat.serviceId)
     : null;
+
+  const handleCategorySelect = (catId: string) => {
+    const cat = lookCategories.find(c => c.id === catId);
+    if (cat) {
+      setSelectedCategory(catId);
+      // Inject context so Luna knows what the user explored
+      mergeConcierge({
+        source: "Explore",
+        categories: [cat.serviceId as any],
+        category: cat.serviceId as any,
+      });
+      trackServiceClick(cat.label, cat.serviceId);
+    }
+  };
+
+  const handleChatAboutService = () => {
+    if (selectedService) {
+      onSwitchTab("chat");
+    }
+  };
 
   if (selectedCategory && selectedService) {
     return (
@@ -65,6 +89,15 @@ export const ExploreTab = ({ onSwitchTab }: ExploreTabProps) => {
             </div>
           )}
 
+          {/* Chat with Luna about this service */}
+          <button
+            onClick={handleChatAboutService}
+            className="w-full flex items-center justify-center gap-2 py-2.5 text-sm font-body rounded-lg border border-primary/25 text-primary hover:bg-primary/10 transition-colors"
+          >
+            <MessageSquare className="w-3.5 h-3.5" />
+            Ask Luna about {selectedService.title}
+          </button>
+
           <button
             onClick={() => onSwitchTab("find")}
             className="w-full btn-outline-gold py-2.5 text-sm mt-2"
@@ -92,7 +125,7 @@ export const ExploreTab = ({ onSwitchTab }: ExploreTabProps) => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
-                onClick={() => setSelectedCategory(cat.id)}
+                onClick={() => handleCategorySelect(cat.id)}
                 className="flex items-center gap-2.5 px-3 py-3.5 rounded-lg border border-border bg-card text-sm font-body text-foreground hover:border-primary/30 hover:bg-primary/5 transition-all group"
               >
                 <Icon className="w-4 h-4 text-primary/70 group-hover:text-primary transition-colors" />

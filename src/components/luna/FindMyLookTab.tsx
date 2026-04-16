@@ -3,9 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, Sparkles, ArrowRight, Clock, DollarSign, Users, RotateCcw, Scissors, Hand, Eye, Heart, Flower2 } from "lucide-react";
 import { generateRecommendation, LunaRecommendation } from "@/lib/lunaBrain";
 import { startSession } from "@/lib/sessionManager";
-import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
+import { ConciergeContext, ServiceCategoryId, ServiceSubtype } from "@/types/concierge";
 import { buildRevealData, RevealData } from "@/lib/experienceReveal";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useLuna } from "@/contexts/LunaContext";
 import { BookingDecisionCard } from "@/components/BookingDecisionCard";
 
@@ -16,6 +15,40 @@ const categories: { id: ServiceCategoryId; label: string; icon: typeof Scissors 
   { id: "skincare", label: "Skincare", icon: Sparkles },
   { id: "massage", label: "Massage", icon: Heart },
 ];
+
+// Category-specific subtype options
+const subtypeOptions: Record<ServiceCategoryId, { id: string; label: string }[]> = {
+  hair: [
+    { id: "cut", label: "Haircut" },
+    { id: "color", label: "Color / Highlights" },
+    { id: "both", label: "Cut + Color" },
+    { id: "unsure", label: "Not sure yet" },
+  ],
+  nails: [
+    { id: "manicure", label: "Manicure" },
+    { id: "pedicure", label: "Pedicure" },
+    { id: "full_set", label: "Full Set / Acrylics" },
+    { id: "unsure", label: "Not sure yet" },
+  ],
+  lashes: [
+    { id: "full_set", label: "Full Set" },
+    { id: "fill", label: "Fill / Refill" },
+    { id: "lift", label: "Lash Lift" },
+    { id: "unsure", label: "Not sure yet" },
+  ],
+  skincare: [
+    { id: "facial", label: "Facial" },
+    { id: "acne", label: "Acne / Skin Concerns" },
+    { id: "glow", label: "Glow Treatment" },
+    { id: "unsure", label: "Not sure yet" },
+  ],
+  massage: [
+    { id: "relaxation", label: "Relaxation" },
+    { id: "deep_tissue", label: "Deep Tissue" },
+    { id: "pain_relief", label: "Pain Relief" },
+    { id: "unsure", label: "Not sure yet" },
+  ],
+};
 
 const goals: { id: string; label: string }[] = [
   { id: "refresh", label: "Quick refresh" },
@@ -37,8 +70,10 @@ interface FindMyLookTabProps {
 
 export const FindMyLookTab = ({ onSwitchTab }: FindMyLookTabProps) => {
   const { conciergeContext, setConcierge } = useLuna();
+  // Steps: 1=categories, 2=subtype, 3=goal, 4=timing, 5=reveal
   const [step, setStep] = useState(1);
   const [selectedCategories, setSelectedCategories] = useState<ServiceCategoryId[]>([]);
+  const [selectedSubtype, setSelectedSubtype] = useState<string | null>(null);
   const [selectedGoal, setSelectedGoal] = useState<string | null>(null);
   const [selectedTiming, setSelectedTiming] = useState<string | null>(null);
   const [recommendation, setRecommendation] = useState<LunaRecommendation | null>(null);
@@ -51,11 +86,12 @@ export const FindMyLookTab = ({ onSwitchTab }: FindMyLookTabProps) => {
       const reveal = buildRevealData(conciergeContext);
       if (reveal) {
         setSelectedCategories(conciergeContext.categories);
+        setSelectedSubtype(conciergeContext.service_subtype ?? null);
         setSelectedGoal(conciergeContext.goal ?? null);
         setSelectedTiming(conciergeContext.timing ?? null);
         setRevealData(reveal);
         setRecommendation(generateRecommendation(conciergeContext));
-        setStep(4);
+        setStep(5);
         setResumedFromContext(true);
       }
     }
@@ -68,9 +104,27 @@ export const FindMyLookTab = ({ onSwitchTab }: FindMyLookTabProps) => {
     );
   };
 
+  const handleCategoriesNext = () => {
+    // For multi-category or single-category, check if subtype step is needed
+    if (selectedCategories.length === 1) {
+      const cat = selectedCategories[0];
+      if (subtypeOptions[cat]?.length) {
+        setStep(2); // show subtype
+        return;
+      }
+    }
+    // Multi-service or no subtypes: skip to goal
+    setStep(3);
+  };
+
+  const handleSubtypeSelect = (id: string) => {
+    setSelectedSubtype(id);
+    setTimeout(() => setStep(3), 300);
+  };
+
   const handleGoalSelect = (id: string) => {
     setSelectedGoal(id);
-    setTimeout(() => setStep(3), 300);
+    setTimeout(() => setStep(4), 300);
   };
 
   const handleTimingSelect = (id: string) => {
@@ -80,6 +134,9 @@ export const FindMyLookTab = ({ onSwitchTab }: FindMyLookTabProps) => {
       categories: selectedCategories,
       goal: selectedGoal,
       timing: id,
+      service_subtype: (selectedSubtype as ServiceSubtype) || null,
+      primary_category: selectedCategories.length > 1 ? selectedCategories[0] : null,
+      is_multi_service: selectedCategories.length > 1,
     };
     setConcierge(context);
     startSession(context, "find_my_look");
@@ -87,12 +144,13 @@ export const FindMyLookTab = ({ onSwitchTab }: FindMyLookTabProps) => {
     setRecommendation(rec);
     const reveal = buildRevealData(context);
     setRevealData(reveal);
-    setTimeout(() => setStep(4), 300);
+    setTimeout(() => setStep(5), 300);
   };
 
   const handleReset = () => {
     setStep(1);
     setSelectedCategories([]);
+    setSelectedSubtype(null);
     setSelectedGoal(null);
     setSelectedTiming(null);
     setRecommendation(null);
@@ -100,34 +158,43 @@ export const FindMyLookTab = ({ onSwitchTab }: FindMyLookTabProps) => {
     setResumedFromContext(false);
   };
 
-  const stepLabels = ["Services", "Goal", "Timing", "Your Look"];
+  const stepLabels = ["Services", "Type", "Goal", "Timing", "Your Look"];
+  const totalSteps = selectedCategories.length === 1 && subtypeOptions[selectedCategories[0]]?.length ? 5 : 4;
+  // Map internal step to display step for non-subtype flows
+  const displayStep = totalSteps === 4 && step >= 3 ? step - 1 : step;
 
   return (
     <div className="flex flex-col h-full">
       {/* Step indicator */}
       <div className="px-4 pt-3 pb-2">
         <div className="flex items-center gap-1.5">
-          {stepLabels.map((label, i) => (
+          {(totalSteps === 5 ? stepLabels : [stepLabels[0], stepLabels[2], stepLabels[3], stepLabels[4]]).map((label, i) => (
             <div key={label} className="flex items-center gap-1.5 flex-1">
               <div className={`h-1 flex-1 rounded-full transition-colors ${
-                i + 1 <= step ? "bg-primary" : "bg-muted"
+                i + 1 <= displayStep ? "bg-primary" : "bg-muted"
               }`} />
             </div>
           ))}
         </div>
         <div className="flex justify-between mt-1">
-          {stepLabels.map((label, i) => (
+          {(totalSteps === 5 ? stepLabels : [stepLabels[0], stepLabels[2], stepLabels[3], stepLabels[4]]).map((label, i) => (
             <span key={label} className={`text-[10px] font-body ${
-              i + 1 === step ? "text-primary" : "text-muted-foreground"
+              i + 1 === displayStep ? "text-primary" : "text-muted-foreground"
             }`}>{label}</span>
           ))}
         </div>
       </div>
 
       {/* Back button */}
-      {step > 1 && step < 4 && (
+      {step > 1 && step < 5 && (
         <button
-          onClick={() => setStep(s => s - 1)}
+          onClick={() => {
+            if (step === 3 && totalSteps === 4) {
+              setStep(1); // skip subtype going back
+            } else {
+              setStep(s => s - 1);
+            }
+          }}
           className="flex items-center gap-1 px-4 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors font-body"
         >
           <ChevronLeft className="w-3 h-3" /> Back
@@ -164,17 +231,38 @@ export const FindMyLookTab = ({ onSwitchTab }: FindMyLookTabProps) => {
                 <motion.button
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  onClick={() => setStep(2)}
+                  onClick={handleCategoriesNext}
                   className="w-full btn-gold py-3 text-sm flex items-center justify-center gap-2"
                 >
-                  Next <ArrowRight className="w-4 h-4" />
+                  Tell me more <ArrowRight className="w-4 h-4" />
                 </motion.button>
               )}
             </motion.div>
           )}
 
-          {step === 2 && (
+          {step === 2 && selectedCategories.length === 1 && (
             <motion.div key="s2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3 pt-2">
+              <p className="font-body text-sm text-foreground">What kind of {selectedCategories[0]} service?</p>
+              <div className="space-y-2">
+                {(subtypeOptions[selectedCategories[0]] || []).map(opt => (
+                  <button
+                    key={opt.id}
+                    onClick={() => handleSubtypeSelect(opt.id)}
+                    className={`w-full text-left px-4 py-3 rounded-lg border text-sm font-body transition-all ${
+                      selectedSubtype === opt.id
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border bg-card text-foreground hover:border-primary/30"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {step === 3 && (
+            <motion.div key="s3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3 pt-2">
               <p className="font-body text-sm text-foreground">What's your goal?</p>
               <div className="space-y-2">
                 {goals.map(g => (
@@ -194,8 +282,8 @@ export const FindMyLookTab = ({ onSwitchTab }: FindMyLookTabProps) => {
             </motion.div>
           )}
 
-          {step === 3 && (
-            <motion.div key="s3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3 pt-2">
+          {step === 4 && (
+            <motion.div key="s4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3 pt-2">
               <p className="font-body text-sm text-foreground">When are you thinking?</p>
               <div className="space-y-2">
                 {timings.map(t => (
@@ -215,8 +303,8 @@ export const FindMyLookTab = ({ onSwitchTab }: FindMyLookTabProps) => {
             </motion.div>
           )}
 
-          {step === 4 && revealData && (
-            <motion.div key="s4" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4 pt-2">
+          {step === 5 && revealData && (
+            <motion.div key="s5" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4 pt-2">
               <div className="text-center">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 border border-gold/20 mb-3">
                   <Sparkles className="w-3 h-3 text-gold" />
@@ -225,7 +313,6 @@ export const FindMyLookTab = ({ onSwitchTab }: FindMyLookTabProps) => {
                 <p className="font-display text-lg text-foreground">{revealData.experienceLabel}</p>
               </div>
 
-              {/* Info pills */}
               <div className="flex justify-center gap-2">
                 <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-secondary border border-border">
                   <Clock className="w-3 h-3 text-gold" />
@@ -237,7 +324,6 @@ export const FindMyLookTab = ({ onSwitchTab }: FindMyLookTabProps) => {
                 </div>
               </div>
 
-              {/* Neutral artist matching */}
               <div className="rounded-lg border border-gold/10 bg-gold/[0.03] p-3 text-center">
                 <div className="flex items-center justify-center gap-1.5 mb-1">
                   <Users className="w-3.5 h-3.5 text-gold" />
@@ -248,7 +334,6 @@ export const FindMyLookTab = ({ onSwitchTab }: FindMyLookTabProps) => {
                 </p>
               </div>
 
-              {/* Booking Decision */}
               <BookingDecisionCard
                 revealData={revealData}
                 context={conciergeContext}

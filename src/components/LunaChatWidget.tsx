@@ -107,6 +107,7 @@ export const LunaChatWidget = () => {
   };
 
   const handleClose = () => setIsOpen(false);
+  const closePanel = () => setIsOpen(false);
 
   const switchTab = (tab: string) => setActiveTab(tab as TabId);
 
@@ -124,7 +125,7 @@ export const LunaChatWidget = () => {
     switch (activeTab) {
       case "find": return <FindMyLookTab onSwitchTab={switchTab} />;
       case "explore": return <ExploreTab onSwitchTab={switchTab} />;
-      case "artists": return <ArtistsTab onSwitchTab={switchTab} />;
+      case "artists": return <ArtistsTab onSwitchTab={switchTab} onClosePanel={closePanel} />;
       case "plan": return <MyPlanTab onSwitchTab={switchTab} />;
       case "chat": return <ChatTab />;
     }
