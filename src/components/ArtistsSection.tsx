@@ -159,25 +159,6 @@ export const ArtistsSection = () => {
     openModal(lunaContext);
   };
 
-  const handleCompareWithLuna = (artist: TeamMember) => {
-    const category = activeFilter !== "all" ? activeFilter as ServiceCategoryId : artist.serviceCategory;
-
-    // Get all visible artists in this category for comparison context
-    const allInCategory = [...founders, ...team].filter(m => category ? matchesCategory(m, category) : true);
-    const artistNames = allInCategory.map(a => a.name);
-
-    const lunaContext: ConciergeContext = {
-      source: "Team Compare",
-      categories: category ? [category] : [],
-      goal: null,
-      timing: null,
-      // Pass the viewed artist's name in the group field for context,
-      // but do NOT set preferredArtist — Luna compares, not assigns
-      group: artist.name,
-      item: artistNames.join(", "),
-    };
-    openModal(lunaContext);
-  };
 
   const founders = getFounders();
   const team = getTeam();
