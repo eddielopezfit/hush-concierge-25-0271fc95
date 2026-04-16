@@ -467,18 +467,23 @@ export const ArtistsSection = () => {
                 {/* Ask Luna CTA */}
                 <button
                   onClick={() => {
+                    const artist = selectedArtist;
                     setSelectedArtist(null);
-                    const categories: ServiceCategoryId[] = selectedArtist.serviceCategories?.length
-                      ? selectedArtist.serviceCategories
-                      : selectedArtist.serviceCategory ? [selectedArtist.serviceCategory] : [];
+                    const categories: ServiceCategoryId[] = artist.serviceCategories?.length
+                      ? artist.serviceCategories
+                      : artist.serviceCategory ? [artist.serviceCategory] : [];
                     openModal({
                       source: "Artist Profile",
                       categories,
                       goal: null,
                       timing: null,
-                      preferredArtist: selectedArtist.name,
-                      preferredArtistId: selectedArtist.id,
-                    }, "chat");
+                      preferredArtist: artist.name,
+                      preferredArtistId: artist.id,
+                    });
+                    // Switch to chat tab after modal opens
+                    setTimeout(() => {
+                      window.dispatchEvent(new CustomEvent("luna-switch-tab", { detail: "chat" }));
+                    }, 100);
                   }}
                   className="flex items-center justify-center gap-2 text-xs font-body text-primary hover:text-primary/80 transition-colors py-2 w-full border border-primary/20 rounded-lg mb-2"
                 >
