@@ -29,7 +29,12 @@ export const ArtistsTab = ({ onSwitchTab, onClosePanel }: ArtistsTabProps) => {
   const bookable = getBookableArtists();
   const filtered = filter === "All"
     ? bookable
-    : bookable.filter(a => a.department === departmentFilterMap[filter]);
+    : bookable.filter(a => {
+        const filterKey = departmentFilterMap[filter];
+        return a.department === filterKey
+          || a.serviceCategory === filterKey
+          || (a.serviceCategories?.includes(filterKey as any) ?? false);
+      });
 
   const handleSelectArtist = (artist: TeamMember) => {
     setSelectedArtist(artist);
@@ -64,9 +69,7 @@ export const ArtistsTab = ({ onSwitchTab, onClosePanel }: ArtistsTabProps) => {
 
   // Inline detail view
   if (selectedArtist) {
-    const deptLabel = selectedArtist.serviceCategories?.length
-      ? selectedArtist.serviceCategories.map(c => c.charAt(0).toUpperCase() + c.slice(1)).join(" · ")
-      : departmentLabels[selectedArtist.department] || selectedArtist.department;
+    const deptLabel = departmentLabels[selectedArtist.department] || selectedArtist.department;
     return (
       <div className="flex flex-col h-full">
         <button
@@ -96,7 +99,11 @@ export const ArtistsTab = ({ onSwitchTab, onClosePanel }: ArtistsTabProps) => {
             <div>
               <h3 className="font-display text-lg text-foreground">{selectedArtist.name}</h3>
               <p className="text-[11px] font-body text-primary">{selectedArtist.specialty}</p>
-              <span className="text-[10px] font-body text-muted-foreground">{deptLabel}</span>
+              <span className="text-[10px] font-body text-muted-foreground">
+                {selectedArtist.serviceCategories?.length
+                  ? selectedArtist.serviceCategories.map(c => c.charAt(0).toUpperCase() + c.slice(1)).join(" · ")
+                  : deptLabel}
+              </span>
             </div>
 
             {selectedArtist.legacyBio && (
@@ -204,7 +211,11 @@ export const ArtistsTab = ({ onSwitchTab, onClosePanel }: ArtistsTabProps) => {
                       <p className="font-display text-sm text-foreground">{artist.name}</p>
                       <p className="text-[10px] font-body text-primary">{artist.specialty}</p>
                     </div>
-                    <span className="text-[10px] font-body text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{deptLabel}</span>
+                    <span className="text-[10px] font-body text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                      {artist.serviceCategories?.length
+                        ? artist.serviceCategories.map(c => c.charAt(0).toUpperCase() + c.slice(1)).join(" · ")
+                        : deptLabel}
+                    </span>
                   </div>
                 </div>
               </div>

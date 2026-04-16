@@ -3,8 +3,6 @@
  * Feeds into Luna's AI context so she knows where the user is in their journey
  */
 
-import { teamMembers, departmentLabels } from "@/data/teamData";
-
 export interface JourneyEvent {
   type: string;
   data?: Record<string, string | number>;
@@ -135,25 +133,7 @@ export function getJourneyContextString(): string {
       }
       if (parsed?.goal) parts.push(`Their goal: ${parsed.goal}.`);
       if (parsed?.timing) parts.push(`Timing preference: ${parsed.timing}.`);
-      if (parsed?.preferredArtist) {
-        parts.push(`Preferred artist: ${parsed.preferredArtist}.`);
-        // Inject full artist profile so Luna has complete context
-        const artist = teamMembers.find(m => m.name === parsed.preferredArtist || m.id === parsed.preferredArtistId);
-        if (artist) {
-          const dept = departmentLabels[artist.department] || artist.department;
-          const profileParts = [
-            `ARTIST PROFILE — ${artist.name}:`,
-            `Department: ${dept}. Specialty: ${artist.specialty}.`,
-          ];
-          if (artist.specialties?.length) profileParts.push(`Skills: ${artist.specialties.join(", ")}.`);
-          if (artist.knownFor?.length) profileParts.push(`Known for: ${artist.knownFor.join(", ")}.`);
-          if (artist.bestFor) profileParts.push(`Best for: ${artist.bestFor}.`);
-          if (artist.legacyBio) profileParts.push(`Bio: ${artist.legacyBio}`);
-          if (artist.fitStatement) profileParts.push(`Fit: ${artist.fitStatement}`);
-          if (artist.serviceCategories?.length) profileParts.push(`Also covers: ${artist.serviceCategories.join(", ")}.`);
-          parts.push(profileParts.join(" "));
-        }
-      }
+      if (parsed?.preferredArtist) parts.push(`Preferred artist: ${parsed.preferredArtist}.`);
     }
   } catch { /* ignore */ }
 

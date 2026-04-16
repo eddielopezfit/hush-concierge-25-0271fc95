@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Send, Loader2, ArrowRight, Sparkles, Phone, Calendar, ChevronRight, RotateCcw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getJourneyContextString } from "@/lib/journeyTracker";
-import { teamMembers } from "@/data/teamData";
 import { getConciergeContext } from "@/lib/conciergeStore";
 import { formatCategoryList, categoryLabels, goalLabels, timingLabels } from "@/lib/conciergeLabels";
 import { saveLead } from "@/lib/saveSession";
@@ -48,16 +47,6 @@ const ERROR_QUICK_REPLIES = [
 
 // ── Context-aware greeting builder ──────────────────────────────────────────
 function buildContextGreeting(ctx: ConciergeContext | null): string {
-  // Artist-specific greeting when user clicked "Ask Luna about [Artist]"
-  if (ctx?.preferredArtist) {
-    const artist = teamMembers.find(m => m.name === ctx.preferredArtist || m.id === ctx.preferredArtistId);
-    if (artist) {
-      const firstName = artist.name.split(" ")[0];
-      const knownForStr = artist.knownFor?.length ? artist.knownFor.slice(0, 3).join(", ") : artist.specialty;
-      return `You're asking about **${artist.name}** — great choice! ${firstName} specializes in **${artist.specialty}** and is known for ${knownForStr}.\n\nWhat would you like to know? I can tell you about ${firstName}'s experience, what to expect, pricing for their services, or help you get booked in.`;
-    }
-  }
-
   if (!ctx?.categories?.length) {
     return "Hey there — welcome to Hush. I'm Luna, your digital concierge.\n\nI know our entire team, every service we offer, and how to get you exactly what you're looking for. Think of me as your personal guide to the salon.\n\nWhat brings you in today?";
   }
@@ -199,19 +188,6 @@ function detectChatActions(msg: string, ctx: ConciergeContext | null): ChatActio
 
 // ── Initial smart chips for greeting only ───────────────────────────────────
 function getSmartChips(ctx: ConciergeContext | null): string[] {
-  // Artist-specific chips
-  if (ctx?.preferredArtist) {
-    const artist = teamMembers.find(m => m.name === ctx.preferredArtist || m.id === ctx.preferredArtistId);
-    if (artist) {
-      const firstName = artist.name.split(" ")[0];
-      return [
-        `What is ${firstName} known for?`,
-        `What services does ${firstName} do?`,
-        `How do I book with ${firstName}?`,
-      ];
-    }
-  }
-
   if (!ctx?.categories?.length) {
     return [
       "I'm new — what should I know?",
@@ -289,9 +265,6 @@ function getSmartChips(ctx: ConciergeContext | null): string[] {
 function getContextPills(ctx: ConciergeContext | null): string[] {
   if (!ctx) return [];
   const pills: string[] = [];
-  if (ctx.preferredArtist) {
-    pills.push(ctx.preferredArtist);
-  }
   if (ctx.categories?.length) {
     ctx.categories.forEach(c => pills.push(categoryLabels[c] || c));
   }
