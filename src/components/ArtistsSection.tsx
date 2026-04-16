@@ -271,9 +271,20 @@ export const ArtistsSection = () => {
                 <p className="font-body text-muted-foreground text-base mb-2">
                   No specialists available for this service right now.
                 </p>
-                <p className="font-body text-sm text-primary">
-                  Luna can help you choose.
-                </p>
+                <button
+                  onClick={() => {
+                    const lunaContext: ConciergeContext = {
+                      source: "Meet the Team",
+                      categories: activeFilter !== "all" ? [activeFilter as ServiceCategoryId] : [],
+                      goal: null,
+                      timing: null,
+                    };
+                    openModal(lunaContext);
+                  }}
+                  className="font-body text-sm text-primary hover:text-primary/80 transition-colors underline underline-offset-4"
+                >
+                  Luna can help you choose
+                </button>
               </motion.div>
             )}
           </AnimatePresence>

@@ -52,31 +52,29 @@ export const LunaChatWidget = () => {
   const { chatWidgetRequested, clearChatWidgetRequest } = useLuna();
   const chimeRef = useRef<HTMLAudioElement | null>(null);
 
-  // Pre-create a subtle chime using Web Audio API
-  useEffect(() => {
-    // Build a tiny warm chime — two sine tones faded together
-    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const sr = ctx.sampleRate;
-    const len = sr * 0.6; // 600ms
-    const buf = ctx.createBuffer(1, len, sr);
-    const data = buf.getChannelData(0);
-    const f1 = 880; // A5
-    const f2 = 1318.5; // E6 — a perfect fifth for warmth
-    for (let i = 0; i < len; i++) {
-      const t = i / sr;
-      const env = Math.exp(-t * 6) * 0.25; // quick decay, gentle volume
-      data[i] = env * (Math.sin(2 * Math.PI * f1 * t) * 0.6 + Math.sin(2 * Math.PI * f2 * t) * 0.4);
-    }
-    // Encode to WAV blob for HTMLAudioElement
-    const wavBlob = encodeWav(buf);
-    const url = URL.createObjectURL(wavBlob);
-    chimeRef.current = new Audio(url);
-    chimeRef.current.volume = 0.35;
-
-    return () => {
-      URL.revokeObjectURL(url);
+  // Lazily create chime on first open instead of eagerly on mount
+  const chimeBuilt = useRef(false);
+  const buildChime = useCallback(() => {
+    if (chimeBuilt.current) return;
+    chimeBuilt.current = true;
+    try {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const sr = ctx.sampleRate;
+      const len = sr * 0.6;
+      const buf = ctx.createBuffer(1, len, sr);
+      const data = buf.getChannelData(0);
+      const f1 = 880, f2 = 1318.5;
+      for (let i = 0; i < len; i++) {
+        const t = i / sr;
+        const env = Math.exp(-t * 6) * 0.25;
+        data[i] = env * (Math.sin(2 * Math.PI * f1 * t) * 0.6 + Math.sin(2 * Math.PI * f2 * t) * 0.4);
+      }
+      const wavBlob = encodeWav(buf);
+      const url = URL.createObjectURL(wavBlob);
+      chimeRef.current = new Audio(url);
+      chimeRef.current.volume = 0.35;
       ctx.close();
-    };
+    } catch { /* graceful degradation */ }
   }, []);
 
   // Respond to external "open chat widget" requests
@@ -102,6 +100,7 @@ export const LunaChatWidget = () => {
     // Play chime only on the very first open
     if (isFirstOpen) {
       setIsFirstOpen(false);
+      buildChime();
       chimeRef.current?.play().catch(() => {});
     }
   };
