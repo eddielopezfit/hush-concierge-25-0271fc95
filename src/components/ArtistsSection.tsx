@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useMemo, useEffect } from "react";
-import { X, Sparkles, Scissors, Hand, Eye, Heart, Phone } from "lucide-react";
+import { X, Sparkles, Scissors, Hand, Eye, Heart, Phone, MessageSquare } from "lucide-react";
 import { useLuna } from "@/contexts/LunaContext";
 import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
 import { photoMap, getFounders, getTeam, TeamMember } from "@/data/teamData";
@@ -398,10 +398,25 @@ export const ArtistsSection = () => {
                 <h3 className="font-display text-3xl text-cream mb-1">
                   {selectedArtist.name}
                 </h3>
-                <p className="font-body text-primary text-sm mb-3">
+                <p className="font-body text-primary text-sm mb-0.5">
                   {selectedArtist.department === "founders"
                     ? "Co-Founder"
                     : selectedArtist.department.charAt(0).toUpperCase() + selectedArtist.department.slice(1)}
+                </p>
+                {/* Multi-category subtitle */}
+                <p className="font-body text-muted-foreground text-xs mb-3">
+                  {(() => {
+                    const cats = selectedArtist.serviceCategories?.length
+                      ? selectedArtist.serviceCategories
+                      : selectedArtist.serviceCategory
+                        ? [selectedArtist.serviceCategory]
+                        : [];
+                    const prefix = selectedArtist.department === "founders" ? "Co-Founder" : "";
+                    const catLabels = cats.map(c => c.charAt(0).toUpperCase() + c.slice(1));
+                    return prefix
+                      ? `${prefix} · ${catLabels.join(" · ")}`
+                      : selectedArtist.specialty;
+                  })()}
                 </p>
 
                 <p className="font-body text-muted-foreground mb-4 max-w-xs">
@@ -447,7 +462,7 @@ export const ArtistsSection = () => {
                   ))}
                 </div>
 
-                {/* Primary CTA */}
+                {/* Primary CTA — Book */}
                 <motion.button
                   onClick={() => handleBeginWithLuna(selectedArtist)}
                   className="btn-gold py-3 px-5 flex items-center justify-center gap-2 w-full mb-2"
@@ -458,7 +473,45 @@ export const ArtistsSection = () => {
                   <span>Book with {selectedArtist.name.split(" ")[0]}</span>
                 </motion.button>
 
-                {/* Call CTA */}
+                {/* Ask Luna CTA */}
+                <button
+                  onClick={() => {
+                    const categories: ServiceCategoryId[] = selectedArtist.serviceCategories?.length
+                      ? selectedArtist.serviceCategories
+                      : selectedArtist.serviceCategory ? [selectedArtist.serviceCategory] : [];
+                    const lunaContext: ConciergeContext = {
+                      source: "Meet the Team",
+                      categories,
+                      goal: null,
+                      timing: null,
+                      preferredArtist: selectedArtist.name,
+                      preferredArtistId: selectedArtist.id,
+                    };
+                    setSelectedArtist(null);
+                    openModal(lunaContext);
+                    // Switch to chat tab
+                    setTimeout(() => {
+                      window.dispatchEvent(new CustomEvent("luna-switch-tab", { detail: "chat" }));
+                    }, 200);
+                  }}
+                  className="flex items-center justify-center gap-2 text-xs font-body text-primary hover:text-primary/80 transition-colors py-2 w-full border border-primary/20 rounded-lg mb-2"
+                >
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  Ask Luna about {selectedArtist.name.split(" ")[0]}
+                </button>
+
+                {/* Direct phone for specialists */}
+                {selectedArtist.directPhone && (
+                  <a
+                    href={`tel:${selectedArtist.directPhone.replace(/[^0-9+]/g, "")}`}
+                    className="flex items-center justify-center gap-2 text-xs font-body text-gold hover:text-gold/80 transition-colors py-2"
+                  >
+                    <Phone className="w-3.5 h-3.5" />
+                    Call {selectedArtist.name.split(" ")[0]} directly: {selectedArtist.directPhone}
+                  </a>
+                )}
+
+                {/* Call front desk CTA */}
                 <a
                   href="tel:+15203276753"
                   className="flex items-center justify-center gap-2 text-xs font-body text-muted-foreground hover:text-primary transition-colors py-2"

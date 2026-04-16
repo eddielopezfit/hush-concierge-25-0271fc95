@@ -111,12 +111,12 @@ export const HeroSection = () => {
           </motion.button>
         </motion.div>
 
-        {/* Mobile hours badge */}
+        {/* Dynamic hours badge */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
-          className="hidden"
+          className="flex justify-center"
         >
           <span className="font-body text-xs text-cream/40 bg-card/60 border border-border px-3 py-1.5 rounded-full backdrop-blur-sm">
             {(() => {
