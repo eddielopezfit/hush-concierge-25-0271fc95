@@ -48,6 +48,16 @@ const ERROR_QUICK_REPLIES = [
 
 // ── Context-aware greeting builder ──────────────────────────────────────────
 function buildContextGreeting(ctx: ConciergeContext | null): string {
+  // Artist-specific greeting when user clicked "Ask Luna about [Artist]"
+  if (ctx?.preferredArtist) {
+    const artist = teamMembers.find(m => m.name === ctx.preferredArtist || m.id === ctx.preferredArtistId);
+    if (artist) {
+      const firstName = artist.name.split(" ")[0];
+      const knownForStr = artist.knownFor?.length ? artist.knownFor.slice(0, 3).join(", ") : artist.specialty;
+      return `You're asking about **${artist.name}** — great choice! ${firstName} specializes in **${artist.specialty}** and is known for ${knownForStr}.\n\nWhat would you like to know? I can tell you about ${firstName}'s experience, what to expect, pricing for their services, or help you get booked in.`;
+    }
+  }
+
   if (!ctx?.categories?.length) {
     return "Hey there — welcome to Hush. I'm Luna, your digital concierge.\n\nI know our entire team, every service we offer, and how to get you exactly what you're looking for. Think of me as your personal guide to the salon.\n\nWhat brings you in today?";
   }
