@@ -159,25 +159,6 @@ export const ArtistsSection = () => {
     openModal(lunaContext);
   };
 
-  const handleCompareWithLuna = (artist: TeamMember) => {
-    const category = activeFilter !== "all" ? activeFilter as ServiceCategoryId : artist.serviceCategory;
-
-    // Get all visible artists in this category for comparison context
-    const allInCategory = [...founders, ...team].filter(m => category ? matchesCategory(m, category) : true);
-    const artistNames = allInCategory.map(a => a.name);
-
-    const lunaContext: ConciergeContext = {
-      source: "Team Compare",
-      categories: category ? [category] : [],
-      goal: null,
-      timing: null,
-      // Pass the viewed artist's name in the group field for context,
-      // but do NOT set preferredArtist — Luna compares, not assigns
-      group: artist.name,
-      item: artistNames.join(", "),
-    };
-    openModal(lunaContext);
-  };
 
   const founders = getFounders();
   const team = getTeam();
@@ -271,9 +252,20 @@ export const ArtistsSection = () => {
                 <p className="font-body text-muted-foreground text-base mb-2">
                   No specialists available for this service right now.
                 </p>
-                <p className="font-body text-sm text-primary">
-                  Luna can help you choose.
-                </p>
+                <button
+                  onClick={() => {
+                    const lunaContext: ConciergeContext = {
+                      source: "Meet the Team",
+                      categories: activeFilter !== "all" ? [activeFilter as ServiceCategoryId] : [],
+                      goal: null,
+                      timing: null,
+                    };
+                    openModal(lunaContext);
+                  }}
+                  className="font-body text-sm text-primary hover:text-primary/80 transition-colors underline underline-offset-4"
+                >
+                  Luna can help you choose
+                </button>
               </motion.div>
             )}
           </AnimatePresence>

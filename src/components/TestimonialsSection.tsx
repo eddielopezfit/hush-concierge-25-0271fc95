@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Star, Quote, ChevronLeft, ChevronRight } from "lucide-react";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 const testimonials = [
   {
@@ -84,11 +84,16 @@ export const TestimonialsSection = () => {
     return () => clearInterval(timer);
   }, [isAutoPlaying, nextSlide]);
 
+  const resumeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const handleInteraction = () => {
     setIsAutoPlaying(false);
-    // Resume after 10s of inactivity
-    setTimeout(() => setIsAutoPlaying(true), 10000);
+    if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+    resumeTimerRef.current = setTimeout(() => setIsAutoPlaying(true), 10000);
   };
+
+  useEffect(() => {
+    return () => { if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current); };
+  }, []);
 
   return (
     <section className="py-20 md:py-24 px-6 bg-card">
@@ -212,13 +217,13 @@ export const TestimonialsSection = () => {
           </div>
         </div>
 
-        {/* Review CTA */}
+        {/* Review CTA — mobile only (desktop has its own link above) */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ delay: 0.5 }}
-          className="text-center mt-10"
+          className="text-center mt-10 md:hidden"
         >
           <a
             href="https://www.google.com/maps/place/Hush+Salon+%26+Day+Spa/@32.2537155,-110.8837433,17z/"

@@ -1,5 +1,5 @@
-import { motion } from "framer-motion";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useRef } from "react";
 import { Menu, X, PhoneCall } from "lucide-react";
 
 const navLinks = [
@@ -122,37 +122,40 @@ export const Navigation = () => {
         </button>
       </div>
 
-      {isMobileMenuOpen && (
-        <motion.div
-          ref={menuRef as any}
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
-          exit={{ opacity: 0, height: 0 }}
-          className="md:hidden bg-background/98 backdrop-blur-md border-t border-border"
-        >
-          <nav className="flex flex-col items-center gap-6 py-8">
-            {navLinks.map((link) => (
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            ref={menuRef as any}
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="md:hidden bg-background/98 backdrop-blur-md border-t border-border overflow-hidden"
+          >
+            <nav className="flex flex-col items-center gap-6 py-8">
+              {navLinks.map((link) => (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`font-body text-lg transition-colors ${
+                    activeSection === link.href ? "text-gold" : "text-cream/70 hover:text-gold"
+                  }`}
+                >
+                  {link.label}
+                </a>
+              ))}
               <a
-                key={link.label}
-                href={link.href}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={`font-body text-lg transition-colors ${
-                  activeSection === link.href ? "text-gold" : "text-cream/70 hover:text-gold"
-                }`}
+                href="tel:+15203276753"
+                className="flex items-center gap-2 bg-gold text-background font-body px-6 py-3 rounded-lg"
               >
-                {link.label}
+                <PhoneCall className="w-5 h-5" />
+                Call (520) 327-6753
               </a>
-            ))}
-            <a
-              href="tel:+15203276753"
-              className="flex items-center gap-2 bg-gold text-background font-body px-6 py-3 rounded-lg"
-            >
-              <PhoneCall className="w-5 h-5" />
-              Call (520) 327-6753
-            </a>
-          </nav>
-        </motion.div>
-      )}
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.header>
   );
 };
