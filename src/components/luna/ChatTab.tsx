@@ -199,6 +199,19 @@ function detectChatActions(msg: string, ctx: ConciergeContext | null): ChatActio
 
 // ── Initial smart chips for greeting only ───────────────────────────────────
 function getSmartChips(ctx: ConciergeContext | null): string[] {
+  // Artist-specific chips
+  if (ctx?.preferredArtist) {
+    const artist = teamMembers.find(m => m.name === ctx.preferredArtist || m.id === ctx.preferredArtistId);
+    if (artist) {
+      const firstName = artist.name.split(" ")[0];
+      return [
+        `What is ${firstName} known for?`,
+        `What services does ${firstName} do?`,
+        `How do I book with ${firstName}?`,
+      ];
+    }
+  }
+
   if (!ctx?.categories?.length) {
     return [
       "I'm new — what should I know?",
