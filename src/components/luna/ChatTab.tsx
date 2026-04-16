@@ -400,7 +400,12 @@ export const ChatTab = () => {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isStreaming]);
+    // Delayed scroll to catch quick replies / action buttons that animate in
+    const t = setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 500);
+    return () => clearTimeout(t);
+  }, [messages, isStreaming, quickReplies]);
 
   // ── Handle in-chat action buttons ──────────────────────────────────────────
   const handleChatAction = useCallback((action: ChatAction) => {
