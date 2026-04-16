@@ -276,6 +276,9 @@ function getSmartChips(ctx: ConciergeContext | null): string[] {
 function getContextPills(ctx: ConciergeContext | null): string[] {
   if (!ctx) return [];
   const pills: string[] = [];
+  if (ctx.preferredArtist) {
+    pills.push(ctx.preferredArtist);
+  }
   if (ctx.categories?.length) {
     ctx.categories.forEach(c => pills.push(categoryLabels[c] || c));
   }
