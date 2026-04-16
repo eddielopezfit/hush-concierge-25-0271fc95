@@ -3,6 +3,8 @@
  * Feeds into Luna's AI context so she knows where the user is in their journey
  */
 
+import { teamMembers, departmentLabels } from "@/data/teamData";
+
 export interface JourneyEvent {
   type: string;
   data?: Record<string, string | number>;
