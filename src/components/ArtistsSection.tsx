@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useMemo, useEffect } from "react";
-import { X, Sparkles, Scissors, Hand, Eye, Heart, Phone } from "lucide-react";
+import { X, Sparkles, Scissors, Hand, Eye, Heart, Phone, MessageSquare } from "lucide-react";
 import { useLuna } from "@/contexts/LunaContext";
 import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
 import { photoMap, getFounders, getTeam, TeamMember } from "@/data/teamData";
@@ -398,10 +398,16 @@ export const ArtistsSection = () => {
                 <h3 className="font-display text-3xl text-cream mb-1">
                   {selectedArtist.name}
                 </h3>
-                <p className="font-body text-primary text-sm mb-3">
-                  {selectedArtist.department === "founders"
-                    ? "Co-Founder"
-                    : selectedArtist.department.charAt(0).toUpperCase() + selectedArtist.department.slice(1)}
+                <p className="font-body text-primary text-sm mb-1">
+                  {selectedArtist.specialty}
+                </p>
+                {/* Department labels — show all for multi-category artists */}
+                <p className="font-body text-xs text-muted-foreground mb-3">
+                  {selectedArtist.serviceCategories?.length
+                    ? selectedArtist.serviceCategories.map(c => c.charAt(0).toUpperCase() + c.slice(1)).join(" · ")
+                    : selectedArtist.department === "founders"
+                      ? "Co-Founder · Hair"
+                      : selectedArtist.department.charAt(0).toUpperCase() + selectedArtist.department.slice(1)}
                 </p>
 
                 <p className="font-body text-muted-foreground mb-4 max-w-xs">
@@ -458,7 +464,47 @@ export const ArtistsSection = () => {
                   <span>Book with {selectedArtist.name.split(" ")[0]}</span>
                 </motion.button>
 
-                {/* Call CTA */}
+                {/* Ask Luna CTA */}
+                <button
+                  onClick={() => {
+                    const artist = selectedArtist;
+                    setSelectedArtist(null);
+                    const categories: ServiceCategoryId[] = artist.serviceCategories?.length
+                      ? artist.serviceCategories
+                      : artist.serviceCategory ? [artist.serviceCategory] : [];
+                    openModal({
+                      source: "Artist Profile",
+                      categories,
+                      goal: null,
+                      timing: null,
+                      preferredArtist: artist.name,
+                      preferredArtistId: artist.id,
+                    });
+                    // Switch to chat tab after modal opens
+                    setTimeout(() => {
+                      window.dispatchEvent(new CustomEvent("luna-switch-tab", { detail: "chat" }));
+                    }, 100);
+                  }}
+                  className="flex items-center justify-center gap-2 text-xs font-body text-primary hover:text-primary/80 transition-colors py-2 w-full border border-primary/20 rounded-lg mb-2"
+                >
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  Ask Luna about {selectedArtist.name.split(" ")[0]}
+                </button>
+
+                {/* Direct phone for specialists */}
+                {selectedArtist.directPhone && (
+                  <a
+                    href={`tel:${selectedArtist.directPhone.replace(/[^+\d]/g, "")}`}
+                    className="flex items-center justify-center gap-2 text-xs font-body text-muted-foreground hover:text-primary transition-colors py-2"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Phone className="w-3.5 h-3.5" />
+                    Call {selectedArtist.name.split(" ")[0]} directly: {selectedArtist.directPhone}
+                  </a>
+                )}
+
+                {/* Call front desk */}
                 <a
                   href="tel:+15203276753"
                   className="flex items-center justify-center gap-2 text-xs font-body text-muted-foreground hover:text-primary transition-colors py-2"
