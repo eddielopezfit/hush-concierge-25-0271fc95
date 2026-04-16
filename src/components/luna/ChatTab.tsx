@@ -417,27 +417,6 @@ export const ChatTab = () => {
     }
   }, []);
 
-  // ── Handle "Call the front desk" quick reply specially ─────────────────────
-  const handleQuickReply = useCallback((reply: string) => {
-    if (reply === "Connect me with the team" || reply === "Call the front desk" || reply === "Call (520) 327-6753") {
-      // On desktop, show number inline instead of tel: link
-      const isTouchDevice = "ontouchstart" in window || navigator.maxTouchPoints > 0;
-      if (isTouchDevice) {
-        window.open("tel:+15203276753", "_self");
-      } else {
-        // Add an inline message with the number
-        setMessages(prev => [...prev, {
-          id: `luna-phone-${Date.now()}`,
-          role: "assistant",
-          content: "Give Kendell a call at **(520) 327-6753** — she'll get you all set up!",
-          actions: [{ label: "Call (520) 327-6753", type: "phone" as const }],
-        }]);
-      }
-      return;
-    }
-    handleSendInternal(reply);
-  }, [handleSendInternal]);
-
   const streamChat = useCallback(async (allMessages: ChatMessage[]) => {
     setIsStreaming(true);
     abortRef.current = new AbortController();
@@ -584,6 +563,25 @@ export const ChatTab = () => {
     },
     [input, isStreaming, messages, userMessageCount, successfulExchangeCount, leadCaptured, showLeadForm, leadDismissed, streamChat]
   );
+
+  // ── Handle quick reply chips — preserves full conversation context ─────────
+  const handleQuickReply = useCallback((reply: string) => {
+    if (reply === "Connect me with the team" || reply === "Call the front desk" || reply === "Call (520) 327-6753") {
+      const isTouchDevice = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+      if (isTouchDevice) {
+        window.open("tel:+15203276753", "_self");
+      } else {
+        setMessages(prev => [...prev, {
+          id: `luna-phone-${Date.now()}`,
+          role: "assistant",
+          content: "Give Kendell a call at **(520) 327-6753** — she'll get you all set up!",
+          actions: [{ label: "Call (520) 327-6753", type: "phone" as const }],
+        }]);
+      }
+      return;
+    }
+    handleSendInternal(reply);
+  }, [handleSendInternal]);
 
   const handleSend = useCallback(
     (text?: string) => handleSendInternal(text),
