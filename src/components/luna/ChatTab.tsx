@@ -436,7 +436,7 @@ export const ChatTab = () => {
       return;
     }
     handleSendInternal(reply);
-  }, []);
+  }, [handleSendInternal]);
 
   const streamChat = useCallback(async (allMessages: ChatMessage[]) => {
     setIsStreaming(true);
