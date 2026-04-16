@@ -125,7 +125,7 @@ export function getJourneyContextString(): string {
 
   // Check for concierge context in session storage
   try {
-    const ctx = sessionStorage.getItem("hush_concierge_context");
+    const ctx = localStorage.getItem("hush_concierge_context");
     if (ctx) {
       const parsed = JSON.parse(ctx);
       if (parsed?.categories?.length) {
@@ -139,7 +139,7 @@ export function getJourneyContextString(): string {
 
   // Check for recommendation
   try {
-    const rec = sessionStorage.getItem("hush_luna_recommendation");
+    const rec = localStorage.getItem("hush_luna_recommendation");
     if (rec) {
       const parsed = JSON.parse(rec);
       if (parsed?.recommendedService) {
