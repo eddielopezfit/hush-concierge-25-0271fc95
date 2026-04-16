@@ -64,7 +64,9 @@ export const ArtistsTab = ({ onSwitchTab, onClosePanel }: ArtistsTabProps) => {
 
   // Inline detail view
   if (selectedArtist) {
-    const deptLabel = departmentLabels[selectedArtist.department] || selectedArtist.department;
+    const deptLabel = selectedArtist.serviceCategories?.length
+      ? selectedArtist.serviceCategories.map(c => c.charAt(0).toUpperCase() + c.slice(1)).join(" · ")
+      : departmentLabels[selectedArtist.department] || selectedArtist.department;
     return (
       <div className="flex flex-col h-full">
         <button
