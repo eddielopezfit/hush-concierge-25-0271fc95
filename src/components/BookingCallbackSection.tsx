@@ -55,7 +55,9 @@ export const BookingCallbackSection = () => {
 
   const phoneDigits = formData.phone.replace(/\D/g, "");
   const isPhoneValid = phoneDigits.length >= 10;
-  const isFormValid = formData.fullName.trim().length > 0 && isPhoneValid;
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const isEmailValid = formData.email.trim().length === 0 || EMAIL_RE.test(formData.email.trim());
+  const isFormValid = formData.fullName.trim().length > 0 && isPhoneValid && isEmailValid;
 
 
   const handleInputChange = (field: string, value: string) => {
@@ -268,9 +270,14 @@ export const BookingCallbackSection = () => {
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
                     placeholder="you@email.com"
-                    className="bg-background/50 border-gold/15 text-cream placeholder:text-cream/35 h-12 text-base focus:border-gold/40 focus:ring-gold/15"
+                    className={`bg-background/50 border-gold/15 text-cream placeholder:text-cream/35 h-12 text-base focus:border-gold/40 focus:ring-gold/15 ${
+                      formData.email.trim().length > 0 && !isEmailValid ? "border-destructive/60" : ""
+                    }`}
                     maxLength={255}
                   />
+                  {formData.email.trim().length > 0 && !isEmailValid && (
+                    <p className="font-body text-xs text-destructive mt-1">Please enter a valid email address</p>
+                  )}
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
