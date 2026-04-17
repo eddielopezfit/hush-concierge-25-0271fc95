@@ -33,12 +33,12 @@ export const HeroSection = () => {
             muted
             playsInline
             preload="auto"
-            poster="https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Hero_FashionFriday_Poster_Desktop.jpg"
+            poster="https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Hero_v2_Desktop_Poster.jpg"
             aria-hidden="true"
             className="hidden md:block absolute inset-0 w-full h-full object-cover object-center"
           >
             <source
-              src="https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Hero_FashionFriday_Desktop.mp4"
+              src="https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Hero_v2_Desktop.mp4"
               type="video/mp4"
             />
           </video>
@@ -50,12 +50,12 @@ export const HeroSection = () => {
             muted
             playsInline
             preload="metadata"
-            poster="https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Hero_FashionFriday_Poster_Mobile.jpg"
+            poster="https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Hero_v2_Mobile_Poster.jpg"
             aria-hidden="true"
             className="md:hidden absolute inset-0 w-full h-full object-cover [object-position:center_top]"
           >
             <source
-              src="https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Hero_FashionFriday_Mobile.mp4"
+              src="https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Hero_v2_Mobile.mp4"
               type="video/mp4"
             />
           </video>
