@@ -212,6 +212,25 @@ export const ExperienceFinderSection = () => {
   // QualifierStep has its own "Speak with Luna" / "Chat with Luna" CTAs
   // which serve as the explicit launch trigger after subtype selection.
 
+  // ── Scroll the Experience Finder into view when the step changes ──────────
+  // Ensures mobile users see the new question's heading without scrolling up.
+  // Skips initial mount and the reveal step (which has its own scroll-to-center).
+  const isInitialStepMount = useRef(true);
+  useEffect(() => {
+    if (isInitialStepMount.current) {
+      isInitialStepMount.current = false;
+      return;
+    }
+    if (currentStep === "reveal") return;
+    const section = document.getElementById("experience-finder");
+    if (!section) return;
+    // Small delay so the new step's enter animation has begun
+    const t = setTimeout(() => {
+      section.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+    return () => clearTimeout(t);
+  }, [currentStep]);
+
   // ── Build context ──────────────────────────────────────────────────────────
 
   const buildContext = (): ConciergeContext => ({
