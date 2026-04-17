@@ -38,12 +38,12 @@ export const HeroSection = () => {
             className="hidden md:block absolute inset-0 w-full h-full object-cover [object-position:center_25%]"
           >
             <source
-              src="https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Hero_Fashion_Desktop.mp4"
+              src="https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Step_Inside_Desktop_v2.mp4"
               type="video/mp4"
             />
           </video>
 
-          {/* Mobile — lighter-weight video (≈1MB) with image poster fallback */}
+          {/* Mobile — lighter-weight video with image poster fallback */}
           <video
             autoPlay
             loop
@@ -55,7 +55,7 @@ export const HeroSection = () => {
             className="md:hidden absolute inset-0 w-full h-full object-cover [object-position:center_20%]"
           >
             <source
-              src="https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Hero_Fashion_Mobile.mp4"
+              src="https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Step_Inside_Mobile.mp4"
               type="video/mp4"
             />
           </video>
