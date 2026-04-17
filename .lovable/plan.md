@@ -1,72 +1,39 @@
 
-The user is asking for a comprehensive system export/audit document of the entire Hush Salon project — 13 sections covering UI/UX, Luna chat architecture, full system prompt, knowledge base, memory, backend, integrations, lead capture, limitations, design, performance, and roadmap.
+User wants a second deep-dive audit document — this time a behavioral/conversion analysis (10 sections) complementing yesterday's system export. Same format: structured Markdown artifact written to `/mnt/documents/`.
 
-This is a documentation/artifact generation task, not a code change. The output is a Markdown file the user wants to hand to an external AI strategist.
+This is documentation generation, not a code change. Approach mirrors the previous export:
 
-**Approach:**
-1. Read all the relevant source files to extract real, accurate detail (not guesses):
-   - All page/section components (Index, Hero, ExperienceFinder, BookingDecisionCard, JoinHush, etc.)
-   - LunaChatWidget + all 5 Luna tabs
-   - System prompt files (SYSTEM_PROMPT_v7.md is likely the active one)
-   - Knowledge base files (KB10/11/12, SKILL.md)
-   - Edge functions (luna-chat, capture-lead, lead-qualify, request-callback, session-*)
-   - Data files (servicesMenuData, teamData, categoryData)
-   - Memory files for design/branding/constraints
-   - Supabase schema (already in context)
-2. Generate a single comprehensive Markdown file written to `/mnt/documents/Hush_System_Export.md`
-3. Surface it as a `<lov-artifact>` so the user can download.
+## Plan
 
-This is the right format because:
-- It's a static reference document, not an app feature
-- The user explicitly wants a structured export to hand off
-- It will be ~30-50KB of structured Markdown — too long to dump in chat
+1. **Read targeted source** to ground the audit in real behavior (not generic UX advice):
+   - `ExperienceFinderSection.tsx` — quiz step count, friction points, drop-off surfaces
+   - `LunaChatWidget.tsx` + `ChatTab.tsx` — quick replies, typing delay, message persistence
+   - `lunaBrain.ts` (client) + `luna-brain.ts` (edge) + `SYSTEM_PROMPT_v7.md` — actual response patterns for the 5 example queries
+   - `BookingDecisionCard.tsx`, `BookingCallbackSection.tsx`, `InlineCallbackCTA.tsx` — conversion surfaces
+   - `MobileStickyBar.tsx`, `LunaModal.tsx` (exit-intent), `ReturningClientBanner` logic — entry/exit triggers
+   - `journeyTracker.ts`, `cadenceEngine.ts`, `upsellEngine.ts` — behavioral signals
+   - `servicesMenuData.ts` — pricing for the "How much is color?" simulation
+   - Slack routing in `lead-qualify` edge function — conversion endpoints
+   - Memory files for the 3 user modes (New/Returning/Browsing) and Zero Dead Ends principle
 
-No clarifying questions needed — the request format is explicit ("clean, structured Markdown", "do not summarize", 13 numbered sections).
+2. **Generate `Hush_Behavioral_Audit.md`** with all 10 sections, source-accurate:
+   - **§1 Five user simulations** — step-by-step (landing → click-by-click) with specific copy Luna would actually say (pulled from `lunaBrain.generateChatResponse` + system prompt), specific friction points (e.g. quiz Step 3 multi-category fork, exit-intent modal trigger, callback form 4 required fields)
+   - **§2 Conversion paths** — enumerate the 6 real paths (Quiz→Recommendation→Callback, Chat→Lead-after-4-msgs, Exit-Intent→Phone, Mobile Sticky→Call, Direct CTA→Callback, Service Menu→Inline CTA→Callback) with entry trigger, step count, drop-off risk, likelihood rating
+   - **§3 Luna response analysis** — 10 real responses (2 per query type) using actual template strings from `generateChatResponse` and system prompt rules; tone/strength/weakness/loss-risk for each
+   - **§4 Chat UX** — typing delay (from code), message persistence (sessionStorage / none), chip effectiveness from `LunaContext` quick replies
+   - **§5 Decision fatigue** — quiz step burden, 5 categories × 4 goals × 4 timing = 80 combos, multi-service priority picker, 5-tab Luna panel
+   - **§6 Trust & authority** — TrustBar (4.7★/315 reviews), founder portrait, Pureology Pure 100, testimonial grid, weak spots (no real-time availability, no booking calendar)
+   - **§7 Top 10 conversion leaks** — quiz Step 3 abandonment, no-price-on-cards, callback form length, missing booking confirmation, exit-intent only fires once, etc.
+   - **§8 Chat vs UI conflicts** — Luna recommends services that ServicesSection already shows; PersonalizedPlanSection vs Luna MyPlanTab duplication; ExperienceFinder recommendation card vs Luna chat suggestion
+   - **§9 Speed & flow** — lazy-loaded sections delay scroll-driven CTAs; quiz is well-paced; chat 800ms typing delay; callback form has no inline validation feedback
+   - **§10 Gold path** — landing → TrustBar glance → Quiz (4 steps) → Recommendation card → BookingDecisionCard "guided_front_desk" → Inline callback (3 fields) → Slack alert → done
 
----
-
-# Plan: Generate Hush System Export Document
-
-## What I'll do
-
-Produce a single comprehensive Markdown audit document covering all 13 requested sections, sourced directly from the codebase (not summarized).
-
-## Process
-
-1. **Read source material** in parallel:
-   - Page sections: `Index.tsx`, `HeroSection`, `TrustBar`, `ExperienceFinderSection`, `PersonalizedPlanSection`, `ServicesSection`, `ArtistsSection`, `AboutSection`, `JoinHushSection`, `TestimonialsSection`, `BookingCallbackSection`, `BookingDecisionCard`, `StepInsideSection`, `FooterSection`, `Navigation`, `MobileStickyBar`
-   - Luna: `LunaChatWidget`, `LunaModal`, all 5 tabs (`ChatTab`, `ExploreTab`, `ArtistsTab`, `MyPlanTab`, `FindMyLookTab`), `lunaBrain.ts`, `luna-brain.ts` (edge), `cadenceEngine`, `upsellEngine`, `experienceReveal`, `emotionalCopy`, `journeyTracker`
-   - System prompt: `SYSTEM_PROMPT_v7.md` (latest)
-   - Knowledge base: `KB10`, `KB11`, `KB12`, `SKILL.md`, `servicesMenuData.ts`, `teamData.ts`, `categoryData.ts`
-   - Edge functions: `luna-chat`, `capture-lead`, `lead-qualify`, `request-callback`, `session-start`, `session-summarize`, `submit-lead`, `_shared/booking-rules.ts`
-   - Memory: index + key brand/design/feature memory files
-   - Config: `tailwind.config.ts`, `index.css`, `index.html`
-
-2. **Generate the document** with the exact 13-section structure, populating each from real code:
-   - Section 1: Project name (Hush Salon), purpose, target user, business goal, build phase
-   - Section 2: Every Index page section as its own subsection with components, CTAs, journey paths, mobile/desktop differences
-   - Section 3: Luna chat trigger logic, greetings, conversation flow, suggested replies, typing indicators, persistence
-   - Section 4: Full verbatim system prompt content from `SYSTEM_PROMPT_v7.md`
-   - Section 5: Full knowledge base — services with prices, team members, FAQs, brand voice references
-   - Section 6: localStorage keys (`hush_concierge_context`, fingerprint), Supabase persistence, TTL
-   - Section 7: All 9 Supabase tables with columns + RLS, journeyTracker events
-   - Section 8: Slack webhook routing per category, ElevenLabs (note: voice removed but secret still present), Lovable AI Gateway, Firecrawl
-   - Section 9: All 4 lead capture surfaces (callback form, exit intent, inline CTA, chat after 4 messages), data fields, dedup windows, Slack routing
-   - Section 10: Known limitations (no auth, no booking system integration, single-session memory, etc.)
-   - Section 11: Color tokens (warm premium black/gold/rose), Playfair + DM Sans, AA contrast, Zero Dead Ends
-   - Section 12: Code-splitting, lazy widget, video optimization, AA contrast
-   - Section 13: Planned GoHighLevel/CRM, real booking integration, returning client deep personalization
-
-3. **Write to `/mnt/documents/Hush_System_Export.md`** and emit a `<lov-artifact>` tag so the user can download it.
-
-4. **No QA images needed** — this is a text Markdown document, not a visual artifact.
-
-## Deliverable
-
-A single downloadable file: `Hush_System_Export.md` (estimated 30-50KB), structured exactly per the 13-section template, exhaustive and source-accurate.
+3. **Output**: write the file then emit a `<lov-artifact>` tag.
 
 ## Out of scope
-
 - No code changes
-- No UI changes
-- No Supabase migrations
+- No UI mockups
+- No re-running the previous system export
+
+## Deliverable
+`Hush_Behavioral_Audit.md` (~25–40KB) downloadable artifact, complementing yesterday's `Hush_System_Export.md`.
