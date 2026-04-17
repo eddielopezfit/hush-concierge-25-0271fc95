@@ -38,7 +38,7 @@ export const StepInsideSection = () => {
           transition={{ duration: 22, ease: "easeInOut", repeat: Infinity, repeatType: "reverse" }}
           className="absolute inset-0 will-change-transform origin-top"
         >
-          {/* Desktop / tablet */}
+          {/* Single video — fills the full frame across all breakpoints (matches mobile behavior) */}
           <video
             autoPlay
             loop
@@ -47,23 +47,10 @@ export const StepInsideSection = () => {
             preload="metadata"
             poster={DESKTOP_POSTER}
             aria-hidden="true"
-            className="hidden md:block absolute inset-0 w-full h-full object-cover object-top"
+            className="absolute inset-0 w-full h-full object-cover object-center"
           >
+            <source src={MOBILE_SRC} type="video/mp4" media="(max-width: 767px)" />
             <source src={DESKTOP_SRC} type="video/mp4" />
-          </video>
-
-          {/* Mobile — lighter file */}
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="metadata"
-            poster={MOBILE_POSTER}
-            aria-hidden="true"
-            className="md:hidden absolute inset-0 w-full h-full object-cover"
-          >
-            <source src={MOBILE_SRC} type="video/mp4" />
           </video>
         </motion.div>
 
