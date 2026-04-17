@@ -801,7 +801,10 @@ export const ChatTab = () => {
       <div className="relative flex-1 min-h-0">
       <div ref={scrollContainerRef} className="absolute inset-0 overflow-y-auto px-4 py-4 space-y-3 overscroll-contain">
         {messages.map((msg) => (
-          <div key={msg.id}>
+          <div
+            key={msg.id}
+            ref={msg.role === "assistant" && msg.id === lastAssistantMsg?.id ? latestAssistantMessageRef : null}
+          >
             <div className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
               {msg.role === "assistant" && (
                 <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2.5 mr-2 flex-shrink-0" />
@@ -934,7 +937,7 @@ export const ChatTab = () => {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 8, scale: 0.9 }}
               transition={{ duration: 0.18 }}
-              onClick={scrollChatToBottom}
+              onClick={() => scrollChatToBottom()}
               className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary text-primary-foreground shadow-lg text-[11px] font-body font-medium hover:bg-primary/90 transition-colors"
               aria-label="Scroll to latest message"
             >
