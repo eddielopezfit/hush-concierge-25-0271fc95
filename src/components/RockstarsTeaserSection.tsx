@@ -1,13 +1,11 @@
 import { motion } from "framer-motion";
-
-const DESKTOP_POSTER = "https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Rockstars_Poster_Desktop.jpg";
-const MOBILE_POSTER = "https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Rockstars_Poster_Mobile.jpg";
-const DESKTOP_SRC = "https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Rockstars_Desktop.mp4";
-const MOBILE_SRC = "https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Rockstars_Mobile.mp4";
+import foundersImage from "@/assets/founders-champagne.jpg";
 
 /**
  * Cinematic teaser placed BEFORE the ArtistsSection.
- * Layout matches StepInsideSection across all breakpoints (copy left, strong left gradient).
+ * Uses a real photo of the three founders (Sheri, Danielle, Kathy)
+ * to give visual variety from the Hero video and directly preview
+ * "the Rockstars" before the artist grid.
  */
 export const RockstarsTeaserSection = () => {
   return (
@@ -15,44 +13,26 @@ export const RockstarsTeaserSection = () => {
       aria-label="Meet the Rockstars"
       className="relative w-full overflow-hidden h-[45vh] min-h-[320px] md:h-[55vh] md:min-h-[440px] max-h-[640px]"
     >
-      {/* Video layer with slow Ken Burns zoom */}
+      {/* Image layer with slow Ken Burns zoom */}
       <div className="absolute inset-0 bg-background overflow-hidden">
         <motion.div
           initial={{ scale: 1.02 }}
           animate={{ scale: 1.08 }}
           transition={{ duration: 22, ease: "easeInOut", repeat: Infinity, repeatType: "reverse" }}
-          className="absolute inset-0 will-change-transform origin-top"
+          className="absolute inset-0 will-change-transform origin-center"
         >
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="metadata"
-            poster={DESKTOP_POSTER}
-            aria-hidden="true"
-            className="hidden md:block absolute inset-0 w-full h-full object-cover object-top"
-          >
-            <source src={DESKTOP_SRC} type="video/mp4" />
-          </video>
-
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="metadata"
-            poster={MOBILE_POSTER}
-            aria-hidden="true"
-            className="md:hidden absolute inset-0 w-full h-full object-cover"
-          >
-            <source src={MOBILE_SRC} type="video/mp4" />
-          </video>
+          <img
+            src={foundersImage}
+            alt="Hush founders Sheri, Danielle, and Kathy at the salon's champagne bar"
+            loading="lazy"
+            decoding="async"
+            className="absolute inset-0 w-full h-full object-cover object-center"
+          />
         </motion.div>
 
-        {/* Cinematic overlay — strong on the left for headline readability */}
-        <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/60 to-background/40 md:from-background/90 md:via-background/30 md:to-background/10" />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-transparent to-background/60" />
+        {/* Cinematic overlay — softer to match Step Inside, focused left scrim for readability */}
+        <div className="absolute inset-0 bg-gradient-to-r from-background/85 via-background/40 to-transparent md:from-background/80 md:via-background/20 md:to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-transparent to-background/50" />
       </div>
 
       {/* Copy — anchored left at every breakpoint to match Step Inside */}
