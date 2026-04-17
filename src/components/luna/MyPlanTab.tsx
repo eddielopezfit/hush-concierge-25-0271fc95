@@ -33,6 +33,10 @@ export const MyPlanTab = ({ onSwitchTab }: MyPlanTabProps) => {
 
   const categoryNames = conciergeContext?.categories ? formatCategoryList(conciergeContext.categories) : "";
 
+  const planItems = useMemo(() => buildCategoryPlanItems(conciergeContext), [conciergeContext]);
+  const planTotals = useMemo(() => computePlanTotals(planItems), [planItems]);
+  const isMultiService = planItems.length > 1;
+
   if (!hasContext || !recommendation) {
     return (
       <div className="flex flex-col items-center justify-center h-full px-6 text-center">
