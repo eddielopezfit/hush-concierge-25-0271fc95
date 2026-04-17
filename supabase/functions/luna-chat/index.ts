@@ -164,12 +164,25 @@ If the guest explicitly asks "are you AI?" or "are you real?", you may briefly c
     // Stream to client while capturing assistant content for persistence
     let assistantFullText = "";
 
+    // When this is a continuing turn, buffer the first sentence so we can strip
+    // any rogue self-intro the model leaks despite the system-prompt override.
+    const stripIntroMode = hasPriorAssistantMessage;
+    const INTRO_LINE_RE = /^\s*(hey|hi|hello)?[\s,—\-–]*(there)?[\s,—\-–]*(welcome\s+(back\s+)?to\s+hush|i['’]?m\s+luna|i\s+am\s+luna|luna\s+here)[^.!?\n]*[.!?\n]+\s*/i;
+    let introBuffer = "";
+    let introHandled = !stripIntroMode; // if not in strip mode, skip buffering
+
     const stream = new ReadableStream({
       async start(controller) {
         const reader = upstream.body!.getReader();
         const decoder = new TextDecoder();
         const encoder = new TextEncoder();
         let buffer = "";
+
+        const enqueueContentChunk = (text: string) => {
+          if (!text) return;
+          const sse = `data: ${JSON.stringify({ choices: [{ delta: { content: text } }] })}\n\n`;
+          controller.enqueue(encoder.encode(sse));
+        };
 
         try {
           while (true) {
@@ -179,24 +192,67 @@ If the guest explicitly asks "are you AI?" or "are you real?", you may briefly c
             const chunk = decoder.decode(value, { stream: true });
             buffer += chunk;
 
-            // Forward raw chunk to client immediately
-            controller.enqueue(value);
-
-            // Parse SSE lines for content capture
+            // Parse SSE lines for content capture + (optional) intro-strip rewrite
             let idx: number;
+            let passthroughChunk = ""; // raw forwarding when not in strip mode
             while ((idx = buffer.indexOf("\n")) !== -1) {
               let line = buffer.slice(0, idx);
+              const rawLine = buffer.slice(0, idx + 1); // includes \n
               buffer = buffer.slice(idx + 1);
               if (line.endsWith("\r")) line = line.slice(0, -1);
-              if (!line.startsWith("data: ")) continue;
+
+              if (!line.startsWith("data: ")) {
+                // Forward non-data lines (blank separators) only when not stripping
+                if (introHandled) passthroughChunk += rawLine;
+                continue;
+              }
+
               const jsonStr = line.slice(6).trim();
-              if (jsonStr === "[DONE]") continue;
+              if (jsonStr === "[DONE]") {
+                if (introHandled) passthroughChunk += rawLine;
+                continue;
+              }
+
               try {
                 const parsed = JSON.parse(jsonStr);
-                const content = parsed.choices?.[0]?.delta?.content;
+                const content: string | undefined = parsed.choices?.[0]?.delta?.content;
                 if (content) assistantFullText += content;
-              } catch { /* partial JSON across chunks, skip */ }
+
+                if (!introHandled) {
+                  if (content) introBuffer += content;
+                  // Once we have enough text to make a decision (first sentence terminator
+                  // or 200 chars), strip the intro and flush the rest.
+                  if (/[.!?\n]/.test(introBuffer) || introBuffer.length > 200) {
+                    const cleaned = introBuffer.replace(INTRO_LINE_RE, "").trimStart();
+                    introHandled = true;
+                    enqueueContentChunk(cleaned);
+                  }
+                  // Don't forward this delta as-is
+                  continue;
+                }
+
+                // Pass-through after intro handled
+                passthroughChunk += rawLine;
+              } catch {
+                if (introHandled) passthroughChunk += rawLine;
+              }
             }
+
+            if (passthroughChunk) controller.enqueue(encoder.encode(passthroughChunk));
+          }
+        } catch (e) {
+          console.error("[luna-chat] stream read error:", e);
+          controller.error(e);
+        } finally {
+          // If we never reached the flush threshold (very short response), flush now.
+          if (!introHandled) {
+            const cleaned = introBuffer.replace(INTRO_LINE_RE, "").trimStart();
+            if (cleaned) enqueueContentChunk(cleaned);
+            introHandled = true;
+          }
+          // Also normalize the persisted text to match what the user actually saw.
+          if (stripIntroMode) {
+            assistantFullText = assistantFullText.replace(INTRO_LINE_RE, "").trimStart();
           }
         } catch (e) {
           console.error("[luna-chat] stream read error:", e);
