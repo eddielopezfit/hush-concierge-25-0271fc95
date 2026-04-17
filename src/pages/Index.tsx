@@ -28,6 +28,28 @@ const Index = () => {
     initJourneyTracking();
   }, []);
 
+  // Resolve hash anchors after lazy sections mount (initial load + nav clicks)
+  useEffect(() => {
+    const scrollToHash = () => {
+      const hash = window.location.hash.slice(1);
+      if (!hash) return;
+      // Retry: lazy chunks may not have rendered yet
+      let tries = 0;
+      const tick = () => {
+        const el = document.getElementById(hash);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "start" });
+        } else if (tries++ < 20) {
+          setTimeout(tick, 100);
+        }
+      };
+      tick();
+    };
+    scrollToHash();
+    window.addEventListener("hashchange", scrollToHash);
+    return () => window.removeEventListener("hashchange", scrollToHash);
+  }, []);
+
   return (
     <main className="bg-background min-h-screen overflow-x-hidden pb-24 md:pb-0">
       <a href="#experience-finder" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:bg-primary focus:text-primary-foreground focus:px-4 focus:py-2 focus:rounded-lg font-body text-sm">
