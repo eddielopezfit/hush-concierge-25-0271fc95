@@ -92,6 +92,7 @@ export const LunaProvider = ({ children }: { children: ReactNode }) => {
         group:              partial.group              !== undefined ? partial.group              : (prev?.group              ?? null),
         item:               partial.item               !== undefined ? partial.item               : (prev?.item               ?? null),
         price:              partial.price              !== undefined ? partial.price              : (prev?.price              ?? null),
+        quizCompletedAt:    partial.quizCompletedAt    !== undefined ? partial.quizCompletedAt    : (prev?.quizCompletedAt    ?? null),
       };
       writeToStorage(merged);
       return merged;
