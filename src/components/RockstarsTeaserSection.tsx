@@ -32,7 +32,7 @@ export const RockstarsTeaserSection = () => {
             preload="metadata"
             poster={DESKTOP_POSTER}
             aria-hidden="true"
-            className="hidden md:block absolute inset-0 w-full h-full object-cover"
+            className="hidden md:block absolute inset-0 w-full h-full object-cover object-top"
           >
             <source src={DESKTOP_SRC} type="video/mp4" />
           </video>
