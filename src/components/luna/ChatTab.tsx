@@ -914,6 +914,23 @@ export const ChatTab = () => {
 
         <div ref={messagesEndRef} />
       </div>
+        <AnimatePresence>
+          {showScrollToBottom && (
+            <motion.button
+              initial={{ opacity: 0, y: 8, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 8, scale: 0.9 }}
+              transition={{ duration: 0.18 }}
+              onClick={scrollChatToBottom}
+              className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary text-primary-foreground shadow-lg text-[11px] font-body font-medium hover:bg-primary/90 transition-colors"
+              aria-label="Scroll to latest message"
+            >
+              <ArrowDown className="w-3.5 h-3.5" />
+              Latest
+            </motion.button>
+          )}
+        </AnimatePresence>
+      </div>
 
       {/* Input */}
       <div className="px-4 py-3 border-t border-border pb-[max(0.75rem,env(safe-area-inset-bottom))]">
