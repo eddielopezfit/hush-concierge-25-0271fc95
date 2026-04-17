@@ -80,20 +80,24 @@ export const FindMyLookTab = ({ onSwitchTab }: FindMyLookTabProps) => {
   const [revealData, setRevealData] = useState<RevealData | null>(null);
   const [resumedFromContext, setResumedFromContext] = useState(false);
 
-  // If context already has categories from another surface, skip to reveal
+  // Only resume to reveal if quiz was completed THIS session (within 30 minutes)
+  // Prevents stale cached results from confusing fresh visitors.
+  const QUIZ_FRESH_MS = 30 * 60 * 1000;
   useEffect(() => {
-    if (conciergeContext?.categories?.length && !resumedFromContext && step === 1) {
-      const reveal = buildRevealData(conciergeContext);
-      if (reveal) {
-        setSelectedCategories(conciergeContext.categories);
-        setSelectedSubtype(conciergeContext.service_subtype ?? null);
-        setSelectedGoal(conciergeContext.goal ?? null);
-        setSelectedTiming(conciergeContext.timing ?? null);
-        setRevealData(reveal);
-        setRecommendation(generateRecommendation(conciergeContext));
-        setStep(5);
-        setResumedFromContext(true);
-      }
+    if (resumedFromContext || step !== 1) return;
+    if (!conciergeContext?.categories?.length) return;
+    const completedAt = conciergeContext.quizCompletedAt;
+    if (!completedAt || Date.now() - completedAt > QUIZ_FRESH_MS) return;
+    const reveal = buildRevealData(conciergeContext);
+    if (reveal) {
+      setSelectedCategories(conciergeContext.categories);
+      setSelectedSubtype(conciergeContext.service_subtype ?? null);
+      setSelectedGoal(conciergeContext.goal ?? null);
+      setSelectedTiming(conciergeContext.timing ?? null);
+      setRevealData(reveal);
+      setRecommendation(generateRecommendation(conciergeContext));
+      setStep(5);
+      setResumedFromContext(true);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -137,6 +141,7 @@ export const FindMyLookTab = ({ onSwitchTab }: FindMyLookTabProps) => {
       service_subtype: (selectedSubtype as ServiceSubtype) || null,
       primary_category: selectedCategories.length > 1 ? selectedCategories[0] : null,
       is_multi_service: selectedCategories.length > 1,
+      quizCompletedAt: Date.now(),
     };
     setConcierge(context);
     startSession(context, "find_my_look");
