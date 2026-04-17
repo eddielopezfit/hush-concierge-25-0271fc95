@@ -1,12 +1,17 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { Sparkles, ArrowRight, RefreshCw, Calendar, Star, Clock, Plus } from "lucide-react";
+import { Sparkles, ArrowRight, RefreshCw, Calendar, Star, Clock, Plus, Scissors, Hand, Eye, Heart, Layers } from "lucide-react";
 import { generateRecommendation, LunaRecommendation } from "@/lib/lunaBrain";
 import { formatCategoryList } from "@/lib/conciergeLabels";
 import { useLuna } from "@/contexts/LunaContext";
-import { buildRevealData } from "@/lib/experienceReveal";
+import { buildRevealData, buildCategoryPlanItems, computePlanTotals } from "@/lib/experienceReveal";
 import { BookingDecisionCard } from "@/components/BookingDecisionCard";
 import { getUpsells, UpsellItem } from "@/lib/upsellEngine";
+import { ServiceCategoryId } from "@/types/concierge";
+
+const categoryIcon: Record<ServiceCategoryId, typeof Scissors> = {
+  hair: Scissors, nails: Hand, lashes: Eye, skincare: Sparkles, massage: Heart,
+};
 
 interface MyPlanTabProps {
   onSwitchTab: (tab: string) => void;
