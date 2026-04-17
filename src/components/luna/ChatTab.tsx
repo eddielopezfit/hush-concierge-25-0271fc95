@@ -511,17 +511,43 @@ export const ChatTab = () => {
     if (!el) return;
     const handleScroll = () => {
       const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
-      setShowScrollToBottom(distanceFromBottom > 120);
+      const scrolledUp = distanceFromBottom > 120;
+      setShowScrollToBottom(scrolledUp);
+      if (!scrolledUp) {
+        setUnreadCount(0);
+        const lastAssistant = [...messages].reverse().find(m => m.role === "assistant");
+        if (lastAssistant) lastSeenAssistantIdRef.current = lastAssistant.id;
+      }
     };
     handleScroll();
     el.addEventListener("scroll", handleScroll, { passive: true });
     return () => el.removeEventListener("scroll", handleScroll);
-  }, [initialized]);
+  }, [initialized, messages]);
+
+  // Track unread assistant messages when user is scrolled up
+  useEffect(() => {
+    const lastAssistant = [...messages].reverse().find(m => m.role === "assistant");
+    if (!lastAssistant) return;
+    if (!showScrollToBottom) {
+      lastSeenAssistantIdRef.current = lastAssistant.id;
+      setUnreadCount(0);
+      return;
+    }
+    if (lastAssistant.id !== lastSeenAssistantIdRef.current) {
+      const unread = messages.filter(
+        m => m.role === "assistant" && m.id !== "greeting"
+      ).reverse().findIndex(m => m.id === lastSeenAssistantIdRef.current);
+      setUnreadCount(unread === -1 ? 1 : unread);
+    }
+  }, [messages, showScrollToBottom]);
 
   const scrollChatToBottom = useCallback(() => {
     const el = scrollContainerRef.current;
     if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
-  }, []);
+    setUnreadCount(0);
+    const lastAssistant = [...messages].reverse().find(m => m.role === "assistant");
+    if (lastAssistant) lastSeenAssistantIdRef.current = lastAssistant.id;
+  }, [messages]);
 
 
   // ── Handle in-chat action buttons ──────────────────────────────────────────
