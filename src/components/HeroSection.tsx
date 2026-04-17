@@ -35,7 +35,7 @@ export const HeroSection = () => {
             preload="auto"
             poster={heroImage}
             aria-hidden="true"
-            className="hidden md:block absolute inset-0 w-full h-full object-cover"
+            className="hidden md:block absolute inset-0 w-full h-full object-cover [object-position:center_25%]"
           >
             <source
               src="https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Hero_Fashion_Desktop.mp4"
@@ -52,7 +52,7 @@ export const HeroSection = () => {
             preload="metadata"
             poster={heroImage}
             aria-hidden="true"
-            className="md:hidden absolute inset-0 w-full h-full object-cover"
+            className="md:hidden absolute inset-0 w-full h-full object-cover [object-position:center_20%]"
           >
             <source
               src="https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Hero_Fashion_Mobile.mp4"
