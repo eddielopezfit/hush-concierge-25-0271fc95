@@ -1,9 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageCircle, X, Minus, Sparkles, Search, Users, ClipboardList, MessageSquare } from "lucide-react";
-import { FindMyLookTab } from "./luna/FindMyLookTab";
-import { ExploreTab } from "./luna/ExploreTab";
-import { ArtistsTab } from "./luna/ArtistsTab";
+import { MessageCircle, X, Minus, ClipboardList, MessageSquare } from "lucide-react";
 import { MyPlanTab } from "./luna/MyPlanTab";
 import { ChatTab } from "./luna/ChatTab";
 import { useLuna } from "@/contexts/LunaContext";
@@ -28,14 +25,11 @@ function encodeWav(buffer: AudioBuffer): Blob {
   return new Blob([buf], { type: "audio/wav" });
 }
 
-type TabId = "find" | "explore" | "artists" | "plan" | "chat";
+type TabId = "chat" | "plan";
 
-const tabs: { id: TabId; label: string; icon: typeof Sparkles }[] = [
-  { id: "find", label: "Find My Look", icon: Sparkles },
-  { id: "explore", label: "Explore", icon: Search },
-  { id: "artists", label: "Artists", icon: Users },
-  { id: "plan", label: "My Plan", icon: ClipboardList },
+const ALL_TABS: { id: TabId; label: string; icon: typeof MessageSquare }[] = [
   { id: "chat", label: "Chat", icon: MessageSquare },
+  { id: "plan", label: "My Plan", icon: ClipboardList },
 ];
 
 const tabVariants = {
@@ -47,10 +41,14 @@ const tabVariants = {
 export const LunaChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showBadge, setShowBadge] = useState(false);
-  const [activeTab, setActiveTab] = useState<TabId>("find");
+  const [activeTab, setActiveTab] = useState<TabId>("chat");
   const [isFirstOpen, setIsFirstOpen] = useState(true);
-  const { chatWidgetRequested, clearChatWidgetRequest } = useLuna();
+  const { chatWidgetRequested, clearChatWidgetRequest, conciergeContext } = useLuna();
   const chimeRef = useRef<HTMLAudioElement | null>(null);
+
+  // Show My Plan tab only when concierge context exists
+  const hasPlan = !!(conciergeContext?.categories?.length);
+  const tabs = hasPlan ? ALL_TABS : ALL_TABS.filter(t => t.id === "chat");
 
   // Lazily create chime on first open instead of eagerly on mount
   const chimeBuilt = useRef(false);
@@ -122,11 +120,10 @@ export const LunaChatWidget = () => {
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case "find": return <FindMyLookTab onSwitchTab={switchTab} />;
-      case "explore": return <ExploreTab onSwitchTab={switchTab} />;
-      case "artists": return <ArtistsTab onSwitchTab={switchTab} onClosePanel={closePanel} />;
       case "plan": return <MyPlanTab onSwitchTab={switchTab} />;
-      case "chat": return <ChatTab />;
+      case "chat":
+      default:
+        return <ChatTab />;
     }
   };
 
