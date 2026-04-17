@@ -34,7 +34,7 @@ export const servicesMenuData: ServiceCategory[] = [
     id: "hair",
     title: "Hair",
     icon: Scissors,
-    pricePreview: "Haircuts from $35+ | Color from $68+",
+    pricePreview: "Women's from $60+ | Men's from $35+ | Color from $68+",
     groups: [
       {
         name: "Precision Haircuts",

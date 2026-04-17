@@ -122,7 +122,7 @@ export const ExperienceFinderSection = () => {
   const [recommendation, setRecommendation] = useState<LunaRecommendation | null>(null);
   const [revealData, setRevealData] = useState<RevealData | null>(null);
   const [guestName, setGuestName] = useState("");
-  const { openModal, markInteracted, setConcierge } = useLuna();
+  const { openModal, markInteracted, setConcierge, clearConcierge } = useLuna();
 
   const isMultiService = selection.services.length > 1;
 
@@ -173,6 +173,7 @@ export const ExperienceFinderSection = () => {
     setRecommendation(null);
     setRevealData(null);
     setGuestName("");
+    clearConcierge();
     try { sessionStorage.removeItem("hush_luna_recommendation"); } catch { /* ignore */ }
   };
 
