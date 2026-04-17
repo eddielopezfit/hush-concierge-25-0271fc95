@@ -372,6 +372,8 @@ export const ChatTab = () => {
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const latestAssistantMessageRef = useRef<HTMLDivElement>(null);
+  const lastPinnedAssistantIdRef = useRef<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -482,26 +484,42 @@ export const ChatTab = () => {
     setContextPills(getContextPills(conciergeContext));
   }, [conciergeContext, initialized]);
 
-  // Auto-scroll the chat container itself (not the page) to the latest message.
-  // Skips auto-scroll when user has intentionally scrolled up to read older messages.
-  useEffect(() => {
+  const scrollChatToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
     const el = scrollContainerRef.current;
-    if (!el) return;
-    const isNearBottom = () => el.scrollHeight - el.scrollTop - el.clientHeight < 80;
-    const scrollToBottom = () => { el.scrollTop = el.scrollHeight; };
-    // Always pin to bottom on a fresh user message; otherwise respect user's scroll position
-    if (isNearBottom()) scrollToBottom();
-    if (isStreaming) {
-      const interval = setInterval(() => {
-        if (isNearBottom()) scrollToBottom();
-      }, 120);
-      return () => clearInterval(interval);
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior });
+  }, []);
+
+  const scrollLatestAssistantIntoView = useCallback((behavior: ScrollBehavior = "smooth") => {
+    const container = scrollContainerRef.current;
+    const bubble = latestAssistantMessageRef.current;
+    if (!container || !bubble) return;
+
+    const containerRect = container.getBoundingClientRect();
+    const bubbleRect = bubble.getBoundingClientRect();
+    const top = bubbleRect.top - containerRect.top + container.scrollTop - 12;
+    container.scrollTo({ top: Math.max(top, 0), behavior });
+  }, []);
+
+  // Keep user messages and loaders visible, but anchor new Luna replies to the
+  // start of the latest assistant bubble so long responses don't hide their intro.
+  useEffect(() => {
+    const lastMessage = messages[messages.length - 1];
+    if (!lastMessage) return;
+
+    if (lastMessage.role === "user") {
+      lastPinnedAssistantIdRef.current = null;
+      scrollChatToBottom("smooth");
+      return;
     }
-    const t = setTimeout(() => {
-      if (isNearBottom()) scrollToBottom();
-    }, 500);
-    return () => clearTimeout(t);
-  }, [messages, isStreaming, quickReplies, showLeadForm]);
+
+    if (lastMessage.role === "assistant" && lastMessage.id !== lastPinnedAssistantIdRef.current) {
+      const t = setTimeout(() => {
+        scrollLatestAssistantIntoView(messages.length <= 2 ? "auto" : "smooth");
+        lastPinnedAssistantIdRef.current = lastMessage.id;
+      }, 40);
+      return () => clearTimeout(t);
+    }
+  }, [messages, scrollChatToBottom, scrollLatestAssistantIntoView]);
 
   // Show floating "scroll to bottom" button when user has scrolled up
   useEffect(() => {
@@ -515,11 +533,6 @@ export const ChatTab = () => {
     el.addEventListener("scroll", handleScroll, { passive: true });
     return () => el.removeEventListener("scroll", handleScroll);
   }, [initialized]);
-
-  const scrollChatToBottom = useCallback(() => {
-    const el = scrollContainerRef.current;
-    if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
-  }, []);
 
 
   // ── Handle in-chat action buttons ──────────────────────────────────────────
