@@ -11,22 +11,22 @@ export const RockstarsTeaserSection = () => {
   return (
     <section
       aria-label="Meet the Rockstars"
-      className="relative w-full overflow-hidden h-[45vh] min-h-[320px] md:h-[55vh] md:min-h-[440px] max-h-[640px]"
+      className="relative w-full overflow-hidden h-[60vh] min-h-[420px] md:h-[70vh] md:min-h-[520px] max-h-[760px]"
     >
-      {/* Image layer with slow Ken Burns zoom */}
+      {/* Image layer with slow Ken Burns zoom — anchored to founders (lower-center of frame) */}
       <div className="absolute inset-0 bg-background overflow-hidden">
         <motion.div
-          initial={{ scale: 1.02 }}
-          animate={{ scale: 1.08 }}
+          initial={{ scale: 1.04 }}
+          animate={{ scale: 1.1 }}
           transition={{ duration: 22, ease: "easeInOut", repeat: Infinity, repeatType: "reverse" }}
-          className="absolute inset-0 will-change-transform origin-center"
+          className="absolute inset-0 will-change-transform origin-bottom"
         >
           <img
             src={foundersImage}
             alt="Hush founders Sheri, Danielle, and Kathy at the salon's champagne bar"
             loading="lazy"
             decoding="async"
-            className="absolute inset-0 w-full h-full object-cover object-center"
+            className="absolute inset-0 w-full h-full object-cover [object-position:center_70%]"
           />
         </motion.div>
 
