@@ -53,6 +53,9 @@ export interface TeamMember {
 
 /** Map from team member ID to imported photo */
 export const photoMap: Record<string, string> = {
+  f1: imgFounders,
+  f2: imgFounders,
+  f3: imgFounders,
   h1: imgCharlyCamano,
   h2: imgMichelleYrigolla,
   h3: imgSilviyaWarren,
