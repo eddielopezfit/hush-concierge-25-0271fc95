@@ -19,10 +19,10 @@ export const StepInsideSection = () => {
       {/* Video layer with slow Ken Burns zoom */}
       <div className="absolute inset-0 bg-background overflow-hidden">
         <motion.div
-          initial={{ scale: 1.04 }}
-          animate={{ scale: 1.12 }}
-          transition={{ duration: 18, ease: "easeInOut", repeat: Infinity, repeatType: "reverse" }}
-          className="absolute inset-0 will-change-transform"
+          initial={{ scale: 1.02 }}
+          animate={{ scale: 1.08 }}
+          transition={{ duration: 22, ease: "easeInOut", repeat: Infinity, repeatType: "reverse" }}
+          className="absolute inset-0 will-change-transform origin-top"
         >
           {/* Desktop / tablet */}
           <video
@@ -33,7 +33,7 @@ export const StepInsideSection = () => {
             preload="metadata"
             poster={DESKTOP_POSTER}
             aria-hidden="true"
-            className="hidden md:block absolute inset-0 w-full h-full object-cover"
+            className="hidden md:block absolute inset-0 w-full h-full object-cover object-top"
           >
             <source src={DESKTOP_SRC} type="video/mp4" />
           </video>
