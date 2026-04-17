@@ -483,21 +483,43 @@ export const ChatTab = () => {
   }, [conciergeContext, initialized]);
 
   // Auto-scroll the chat container itself (not the page) to the latest message.
-  // Uses container.scrollTop directly so it never affects page scroll.
+  // Skips auto-scroll when user has intentionally scrolled up to read older messages.
   useEffect(() => {
     const el = scrollContainerRef.current;
     if (!el) return;
+    const isNearBottom = () => el.scrollHeight - el.scrollTop - el.clientHeight < 80;
     const scrollToBottom = () => { el.scrollTop = el.scrollHeight; };
-    scrollToBottom();
-    // While streaming, content grows continuously — keep pinned to the bottom.
+    // Always pin to bottom on a fresh user message; otherwise respect user's scroll position
+    if (isNearBottom()) scrollToBottom();
     if (isStreaming) {
-      const interval = setInterval(scrollToBottom, 120);
+      const interval = setInterval(() => {
+        if (isNearBottom()) scrollToBottom();
+      }, 120);
       return () => clearInterval(interval);
     }
-    // Catch quick replies / action buttons that animate in after the message lands.
-    const t = setTimeout(scrollToBottom, 500);
+    const t = setTimeout(() => {
+      if (isNearBottom()) scrollToBottom();
+    }, 500);
     return () => clearTimeout(t);
   }, [messages, isStreaming, quickReplies, showLeadForm]);
+
+  // Show floating "scroll to bottom" button when user has scrolled up
+  useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const handleScroll = () => {
+      const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+      setShowScrollToBottom(distanceFromBottom > 120);
+    };
+    handleScroll();
+    el.addEventListener("scroll", handleScroll, { passive: true });
+    return () => el.removeEventListener("scroll", handleScroll);
+  }, [initialized]);
+
+  const scrollChatToBottom = useCallback(() => {
+    const el = scrollContainerRef.current;
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+  }, []);
 
 
   // ── Handle in-chat action buttons ──────────────────────────────────────────
