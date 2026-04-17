@@ -57,9 +57,9 @@ export const ExperienceRevealCard = ({ data, onBook }: ExperienceRevealCardProps
               <Clock className="w-3.5 h-3.5 text-gold" />
               <span className="text-xs font-body text-cream">{data.timeEstimate}</span>
             </div>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary border border-border">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gold/10 border border-gold/30">
               <DollarSign className="w-3.5 h-3.5 text-gold" />
-              <span className="text-xs font-body text-cream">{data.priceRange}</span>
+              <span className="text-xs font-body text-gold font-medium">{data.priceRange}</span>
             </div>
           </motion.div>
 
@@ -86,7 +86,7 @@ export const ExperienceRevealCard = ({ data, onBook }: ExperienceRevealCardProps
               onClick={handleScrollToPlan}
               className="inline-flex items-center gap-1.5 font-body text-xs text-gold/70 hover:text-gold transition-colors group"
             >
-              See your full personalized plan
+              See my full personalized plan
               <ChevronDown className="w-3.5 h-3.5 group-hover:translate-y-0.5 transition-transform" />
             </button>
           </motion.div>

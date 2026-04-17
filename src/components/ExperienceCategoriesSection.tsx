@@ -51,7 +51,7 @@ export const ExperienceCategoriesSection = () => {
             Choose Your Experience
           </h2>
           <p className="font-body text-muted-foreground text-lg max-w-xl mx-auto">
-            Explore by category. Luna will guide you to the perfect fit.
+            See services by category. Luna will guide you to the perfect fit.
           </p>
         </motion.div>
 
