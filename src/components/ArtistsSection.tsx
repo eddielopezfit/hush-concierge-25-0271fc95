@@ -423,6 +423,18 @@ export const ArtistsSection = () => {
                   })()}
                 </p>
 
+                {selectedArtist.instagram && (
+                  <a
+                    href={`https://instagram.com/${selectedArtist.instagram}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs font-body text-gold hover:text-gold/80 transition-colors mb-3"
+                  >
+                    <Instagram className="w-3.5 h-3.5" />
+                    @{selectedArtist.instagram}
+                  </a>
+                )}
+
                 <p className="font-body text-muted-foreground mb-4 max-w-xs">
                   {selectedArtist.description}
                 </p>
@@ -432,6 +444,18 @@ export const ArtistsSection = () => {
                   <p className="font-body text-sm text-foreground/70 italic leading-relaxed mb-4 max-w-xs border-l-2 border-primary/30 pl-3 text-left">
                     {selectedArtist.legacyBio}
                   </p>
+                )}
+
+                {/* Featured client review */}
+                {selectedArtist.featuredReview && (
+                  <div className="w-full max-w-xs border-l-2 border-gold/40 bg-gold/5 pl-3 pr-2 py-2 mb-4 text-left rounded-r">
+                    <p className="font-body text-xs text-foreground/80 italic leading-relaxed">
+                      "{selectedArtist.featuredReview.quote}"
+                    </p>
+                    <p className="font-body text-[10px] text-gold/80 mt-1.5">
+                      — {selectedArtist.featuredReview.author}, {selectedArtist.featuredReview.source}
+                    </p>
+                  </div>
                 )}
 
                 {/* Fit statement */}
