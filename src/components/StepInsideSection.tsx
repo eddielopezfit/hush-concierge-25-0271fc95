@@ -67,9 +67,9 @@ export const StepInsideSection = () => {
           </video>
         </motion.div>
 
-        {/* Cinematic overlay — strengthened on left for headline readability */}
-        <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/60 to-background/40 md:from-background/90 md:via-background/30 md:to-background/10" />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-transparent to-background/60" />
+        {/* Cinematic overlay — softer so the video reads as full-frame, with a focused left-side scrim for headline readability */}
+        <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/30 to-transparent md:from-background/75 md:via-background/15 md:to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-transparent to-background/40" />
       </motion.div>
 
       {/* Copy */}
