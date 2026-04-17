@@ -67,9 +67,9 @@ export const StepInsideSection = () => {
           </video>
         </motion.div>
 
-        {/* Cinematic overlay — readable + on-brand (sits ABOVE the zoom layer) */}
-        <div className="absolute inset-0 bg-gradient-to-r from-background/85 via-background/40 to-background/70" />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-transparent to-background/60" />
+        {/* Cinematic overlay — strengthened on left for headline readability */}
+        <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/60 to-background/40 md:from-background/90 md:via-background/30 md:to-background/10" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-transparent to-background/60" />
       </motion.div>
 
       {/* Copy */}
@@ -80,14 +80,13 @@ export const StepInsideSection = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.9, ease: "easeOut" }}
-            className="max-w-xl"
+            className="max-w-[20rem] sm:max-w-md md:max-w-lg lg:max-w-xl"
           >
             <span className="font-body text-xs tracking-[0.3em] uppercase text-gold/80">
               Step Inside
             </span>
-            <h2 className="font-display text-3xl md:text-5xl lg:text-6xl text-cream mt-3 leading-[1.1] tracking-tight text-balance">
-              Warm tones.
-              <br className="hidden sm:block" />{" "}
+            <h2 className="font-display text-[2rem] sm:text-4xl md:text-[2.75rem] lg:text-5xl text-cream mt-3 leading-[1.05] tracking-tight text-balance">
+              Warm tones.{" "}
               <span className="text-gold-gradient italic">Good energy.</span>
             </h2>
             <p className="font-body text-cream/70 mt-4 text-sm md:text-base max-w-md text-pretty">
