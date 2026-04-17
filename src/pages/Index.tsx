@@ -13,6 +13,7 @@ const InlineCallbackCTA = lazy(() => import("@/components/InlineCallbackCTA").th
 const ArtistsSection = lazy(() => import("@/components/ArtistsSection").then(m => ({ default: m.ArtistsSection })));
 const TestimonialsSection = lazy(() => import("@/components/TestimonialsSection").then(m => ({ default: m.TestimonialsSection })));
 const AboutSection = lazy(() => import("@/components/AboutSection").then(m => ({ default: m.AboutSection })));
+const JoinHushSection = lazy(() => import("@/components/JoinHushSection").then(m => ({ default: m.JoinHushSection })));
 const BookingCallbackSection = lazy(() => import("@/components/BookingCallbackSection").then(m => ({ default: m.BookingCallbackSection })));
 const FooterSection = lazy(() => import("@/components/FooterSection").then(m => ({ default: m.FooterSection })));
 const MobileStickyBar = lazy(() => import("@/components/MobileStickyBar").then(m => ({ default: m.MobileStickyBar })));
@@ -42,8 +43,9 @@ const Index = () => {
         <InlineCallbackCTA />
         <ArtistsSection />
         <TestimonialsSection />
-        <AboutSection />
-        <BookingCallbackSection />
+          <AboutSection />
+          <JoinHushSection />
+          <BookingCallbackSection />
         <FooterSection />
         <MobileStickyBar />
         {isModalOpen && (
