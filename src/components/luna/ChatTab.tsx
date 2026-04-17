@@ -370,6 +370,7 @@ export const ChatTab = () => {
   const [smartChips, setSmartChips] = useState<string[]>([]);
   const [quickReplies, setQuickReplies] = useState<string[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -480,14 +481,22 @@ export const ChatTab = () => {
     setContextPills(getContextPills(conciergeContext));
   }, [conciergeContext, initialized]);
 
+  // Auto-scroll the chat container itself (not the page) to the latest message.
+  // Uses container.scrollTop directly so it never affects page scroll.
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    // Delayed scroll to catch quick replies / action buttons that animate in
-    const t = setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, 500);
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const scrollToBottom = () => { el.scrollTop = el.scrollHeight; };
+    scrollToBottom();
+    // While streaming, content grows continuously — keep pinned to the bottom.
+    if (isStreaming) {
+      const interval = setInterval(scrollToBottom, 120);
+      return () => clearInterval(interval);
+    }
+    // Catch quick replies / action buttons that animate in after the message lands.
+    const t = setTimeout(scrollToBottom, 500);
     return () => clearTimeout(t);
-  }, [messages, isStreaming, quickReplies]);
+  }, [messages, isStreaming, quickReplies, showLeadForm]);
 
 
   // ── Handle in-chat action buttons ──────────────────────────────────────────
@@ -753,7 +762,7 @@ export const ChatTab = () => {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3 overscroll-contain">
         {messages.map((msg) => (
           <div key={msg.id}>
             <div className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
