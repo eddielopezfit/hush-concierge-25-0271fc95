@@ -85,27 +85,28 @@ Deno.serve(async (req) => {
     // Build system prompt from canonical shared brain
     let systemPrompt = buildChatSystemPrompt(journeyContext);
 
-    // ── Self-intro guard ───────────────────────────────────────────────
-    // If ANY assistant message already exists in this turn's history, this is
-    // NOT message #1 — append a hard runtime directive forbidding re-introduction.
+    // ── Self-intro guard (PREPENDED so it dominates the prompt) ─────────
     const hasPriorAssistantMessage = messages.some((m) => m.role === "assistant");
     if (hasPriorAssistantMessage) {
-      systemPrompt += `
+      const override = `## ⛔ ABSOLUTE RUNTIME RULE — NO SELF-INTRODUCTION ⛔
+This is a CONTINUING conversation. The guest has ALREADY received your introduction.
+You MUST NOT begin your response with any greeting that names yourself or your role.
 
-## RUNTIME OVERRIDE — NO SELF-INTRODUCTION
-This is NOT the first message of the conversation. You have already introduced yourself. Under no circumstances may this response contain any of the following phrases or variations:
-- "I'm Luna"
-- "I am Luna"
-- "Hush's digital concierge"
-- "Hush's AI concierge"
-- "your digital concierge"
-- "your AI concierge"
-- "Hey — I'm Luna"
-- "Welcome to Hush. I'm Luna"
-- Any sentence that re-states your name, role, or AI status as a greeting
+FORBIDDEN openings (and any close variation):
+- "Hey — I'm Luna..."   - "Hi, I'm Luna..."   - "I'm Luna..."   - "I am Luna..."
+- "Welcome to Hush..."   - "Hey there — welcome..."   - "Welcome back..."
+- "Hush's digital concierge"   - "Hush's AI concierge"
+- "your digital concierge"   - "your AI concierge"   - "your personal guide"
+- Any sentence whose purpose is to (re-)state your name, role, or that you are AI.
 
-Skip the intro entirely. Begin your response with the substantive answer. The guest already knows who you are. If they explicitly ask "are you AI?" or "are you real?", you may briefly confirm — otherwise NEVER re-introduce yourself.`;
+REQUIRED: Begin your reply DIRECTLY with the substantive answer. No preamble, no greeting, no name-drop. The guest already knows who you are.
+If the guest explicitly asks "are you AI?" or "are you real?", you may briefly confirm — otherwise NEVER reintroduce yourself.
+
+═══════════════════════════════════════════════════════════════════
+`;
+      systemPrompt = override + systemPrompt;
     }
+
 
     // Find the latest user message for persistence + booking-intent detection
     const lastUserMessage = [...messages].reverse().find((m) => m.role === "user");
