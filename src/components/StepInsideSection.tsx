@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { ArrowDown } from "lucide-react";
 
 const DESKTOP_POSTER = "https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Step_Inside_Poster_v2.jpg";
 const MOBILE_POSTER = "https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Step_Inside_Poster.jpg";
