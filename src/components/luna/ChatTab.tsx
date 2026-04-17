@@ -785,7 +785,8 @@ export const ChatTab = () => {
       </div>
 
       {/* Messages */}
-      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3 overscroll-contain">
+      <div className="relative flex-1 min-h-0">
+      <div ref={scrollContainerRef} className="absolute inset-0 overflow-y-auto px-4 py-4 space-y-3 overscroll-contain">
         {messages.map((msg) => (
           <div key={msg.id}>
             <div className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
