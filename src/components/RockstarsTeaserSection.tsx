@@ -19,10 +19,10 @@ export const RockstarsTeaserSection = () => {
       {/* Video layer with slow Ken Burns zoom */}
       <div className="absolute inset-0 bg-background overflow-hidden">
         <motion.div
-          initial={{ scale: 1.04 }}
-          animate={{ scale: 1.12 }}
-          transition={{ duration: 20, ease: "easeInOut", repeat: Infinity, repeatType: "reverse" }}
-          className="absolute inset-0 will-change-transform"
+          initial={{ scale: 1.02 }}
+          animate={{ scale: 1.08 }}
+          transition={{ duration: 22, ease: "easeInOut", repeat: Infinity, repeatType: "reverse" }}
+          className="absolute inset-0 will-change-transform origin-top"
         >
           <video
             autoPlay
