@@ -363,8 +363,10 @@ export const ArtistsSection = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/85 backdrop-blur-md"
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/85 backdrop-blur-md"
             onClick={() => setSelectedArtist(null)}
+            role="dialog"
+            aria-modal="true"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -376,7 +378,7 @@ export const ArtistsSection = () => {
             >
               <button
                 onClick={() => setSelectedArtist(null)}
-                className="absolute top-4 right-4 w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-muted-foreground hover:text-cream hover:bg-gold/15 transition-all"
+                className="sticky top-0 float-right -mr-2 -mt-2 z-10 w-11 h-11 rounded-full bg-secondary/95 backdrop-blur-sm flex items-center justify-center text-cream hover:text-cream hover:bg-gold/25 border border-border/60 shadow-lg transition-all"
                 aria-label="Close"
               >
                 <X className="w-5 h-5" />
