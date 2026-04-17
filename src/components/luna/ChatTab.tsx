@@ -9,6 +9,7 @@ import { getConversationId, startSession, clearConversation } from "@/lib/sessio
 import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
 import ReactMarkdown from "react-markdown";
 import { useLuna } from "@/contexts/LunaContext";
+import { toast } from "sonner";
 
 interface ChatMessage {
   id: string;
