@@ -31,7 +31,7 @@ function encodeWav(buffer: AudioBuffer): Blob {
 type TabId = "find" | "explore" | "artists" | "plan" | "chat";
 
 const tabs: { id: TabId; label: string; icon: typeof Sparkles }[] = [
-  { id: "find", label: "Find My Look", icon: Sparkles },
+  { id: "find", label: "Your Look", icon: Sparkles },
   { id: "explore", label: "Explore", icon: Search },
   { id: "artists", label: "Artists", icon: Users },
   { id: "plan", label: "My Plan", icon: ClipboardList },
