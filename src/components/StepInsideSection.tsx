@@ -27,10 +27,10 @@ export const StepInsideSection = () => {
       className="relative w-full overflow-hidden h-[45vh] min-h-[320px] md:h-[55vh] md:min-h-[440px] max-h-[640px]"
     >
       {/* Video layer with parallax + slow Ken Burns zoom */}
-      {/* Outer wrapper is OVER-SIZED (-15% top, +15% bottom = 130% height) so the parallax translate never reveals the page background */}
+      {/* Outer wrapper is OVER-SIZED on all axes so the parallax translate never reveals the page background */}
       <motion.div
         style={{ y }}
-        className="absolute -inset-x-0 -top-[15%] h-[130%] bg-background overflow-hidden will-change-transform"
+        className="absolute -left-[5%] -right-[5%] -top-[15%] h-[130%] bg-background overflow-hidden will-change-transform"
       >
         <motion.div
           initial={{ scale: 1.02 }}
