@@ -17,6 +17,7 @@ import imgPriscilla from "@/assets/artists/Priscilla.webp";
 import imgSilviyaWarren from "@/assets/artists/Silviya_Warren.webp";
 import imgWhitneyHernandez from "@/assets/artists/Whitney_Hernandez.webp";
 import imgZaidaDelgado from "@/assets/artists/Zaida_Delgado.webp";
+import imgFounders from "@/assets/Founders_Hush.jpg";
 
 export type TeamDepartment = "hair" | "skincare" | "nails" | "massage" | "lashes" | "front-desk" | "founders";
 export type TeamRole = "founder" | "senior-stylist" | "stylist" | "esthetician" | "nail-tech" | "massage-therapist" | "coordinator" | "lash-specialist";
