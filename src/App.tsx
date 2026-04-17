@@ -26,15 +26,18 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/services" element={<Navigate to="/#services" replace />} />
-            <Route path="/team" element={<Navigate to="/#artists" replace />} />
-            <Route path="/about" element={<Navigate to="/#about" replace />} />
-            <Route path="/contact" element={<Navigate to="/#contact" replace />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <Suspense fallback={<RouteFallback />}>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/services" element={<Navigate to="/#services" replace />} />
+              <Route path="/team" element={<Navigate to="/#artists" replace />} />
+              <Route path="/about" element={<Navigate to="/#about" replace />} />
+              <Route path="/contact" element={<Navigate to="/#contact" replace />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              {/* New pages should follow the lazy pattern: const Page = lazy(() => import("./pages/Page")) */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
         </BrowserRouter>
 
         <Suspense fallback={null}>
