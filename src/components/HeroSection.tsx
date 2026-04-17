@@ -26,36 +26,36 @@ export const HeroSection = () => {
           transition={{ duration: 20, ease: "easeInOut", repeat: Infinity, repeatType: "reverse" }}
           className="absolute inset-0"
         >
-          {/* Desktop / tablet — higher-res video */}
+          {/* Desktop / tablet — Fashion Friday master with blurred letterbox backdrop (no head crop) */}
           <video
             autoPlay
             loop
             muted
             playsInline
             preload="auto"
-            poster={heroImage}
+            poster="https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Hero_FashionFriday_Poster_Desktop.jpg"
             aria-hidden="true"
-            className="hidden md:block absolute inset-0 w-full h-full object-cover [object-position:center_25%]"
+            className="hidden md:block absolute inset-0 w-full h-full object-cover object-center"
           >
             <source
-              src="https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Step_Inside_Desktop_v2.mp4"
+              src="https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Hero_FashionFriday_Desktop.mp4"
               type="video/mp4"
             />
           </video>
 
-          {/* Mobile — lighter-weight video with image poster fallback */}
+          {/* Mobile — portrait master, top-anchored so faces never crop */}
           <video
             autoPlay
             loop
             muted
             playsInline
             preload="metadata"
-            poster={heroImage}
+            poster="https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Hero_FashionFriday_Poster_Mobile.jpg"
             aria-hidden="true"
-            className="md:hidden absolute inset-0 w-full h-full object-cover [object-position:center_20%]"
+            className="md:hidden absolute inset-0 w-full h-full object-cover [object-position:center_top]"
           >
             <source
-              src="https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Step_Inside_Mobile.mp4"
+              src="https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Hero_FashionFriday_Mobile.mp4"
               type="video/mp4"
             />
           </video>
