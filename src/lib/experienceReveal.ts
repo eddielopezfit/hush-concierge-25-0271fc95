@@ -52,6 +52,107 @@ export interface RevealData {
   categories: ServiceCategoryId[];
 }
 
+// ── Per-category profile resolver (used by stacked multi-service plan) ─────
+
+export interface CategoryPlanItem {
+  category: ServiceCategoryId;
+  label: string;
+  timeEstimate: string;
+  priceRange: string;
+  consultationRequired: boolean;
+}
+
+const categoryDefaultProfile: Record<ServiceCategoryId, ExperienceProfile> = {
+  hair:     { label: "Hair Service",          timeEstimate: "60–90 min",  priceRange: "$60–$200+", consultationRequired: false },
+  nails:    { label: "Nail Service",          timeEstimate: "45–75 min",  priceRange: "$35–$85",   consultationRequired: false },
+  lashes:   { label: "Lash Service",          timeEstimate: "60–90 min",  priceRange: "$65–$250+", consultationRequired: false },
+  skincare: { label: "Skincare Service",      timeEstimate: "60–90 min",  priceRange: "$85–$200+", consultationRequired: false },
+  massage:  { label: "Massage Session",       timeEstimate: "60–90 min",  priceRange: "$75–$130",  consultationRequired: false },
+};
+
+/** Build a per-category plan list (one row per selected category) */
+export function buildCategoryPlanItems(context: ConciergeContext | null | undefined): CategoryPlanItem[] {
+  if (!context?.categories?.length) return [];
+  const goal = context.goal || "refresh";
+  const subtype = context.service_subtype;
+  const primaryCat = context.primary_category || context.categories[0];
+
+  return context.categories.map((cat) => {
+    // Apply the subtype profile only to the primary category it was chosen for
+    const isPrimary = cat === primaryCat;
+    const subtypeProfile = isPrimary && subtype && subtype !== "unsure" ? subtypeProfiles[subtype] : undefined;
+    const fallback = categoryDefaultProfile[cat];
+    const goalLabel = goalCategoryLabels[goal]?.[cat];
+
+    return {
+      category: cat,
+      label: subtypeProfile?.label || goalLabel || fallback.label,
+      timeEstimate: subtypeProfile?.timeEstimate || fallback.timeEstimate,
+      priceRange: subtypeProfile?.priceRange || fallback.priceRange,
+      consultationRequired: subtypeProfile?.consultationRequired ?? fallback.consultationRequired,
+    };
+  });
+}
+
+/** Parse a price-range string like "$95–$300+" → { min: 95, max: 300 } (max=min if single) */
+function parsePriceRange(s: string): { min: number; max: number } | null {
+  const nums = s.match(/\d+/g);
+  if (!nums || nums.length === 0) return null;
+  const min = parseInt(nums[0], 10);
+  const max = nums.length > 1 ? parseInt(nums[1], 10) : min;
+  return { min, max };
+}
+
+/** Parse a time string like "45–60 min", "2–3 hours", "60 min" → minutes {min,max} */
+function parseTimeRange(s: string): { min: number; max: number } | null {
+  const isHours = /hour/i.test(s);
+  const nums = s.match(/\d+/g);
+  if (!nums || nums.length === 0) return null;
+  const a = parseInt(nums[0], 10);
+  const b = nums.length > 1 ? parseInt(nums[1], 10) : a;
+  const mult = isHours ? 60 : 1;
+  return { min: a * mult, max: b * mult };
+}
+
+function formatMinutes(mins: number): string {
+  if (mins < 60) return `${mins} min`;
+  const h = mins / 60;
+  // Round to nearest 0.5 for display
+  const rounded = Math.round(h * 2) / 2;
+  return rounded === Math.floor(rounded) ? `${rounded} hr` : `${rounded} hrs`;
+}
+
+export interface PlanTotals {
+  timeRange: string;
+  priceRange: string;
+  hasConsultationItem: boolean;
+}
+
+/** Sum per-category items into a combined plan total */
+export function computePlanTotals(items: CategoryPlanItem[]): PlanTotals | null {
+  if (!items.length) return null;
+  let minMins = 0, maxMins = 0;
+  let minPrice = 0, maxPrice = 0;
+  let hasOpenEnded = false;
+  let hasConsult = false;
+
+  for (const it of items) {
+    const t = parseTimeRange(it.timeEstimate);
+    if (t) { minMins += t.min; maxMins += t.max; }
+    const p = parsePriceRange(it.priceRange);
+    if (p) { minPrice += p.min; maxPrice += p.max; }
+    if (/\+/.test(it.priceRange)) hasOpenEnded = true;
+    if (it.consultationRequired) hasConsult = true;
+  }
+
+  const timeRange = minMins === maxMins ? formatMinutes(minMins) : `${formatMinutes(minMins)}–${formatMinutes(maxMins)}`;
+  const priceRange = minPrice === maxPrice
+    ? `$${minPrice}${hasOpenEnded ? "+" : ""}`
+    : `$${minPrice}–$${maxPrice}${hasOpenEnded ? "+" : ""}`;
+
+  return { timeRange, priceRange, hasConsultationItem: hasConsult };
+}
+
 export function buildRevealData(context: ConciergeContext | null | undefined): RevealData | null {
   if (!context || !context.categories || context.categories.length === 0) return null;
 
