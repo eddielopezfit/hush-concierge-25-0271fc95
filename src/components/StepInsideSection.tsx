@@ -66,7 +66,7 @@ export const StepInsideSection = () => {
         {/* Cinematic overlay — readable + on-brand (sits ABOVE the zoom layer) */}
         <div className="absolute inset-0 bg-gradient-to-r from-background/85 via-background/40 to-background/70" />
         <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-transparent to-background/60" />
-      </div>
+      </motion.div>
 
       {/* Copy */}
       <div className="relative z-10 h-full flex items-center">
