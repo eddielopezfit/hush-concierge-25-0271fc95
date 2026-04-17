@@ -179,6 +179,16 @@ Deno.serve(async (req) => {
           console.error("[luna-chat] stream read error:", e);
           controller.error(e);
         } finally {
+          // If user expressed explicit booking intent, append a structured marker
+          // so the client can render an inline booking form below the message.
+          if (hasBookingIntent) {
+            const marker = "\n\n[[INLINE_BOOKING_FORM]]";
+            const sseChunk = `data: ${JSON.stringify({ choices: [{ delta: { content: marker } }] })}\n\n`;
+            try {
+              controller.enqueue(new TextEncoder().encode(sseChunk));
+              assistantFullText += marker;
+            } catch { /* ignore */ }
+          }
           controller.close();
 
           // Persist messages after stream completes
