@@ -95,7 +95,10 @@ export const BookingCallbackSection = () => {
       full_name: formData.fullName,
       phone: formData.phone,
       email: formData.email || undefined,
-      interested_in: formData.interestedIn.join(", ") || undefined,
+      interested_in: [
+        formData.interestedIn.join(", ") || null,
+        conciergeContext?.preferredArtist ? `Preferred artist: ${conciergeContext.preferredArtist}` : null,
+      ].filter(Boolean).join(" — ") || undefined,
       timing: formData.timing || undefined,
       message: formData.message || undefined,
       source: "callback_form",
@@ -184,6 +187,24 @@ export const BookingCallbackSection = () => {
               Drop your info and our front desk will reach out personally.
             </p>
           </div>
+
+          {conciergeContext?.preferredArtist && !isSubmitted && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6"
+            >
+              <div className="flex items-center justify-between gap-3 px-5 py-3 rounded-xl border border-gold/40 bg-gold/8">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="text-[10px] font-body uppercase tracking-widest text-gold/80 flex-shrink-0">Requesting</span>
+                  <span className="font-display text-base text-cream truncate">{conciergeContext.preferredArtist}</span>
+                </div>
+                <span className="text-[11px] font-body text-cream/60 flex-shrink-0 hidden sm:inline">
+                  We'll pass this along to our front desk.
+                </span>
+              </div>
+            </motion.div>
+          )}
 
           {!isSubmitted ? (
             <form

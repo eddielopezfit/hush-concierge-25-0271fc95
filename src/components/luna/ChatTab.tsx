@@ -16,6 +16,8 @@ interface ChatMessage {
   content: string;
   /** Optional in-chat action buttons rendered below the message */
   actions?: ChatAction[];
+  /** When true, render the inline booking form below this message */
+  showInlineBooking?: boolean;
 }
 
 interface ChatAction {
@@ -586,12 +588,24 @@ export const ChatTab = () => {
         }
       }
 
+      // Detect & strip the inline-booking marker emitted by the edge function
+      const INLINE_BOOKING_MARKER = "[[INLINE_BOOKING_FORM]]";
+      const showInlineBooking = assistantContent.includes(INLINE_BOOKING_MARKER);
+      if (showInlineBooking) {
+        assistantContent = assistantContent.replace(INLINE_BOOKING_MARKER, "").trim();
+      }
+
       // After streaming completes — attach actions + update quick replies
       const actions = detectChatActions(assistantContent, conciergeContext);
       setMessages((prev) =>
-        prev.map((m) => (m.id === assistantId ? { ...m, actions } : m))
+        prev.map((m) => (m.id === assistantId ? { ...m, content: assistantContent, actions, showInlineBooking } : m))
       );
       setQuickReplies(getQuickReplies(conciergeContext, assistantContent));
+
+      // Auto-open the inline lead form if booking intent was detected
+      if (showInlineBooking && !leadCaptured && !leadDismissed) {
+        setShowLeadForm(true);
+      }
 
       // Count as a successful exchange (for lead form timing)
       setSuccessfulExchangeCount(prev => prev + 1);

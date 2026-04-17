@@ -85,9 +85,13 @@ Deno.serve(async (req) => {
     // Build system prompt from canonical shared brain
     const systemPrompt = buildChatSystemPrompt(journeyContext);
 
-    // Find the latest user message for persistence
+    // Find the latest user message for persistence + booking-intent detection
     const lastUserMessage = [...messages].reverse().find((m) => m.role === "user");
     const startedAt = Date.now();
+
+    // Detect explicit booking intent on the user's last message
+    const BOOKING_INTENT_RE = /\b(book(?:\s+me)?|schedule(?:\s+an?)?\s+(?:appointment|visit)|make\s+an?\s+appointment|reserve\s+(?:a|my)\s+(?:spot|appointment))\b/i;
+    const hasBookingIntent = !!(lastUserMessage?.content && BOOKING_INTENT_RE.test(lastUserMessage.content));
 
     // Call AI gateway
     const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -175,6 +179,16 @@ Deno.serve(async (req) => {
           console.error("[luna-chat] stream read error:", e);
           controller.error(e);
         } finally {
+          // If user expressed explicit booking intent, append a structured marker
+          // so the client can render an inline booking form below the message.
+          if (hasBookingIntent) {
+            const marker = "\n\n[[INLINE_BOOKING_FORM]]";
+            const sseChunk = `data: ${JSON.stringify({ choices: [{ delta: { content: marker } }] })}\n\n`;
+            try {
+              controller.enqueue(new TextEncoder().encode(sseChunk));
+              assistantFullText += marker;
+            } catch { /* ignore */ }
+          }
           controller.close();
 
           // Persist messages after stream completes

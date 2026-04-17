@@ -44,4 +44,7 @@ export interface ConciergeContext {
   group?:    string | null;
   item?:     string | null;
   price?:    string | null;
+
+  // Quiz freshness — set when user completes Find My Look this session
+  quizCompletedAt?: number | null;
 }
