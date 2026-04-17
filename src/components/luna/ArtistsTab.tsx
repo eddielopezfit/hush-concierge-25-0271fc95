@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { ArrowLeft, Sparkles, Phone, MessageSquare } from "lucide-react";
+import { ArrowLeft, Sparkles, Phone, MessageSquare, Instagram } from "lucide-react";
 import { teamMembers, photoMap, getBookableArtists, departmentLabels, TeamMember } from "@/data/teamData";
 import { useLuna } from "@/contexts/LunaContext";
 import { trackArtistClick } from "@/lib/journeyTracker";
@@ -106,6 +106,18 @@ export const ArtistsTab = ({ onSwitchTab, onClosePanel }: ArtistsTabProps) => {
               </span>
             </div>
 
+            {selectedArtist.instagram && (
+              <a
+                href={`https://instagram.com/${selectedArtist.instagram}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-[11px] font-body text-primary hover:text-primary/80 transition-colors"
+              >
+                <Instagram className="w-3 h-3" />
+                @{selectedArtist.instagram}
+              </a>
+            )}
+
             {selectedArtist.legacyBio && (
               <p className="text-xs font-body text-foreground/70 italic leading-relaxed border-l-2 border-primary/30 pl-3 text-left">
                 {selectedArtist.legacyBio}
@@ -114,6 +126,17 @@ export const ArtistsTab = ({ onSwitchTab, onClosePanel }: ArtistsTabProps) => {
 
             {!selectedArtist.legacyBio && (
               <p className="text-xs font-body text-muted-foreground">{selectedArtist.description}</p>
+            )}
+
+            {selectedArtist.featuredReview && (
+              <div className="w-full border-l-2 border-primary/40 bg-primary/5 pl-3 pr-2 py-2 text-left rounded-r">
+                <p className="text-[11px] font-body text-foreground/80 italic leading-relaxed">
+                  "{selectedArtist.featuredReview.quote}"
+                </p>
+                <p className="text-[9px] font-body text-primary/80 mt-1">
+                  — {selectedArtist.featuredReview.author}, {selectedArtist.featuredReview.source}
+                </p>
+              </div>
             )}
 
             {selectedArtist.knownFor.length > 0 && (
