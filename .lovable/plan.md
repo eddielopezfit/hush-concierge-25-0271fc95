@@ -1,44 +1,46 @@
 
 
-## Luna Chat Panel — Ship All Fixes
+## Audit Reality Check — Most Findings Are Outdated
 
-Implementing all 7 fixes from Tier 1 + Tier 2 in the suggested build order.
+The audit was run against an older `eddielopezfit/hush-concierge-25-0271fc95` GitHub repo. The live `hush-salon.lovable.app` Lovable project has already shipped fixes for most of the "critical" items. Let me verify each claim against current code, then plan the genuinely missing fixes.
 
-### Phase 1 — Find My Look cleanup
-- **Fix #1:** Gate cached results behind a session-fresh flag. Add `quizCompletedAt` timestamp to `ConciergeContext`. If absent or older than session start, show empty state with "Take the quiz" CTA that scrolls to `#experience-finder`.
-- **Fix #2:** Remove non-interactive sub-tab breadcrumbs (Services/Type/Goal/Timing/Your Look). Replace with clean summary chips styled as labels (no hover, no cursor pointer).
-- *Files:* `src/components/luna/FindMyLookTab.tsx`, `src/contexts/LunaContext.tsx`, `src/types/concierge.ts`
+### Verification pass needed
 
-### Phase 2 — Artist booking context (biggest conversion win)
-- **Fix #3:** On "Book" / "Book with [Artist]" click in `ArtistsTab`:
-  1. Call `mergeConcierge({ preferredArtist, preferredArtistId })`
-  2. Close panel, scroll to `#booking-callback`
-- Update `BookingCallbackSection` to:
-  1. Read `preferredArtist` from `useLuna()`
-  2. Display gold-bordered badge "Requesting: [Artist Name]" above the form
-  3. Include artist name in the submitted payload (hidden field)
-- *Files:* `src/components/luna/ArtistsTab.tsx`, `src/components/BookingCallbackSection.tsx`
+1. **Callback form captures no data (P0)** — Need to verify `BookingCallbackSection.tsx` actually calls `saveCallbackRequest` → `submit-lead` edge function. Audit claims it's a `setTimeout(1000)` fake. I know from prior work that `submit-lead` exists and writes to `callback_requests` + `leads` tables.
+2. **"Chat with Luna" is a stub redirect (P0)** — Need to verify Luna chat is real (we have `luna-chat` edge function streaming Gemini responses + `ChatTab.tsx`). Audit claims it scrolls to callback.
+3. **handleReset doesn't clear localStorage (P1)** — Need to check `ExperienceFinderSection.tsx` reset handler against current `LunaContext.clearConcierge()`.
+4. **Voice widget / ElevenLabs (P1)** — Audit references `LunaVoiceWidget.tsx` and mic permission UX. Per `mem://constraints/no-voice-integration`, voice was REMOVED. This file shouldn't exist anymore.
+5. **No backend at all** — False. Project has Lovable Cloud, 7+ edge functions, `leads`, `callback_requests`, `conversations`, `messages` tables.
+6. **Massage 20% discount note never surfaced** — Worth verifying in `servicesMenuData.ts` + Luna system prompt.
+7. **Pricing claims** — Verify Women's haircut, Balayage (we just normalized it to "$96+ (final price after consultation)"), Brazilian Blowout.
 
-### Phase 3 — Allison Lashes filter verification
-- **Fix #4:** Verify `serviceCategories: ['hair', 'skincare', 'lashes']` on Allison's record. Audit filter logic in `ArtistsTab.tsx` — confirm it reads `serviceCategories.includes(filter)` rather than `category === filter`.
-- *Files:* `src/data/teamData.ts`, `src/components/luna/ArtistsTab.tsx`
+### Genuinely actionable items (if confirmed)
 
-### Phase 4 — Polish
-- **Fix #5:** Add `excludeFromArtistGrid: true` to Kendell in `teamData.ts`. Filter her out of Artists tab grid (keep her data for "Call front desk" CTAs).
-- **Fix #6:** Update Balayage entry in `servicesMenuData.ts` to "$96+ (final price after consultation)" so Explore tab and Services modal match.
-- **Fix #7:** In `luna-chat` edge function, detect explicit booking intent (`/\b(book|schedule an? appointment|book me)\b/i`) on the user's last message. After streaming the response, append a structured marker (e.g., `\n\n[[INLINE_BOOKING_FORM]]`). `ChatTab` parses this marker and renders the existing inline lead capture form below the message.
-- *Files:* `src/data/teamData.ts`, `src/components/luna/ArtistsTab.tsx`, `src/data/servicesMenuData.ts`, `supabase/functions/luna-chat/index.ts`, `src/components/luna/ChatTab.tsx`
+After verification, the only fixes likely still needed:
+- **A.** `handleReset` in Experience Finder calling `clearConcierge()` (if missing)
+- **B.** Massage 20% "name your stylist" discount surfaced in Luna system prompt + visible in services UI
+- **C.** Phone/email format validation on `BookingCallbackSection` (zod)
+- **D.** Women's haircut pricing visibility in `pricePreview`
+- **E.** Remove any stale references to `LunaVoiceWidget` if found
 
-### Files touched
-- `src/contexts/LunaContext.tsx`
-- `src/types/concierge.ts`
-- `src/components/luna/FindMyLookTab.tsx`
-- `src/components/luna/ArtistsTab.tsx`
-- `src/components/luna/ChatTab.tsx`
-- `src/components/BookingCallbackSection.tsx`
-- `src/data/teamData.ts`
-- `src/data/servicesMenuData.ts`
-- `supabase/functions/luna-chat/index.ts`
+### Plan
 
-No DB migrations. No new components. All changes additive — demo-safe.
+**Phase 1 — Verify (read-only)**
+- View `BookingCallbackSection.tsx` to confirm `saveCallbackRequest` is wired
+- View `ExperienceFinderSection.tsx` reset handler
+- View `LunaModal.tsx` "Chat with Luna" button handler
+- View `servicesMenuData.ts` for massage discount note + Women's haircut pricePreview
+- Search for `LunaVoiceWidget` references
+- View Luna system prompt (`SYSTEM_PROMPT_v7.md`) for massage discount mention
+
+**Phase 2 — Reply with verified audit response**
+- For each audit claim: ✅ already fixed / ⚠️ partially true / ❌ outdated
+- Present a TIGHT fix plan covering only the genuinely missing items (likely A–D above)
+- No re-implementation of items already shipped
+
+**Phase 3 (after approval) — Ship the real gaps**
+- Fix items A–D in single pass
+- All low-risk, data + small UI changes
+
+Reply **"verify and plan"** to run the verification pass and return the cleaned-up audit response with the real fix plan, or **"skip verify, ship A–D"** if you trust the shortlist.
 
