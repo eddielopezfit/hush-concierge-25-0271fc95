@@ -5,13 +5,17 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
 import { LunaProvider } from "./contexts/LunaContext";
+
+// Route-level code-splitting — keep entry bundle minimal
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Code-split the chat widget — it's only needed after user interaction
 const LunaChatWidget = lazy(() =>
   import("./components/LunaChatWidget").then(m => ({ default: m.LunaChatWidget }))
 );
+
+const RouteFallback = () => <div className="min-h-screen bg-background" aria-hidden="true" />;
 
 const queryClient = new QueryClient();
 
