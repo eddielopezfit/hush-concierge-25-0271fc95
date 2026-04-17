@@ -217,9 +217,9 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
                       animate={{ scale: 1, opacity: 1 }}
                       className="text-center"
                     >
-                      <p className="font-display text-2xl text-gold mb-2">Got it.</p>
+                      <p className="font-display text-2xl text-gold mb-2">✅ Got it.</p>
                       <p className="font-body text-sm text-muted-foreground">
-                        We'll text you a booking link shortly.
+                        The Hush team will follow up during business hours.
                       </p>
                     </motion.div>
                   ) : (
@@ -229,7 +229,7 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
                         <br />a booking link?
                       </p>
                       <p className="font-body text-xs text-muted-foreground text-center mb-6">
-                        We'll hold your preferences and reach out.
+                        We'll hold your preferences and follow up during business hours.
                       </p>
                       <input
                         type="tel"
@@ -247,7 +247,7 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
                           leadPhone.trim().length < 10 ? "opacity-40 cursor-not-allowed" : ""
                         }`}
                       >
-                        Send me the link
+                        Text me availability
                       </button>
                       <button
                         onClick={() => { setShowLeadCapture(false); onClose(); }}
@@ -328,7 +328,7 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
               transition={{ delay: 0.2 }}
             >
               <MessageSquare className="w-5 h-5" />
-              Chat with Luna to personalize this
+              Text me availability
             </motion.button>
 
             {/* ── Secondary CTA — Callback ─────────────────── */}
@@ -344,7 +344,7 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
                 whileHover={{ scale: 1.01 }}
               >
                 <Phone className="w-3.5 h-3.5" />
-                Request a callback
+                Request follow-up
               </motion.button>
             </motion.div>
 

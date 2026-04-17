@@ -15,6 +15,7 @@ export const BookingCallbackSection = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(false);
   const [userTouched, setUserTouched] = useState(false);
+  const [showNote, setShowNote] = useState(false);
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -133,7 +134,7 @@ export const BookingCallbackSection = () => {
             Ready to <span className="text-gold-gradient">Book?</span>
           </h2>
           <p className="font-body text-base text-muted-foreground max-w-lg mx-auto">
-            Drop your info and we'll reach out personally — or call us anytime.
+            Drop your name and number — we'll follow up during business hours, or call us anytime.
           </p>
         </motion.div>
 
@@ -178,10 +179,10 @@ export const BookingCallbackSection = () => {
         >
           <div className="text-center mb-8">
             <h3 className="font-display text-2xl md:text-3xl text-cream mb-2">
-              Request a Callback
+              Request follow-up
             </h3>
             <p className="font-body text-cream/60 text-sm">
-              Drop your info and our front desk will reach out personally.
+              Drop your name and number — our front desk will reach out personally.
             </p>
           </div>
 
@@ -190,6 +191,33 @@ export const BookingCallbackSection = () => {
               onSubmit={handleSubmit}
               className="bg-charcoal/50 backdrop-blur-sm border border-gold/8 rounded-2xl p-8 md:p-12"
             >
+              {/* Auto-populated context line */}
+              {(() => {
+                const ctxParts: string[] = [];
+                if (conciergeContext?.categories?.length) {
+                  ctxParts.push(
+                    conciergeContext.categories
+                      .map((c) => c.charAt(0).toUpperCase() + c.slice(1))
+                      .join(" + ")
+                  );
+                }
+                if (conciergeContext?.service_subtype && conciergeContext.service_subtype !== "unsure") {
+                  const sub = conciergeContext.service_subtype.replace(/_/g, " ");
+                  ctxParts.push(sub.charAt(0).toUpperCase() + sub.slice(1));
+                }
+                if (conciergeContext?.timing) {
+                  const tlabel = conciergeContext.timing === "today" ? "Same day" : conciergeContext.timing === "week" ? "This week" : conciergeContext.timing.charAt(0).toUpperCase() + conciergeContext.timing.slice(1);
+                  ctxParts.push(tlabel);
+                }
+                if (ctxParts.length === 0) return null;
+                return (
+                  <div className="mb-6 px-4 py-3 rounded-lg bg-gold/8 border border-gold/20">
+                    <p className="font-body text-[11px] uppercase tracking-wider text-gold/70 mb-1">You're booking</p>
+                    <p className="font-body text-sm text-cream">{ctxParts.join(" · ")}</p>
+                  </div>
+                );
+              })()}
+
               <div className="grid md:grid-cols-2 gap-6 mb-6">
                 <div className="space-y-2">
                   <label className="font-body text-sm text-cream/75 block">
@@ -237,77 +265,32 @@ export const BookingCallbackSection = () => {
                     <p className="font-body text-xs text-destructive mt-1">Please enter a valid 10-digit phone number</p>
                   )}
                 </div>
-
-                <div className="space-y-2">
-                  <label className="font-body text-sm text-cream/75 block">
-                    Email <span className="text-cream/35">(optional)</span>
-                  </label>
-                  <Input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
-                    placeholder="you@email.com"
-                    className="bg-background/50 border-gold/15 text-cream placeholder:text-cream/35 h-12 text-base focus:border-gold/40 focus:ring-gold/15"
-                    maxLength={255}
-                  />
-                </div>
-
-                <div className="space-y-2 md:col-span-2">
-                  <label className="font-body text-sm text-cream/75 block">
-                    Interested In <span className="text-cream/35">(select up to 3)</span>
-                  </label>
-                  <div className="flex flex-wrap gap-3">
-                    {serviceOptions.map((option) => (
-                      <button
-                        key={option.value}
-                        type="button"
-                        onClick={() => toggleService(option.value)}
-                        className={`px-5 py-3 rounded-lg border text-sm font-body transition-all duration-300 ${
-                          formData.interestedIn.includes(option.value)
-                            ? "bg-gold/15 border-gold text-gold"
-                            : "bg-background/30 border-gold/15 text-cream/60 hover:border-gold/30 hover:text-cream"
-                        }`}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-2 md:col-span-2">
-                  <label className="font-body text-sm text-cream/75 block">
-                    How soon are you looking to book?
-                  </label>
-                  <div className="flex flex-wrap gap-3">
-                    {timingOptions.map((option) => (
-                      <button
-                        key={option.value}
-                        type="button"
-                        onClick={() => handleInputChange("timing", option.value)}
-                        className={`px-5 py-3 rounded-lg border text-sm font-body transition-all duration-300 ${
-                          formData.timing === option.value
-                            ? "bg-gold/15 border-gold text-gold"
-                            : "bg-background/30 border-gold/15 text-cream/60 hover:border-gold/30 hover:text-cream"
-                        }`}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
               </div>
 
-              <div className="space-y-2 mb-8">
-                <label className="font-body text-sm text-cream/75 block">
-                  Message <span className="text-cream/35">(optional)</span>
-                </label>
-                <Textarea
-                  value={formData.message}
-                  onChange={(e) => handleInputChange("message", e.target.value)}
-                  placeholder="Tell us what you have in mind..."
-                  className="bg-background/50 border-gold/15 text-cream placeholder:text-cream/35 min-h-[120px] text-base resize-none focus:border-gold/40 focus:ring-gold/15"
-                  maxLength={1000}
-                />
+              {/* Optional note toggle */}
+              <div className="mb-8">
+                {!showNote ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowNote(true)}
+                    className="font-body text-xs text-gold/70 hover:text-gold transition-colors underline underline-offset-4"
+                  >
+                    + Add a note (optional)
+                  </button>
+                ) : (
+                  <div className="space-y-2">
+                    <label className="font-body text-sm text-cream/75 block">
+                      Note <span className="text-cream/35">(optional)</span>
+                    </label>
+                    <Textarea
+                      value={formData.message}
+                      onChange={(e) => handleInputChange("message", e.target.value)}
+                      placeholder="Anything else we should know?"
+                      className="bg-background/50 border-gold/15 text-cream placeholder:text-cream/35 min-h-[100px] text-base resize-none focus:border-gold/40 focus:ring-gold/15"
+                      maxLength={1000}
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="flex flex-col items-center gap-4">
@@ -323,7 +306,7 @@ export const BookingCallbackSection = () => {
                     whileHover={isFormValid ? { scale: 1.02 } : {}}
                     whileTap={isFormValid ? { scale: 0.98 } : {}}
                   >
-                    {isSubmitting ? "Submitting..." : "Request Callback"}
+                    {isSubmitting ? "Sending..." : "Send request"}
                   </motion.button>
                   <span className="text-cream/40 text-sm">or</span>
                   <a
@@ -331,7 +314,7 @@ export const BookingCallbackSection = () => {
                     className="flex items-center gap-2 text-gold hover:text-gold/80 font-body transition-colors"
                   >
                     <Phone className="w-4 h-4" />
-                    Call Now: (520) 327-6753
+                    Call now: (520) 327-6753
                   </a>
                 </div>
 
@@ -369,14 +352,17 @@ export const BookingCallbackSection = () => {
                 <CheckCircle className="w-8 h-8 text-gold" />
               </motion.div>
               <h3 className="font-display text-2xl md:text-3xl text-gold-gradient mb-4">
-                We'll be in touch soon.
+                ✅ Your request was sent.
               </h3>
-              <p className="font-body text-cream/60 text-base max-w-md mx-auto mb-8">
-                Someone from our team will call you within 1 business day. You can also reach us at{" "}
+              <p className="font-body text-cream/70 text-base max-w-md mx-auto mb-2">
+                The Hush team will follow up during business hours.
+              </p>
+              <p className="font-body text-cream/50 text-sm max-w-md mx-auto mb-8">
+                You can also reach us at{" "}
                 <a href="tel:+15203276753" className="text-gold hover:underline">(520) 327-6753</a>.
               </p>
               <button onClick={handleScrollToTop} className="btn-outline-gold">
-                Back to Home
+                Back to home
               </button>
             </motion.div>
           )}

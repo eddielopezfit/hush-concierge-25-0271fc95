@@ -268,7 +268,7 @@ export const PersonalizedPlanSection = () => {
                   onClick={handleScrollToBooking}
                   className="btn-gold py-3 px-8 text-sm w-full flex items-center justify-center gap-2"
                 >
-                  Reserve Your Experience
+                  Get my appointment
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </motion.div>
