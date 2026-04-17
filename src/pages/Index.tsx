@@ -64,16 +64,16 @@ const Index = () => {
       <Navigation />
       <HeroSection />
       <TrustBar />
-      <StepInsideSection />
       <ExperienceFinderSection />
       <Suspense fallback={<SectionFallback />}>
         <PersonalizedPlanSection />
         <ServicesSection />
         <InlineCallbackCTA />
-        <RockstarsTeaserSection />
         <ArtistsSection />
         <TestimonialsSection />
           <AboutSection />
+          <StepInsideSection />
+          <RockstarsTeaserSection />
           <JoinHushSection />
           <BookingCallbackSection />
         <FooterSection />
