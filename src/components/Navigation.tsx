@@ -6,6 +6,7 @@ const navLinks = [
   { label: "Menu", href: "#services" },
   { label: "Team", href: "#artists" },
   { label: "About", href: "#about" },
+  { label: "Join", href: "#join" },
   { label: "Contact", href: "#callback" },
 ];
 
@@ -25,7 +26,7 @@ export const Navigation = () => {
 
   // IntersectionObserver for active nav state
   useEffect(() => {
-    const sectionIds = ["services", "artists", "about", "callback"];
+    const sectionIds = ["services", "artists", "about", "join", "callback"];
 
     observerRef.current = new IntersectionObserver(
       (entries) => {
