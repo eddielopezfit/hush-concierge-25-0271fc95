@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
 
-const POSTER = "https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Step_Inside_Poster.jpg";
-const DESKTOP_SRC = "https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Step_Inside_Desktop.mp4";
+const DESKTOP_POSTER = "https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Step_Inside_Poster_v2.jpg";
+const MOBILE_POSTER = "https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Step_Inside_Poster.jpg";
+const DESKTOP_SRC = "https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Step_Inside_Desktop_v2.mp4";
 const MOBILE_SRC = "https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Step_Inside_Mobile.mp4";
 
 /**
@@ -23,7 +24,7 @@ export const StepInsideSection = () => {
           muted
           playsInline
           preload="metadata"
-          poster={POSTER}
+          poster={DESKTOP_POSTER}
           aria-hidden="true"
           className="hidden md:block absolute inset-0 w-full h-full object-cover"
         >
@@ -37,7 +38,7 @@ export const StepInsideSection = () => {
           muted
           playsInline
           preload="metadata"
-          poster={POSTER}
+          poster={MOBILE_POSTER}
           aria-hidden="true"
           className="md:hidden absolute inset-0 w-full h-full object-cover"
         >
