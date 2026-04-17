@@ -83,7 +83,29 @@ Deno.serve(async (req) => {
     }
 
     // Build system prompt from canonical shared brain
-    const systemPrompt = buildChatSystemPrompt(journeyContext);
+    let systemPrompt = buildChatSystemPrompt(journeyContext);
+
+    // ── Self-intro guard ───────────────────────────────────────────────
+    // If ANY assistant message already exists in this turn's history, this is
+    // NOT message #1 — append a hard runtime directive forbidding re-introduction.
+    const hasPriorAssistantMessage = messages.some((m) => m.role === "assistant");
+    if (hasPriorAssistantMessage) {
+      systemPrompt += `
+
+## RUNTIME OVERRIDE — NO SELF-INTRODUCTION
+This is NOT the first message of the conversation. You have already introduced yourself. Under no circumstances may this response contain any of the following phrases or variations:
+- "I'm Luna"
+- "I am Luna"
+- "Hush's digital concierge"
+- "Hush's AI concierge"
+- "your digital concierge"
+- "your AI concierge"
+- "Hey — I'm Luna"
+- "Welcome to Hush. I'm Luna"
+- Any sentence that re-states your name, role, or AI status as a greeting
+
+Skip the intro entirely. Begin your response with the substantive answer. The guest already knows who you are. If they explicitly ask "are you AI?" or "are you real?", you may briefly confirm — otherwise NEVER re-introduce yourself.`;
+    }
 
     // Find the latest user message for persistence + booking-intent detection
     const lastUserMessage = [...messages].reverse().find((m) => m.role === "user");
