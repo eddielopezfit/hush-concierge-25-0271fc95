@@ -1,108 +1,61 @@
 
 
-## Hush Artists Section — Optimization Plan
+## Yes — there's a clear "tier" hierarchy in the descriptions
 
-The audit identified clear gaps across founders (no photos/bios visible), social media discoverability (zero handles linked), review attribution (named reviews not tied to artist cards), specialty positioning (missing differentiators like "European touch", "Vivid Specialist", "Color Educator"), and cross-department filtering (Allison missing from Lashes/Skincare). Here's the surgical fix plan.
+Looking at the current `fitStatement` copy (the line shown under each artist's specialty on the card), the language varies in a way that reads as a quality ranking:
 
----
+### Current tiering (unintentional)
 
-### Phase A — Founder Profiles Fix (HIGH IMPACT)
+**Tier 1 — "Hero" language (sounds best):**
+- Michelle: *"Guests often choose her for major color changes and transformations."*
+- Silviya: *"European touch — 10+ years at Hush. Strong option for balayage and extensions."*
+- Anita: *"Guests often choose her for creative designs and nail artistry."*
+- Allison: *"Vivid Specialist + Lash Slayer — great for multi-service visits."*
 
-**Problem:** Sheri, Danielle, Kathy show only initials. Founders are the brand's strongest trust signal.
+**Tier 2 — "Solid pick" language (neutral-positive):**
+- Whitney: *"Great for dimensional blondes, bridal hair, and event styling."*
+- Charly: *"The go-to for natural waves and textured looks."*
+- Melissa: *"A great fit for guests wanting length, volume, or seamless extensions."*
+- Ana: *"Great for versatile everyday looks and low-maintenance styling."*
 
-**Action:**
-1. Surface the existing founders portrait (`Founders_Hush.jpg` per `mem://brand/founders-identity-visuals`) on each founder card — crop to focus on each founder OR display group portrait fallback with name overlay.
-2. Add specialties from external research:
-   - **Sheri Turner** — "Lived-in Color & Transformations"
-   - **Danielle Colucci** — "Foundation Cuts & Color"
-   - **Kathy Crawford** — "Hi-lites & Cool Tones" + Instagram link `@kcwiththecoolhair`
-3. Add legacy bios + "Known For" tags to each founder in `src/data/teamData.ts`.
-4. Add "Book with [Founder]" CTA buttons (same pattern as other artists).
+**Tier 3 — "Defensive / niche" language (reads weaker):**
+- Kathy Charette: *"Specializes in precision cuts for difficult hair textures."* — sounds like a fix-it specialist, not aspirational
+- Priscilla: *"Known for dependable quality and precision — visit after visit."* — "dependable" reads as "safe but unexciting"
+- Zaida: *"A strong option for guests ready for a dramatic change."* — qualified ("a strong option") vs. confident ("the go-to")
 
-**Files:** `src/data/teamData.ts`, `src/components/ArtistsSection.tsx`, `src/components/luna/ArtistsTab.tsx`
+### The pattern that creates the imbalance
 
----
+Three linguistic moves elevate or flatten artists:
+1. **Specificity** — "European touch — 10+ years at Hush" beats "dependable quality"
+2. **Verb strength** — "Guests often choose her" > "Great for" > "A strong option for"
+3. **Credentials** — Tenure, education, signature techniques (Michelle/Silviya have these; Priscilla/Ana don't)
 
-### Phase B — Social Media Handles (HIGH IMPACT, LOW EFFORT)
-
-**Problem:** Zero Instagram links surfaced even though artists have active accounts driving discovery.
-
-**Action:** Add an `instagram` field to `TeamMember` and link icons on cards/modals for:
-- Michelle → `@hairby_michelley`
-- Silviya → `@hairdesignsbysilviya`
-- Whitney → `@prettyhairandpositivity`
-- Allison → `@allieglam`
-- Kathy Crawford → `@kcwiththecoolhair`
-
-Render small Instagram icon next to name (opens in new tab, `rel="noopener noreferrer"` per `mem://features/external-link-behavior`).
-
-**Files:** `src/data/teamData.ts`, `src/components/ArtistsSection.tsx`, `src/components/luna/ArtistsTab.tsx`, `src/types/concierge.ts` (if TeamMember typed there)
+This conflicts with `mem://brand/luna-neutral-guidance-policy` (no AI bias in stylist selection) — even though Luna is neutral in chat, the static cards aren't.
 
 ---
 
-### Phase C — Specialty & Tag Upgrades (MEDIUM IMPACT)
+### Proposed fix — Level the language without flattening differentiation
 
-Update `knownFor`, `specialty`, and `bestFor` fields:
+Rewrite the bottom-tier `fitStatement` lines to use the same confident "go-to / known for / great with" framing, while keeping each artist's genuine niche:
 
-- **Michelle Yrigolla** — Add "EDUCATOR" badge (mirror FOUNDING badge styling); add "Extensions" to knownFor; add tenure note.
-- **Silviya Warren** — Update specialty to "European Color & Extensions"; add "European balayage", "Dream catchers extensions", "10+ years at Hush" to knownFor/bio.
-- **Whitney Hernandez** — Add "Bridal Hair (@dreambridesaz)", "Extensions" to knownFor; mark bridal as a featured specialty.
-- **Allison Griessel** — Add "Vivids" to knownFor; ensure `serviceCategories: ['hair', 'lashes', 'skincare']` is set so she appears in all three filters.
-- **Kathy Charette** — Reframe specialty from generic "Cuts & Color" to "Precision Cuts for Difficult Hair" (matches Alicia Robinson review).
-- **Charly Camano** — Elevate "Waves & Texture" as primary niche.
+| Artist | Current | Proposed |
+|---|---|---|
+| Kathy Charette | "Specializes in precision cuts for difficult hair textures." | "The go-to for precision cuts on thick, fine, and tricky hair." |
+| Priscilla | "Known for dependable quality and precision — visit after visit." | "The go-to for clients who want precision and consistency every visit." |
+| Zaida | "A strong option for guests ready for a dramatic change." | "The go-to for bold makeovers and total transformations." |
+| Ana | "Great for versatile everyday looks and low-maintenance styling." | "The go-to for versatile everyday looks and easy-to-maintain color." |
+| Melissa | "A great fit for guests wanting length, volume, or seamless extensions." | "The go-to for length, volume, and seamless extensions." |
 
-**Files:** `src/data/teamData.ts`
+Also normalize the top tier so no one reads as "the obvious pick":
+- Michelle: drop "Guests often choose her for major changes" → "The go-to for complex color, extensions, and color correction."
+- Anita: same pattern → "The go-to for creative nail art and custom designs."
 
----
+**Result:** Every artist gets a confident "the go-to for [their actual niche]" line. No one sounds like a backup option, no one sounds like the only real choice.
 
-### Phase D — Review Attribution (MEDIUM IMPACT)
+### Files touched
+- `src/data/teamData.ts` only (single field per artist — `fitStatement`)
 
-**Problem:** Named reviews ("Whitney is the best with blondes!!", "Allison G is magical", "Michelle… reassured me") live only in the testimonial carousel — not on the artist cards where they convert.
+No UI changes, no logic changes, no risk to demo. Pure copy normalization.
 
-**Action:**
-1. Add an optional `featuredReview: { quote, author, source }` field to `TeamMember`.
-2. Render the review inside the artist detail modal as an italic gold-bordered quote block (matches existing `legacyBio` styling).
-3. Attribute confirmed reviews:
-   - Whitney → Andrea Mitchell quote
-   - Allison → Megan Petersen + Kassandra Estrada quotes
-   - Michelle → Cara B Foster quote
-   - Kathy Charette → Alicia Robinson quote (mark "Kathy" disambiguation)
-
-**Files:** `src/data/teamData.ts`, `src/components/ArtistsSection.tsx` (detail modal), `src/components/luna/ArtistsTab.tsx` (detail view)
-
----
-
-### Phase E — Cross-Department Filter Fix (BUG)
-
-**Problem:** Allison is triple-licensed but only appears under "Hair" filter. Test confirmed she's missing from Lashes filter.
-
-**Action:** Verify `serviceCategories: ['hair', 'lashes', 'skincare']` is set for Allison. The filter logic in `ArtistsTab.tsx` already supports `serviceCategories.includes()` — just need data fix.
-
-**Files:** `src/data/teamData.ts`
-
----
-
-### Out of Scope (intentionally deferred per demo focus)
-
-- Years-of-experience badges across all artists (data quality varies)
-- Price indicators per artist (would conflict with menu pricing)
-- New badges beyond EDUCATOR (avoid badge inflation)
-
----
-
-### Suggested Build Order
-
-1. **Phase A + E together** — Founders + Allison filter (data-only changes, biggest visual impact)
-2. **Phase B** — Instagram links (small UI addition, big discoverability win)
-3. **Phase C** — Specialty/tag upgrades (data-only)
-4. **Phase D** — Review attribution (small UI addition + data)
-
-All four phases are demo-safe — no risky UI restructuring, no new components, just data enrichment + small additive UI elements.
-
-**Files touched total:**
-- `src/data/teamData.ts` (all phases)
-- `src/components/ArtistsSection.tsx` (Phase B, D)
-- `src/components/luna/ArtistsTab.tsx` (Phase B, D)
-
-Reply with **"ship all"** or pick specific phases (e.g., "ship A + B").
+Reply **"ship it"** to apply, or tell me which specific artists you want re-leveled.
 
