@@ -316,6 +316,40 @@ function ChatActionButtons({
   );
 }
 
+// ── Persistence: store chat history in localStorage with TTL ────────────────
+const CHAT_STORAGE_KEY = "hush_luna_chat_v1";
+const CHAT_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+interface PersistedChat {
+  messages: ChatMessage[];
+  fingerprint: string;
+  successfulExchangeCount: number;
+  leadCaptured: boolean;
+  leadDismissed: boolean;
+  savedAt: number;
+}
+
+function loadPersistedChat(): PersistedChat | null {
+  try {
+    const raw = localStorage.getItem(CHAT_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as PersistedChat;
+    if (!parsed?.savedAt || Date.now() - parsed.savedAt > CHAT_TTL_MS) {
+      localStorage.removeItem(CHAT_STORAGE_KEY);
+      return null;
+    }
+    return parsed;
+  } catch { return null; }
+}
+
+function savePersistedChat(data: PersistedChat): void {
+  try { localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(data)); } catch { /* ignore */ }
+}
+
+function clearPersistedChat(): void {
+  try { localStorage.removeItem(CHAT_STORAGE_KEY); } catch { /* ignore */ }
+}
+
 export const ChatTab = () => {
   const { conciergeContext, openChatWidget } = useLuna();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -336,6 +370,14 @@ export const ChatTab = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
+  // Track the context fingerprint to detect meaningful changes
+  const contextFingerprintRef = useRef<string>("");
+
+  const getContextFingerprint = (ctx: ConciergeContext | null): string => {
+    if (!ctx) return "none";
+    return `${ctx.categories?.join(",") || ""}_${ctx.service_subtype || ""}_${ctx.goal || ""}_${ctx.timing || ""}_${ctx.source || ""}`;
+  };
+
   // ── Reset / New conversation ────────────────────────────────────────────────
   const resetChat = useCallback(() => {
     const ctx = conciergeContext;
@@ -352,15 +394,8 @@ export const ChatTab = () => {
     setContextPills(getContextPills(ctx));
     setSmartChips(getSmartChips(ctx));
     setQuickReplies(getQuickReplies(ctx, greeting));
+    clearPersistedChat();
   }, [conciergeContext]);
-
-  // Track the context fingerprint to detect meaningful changes
-  const contextFingerprintRef = useRef<string>("");
-
-  const getContextFingerprint = (ctx: ConciergeContext | null): string => {
-    if (!ctx) return "none";
-    return `${ctx.categories?.join(",") || ""}_${ctx.service_subtype || ""}_${ctx.goal || ""}_${ctx.timing || ""}_${ctx.source || ""}`;
-  };
 
   // Build contextual greeting + chips on first render AND when context changes meaningfully
   useEffect(() => {
@@ -372,17 +407,31 @@ export const ChatTab = () => {
 
     contextFingerprintRef.current = newFingerprint;
 
-    const greeting = buildContextGreeting(ctx);
-    setMessages([{ id: "greeting", role: "assistant", content: greeting }]);
+    // Try to restore from localStorage if fingerprint matches
+    const persisted = loadPersistedChat();
+    if (!initialized && persisted && persisted.fingerprint === newFingerprint && persisted.messages.length > 0) {
+      setMessages(persisted.messages);
+      setSuccessfulExchangeCount(persisted.successfulExchangeCount || 0);
+      setLeadCaptured(persisted.leadCaptured || false);
+      setLeadDismissed(persisted.leadDismissed || false);
+      const lastAssistant = [...persisted.messages].reverse().find(m => m.role === "assistant");
+      setQuickReplies(getQuickReplies(ctx, lastAssistant?.content || ""));
+    } else {
+      // Fresh greeting (new context or no valid persistence)
+      const greeting = buildContextGreeting(ctx);
+      setMessages([{ id: "greeting", role: "assistant", content: greeting }]);
+      setSuccessfulExchangeCount(0);
+      setLeadCaptured(false);
+      setLeadDismissed(false);
+      setQuickReplies(getQuickReplies(ctx, greeting));
+      if (initialized) clearPersistedChat(); // context changed mid-session
+    }
+
     setContextPills(getContextPills(ctx));
     setSmartChips(getSmartChips(ctx));
-    setQuickReplies(getQuickReplies(ctx, greeting));
     setInput("");
     setUserMessageCount(0);
-    setSuccessfulExchangeCount(0);
-    setLeadCaptured(false);
     setShowLeadForm(false);
-    setLeadDismissed(false);
     setLeadName("");
     setLeadPhone("");
     setInitialized(true);
@@ -391,6 +440,20 @@ export const ChatTab = () => {
       startSession(ctx, "chat");
     }
   }, [initialized, conciergeContext]);
+
+  // Persist messages whenever they change (skip greeting-only state)
+  useEffect(() => {
+    if (!initialized || isStreaming) return;
+    if (messages.length <= 1) return; // don't persist greeting-only
+    savePersistedChat({
+      messages,
+      fingerprint: contextFingerprintRef.current,
+      successfulExchangeCount,
+      leadCaptured,
+      leadDismissed,
+      savedAt: Date.now(),
+    });
+  }, [messages, isStreaming, initialized, successfulExchangeCount, leadCaptured, leadDismissed]);
 
   // Update context pills reactively when concierge context changes after init
   useEffect(() => {
@@ -406,6 +469,7 @@ export const ChatTab = () => {
     }, 500);
     return () => clearTimeout(t);
   }, [messages, isStreaming, quickReplies]);
+
 
   // ── Handle in-chat action buttons ──────────────────────────────────────────
   const handleChatAction = useCallback((action: ChatAction) => {
