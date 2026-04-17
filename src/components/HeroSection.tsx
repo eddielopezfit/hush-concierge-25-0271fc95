@@ -26,26 +26,39 @@ export const HeroSection = () => {
           transition={{ duration: 20, ease: "easeInOut", repeat: Infinity, repeatType: "reverse" }}
           className="absolute inset-0"
         >
-          {/* Desktop/tablet — full-res video */}
+          {/* Desktop / tablet — higher-res video */}
           <video
             autoPlay
             loop
             muted
             playsInline
             preload="auto"
-            className="hidden md:block absolute inset-0 w-full h-full object-cover"
             poster={heroImage}
+            aria-hidden="true"
+            className="hidden md:block absolute inset-0 w-full h-full object-cover"
           >
-            <source src="https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets//Hush_Hero_Cinematic.mp4" type="video/mp4" />
+            <source
+              src="https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Hero_Fashion_Desktop.mp4"
+              type="video/mp4"
+            />
           </video>
 
-          {/* Mobile — static image (saves bandwidth) */}
-          <img
-            src={heroImage}
-            alt="Hush Salon interior"
+          {/* Mobile — lighter-weight video (≈1MB) with image poster fallback */}
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="metadata"
+            poster={heroImage}
+            aria-hidden="true"
             className="md:hidden absolute inset-0 w-full h-full object-cover"
-            loading="eager"
-          />
+          >
+            <source
+              src="https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Hero_Fashion_Mobile.mp4"
+              type="video/mp4"
+            />
+          </video>
         </motion.div>
 
         {/* Gradient overlay */}
