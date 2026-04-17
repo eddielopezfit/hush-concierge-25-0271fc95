@@ -16,6 +16,8 @@ interface ChatMessage {
   content: string;
   /** Optional in-chat action buttons rendered below the message */
   actions?: ChatAction[];
+  /** When true, render the inline booking form below this message */
+  showInlineBooking?: boolean;
 }
 
 interface ChatAction {
