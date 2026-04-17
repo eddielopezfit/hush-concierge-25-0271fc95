@@ -68,7 +68,7 @@ export const AboutSection = () => {
               <img
                 src={foundersPhoto}
                 alt="Hush Salon Founders — Sheri Turner, Danielle Colucci, and Kathy Crawford"
-                className="w-full aspect-[16/10] sm:aspect-[4/3] lg:aspect-auto lg:h-[560px] object-cover object-[center_30%] lg:object-top"
+                className="w-full aspect-[4/5] lg:aspect-auto lg:h-[560px] object-cover object-top"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
               <div className="absolute bottom-6 left-6 right-6">
