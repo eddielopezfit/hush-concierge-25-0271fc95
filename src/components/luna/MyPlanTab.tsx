@@ -90,6 +90,68 @@ export const MyPlanTab = ({ onSwitchTab }: MyPlanTabProps) => {
           </div>
         </motion.div>
 
+        {/* Multi-service Stacked Plan (only when 2+ categories selected) */}
+        {isMultiService && planTotals && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.08 }}
+            className="relative rounded-xl border border-primary/20 bg-gradient-to-b from-primary/[0.06] to-transparent p-3.5 space-y-3"
+          >
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-primary/15 flex items-center justify-center">
+                <Layers className="w-3.5 h-3.5 text-primary" />
+              </div>
+              <div>
+                <p className="text-[10px] font-body text-primary uppercase tracking-wider">Combined Plan</p>
+                <p className="text-xs font-body text-foreground">{planItems.length} services stacked together</p>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              {planItems.map((item, idx) => {
+                const Icon = categoryIcon[item.category] || Sparkles;
+                return (
+                  <div key={item.category} className="flex items-start gap-2.5 py-1.5 border-b border-border/40 last:border-0">
+                    <div className="w-6 h-6 rounded-md bg-muted flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Icon className="w-3 h-3 text-foreground/70" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-baseline justify-between gap-2">
+                        <p className="text-xs font-body text-foreground font-medium truncate">{item.label}</p>
+                        <span className="text-[11px] font-body text-primary flex-shrink-0">{item.priceRange}</span>
+                      </div>
+                      <p className="text-[10px] font-body text-muted-foreground">
+                        {item.timeEstimate}{item.consultationRequired ? " · consultation first" : ""}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="rounded-lg bg-primary/10 border border-primary/20 px-3 py-2.5 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Clock className="w-3.5 h-3.5 text-primary" />
+                <div>
+                  <p className="text-[9px] font-body text-muted-foreground uppercase tracking-wider">Total Time</p>
+                  <p className="text-xs font-body text-foreground font-medium">{planTotals.timeRange}</p>
+                </div>
+              </div>
+              <div className="h-8 w-px bg-border" />
+              <div className="text-right">
+                <p className="text-[9px] font-body text-muted-foreground uppercase tracking-wider">Total Estimate</p>
+                <p className="text-xs font-display text-primary">{planTotals.priceRange}</p>
+              </div>
+            </div>
+
+            <p className="text-[10px] font-body text-muted-foreground leading-relaxed">
+              Estimated range — final pricing and timing confirmed when booking.
+              {planTotals.hasConsultationItem && " Some services in this plan begin with a quick consultation."}
+            </p>
+          </motion.div>
+        )}
+
         {/* Main Recommendation Card */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="relative rounded-xl overflow-hidden">
           <div className="absolute inset-0 rounded-xl bg-gradient-to-b from-primary/20 via-primary/5 to-transparent p-px">
