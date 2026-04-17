@@ -382,6 +382,10 @@ export const ChatTab = () => {
 
   // ── Reset / New conversation ────────────────────────────────────────────────
   const resetChat = useCallback(() => {
+    // Cancel any in-flight stream before resetting state
+    abortRef.current?.abort();
+    setIsStreaming(false);
+
     const ctx = conciergeContext;
     const greeting = buildContextGreeting(ctx);
     setMessages([{ id: "greeting", role: "assistant", content: greeting }]);
@@ -397,6 +401,14 @@ export const ChatTab = () => {
     setSmartChips(getSmartChips(ctx));
     setQuickReplies(getQuickReplies(ctx, greeting));
     clearPersistedChat();
+
+    // Start a brand-new server-side conversation so the next message gets a
+    // fresh self-intro (the no-self-intro guard relies on prior assistant
+    // messages in the request payload — clearing local history alone is enough
+    // for that, but we also rotate the conversation_id so the new turn lands
+    // in a fresh row instead of appending to the old one).
+    clearConversation();
+    startSession(ctx, "chat");
   }, [conciergeContext]);
 
   // Build contextual greeting + chips on first render AND when context changes meaningfully
