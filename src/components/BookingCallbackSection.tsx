@@ -95,7 +95,10 @@ export const BookingCallbackSection = () => {
       full_name: formData.fullName,
       phone: formData.phone,
       email: formData.email || undefined,
-      interested_in: formData.interestedIn.join(", ") || undefined,
+      interested_in: [
+        formData.interestedIn.join(", ") || null,
+        conciergeContext?.preferredArtist ? `Preferred artist: ${conciergeContext.preferredArtist}` : null,
+      ].filter(Boolean).join(" — ") || undefined,
       timing: formData.timing || undefined,
       message: formData.message || undefined,
       source: "callback_form",
