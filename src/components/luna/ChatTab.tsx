@@ -410,6 +410,10 @@ export const ChatTab = () => {
     // in a fresh row instead of appending to the old one).
     clearConversation();
     startSession(ctx, "chat");
+    toast.success("Started a fresh chat", {
+      description: "Luna will reintroduce herself on your next message.",
+      duration: 3000,
+    });
   }, [conciergeContext]);
 
   // Build contextual greeting + chips on first render AND when context changes meaningfully
