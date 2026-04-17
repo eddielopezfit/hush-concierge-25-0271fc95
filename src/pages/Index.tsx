@@ -11,7 +11,6 @@ import { initJourneyTracking } from "@/lib/journeyTracker";
 const PersonalizedPlanSection = lazy(() => import("@/components/PersonalizedPlanSection").then(m => ({ default: m.PersonalizedPlanSection })));
 const ServicesSection = lazy(() => import("@/components/ServicesSection").then(m => ({ default: m.ServicesSection })));
 const InlineCallbackCTA = lazy(() => import("@/components/InlineCallbackCTA").then(m => ({ default: m.InlineCallbackCTA })));
-const RockstarsTeaserSection = lazy(() => import("@/components/RockstarsTeaserSection").then(m => ({ default: m.RockstarsTeaserSection })));
 const ArtistsSection = lazy(() => import("@/components/ArtistsSection").then(m => ({ default: m.ArtistsSection })));
 const TestimonialsSection = lazy(() => import("@/components/TestimonialsSection").then(m => ({ default: m.TestimonialsSection })));
 const AboutSection = lazy(() => import("@/components/AboutSection").then(m => ({ default: m.AboutSection })));
@@ -69,13 +68,12 @@ const Index = () => {
         <PersonalizedPlanSection />
         <ServicesSection />
         <InlineCallbackCTA />
+        <StepInsideSection />
         <ArtistsSection />
         <TestimonialsSection />
-          <AboutSection />
-          <StepInsideSection />
-          <RockstarsTeaserSection />
-          <JoinHushSection />
-          <BookingCallbackSection />
+        <AboutSection />
+        <JoinHushSection />
+        <BookingCallbackSection />
         <FooterSection />
         <MobileStickyBar />
         {isModalOpen && (

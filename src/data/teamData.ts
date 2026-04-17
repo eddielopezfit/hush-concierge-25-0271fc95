@@ -1,22 +1,22 @@
 import { ServiceCategoryId } from "@/types/concierge";
 
-// Artist photo imports
-import imgAllisonGriessel from "@/assets/artists/Allison_Griessel.jpg";
-import imgAnaMoreno from "@/assets/artists/Ana_Moreno.jpg";
-import imgAnitaApodaca from "@/assets/artists/Anita_Apodaca.jpg";
-import imgCharlyCamano from "@/assets/artists/Charly_Camano.png";
-import imgJackie from "@/assets/artists/Jackie.jpg";
-import imgKathyCharette from "@/assets/artists/Kathy_Charette.jpg";
-import imgKellyVishnevetsky from "@/assets/artists/Kelly_Vishnevetsky.jpg";
-import imgKendellBarraza from "@/assets/artists/Kendell_Barraza.jpg";
-import imgLori from "@/assets/artists/Lori.jpg";
-import imgMelissaBrunty from "@/assets/artists/Melissa_Brunty.jpg";
-import imgMichelleYrigolla from "@/assets/artists/Michelle_Yrigolla.jpg";
-import imgPatty from "@/assets/artists/Patty.jpg";
-import imgPriscilla from "@/assets/artists/Priscilla.jpg";
-import imgSilviyaWarren from "@/assets/artists/Silviya_Warren.jpg";
-import imgWhitneyHernandez from "@/assets/artists/Whitney_Hernandez.jpg";
-import imgZaidaDelgado from "@/assets/artists/Zaida_Delgado.jpg";
+// Artist photo imports (WebP — 57% smaller than originals)
+import imgAllisonGriessel from "@/assets/artists/Allison_Griessel.webp";
+import imgAnaMoreno from "@/assets/artists/Ana_Moreno.webp";
+import imgAnitaApodaca from "@/assets/artists/Anita_Apodaca.webp";
+import imgCharlyCamano from "@/assets/artists/Charly_Camano.webp";
+import imgJackie from "@/assets/artists/Jackie.webp";
+import imgKathyCharette from "@/assets/artists/Kathy_Charette.webp";
+import imgKellyVishnevetsky from "@/assets/artists/Kelly_Vishnevetsky.webp";
+import imgKendellBarraza from "@/assets/artists/Kendell_Barraza.webp";
+import imgLori from "@/assets/artists/Lori.webp";
+import imgMelissaBrunty from "@/assets/artists/Melissa_Brunty.webp";
+import imgMichelleYrigolla from "@/assets/artists/Michelle_Yrigolla.webp";
+import imgPatty from "@/assets/artists/Patty.webp";
+import imgPriscilla from "@/assets/artists/Priscilla.webp";
+import imgSilviyaWarren from "@/assets/artists/Silviya_Warren.webp";
+import imgWhitneyHernandez from "@/assets/artists/Whitney_Hernandez.webp";
+import imgZaidaDelgado from "@/assets/artists/Zaida_Delgado.webp";
 
 export type TeamDepartment = "hair" | "skincare" | "nails" | "massage" | "lashes" | "front-desk" | "founders";
 export type TeamRole = "founder" | "senior-stylist" | "stylist" | "esthetician" | "nail-tech" | "massage-therapist" | "coordinator" | "lash-specialist";
