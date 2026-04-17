@@ -77,6 +77,19 @@ export const StepInsideSection = () => {
             <p className="font-body text-cream/70 mt-4 text-sm md:text-base max-w-md">
               Cozy corners, the right music, and a chair that feels like it was waiting for you.
             </p>
+            <a
+              href="#experience-finder"
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById("experience-finder")?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+              className="group mt-6 inline-flex items-center gap-2 font-body text-sm tracking-wide text-gold hover:text-gold/80 transition-colors"
+            >
+              <span className="border-b border-gold/40 group-hover:border-gold pb-0.5">
+                Find your experience
+              </span>
+              <ArrowDown className="w-4 h-4 transition-transform duration-300 group-hover:translate-y-0.5" />
+            </a>
           </motion.div>
         </div>
       </div>
