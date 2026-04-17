@@ -5,7 +5,7 @@ import { getJourneyContextString } from "@/lib/journeyTracker";
 import { getConciergeContext } from "@/lib/conciergeStore";
 import { formatCategoryList, categoryLabels, goalLabels, timingLabels } from "@/lib/conciergeLabels";
 import { saveLead } from "@/lib/saveSession";
-import { getConversationId, startSession } from "@/lib/sessionManager";
+import { getConversationId, startSession, clearConversation } from "@/lib/sessionManager";
 import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
 import ReactMarkdown from "react-markdown";
 import { useLuna } from "@/contexts/LunaContext";
@@ -382,6 +382,10 @@ export const ChatTab = () => {
 
   // ── Reset / New conversation ────────────────────────────────────────────────
   const resetChat = useCallback(() => {
+    // Cancel any in-flight stream before resetting state
+    abortRef.current?.abort();
+    setIsStreaming(false);
+
     const ctx = conciergeContext;
     const greeting = buildContextGreeting(ctx);
     setMessages([{ id: "greeting", role: "assistant", content: greeting }]);
@@ -397,6 +401,14 @@ export const ChatTab = () => {
     setSmartChips(getSmartChips(ctx));
     setQuickReplies(getQuickReplies(ctx, greeting));
     clearPersistedChat();
+
+    // Start a brand-new server-side conversation so the next message gets a
+    // fresh self-intro (the no-self-intro guard relies on prior assistant
+    // messages in the request payload — clearing local history alone is enough
+    // for that, but we also rotate the conversation_id so the new turn lands
+    // in a fresh row instead of appending to the old one).
+    clearConversation();
+    startSession(ctx, "chat");
   }, [conciergeContext]);
 
   // Build contextual greeting + chips on first render AND when context changes meaningfully
@@ -722,17 +734,17 @@ export const ChatTab = () => {
         ) : (
           <div className="flex-1" />
         )}
-        {/* New conversation button */}
-        {messages.length > 1 && (
-          <button
-            onClick={resetChat}
-            className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-body text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors flex-shrink-0"
-            title="New conversation"
-          >
-            <RotateCcw className="w-3 h-3" />
-            New chat
-          </button>
-        )}
+        {/* Start new chat button — always visible so guests can reset on demand */}
+        <button
+          onClick={resetChat}
+          disabled={messages.length <= 1 && !isStreaming}
+          className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-body text-muted-foreground hover:text-primary hover:bg-primary/10 disabled:opacity-40 disabled:hover:text-muted-foreground disabled:hover:bg-transparent transition-colors flex-shrink-0"
+          title="Start a new conversation"
+          aria-label="Start new chat"
+        >
+          <RotateCcw className="w-3 h-3" />
+          Start new chat
+        </button>
       </div>
 
       {/* Messages */}

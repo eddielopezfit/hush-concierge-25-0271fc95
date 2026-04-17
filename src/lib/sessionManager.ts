@@ -113,3 +113,16 @@ export function getGuestProfileId(): string | null {
     return null;
   }
 }
+
+/**
+ * Clear the current conversation_id so the next chat turn starts a fresh
+ * server-side conversation (and triggers a new self-intro). The guest_profile
+ * and fingerprint are preserved so returning-guest tracking still works.
+ */
+export function clearConversation(): void {
+  try {
+    sessionStorage.removeItem(CONVERSATION_KEY);
+  } catch {
+    /* ignore */
+  }
+}
