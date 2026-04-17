@@ -2,6 +2,7 @@ import { useEffect, lazy, Suspense } from "react";
 import { Navigation } from "@/components/Navigation";
 import { HeroSection } from "@/components/HeroSection";
 import { TrustBar } from "@/components/TrustBar";
+import { StepInsideSection } from "@/components/StepInsideSection";
 import { ExperienceFinderSection } from "@/components/ExperienceFinderSection";
 import { useLuna } from "@/contexts/LunaContext";
 import { initJourneyTracking } from "@/lib/journeyTracker";
@@ -62,6 +63,7 @@ const Index = () => {
       <Navigation />
       <HeroSection />
       <TrustBar />
+      <StepInsideSection />
       <ExperienceFinderSection />
       <Suspense fallback={<SectionFallback />}>
         <PersonalizedPlanSection />
