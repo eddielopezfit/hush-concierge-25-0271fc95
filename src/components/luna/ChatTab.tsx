@@ -5,7 +5,7 @@ import { getJourneyContextString } from "@/lib/journeyTracker";
 import { getConciergeContext } from "@/lib/conciergeStore";
 import { formatCategoryList, categoryLabels, goalLabels, timingLabels } from "@/lib/conciergeLabels";
 import { saveLead } from "@/lib/saveSession";
-import { getConversationId, startSession } from "@/lib/sessionManager";
+import { getConversationId, startSession, clearConversation } from "@/lib/sessionManager";
 import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
 import ReactMarkdown from "react-markdown";
 import { useLuna } from "@/contexts/LunaContext";
