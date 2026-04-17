@@ -171,6 +171,9 @@ export const ExperienceFinderSection = () => {
     setSelection({ services: [], goal: null, timing: null, subtype: null, primaryCategory: null, multiServiceMode: null });
     setCurrentStep(1);
     setRecommendation(null);
+    setRevealData(null);
+    setGuestName("");
+    try { sessionStorage.removeItem("hush_luna_recommendation"); } catch { /* ignore */ }
   };
 
   // ── Auto-advance step 2 → 3 after goal ────────────────────────────────────
@@ -324,7 +327,8 @@ export const ExperienceFinderSection = () => {
 
   const TOTAL_VISUAL_STEPS = 4;
   const numericStep: number = currentStep === "reveal" ? 5 : currentStep;
-  const visualStep: number = numericStep >= 4 ? 4 : numericStep;
+  // On reveal screen, mark ALL 4 steps as completed (visualStep = 5 means step 4 < visualStep)
+  const visualStep: number = numericStep >= 5 ? 5 : numericStep >= 4 ? 4 : numericStep;
 
   return (
     <section

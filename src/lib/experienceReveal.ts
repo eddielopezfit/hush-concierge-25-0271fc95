@@ -79,7 +79,18 @@ export function buildRevealData(context: ConciergeContext | null | undefined): R
   }
 
   const timeEstimate = profile?.timeEstimate || (isMulti ? "2–4 hours" : "60–90 min");
-  const priceRange = profile?.priceRange || (isMulti ? "Varies by combination" : "$45–$150+");
+  // Safe estimated ranges for multi-service combos — never calculated, never promised
+  const multiServicePriceRange = (() => {
+    const cats = context.categories;
+    const hasHair = cats.includes("hair");
+    const hasMassage = cats.includes("massage");
+    const count = cats.length;
+    if (hasHair && count >= 3) return "Most combinations like this run $200–$500+ — your stylist confirms during consultation";
+    if (hasHair && count === 2) return "Most combinations like this run $150–$400+ — confirmed during consultation";
+    if (hasMassage && count >= 2) return "Most combinations like this run $130–$300 — confirmed when booking";
+    return "Most combinations like this run $100–$300 — confirmed when booking";
+  })();
+  const priceRange = profile?.priceRange || (isMulti ? multiServicePriceRange : "$45–$150+");
   const consultationRequired = profile?.consultationRequired ?? (primaryCat === "hair" && (subtype === "color" || subtype === "both"));
 
   return {
@@ -163,8 +174,8 @@ export function getBookingModeConfig(mode: BookingMode, timing?: string | null):
         primaryLabel: "Request Consultation",
         secondaryLabel: "Call Front Desk",
         tertiaryLabel: "Chat with Luna",
-        confirmHeadline: "Your consultation request is in — the front desk is reviewing it now",
-        confirmSubcopy: "We'll usually reach out within a few hours",
+        confirmHeadline: "Your consultation request is in",
+        confirmSubcopy: "The Hush team will follow up during business hours",
       };
     case "guided_front_desk":
       return {
@@ -174,8 +185,8 @@ export function getBookingModeConfig(mode: BookingMode, timing?: string | null):
         primaryLabel: "Request Callback",
         secondaryLabel: "Call Front Desk",
         tertiaryLabel: "Chat with Luna",
-        confirmHeadline: "Got it — Hush is confirming availability for you now",
-        confirmSubcopy: "The front desk will reach out shortly to lock this in",
+        confirmHeadline: "Got it — your request was sent",
+        confirmSubcopy: "The Hush team will follow up during business hours",
       };
     case "direct_or_callback":
       return {
@@ -185,8 +196,8 @@ export function getBookingModeConfig(mode: BookingMode, timing?: string | null):
         primaryLabel: "Check Availability",
         secondaryLabel: "Call Front Desk",
         tertiaryLabel: "Chat with Luna",
-        confirmHeadline: "Got it — Hush is checking availability for you now",
-        confirmSubcopy: "Someone will reach out shortly to confirm your time",
+        confirmHeadline: "Got it — your request was sent",
+        confirmSubcopy: "The Hush team will follow up during business hours",
       };
   }
 }

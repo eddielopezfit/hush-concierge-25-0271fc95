@@ -5,15 +5,16 @@ import { useState } from "react";
 import { useLuna } from "@/contexts/LunaContext";
 import { trackServiceClick } from "@/lib/journeyTracker";
 
+// keywords let us narrow the displayed pricing list to what the user actually clicked
 const lookCategories = [
-  { id: "blonde", label: "Blonde", icon: Sun, serviceId: "hair" },
-  { id: "brunette", label: "Brunette", icon: Heart, serviceId: "hair" },
-  { id: "bold-color", label: "Bold Color", icon: Palette, serviceId: "hair" },
-  { id: "extensions", label: "Extensions", icon: Scissors, serviceId: "hair" },
-  { id: "lashes", label: "Lashes", icon: Eye, serviceId: "lashes" },
-  { id: "nails", label: "Nails", icon: Hand, serviceId: "nails" },
-  { id: "skincare", label: "Skincare", icon: Sparkles, serviceId: "skincare" },
-  { id: "massage", label: "Massage", icon: Flower2, serviceId: "massage" },
+  { id: "blonde",     label: "Blonde",     icon: Sun,       serviceId: "hair",     keywords: ["blonde", "blond", "lighten", "lightener", "weave", "foil", "balayage", "foilayage", "toner", "highlight"] },
+  { id: "brunette",   label: "Brunette",   icon: Heart,     serviceId: "hair",     keywords: ["root", "all over", "color refresher", "toner", "smudge", "touchup"] },
+  { id: "bold-color", label: "Bold Color", icon: Palette,   serviceId: "hair",     keywords: ["fantasy", "block", "vivid", "corrective"] },
+  { id: "extensions", label: "Extensions", icon: Scissors,  serviceId: "hair",     keywords: ["extension"] },
+  { id: "lashes",     label: "Lashes",     icon: Eye,       serviceId: "lashes",   keywords: [] },
+  { id: "nails",      label: "Nails",      icon: Hand,      serviceId: "nails",    keywords: [] },
+  { id: "skincare",   label: "Skincare",   icon: Sparkles,  serviceId: "skincare", keywords: [] },
+  { id: "massage",    label: "Massage",    icon: Flower2,   serviceId: "massage",  keywords: [] },
 ];
 
 interface ExploreTabProps {
@@ -50,6 +51,24 @@ export const ExploreTab = ({ onSwitchTab }: ExploreTabProps) => {
   };
 
   if (selectedCategory && selectedService) {
+    // Narrow groups when the user picked a sub-category like "Blonde" or "Bold Color"
+    const keywords = selectedLookCat?.keywords || [];
+    const matchesKeyword = (text: string) =>
+      keywords.length === 0 || keywords.some(k => text.toLowerCase().includes(k));
+
+    const filteredGroups = keywords.length === 0
+      ? selectedService.groups
+      : selectedService.groups
+          .map(g => ({
+            ...g,
+            items: g.items.filter(i => matchesKeyword(i.name) || matchesKeyword(g.name)),
+          }))
+          .filter(g => g.items.length > 0);
+
+    // Fall back to full menu if filter wiped everything
+    const groupsToShow = filteredGroups.length > 0 ? filteredGroups : selectedService.groups;
+    const showingFiltered = filteredGroups.length > 0 && keywords.length > 0;
+
     return (
       <div className="flex flex-col h-full">
         <button
@@ -59,11 +78,13 @@ export const ExploreTab = ({ onSwitchTab }: ExploreTabProps) => {
           <ArrowLeft className="w-3 h-3" /> Back
         </button>
         <div className="px-4 pt-2 pb-2">
-          <h3 className="font-display text-lg text-foreground">{selectedService.title}</h3>
+          <h3 className="font-display text-lg text-foreground">
+            {showingFiltered ? `${selectedLookCat?.label} — ${selectedService.title}` : selectedService.title}
+          </h3>
           <p className="text-xs text-muted-foreground font-body">{selectedService.pricePreview}</p>
         </div>
         <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4">
-          {selectedService.groups.map(group => (
+          {groupsToShow.map(group => (
             <div key={group.name}>
               <p className="text-[10px] font-body text-primary uppercase tracking-wider mb-2">{group.name}</p>
               <div className="space-y-1">
