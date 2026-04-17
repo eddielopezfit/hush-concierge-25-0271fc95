@@ -734,17 +734,17 @@ export const ChatTab = () => {
         ) : (
           <div className="flex-1" />
         )}
-        {/* New conversation button */}
-        {messages.length > 1 && (
-          <button
-            onClick={resetChat}
-            className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-body text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors flex-shrink-0"
-            title="New conversation"
-          >
-            <RotateCcw className="w-3 h-3" />
-            New chat
-          </button>
-        )}
+        {/* Start new chat button — always visible so guests can reset on demand */}
+        <button
+          onClick={resetChat}
+          disabled={messages.length <= 1 && !isStreaming}
+          className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-body text-muted-foreground hover:text-primary hover:bg-primary/10 disabled:opacity-40 disabled:hover:text-muted-foreground disabled:hover:bg-transparent transition-colors flex-shrink-0"
+          title="Start a new conversation"
+          aria-label="Start new chat"
+        >
+          <RotateCcw className="w-3 h-3" />
+          Start new chat
+        </button>
       </div>
 
       {/* Messages */}
