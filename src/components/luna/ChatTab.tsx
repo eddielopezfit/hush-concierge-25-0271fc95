@@ -370,10 +370,10 @@ export const ChatTab = () => {
   const [smartChips, setSmartChips] = useState<string[]>([]);
   const [quickReplies, setQuickReplies] = useState<string[]>([]);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const lastSeenAssistantIdRef = useRef<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const latestAssistantMessageRef = useRef<HTMLDivElement>(null);
-  const lastPinnedAssistantIdRef = useRef<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -484,42 +484,26 @@ export const ChatTab = () => {
     setContextPills(getContextPills(conciergeContext));
   }, [conciergeContext, initialized]);
 
-  const scrollChatToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
-    const el = scrollContainerRef.current;
-    if (el) el.scrollTo({ top: el.scrollHeight, behavior });
-  }, []);
-
-  const scrollLatestAssistantIntoView = useCallback((behavior: ScrollBehavior = "smooth") => {
-    const container = scrollContainerRef.current;
-    const bubble = latestAssistantMessageRef.current;
-    if (!container || !bubble) return;
-
-    const containerRect = container.getBoundingClientRect();
-    const bubbleRect = bubble.getBoundingClientRect();
-    const top = bubbleRect.top - containerRect.top + container.scrollTop - 12;
-    container.scrollTo({ top: Math.max(top, 0), behavior });
-  }, []);
-
-  // Keep user messages and loaders visible, but anchor new Luna replies to the
-  // start of the latest assistant bubble so long responses don't hide their intro.
+  // Auto-scroll the chat container itself (not the page) to the latest message.
+  // Skips auto-scroll when user has intentionally scrolled up to read older messages.
   useEffect(() => {
-    const lastMessage = messages[messages.length - 1];
-    if (!lastMessage) return;
-
-    if (lastMessage.role === "user") {
-      lastPinnedAssistantIdRef.current = null;
-      scrollChatToBottom("smooth");
-      return;
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const isNearBottom = () => el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+    const scrollToBottom = () => { el.scrollTop = el.scrollHeight; };
+    // Always pin to bottom on a fresh user message; otherwise respect user's scroll position
+    if (isNearBottom()) scrollToBottom();
+    if (isStreaming) {
+      const interval = setInterval(() => {
+        if (isNearBottom()) scrollToBottom();
+      }, 120);
+      return () => clearInterval(interval);
     }
-
-    if (lastMessage.role === "assistant" && lastMessage.id !== lastPinnedAssistantIdRef.current) {
-      const t = setTimeout(() => {
-        scrollLatestAssistantIntoView(messages.length <= 2 ? "auto" : "smooth");
-        lastPinnedAssistantIdRef.current = lastMessage.id;
-      }, 40);
-      return () => clearTimeout(t);
-    }
-  }, [messages, scrollChatToBottom, scrollLatestAssistantIntoView]);
+    const t = setTimeout(() => {
+      if (isNearBottom()) scrollToBottom();
+    }, 500);
+    return () => clearTimeout(t);
+  }, [messages, isStreaming, quickReplies, showLeadForm]);
 
   // Show floating "scroll to bottom" button when user has scrolled up
   useEffect(() => {
@@ -527,12 +511,43 @@ export const ChatTab = () => {
     if (!el) return;
     const handleScroll = () => {
       const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
-      setShowScrollToBottom(distanceFromBottom > 120);
+      const scrolledUp = distanceFromBottom > 120;
+      setShowScrollToBottom(scrolledUp);
+      if (!scrolledUp) {
+        setUnreadCount(0);
+        const lastAssistant = [...messages].reverse().find(m => m.role === "assistant");
+        if (lastAssistant) lastSeenAssistantIdRef.current = lastAssistant.id;
+      }
     };
     handleScroll();
     el.addEventListener("scroll", handleScroll, { passive: true });
     return () => el.removeEventListener("scroll", handleScroll);
-  }, [initialized]);
+  }, [initialized, messages]);
+
+  // Track unread assistant messages when user is scrolled up
+  useEffect(() => {
+    const lastAssistant = [...messages].reverse().find(m => m.role === "assistant");
+    if (!lastAssistant) return;
+    if (!showScrollToBottom) {
+      lastSeenAssistantIdRef.current = lastAssistant.id;
+      setUnreadCount(0);
+      return;
+    }
+    if (lastAssistant.id !== lastSeenAssistantIdRef.current) {
+      const unread = messages.filter(
+        m => m.role === "assistant" && m.id !== "greeting"
+      ).reverse().findIndex(m => m.id === lastSeenAssistantIdRef.current);
+      setUnreadCount(unread === -1 ? 1 : unread);
+    }
+  }, [messages, showScrollToBottom]);
+
+  const scrollChatToBottom = useCallback(() => {
+    const el = scrollContainerRef.current;
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    setUnreadCount(0);
+    const lastAssistant = [...messages].reverse().find(m => m.role === "assistant");
+    if (lastAssistant) lastSeenAssistantIdRef.current = lastAssistant.id;
+  }, [messages]);
 
 
   // ── Handle in-chat action buttons ──────────────────────────────────────────
@@ -801,10 +816,7 @@ export const ChatTab = () => {
       <div className="relative flex-1 min-h-0">
       <div ref={scrollContainerRef} className="absolute inset-0 overflow-y-auto px-4 py-4 space-y-3 overscroll-contain">
         {messages.map((msg) => (
-          <div
-            key={msg.id}
-            ref={msg.role === "assistant" && msg.id === lastAssistantMsg?.id ? latestAssistantMessageRef : null}
-          >
+          <div key={msg.id}>
             <div className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
               {msg.role === "assistant" && (
                 <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2.5 mr-2 flex-shrink-0" />
@@ -937,12 +949,17 @@ export const ChatTab = () => {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 8, scale: 0.9 }}
               transition={{ duration: 0.18 }}
-              onClick={() => scrollChatToBottom()}
+              onClick={scrollChatToBottom}
               className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary text-primary-foreground shadow-lg text-[11px] font-body font-medium hover:bg-primary/90 transition-colors"
-              aria-label="Scroll to latest message"
+              aria-label={unreadCount > 0 ? `Scroll to ${unreadCount} new message${unreadCount > 1 ? "s" : ""}` : "Scroll to latest message"}
             >
               <ArrowDown className="w-3.5 h-3.5" />
-              Latest
+              {unreadCount > 0 ? `${unreadCount} new` : "Latest"}
+              {unreadCount > 0 && (
+                <span className="ml-0.5 inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-semibold leading-none">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
             </motion.button>
           )}
         </AnimatePresence>
