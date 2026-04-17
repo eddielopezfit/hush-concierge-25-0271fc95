@@ -951,10 +951,15 @@ export const ChatTab = () => {
               transition={{ duration: 0.18 }}
               onClick={scrollChatToBottom}
               className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary text-primary-foreground shadow-lg text-[11px] font-body font-medium hover:bg-primary/90 transition-colors"
-              aria-label="Scroll to latest message"
+              aria-label={unreadCount > 0 ? `Scroll to ${unreadCount} new message${unreadCount > 1 ? "s" : ""}` : "Scroll to latest message"}
             >
               <ArrowDown className="w-3.5 h-3.5" />
-              Latest
+              {unreadCount > 0 ? `${unreadCount} new` : "Latest"}
+              {unreadCount > 0 && (
+                <span className="ml-0.5 inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-semibold leading-none">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
             </motion.button>
           )}
         </AnimatePresence>
