@@ -143,6 +143,16 @@ export const ArtistsSection = () => {
     // Only run once on mount
   }, []);
 
+  // Esc to close artist modal
+  useEffect(() => {
+    if (!selectedArtist) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSelectedArtist(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [selectedArtist]);
+
   const handleBeginWithLuna = (artist: TeamMember) => {
     setSelectedArtist(null);
     const categories: ServiceCategoryId[] = artist.serviceCategories?.length
