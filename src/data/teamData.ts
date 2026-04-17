@@ -45,6 +45,10 @@ export interface TeamMember {
   serviceCategories?: ServiceCategoryId[];
   directPhone?: string;
   isPrimaryBooking: boolean;
+  /** Instagram handle (without @) */
+  instagram?: string;
+  /** Featured client review attached to this artist */
+  featuredReview?: { quote: string; author: string; source: string };
 }
 
 /** Map from team member ID to imported photo */
