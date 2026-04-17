@@ -11,7 +11,7 @@ export const RockstarsTeaserSection = () => {
   return (
     <section
       aria-label="Meet the Rockstars"
-      className="relative w-full overflow-hidden h-[60vh] min-h-[420px] md:h-[70vh] md:min-h-[520px] max-h-[760px]"
+      className="relative w-full overflow-hidden h-[78vh] min-h-[560px] md:h-[72vh] md:min-h-[540px] max-h-[820px]"
     >
       {/* Image layer with slow Ken Burns zoom — anchored to founders (lower-center of frame) */}
       <div className="absolute inset-0 bg-background overflow-hidden">
@@ -26,7 +26,7 @@ export const RockstarsTeaserSection = () => {
             alt="Hush founders Sheri, Danielle, and Kathy at the salon's champagne bar"
             loading="lazy"
             decoding="async"
-            className="absolute inset-0 w-full h-full object-cover [object-position:center_70%]"
+            className="absolute inset-0 w-full h-full object-cover [object-position:65%_62%] md:[object-position:center_70%]"
           />
         </motion.div>
 
