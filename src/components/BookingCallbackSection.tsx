@@ -369,10 +369,10 @@ export const BookingCallbackSection = () => {
                 <CheckCircle className="w-8 h-8 text-gold" />
               </motion.div>
               <h3 className="font-display text-2xl md:text-3xl text-gold-gradient mb-4">
-                We'll be in touch soon.
+                Your request was sent.
               </h3>
               <p className="font-body text-cream/60 text-base max-w-md mx-auto mb-8">
-                Someone from our team will call you within 1 business day. You can also reach us at{" "}
+                The Hush team will follow up during business hours. You can also reach us anytime at{" "}
                 <a href="tel:+15203276753" className="text-gold hover:underline">(520) 327-6753</a>.
               </p>
               <button onClick={handleScrollToTop} className="btn-outline-gold">
