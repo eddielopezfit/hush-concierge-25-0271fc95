@@ -50,6 +50,19 @@ export const BRAIN_CONSTANTS = {
     "LED light therapy", "enzyme peel", "scalp treatment",
     "gloss finish", "nail art add-on", "lash serum treatment",
   ],
+  referralProgram: {
+    name: "Groupies Only",
+    formal: "Referral Program",
+    perk: "Refer a friend → both get $10 off your next visit",
+    howTo: "No cards or codes — just mention the friend's name when booking",
+    cta: "(520) 327-6753",
+  },
+  careers: {
+    name: "Be a Rockstar",
+    roles: "Stylists, estheticians, nail techs, massage therapists, apprentices",
+    cta: "hello@hushsalonandspa.com",
+    subject: "Be a Rockstar — Career Inquiry",
+  },
 } as const;
 
 // ── Core System Prompt (shared across voice & chat) ─────────────────────────
@@ -96,7 +109,9 @@ Front desk: ${BRAIN_CONSTANTS.frontDesk}
 Instagram: @hushsalonaz
 Cancellation: 24-hour notice required
 
-Referral Program: Refer a friend → both get $10 off. Cards available at the front desk.
+Referral Program ("Groupies Only"): Refer a friend → both get $10 off. No cards or codes — just mention the friend's name when booking. Unlimited referrals.
+
+Careers ("Be a Rockstar"): Hush is always open to meeting talented stylists, estheticians, nail techs, massage therapists, and apprentices. Inquiries route to hello@hushsalonandspa.com (subject: "Be a Rockstar — Career Inquiry"). Education-first culture, Pureology Pure 100 salon, apprenticeship pathway available.
 
 Massage Perk: ${BRAIN_CONSTANTS.massagePerk}
 60 min: $105 → $84 · 90 min: $140 → $112 · 120 min: $190 → $152
