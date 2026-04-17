@@ -12,13 +12,22 @@ const MOBILE_SRC = "https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/p
  * Lets guests *feel* the space before they engage with the quiz.
  */
 export const StepInsideSection = () => {
+  const sectionRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start end", "end start"],
+  });
+  // Parallax: video translates slower than page (-15% to +15% over scroll range)
+  const y = useTransform(scrollYProgress, [0, 1], ["-12%", "12%"]);
+
   return (
     <section
+      ref={sectionRef}
       aria-label="Step inside Hush"
       className="relative w-full overflow-hidden h-[45vh] min-h-[320px] md:h-[55vh] md:min-h-[440px] max-h-[640px]"
     >
-      {/* Video layer with slow Ken Burns zoom */}
-      <div className="absolute inset-0 bg-background overflow-hidden">
+      {/* Video layer with parallax + slow Ken Burns zoom */}
+      <motion.div style={{ y }} className="absolute inset-0 bg-background overflow-hidden will-change-transform" >
         <motion.div
           initial={{ scale: 1.02 }}
           animate={{ scale: 1.08 }}
