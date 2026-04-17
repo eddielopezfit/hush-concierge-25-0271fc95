@@ -109,7 +109,7 @@ export const HeroSection = () => {
             className="btn-gold py-4 px-10 flex items-center gap-3"
           >
             <Sparkles className="w-5 h-5" />
-            Plan my visit in 60 seconds
+            Find Your Experience
           </motion.button>
 
           {/* Secondary CTA — chat with Luna */}
@@ -120,7 +120,7 @@ export const HeroSection = () => {
             className="btn-outline-gold py-4 px-8 hidden sm:flex items-center gap-3"
           >
             <MessageSquare className="w-5 h-5" />
-            Text me availability
+            Talk to Our AI Concierge
           </motion.button>
         </motion.div>
 

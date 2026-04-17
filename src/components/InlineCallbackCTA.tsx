@@ -21,7 +21,7 @@ export const InlineCallbackCTA = () => {
         className="btn-outline-gold py-3 px-6 flex items-center gap-2 text-sm"
       >
         <Phone className="w-4 h-4" />
-        Request follow-up
+        Request a Callback
       </motion.button>
     </motion.div>
   );

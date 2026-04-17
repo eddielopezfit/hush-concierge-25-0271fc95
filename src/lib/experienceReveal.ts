@@ -160,33 +160,33 @@ export function getBookingModeConfig(mode: BookingMode, timing?: string | null):
         badge: "Consultation",
         headline: "This experience starts with a quick consultation",
         subcopy: `For a service like this, the best next step is a quick conversation so Hush can match timing, pricing, and the right stylist fit.${urgencyNote}`,
-        primaryLabel: "Get my appointment",
-        secondaryLabel: "Call front desk",
-        tertiaryLabel: "Text me availability",
-        confirmHeadline: "✅ Your request was sent.",
-        confirmSubcopy: "The Hush team will follow up during business hours.",
+        primaryLabel: "Request Consultation",
+        secondaryLabel: "Call Front Desk",
+        tertiaryLabel: "Chat with Luna",
+        confirmHeadline: "Your consultation request is in — the front desk is reviewing it now",
+        confirmSubcopy: "We'll usually reach out within a few hours",
       };
     case "guided_front_desk":
       return {
         badge: "Guided Booking",
         headline: "Let Hush help you lock this in",
         subcopy: `You already know what you want — the fastest next step is to have Hush confirm the best fit and availability.${urgencyNote}`,
-        primaryLabel: "Get my appointment",
-        secondaryLabel: "Call front desk",
-        tertiaryLabel: "Text me availability",
-        confirmHeadline: "✅ Your request was sent.",
-        confirmSubcopy: "The Hush team will follow up during business hours.",
+        primaryLabel: "Request Callback",
+        secondaryLabel: "Call Front Desk",
+        tertiaryLabel: "Chat with Luna",
+        confirmHeadline: "Got it — Hush is confirming availability for you now",
+        confirmSubcopy: "The front desk will reach out shortly to lock this in",
       };
     case "direct_or_callback":
       return {
         badge: "Direct Booking",
         headline: "You can book this directly",
         subcopy: `We'll match you with the best time and stylist for this service.${urgencyNote}`,
-        primaryLabel: "Get my appointment",
-        secondaryLabel: "Call front desk",
-        tertiaryLabel: "Text me availability",
-        confirmHeadline: "✅ Your request was sent.",
-        confirmSubcopy: "The Hush team will follow up during business hours.",
+        primaryLabel: "Check Availability",
+        secondaryLabel: "Call Front Desk",
+        tertiaryLabel: "Chat with Luna",
+        confirmHeadline: "Got it — Hush is checking availability for you now",
+        confirmSubcopy: "Someone will reach out shortly to confirm your time",
       };
   }
 }
