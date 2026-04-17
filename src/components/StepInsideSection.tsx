@@ -81,10 +81,12 @@ export const StepInsideSection = () => {
             <span className="font-body text-xs tracking-[0.3em] uppercase text-gold/80">
               Step Inside
             </span>
-            <h2 className="font-display text-3xl md:text-5xl lg:text-6xl text-cream mt-3 leading-tight">
-              Warm tones. <span className="text-gold-gradient italic">Good energy.</span>
+            <h2 className="font-display text-3xl md:text-5xl lg:text-6xl text-cream mt-3 leading-[1.1] tracking-tight text-balance">
+              Warm tones.
+              <br className="hidden sm:block" />{" "}
+              <span className="text-gold-gradient italic">Good energy.</span>
             </h2>
-            <p className="font-body text-cream/70 mt-4 text-sm md:text-base max-w-md">
+            <p className="font-body text-cream/70 mt-4 text-sm md:text-base max-w-md text-pretty">
               Cozy corners, the right music, and a chair that feels like it was waiting for you.
             </p>
             <a
