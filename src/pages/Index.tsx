@@ -30,24 +30,28 @@ const Index = () => {
 
   // Resolve hash anchors after lazy sections mount (initial load + nav clicks)
   useEffect(() => {
-    const scrollToHash = () => {
+    const scrollToHash = (smooth: boolean) => {
       const hash = window.location.hash.slice(1);
       if (!hash) return;
-      // Retry: lazy chunks may not have rendered yet
       let tries = 0;
       const tick = () => {
         const el = document.getElementById(hash);
         if (el) {
-          el.scrollIntoView({ behavior: "smooth", block: "start" });
-        } else if (tries++ < 20) {
+          // Use rAF to ensure layout is settled
+          requestAnimationFrame(() => {
+            el.scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "start" });
+          });
+        } else if (tries++ < 30) {
           setTimeout(tick, 100);
         }
       };
       tick();
     };
-    scrollToHash();
-    window.addEventListener("hashchange", scrollToHash);
-    return () => window.removeEventListener("hashchange", scrollToHash);
+    // Initial load: jump (no smooth) so we don't fight the browser's anchor reset
+    scrollToHash(false);
+    const onHashChange = () => scrollToHash(true);
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
 
   return (
