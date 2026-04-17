@@ -48,7 +48,7 @@ const ERROR_QUICK_REPLIES = [
 // ── Context-aware greeting builder ──────────────────────────────────────────
 function buildContextGreeting(ctx: ConciergeContext | null): string {
   if (!ctx?.categories?.length) {
-    return "Hey there — welcome to Hush. I'm Luna, your digital concierge.\n\nI know our entire team, every service we offer, and how to get you exactly what you're looking for. Think of me as your personal guide to the salon.\n\nWhat brings you in today?";
+    return "Hey — I'm Luna. Ask me anything, or tap below to get started.";
   }
 
   const cats = ctx.categories;
@@ -123,26 +123,26 @@ function getQuickReplies(ctx: ConciergeContext | null, lastAssistantMsg: string)
 
   // Contextual variants based on conversation state
   if (lower.includes("price") || lower.includes("cost") || lower.includes("pricing")) {
-    return ["I'm ready to book", "What affects the price?", "Help me decide", "Connect me with the team"];
+    return ["Book me now", "Show me prices", "Tell me what to pick", "Have the team follow up"];
   }
   if (lower.includes("stylist") || lower.includes("artist") || lower.includes("specialist")) {
-    return ["I'm ready to book", "Help me find the right service", "What will it cost?", "Connect me with the team"];
+    return ["Book me now", "Tell me what to pick", "Show me prices", "Have the team follow up"];
   }
   if (lower.includes("event") || lower.includes("wedding") || lower.includes("occasion")) {
-    return ["Let's plan my full look", "I'm ready to book", "What will it cost?", "Connect me with the team"];
+    return ["Book me now", "Tell me what to pick", "Show me prices", "Have the team follow up"];
   }
   if (lower.includes("option") || lower.includes("explore") || lower.includes("browse")) {
-    return ["Walk me through options", "I'm ready to book", "What will it cost?", "Connect me with the team"];
+    return ["Book me now", "Tell me what to pick", "Show me prices", "Have the team follow up"];
   }
   if (lower.includes("recommend") || lower.includes("suggest")) {
-    return ["That sounds perfect — book it", "Tell me more about that", "What will it cost?", "Connect me with the team"];
+    return ["Book me now", "Tell me more", "Show me prices", "Have the team follow up"];
   }
   if (lower.includes("ready") || lower.includes("lock") || lower.includes("reserve") || lower.includes("book")) {
-    return ["Let's lock it in", "Have someone call me", "Help me decide", "What will it cost?"];
+    return ["Book me now", "Have the team follow up", "Tell me what to pick", "Show me prices"];
   }
 
   // Default persistent set
-  return ["I'm ready to book", "Help me decide", "What will it cost?", "Connect me with the team"];
+  return ["Book me now", "Tell me what to pick", "Show me prices", "Have the team follow up"];
 }
 
 // ── Detect intent from assistant message for in-chat CTAs ───────────────────
@@ -152,23 +152,23 @@ function detectChatActions(msg: string, ctx: ConciergeContext | null): ChatActio
 
   // Service identified → offer booking + explore
   if (lower.includes("i'd suggest") || lower.includes("i'd recommend") || lower.includes("great option") || lower.includes("perfect for")) {
-    actions.push({ label: "Reserve this service", type: "scroll", target: "callback" });
+    actions.push({ label: "Get my appointment", type: "scroll", target: "callback" });
     actions.push({ label: "Build my personalized plan", type: "tab", target: "plan" });
   }
 
   // Stylist mentioned → offer artist browse
   if (lower.includes("stylist") || lower.includes("specialist") || lower.includes("artist") || lower.includes("our team")) {
-    if (!actions.find(a => a.label.includes("Reserve"))) {
-      actions.push({ label: "See our team", type: "tab", target: "artists" });
+    if (!actions.find(a => a.label.includes("appointment"))) {
+      actions.push({ label: "Have the team follow up", type: "callback" });
     }
   }
 
   // Booking/ready signals
   if (lower.includes("ready to book") || lower.includes("lock in") || lower.includes("reserve") || lower.includes("help you book")) {
     if (!actions.find(a => a.type === "scroll")) {
-      actions.push({ label: "Reserve your experience", type: "scroll", target: "callback" });
+      actions.push({ label: "Get my appointment", type: "scroll", target: "callback" });
     }
-    actions.push({ label: "Get a quick call back", type: "callback" });
+    actions.push({ label: "Have the team follow up", type: "callback" });
   }
 
   // Pricing mentioned → offer plan view
@@ -635,7 +635,7 @@ export const ChatTab = () => {
 
   // ── Handle quick reply chips — preserves full conversation context ─────────
   const handleQuickReply = useCallback((reply: string) => {
-    if (reply === "Connect me with the team" || reply === "Call the front desk" || reply === "Call (520) 327-6753") {
+    if (reply === "Have the team follow up" || reply === "Connect me with the team" || reply === "Call the front desk" || reply === "Call (520) 327-6753") {
       const isTouchDevice = "ontouchstart" in window || navigator.maxTouchPoints > 0;
       if (isTouchDevice) {
         window.open("tel:+15203276753", "_self");
@@ -676,7 +676,7 @@ export const ChatTab = () => {
       {
         id: `luna-lead-${Date.now()}`,
         role: "assistant",
-        content: `Thanks, ${leadName}! Someone from our team will reach out to you shortly. In the meantime, keep asking me anything — I'm here!`,
+        content: `Thanks, ${leadName}! The Hush team will follow up during business hours. In the meantime, keep asking me anything — I'm here!`,
       },
     ]);
   };
@@ -835,7 +835,7 @@ export const ChatTab = () => {
                   disabled={!leadName.trim() || !leadPhone.trim()}
                   className="flex-1 bg-primary text-primary-foreground text-sm font-body py-2 rounded-lg disabled:opacity-40 transition-opacity"
                 >
-                  Submit
+                  Send request
                 </button>
                 <button
                   onClick={() => { setShowLeadForm(false); setLeadDismissed(true); }}
