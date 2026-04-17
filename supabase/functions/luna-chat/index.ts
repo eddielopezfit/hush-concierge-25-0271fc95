@@ -85,27 +85,28 @@ Deno.serve(async (req) => {
     // Build system prompt from canonical shared brain
     let systemPrompt = buildChatSystemPrompt(journeyContext);
 
-    // ── Self-intro guard ───────────────────────────────────────────────
-    // If ANY assistant message already exists in this turn's history, this is
-    // NOT message #1 — append a hard runtime directive forbidding re-introduction.
+    // ── Self-intro guard (PREPENDED so it dominates the prompt) ─────────
     const hasPriorAssistantMessage = messages.some((m) => m.role === "assistant");
     if (hasPriorAssistantMessage) {
-      systemPrompt += `
+      const override = `## ⛔ ABSOLUTE RUNTIME RULE — NO SELF-INTRODUCTION ⛔
+This is a CONTINUING conversation. The guest has ALREADY received your introduction.
+You MUST NOT begin your response with any greeting that names yourself or your role.
 
-## RUNTIME OVERRIDE — NO SELF-INTRODUCTION
-This is NOT the first message of the conversation. You have already introduced yourself. Under no circumstances may this response contain any of the following phrases or variations:
-- "I'm Luna"
-- "I am Luna"
-- "Hush's digital concierge"
-- "Hush's AI concierge"
-- "your digital concierge"
-- "your AI concierge"
-- "Hey — I'm Luna"
-- "Welcome to Hush. I'm Luna"
-- Any sentence that re-states your name, role, or AI status as a greeting
+FORBIDDEN openings (and any close variation):
+- "Hey — I'm Luna..."   - "Hi, I'm Luna..."   - "I'm Luna..."   - "I am Luna..."
+- "Welcome to Hush..."   - "Hey there — welcome..."   - "Welcome back..."
+- "Hush's digital concierge"   - "Hush's AI concierge"
+- "your digital concierge"   - "your AI concierge"   - "your personal guide"
+- Any sentence whose purpose is to (re-)state your name, role, or that you are AI.
 
-Skip the intro entirely. Begin your response with the substantive answer. The guest already knows who you are. If they explicitly ask "are you AI?" or "are you real?", you may briefly confirm — otherwise NEVER re-introduce yourself.`;
+REQUIRED: Begin your reply DIRECTLY with the substantive answer. No preamble, no greeting, no name-drop. The guest already knows who you are.
+If the guest explicitly asks "are you AI?" or "are you real?", you may briefly confirm — otherwise NEVER reintroduce yourself.
+
+═══════════════════════════════════════════════════════════════════
+`;
+      systemPrompt = override + systemPrompt;
     }
+
 
     // Find the latest user message for persistence + booking-intent detection
     const lastUserMessage = [...messages].reverse().find((m) => m.role === "user");
@@ -163,12 +164,25 @@ Skip the intro entirely. Begin your response with the substantive answer. The gu
     // Stream to client while capturing assistant content for persistence
     let assistantFullText = "";
 
+    // When this is a continuing turn, buffer the first sentence so we can strip
+    // any rogue self-intro the model leaks despite the system-prompt override.
+    const stripIntroMode = hasPriorAssistantMessage;
+    const INTRO_LINE_RE = /^\s*(hey|hi|hello)?[\s,—\-–]*(there)?[\s,—\-–]*(welcome\s+(back\s+)?to\s+hush|i['’]?m\s+luna|i\s+am\s+luna|luna\s+here)[^.!?\n]*[.!?\n]+\s*/i;
+    let introBuffer = "";
+    let introHandled = !stripIntroMode; // if not in strip mode, skip buffering
+
     const stream = new ReadableStream({
       async start(controller) {
         const reader = upstream.body!.getReader();
         const decoder = new TextDecoder();
         const encoder = new TextEncoder();
         let buffer = "";
+
+        const enqueueContentChunk = (text: string) => {
+          if (!text) return;
+          const sse = `data: ${JSON.stringify({ choices: [{ delta: { content: text } }] })}\n\n`;
+          controller.enqueue(encoder.encode(sse));
+        };
 
         try {
           while (true) {
@@ -178,29 +192,68 @@ Skip the intro entirely. Begin your response with the substantive answer. The gu
             const chunk = decoder.decode(value, { stream: true });
             buffer += chunk;
 
-            // Forward raw chunk to client immediately
-            controller.enqueue(value);
-
-            // Parse SSE lines for content capture
+            // Parse SSE lines for content capture + (optional) intro-strip rewrite
             let idx: number;
+            let passthroughChunk = ""; // raw forwarding when not in strip mode
             while ((idx = buffer.indexOf("\n")) !== -1) {
               let line = buffer.slice(0, idx);
+              const rawLine = buffer.slice(0, idx + 1); // includes \n
               buffer = buffer.slice(idx + 1);
               if (line.endsWith("\r")) line = line.slice(0, -1);
-              if (!line.startsWith("data: ")) continue;
+
+              if (!line.startsWith("data: ")) {
+                // Forward non-data lines (blank separators) only when not stripping
+                if (introHandled) passthroughChunk += rawLine;
+                continue;
+              }
+
               const jsonStr = line.slice(6).trim();
-              if (jsonStr === "[DONE]") continue;
+              if (jsonStr === "[DONE]") {
+                if (introHandled) passthroughChunk += rawLine;
+                continue;
+              }
+
               try {
                 const parsed = JSON.parse(jsonStr);
-                const content = parsed.choices?.[0]?.delta?.content;
+                const content: string | undefined = parsed.choices?.[0]?.delta?.content;
                 if (content) assistantFullText += content;
-              } catch { /* partial JSON across chunks, skip */ }
+
+                if (!introHandled) {
+                  if (content) introBuffer += content;
+                  // Once we have enough text to make a decision (first sentence terminator
+                  // or 200 chars), strip the intro and flush the rest.
+                  if (/[.!?\n]/.test(introBuffer) || introBuffer.length > 200) {
+                    const cleaned = introBuffer.replace(INTRO_LINE_RE, "").trimStart();
+                    introHandled = true;
+                    enqueueContentChunk(cleaned);
+                  }
+                  // Don't forward this delta as-is
+                  continue;
+                }
+
+                // Pass-through after intro handled
+                passthroughChunk += rawLine;
+              } catch {
+                if (introHandled) passthroughChunk += rawLine;
+              }
             }
+
+            if (passthroughChunk) controller.enqueue(encoder.encode(passthroughChunk));
           }
         } catch (e) {
           console.error("[luna-chat] stream read error:", e);
           controller.error(e);
         } finally {
+          // If we never reached the flush threshold (very short response), flush now.
+          if (!introHandled) {
+            const cleaned = introBuffer.replace(INTRO_LINE_RE, "").trimStart();
+            if (cleaned) enqueueContentChunk(cleaned);
+            introHandled = true;
+          }
+          // Normalize the persisted text to match what the user actually saw.
+          if (stripIntroMode) {
+            assistantFullText = assistantFullText.replace(INTRO_LINE_RE, "").trimStart();
+          }
           // If user expressed explicit booking intent, append a structured marker
           // so the client can render an inline booking form below the message.
           if (hasBookingIntent) {
