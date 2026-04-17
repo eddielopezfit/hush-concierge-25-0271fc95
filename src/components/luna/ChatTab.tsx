@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Send, Loader2, ArrowRight, Sparkles, Phone, Calendar, ChevronRight, RotateCcw } from "lucide-react";
+import { Send, Loader2, ArrowRight, Sparkles, Phone, Calendar, ChevronRight, RotateCcw, ArrowDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getJourneyContextString } from "@/lib/journeyTracker";
 import { getConciergeContext } from "@/lib/conciergeStore";
@@ -369,6 +369,7 @@ export const ChatTab = () => {
   const [contextPills, setContextPills] = useState<string[]>([]);
   const [smartChips, setSmartChips] = useState<string[]>([]);
   const [quickReplies, setQuickReplies] = useState<string[]>([]);
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -482,21 +483,43 @@ export const ChatTab = () => {
   }, [conciergeContext, initialized]);
 
   // Auto-scroll the chat container itself (not the page) to the latest message.
-  // Uses container.scrollTop directly so it never affects page scroll.
+  // Skips auto-scroll when user has intentionally scrolled up to read older messages.
   useEffect(() => {
     const el = scrollContainerRef.current;
     if (!el) return;
+    const isNearBottom = () => el.scrollHeight - el.scrollTop - el.clientHeight < 80;
     const scrollToBottom = () => { el.scrollTop = el.scrollHeight; };
-    scrollToBottom();
-    // While streaming, content grows continuously — keep pinned to the bottom.
+    // Always pin to bottom on a fresh user message; otherwise respect user's scroll position
+    if (isNearBottom()) scrollToBottom();
     if (isStreaming) {
-      const interval = setInterval(scrollToBottom, 120);
+      const interval = setInterval(() => {
+        if (isNearBottom()) scrollToBottom();
+      }, 120);
       return () => clearInterval(interval);
     }
-    // Catch quick replies / action buttons that animate in after the message lands.
-    const t = setTimeout(scrollToBottom, 500);
+    const t = setTimeout(() => {
+      if (isNearBottom()) scrollToBottom();
+    }, 500);
     return () => clearTimeout(t);
   }, [messages, isStreaming, quickReplies, showLeadForm]);
+
+  // Show floating "scroll to bottom" button when user has scrolled up
+  useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const handleScroll = () => {
+      const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+      setShowScrollToBottom(distanceFromBottom > 120);
+    };
+    handleScroll();
+    el.addEventListener("scroll", handleScroll, { passive: true });
+    return () => el.removeEventListener("scroll", handleScroll);
+  }, [initialized]);
+
+  const scrollChatToBottom = useCallback(() => {
+    const el = scrollContainerRef.current;
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+  }, []);
 
 
   // ── Handle in-chat action buttons ──────────────────────────────────────────
@@ -762,7 +785,8 @@ export const ChatTab = () => {
       </div>
 
       {/* Messages */}
-      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3 overscroll-contain">
+      <div className="relative flex-1 min-h-0">
+      <div ref={scrollContainerRef} className="absolute inset-0 overflow-y-auto px-4 py-4 space-y-3 overscroll-contain">
         {messages.map((msg) => (
           <div key={msg.id}>
             <div className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
@@ -889,6 +913,23 @@ export const ChatTab = () => {
         </AnimatePresence>
 
         <div ref={messagesEndRef} />
+      </div>
+        <AnimatePresence>
+          {showScrollToBottom && (
+            <motion.button
+              initial={{ opacity: 0, y: 8, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 8, scale: 0.9 }}
+              transition={{ duration: 0.18 }}
+              onClick={scrollChatToBottom}
+              className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary text-primary-foreground shadow-lg text-[11px] font-body font-medium hover:bg-primary/90 transition-colors"
+              aria-label="Scroll to latest message"
+            >
+              <ArrowDown className="w-3.5 h-3.5" />
+              Latest
+            </motion.button>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Input */}
