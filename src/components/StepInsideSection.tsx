@@ -15,37 +15,44 @@ export const StepInsideSection = () => {
       aria-label="Step inside Hush"
       className="relative w-full overflow-hidden h-[45vh] min-h-[320px] md:h-[55vh] md:min-h-[440px] max-h-[640px]"
     >
-      {/* Video layer */}
-      <div className="absolute inset-0 bg-background">
-        {/* Desktop / tablet */}
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="metadata"
-          poster={DESKTOP_POSTER}
-          aria-hidden="true"
-          className="hidden md:block absolute inset-0 w-full h-full object-cover"
+      {/* Video layer with slow Ken Burns zoom */}
+      <div className="absolute inset-0 bg-background overflow-hidden">
+        <motion.div
+          initial={{ scale: 1.04 }}
+          animate={{ scale: 1.12 }}
+          transition={{ duration: 18, ease: "easeInOut", repeat: Infinity, repeatType: "reverse" }}
+          className="absolute inset-0 will-change-transform"
         >
-          <source src={DESKTOP_SRC} type="video/mp4" />
-        </video>
+          {/* Desktop / tablet */}
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="metadata"
+            poster={DESKTOP_POSTER}
+            aria-hidden="true"
+            className="hidden md:block absolute inset-0 w-full h-full object-cover"
+          >
+            <source src={DESKTOP_SRC} type="video/mp4" />
+          </video>
 
-        {/* Mobile — lighter file */}
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="metadata"
-          poster={MOBILE_POSTER}
-          aria-hidden="true"
-          className="md:hidden absolute inset-0 w-full h-full object-cover"
-        >
-          <source src={MOBILE_SRC} type="video/mp4" />
-        </video>
+          {/* Mobile — lighter file */}
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="metadata"
+            poster={MOBILE_POSTER}
+            aria-hidden="true"
+            className="md:hidden absolute inset-0 w-full h-full object-cover"
+          >
+            <source src={MOBILE_SRC} type="video/mp4" />
+          </video>
+        </motion.div>
 
-        {/* Cinematic overlay — readable + on-brand */}
+        {/* Cinematic overlay — readable + on-brand (sits ABOVE the zoom layer) */}
         <div className="absolute inset-0 bg-gradient-to-r from-background/85 via-background/40 to-background/70" />
         <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-transparent to-background/60" />
       </div>
