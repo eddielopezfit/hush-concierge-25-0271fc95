@@ -369,6 +369,7 @@ export const ChatTab = () => {
   const [contextPills, setContextPills] = useState<string[]>([]);
   const [smartChips, setSmartChips] = useState<string[]>([]);
   const [quickReplies, setQuickReplies] = useState<string[]>([]);
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
