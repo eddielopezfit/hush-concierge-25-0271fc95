@@ -250,14 +250,10 @@ If the guest explicitly asks "are you AI?" or "are you real?", you may briefly c
             if (cleaned) enqueueContentChunk(cleaned);
             introHandled = true;
           }
-          // Also normalize the persisted text to match what the user actually saw.
+          // Normalize the persisted text to match what the user actually saw.
           if (stripIntroMode) {
             assistantFullText = assistantFullText.replace(INTRO_LINE_RE, "").trimStart();
           }
-        } catch (e) {
-          console.error("[luna-chat] stream read error:", e);
-          controller.error(e);
-        } finally {
           // If user expressed explicit booking intent, append a structured marker
           // so the client can render an inline booking form below the message.
           if (hasBookingIntent) {
