@@ -134,7 +134,7 @@ export const BookingCallbackSection = () => {
             Ready to <span className="text-gold-gradient">Book?</span>
           </h2>
           <p className="font-body text-base text-muted-foreground max-w-lg mx-auto">
-            Drop your info and we'll reach out personally — or call us anytime.
+            Drop your name and number — we'll follow up during business hours, or call us anytime.
           </p>
         </motion.div>
 
