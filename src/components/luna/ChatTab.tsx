@@ -526,6 +526,18 @@ export const ChatTab = () => {
     }
   }, [initialized, conciergeContext]);
 
+  // Consume a pending prompt seeded by other tabs (e.g. "Ask Luna about <artist>")
+  const handleSendRef = useRef<((text?: string) => void) | null>(null);
+  useEffect(() => {
+    if (!initialized || isStreaming) return;
+    let pending: string | null = null;
+    try { pending = sessionStorage.getItem("hush_chat_pending_prompt"); } catch { /* ignore */ }
+    if (!pending) return;
+    try { sessionStorage.removeItem("hush_chat_pending_prompt"); } catch { /* ignore */ }
+    const t = window.setTimeout(() => handleSendRef.current?.(pending!), 150);
+    return () => window.clearTimeout(t);
+  }, [initialized, isStreaming]);
+
   // Persist messages whenever they change (skip greeting-only state)
   useEffect(() => {
     if (!initialized || isStreaming) return;
