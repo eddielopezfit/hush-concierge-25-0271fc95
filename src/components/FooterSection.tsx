@@ -1,12 +1,38 @@
 import { m } from "framer-motion";
-import { Phone, MapPin, Clock, Instagram, Facebook } from "lucide-react";
+import { Phone, MapPin, Clock, Instagram, Facebook, Calendar } from "lucide-react";
 import { useState } from "react";
 
 export const FooterSection = () => {
   const [showPrivacy, setShowPrivacy] = useState(false);
 
+  const handleBookClick = () => {
+    const el = document.getElementById("callback");
+    if (el) el.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
     <footer id="contact" className="relative overflow-hidden">
+      {/* Book CTA banner */}
+      <div className="border-t border-border bg-gradient-to-b from-background to-card/40 py-12 px-6">
+        <div className="max-w-4xl mx-auto text-center">
+          <h3 className="font-display text-2xl md:text-3xl text-cream mb-3">
+            Ready to book your visit?
+          </h3>
+          <p className="font-body text-muted-foreground text-sm md:text-base mb-6 max-w-xl mx-auto">
+            Request a callback and our front desk will help you find the perfect time and artist.
+          </p>
+          <m.button
+            onClick={handleBookClick}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="btn-gold py-3 px-8 inline-flex items-center gap-2 text-sm"
+          >
+            <Calendar className="w-4 h-4" />
+            Book an Appointment
+          </m.button>
+        </div>
+      </div>
+
       {/* Footer Content */}
       <div className="border-t border-border py-16 px-6">
         <div className="max-w-6xl mx-auto">
