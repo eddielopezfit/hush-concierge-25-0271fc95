@@ -21,6 +21,7 @@ export const LunaChatWidget = () => {
   const [showBadge, setShowBadge] = useState(false);
   const [activeTab, setActiveTab] = useState<LunaTabId>("find");
   const [isFirstOpen, setIsFirstOpen] = useState(true);
+  const [nudge, setNudge] = useState<{ section: "services" | "artists" } | null>(null);
   const { chatWidgetRequested, clearChatWidgetRequest } = useLuna();
   const chimeRef = useRef<HTMLAudioElement | null>(null);
   const chimeBuilt = useRef(false);
@@ -47,6 +48,76 @@ export const LunaChatWidget = () => {
     }, 15000);
     return () => clearTimeout(timer);
   }, [isOpen]);
+
+  // Proactive nudge: 30s dwell on Services or Artists section → show tooltip once per session
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const NUDGE_KEY = "hush_luna_compare_nudge_shown";
+    if (sessionStorage.getItem(NUDGE_KEY)) return;
+
+    const sections: Array<{ id: "services" | "artists"; el: Element | null }> = [
+      { id: "services", el: document.getElementById("services") },
+      { id: "artists", el: document.getElementById("artists") },
+    ];
+    if (!sections.some(s => s.el)) return;
+
+    const dwellMs: Record<string, number> = { services: 0, artists: 0 };
+    const visible: Record<string, boolean> = { services: false, artists: false };
+    let lastTick = performance.now();
+    let rafId: number | null = null;
+    const THRESHOLD = 30_000;
+
+    const tick = (now: number) => {
+      const delta = now - lastTick;
+      lastTick = now;
+      for (const s of sections) {
+        if (visible[s.id]) {
+          dwellMs[s.id] += delta;
+          if (dwellMs[s.id] >= THRESHOLD && !isOpen && !sessionStorage.getItem(NUDGE_KEY)) {
+            sessionStorage.setItem(NUDGE_KEY, "1");
+            setNudge({ section: s.id });
+            cleanup();
+            return;
+          }
+        }
+      }
+      rafId = requestAnimationFrame(tick);
+    };
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const id = (entry.target as HTMLElement).id as "services" | "artists";
+          visible[id] = entry.isIntersecting && entry.intersectionRatio >= 0.4;
+        }
+      },
+      { threshold: [0, 0.4, 1] }
+    );
+
+    sections.forEach(s => s.el && observer.observe(s.el));
+    lastTick = performance.now();
+    rafId = requestAnimationFrame(tick);
+
+    function cleanup() {
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      observer.disconnect();
+    }
+    return cleanup;
+  }, [isOpen]);
+
+  const acceptNudge = () => {
+    setNudge(null);
+    setShowBadge(false);
+    setIsOpen(true);
+    setActiveTab("chat");
+    if (isFirstOpen) {
+      setIsFirstOpen(false);
+      buildChime();
+      chimeRef.current?.play().catch(() => {});
+    }
+  };
+
+  const dismissNudge = () => setNudge(null);
 
   const handleOpen = () => {
     setIsOpen(true);
