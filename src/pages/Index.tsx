@@ -63,9 +63,9 @@ const Index = () => {
       <Navigation />
       <HeroSection />
       <TrustBar />
-      <ExperienceFinderSection />
-      <StepInsideSection />
       <Suspense fallback={<SectionFallback />}>
+        <ExperienceFinderSection />
+        <StepInsideSection />
         <PersonalizedPlanSection />
         <ServicesSection />
         <InlineCallbackCTA />
