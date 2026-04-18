@@ -1,3 +1,4 @@
+import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
@@ -19,12 +20,10 @@ const LunaChatWidget = lazy(() =>
   import("./components/LunaChatWidget").then(m => ({ default: m.LunaChatWidget }))
 );
 
-// Sonner toaster — lazy-loaded so the ~9 KB sonner bundle stays out of initial JS.
-// Toasts are only triggered after user interaction (via ChatTab), so the provider
-// only needs to mount when a lazy section is already on its way in.
-const Sonner = lazy(() =>
-  import("@/components/ui/sonner").then(m => ({ default: m.Toaster }))
-);
+// NOTE on Sonner: we tried lazy-loading it for a ~9 KB savings, but the toast
+// queue only flushes once <Toaster /> has mounted. Because ChatTab can call
+// toast() the same tick the lazy chunk resolves, toasts were lost in race
+// conditions. Sonner is small and stays eager — correctness > 9 KB.
 
 const RouteFallback = () => <div className="min-h-screen bg-background" aria-hidden="true" />;
 
@@ -55,10 +54,7 @@ const App = () => (
           </Suspense>
         </BrowserRouter>
 
-        {/* Sonner has no framer-motion dependency — safe to mount outside MotionProvider */}
-        <Suspense fallback={null}>
-          <Sonner />
-        </Suspense>
+        <Sonner />
       </LunaProvider>
     </TooltipProvider>
   </QueryClientProvider>
