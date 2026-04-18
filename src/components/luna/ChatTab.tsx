@@ -766,8 +766,8 @@ export const ChatTab = () => {
       // Count as a successful exchange (for lead form timing)
       setSuccessfulExchangeCount(prev => prev + 1);
 
-    } catch (err: any) {
-      if (err?.name === "AbortError") return;
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === "AbortError") return;
       console.error("[ChatTab] Stream error:", err);
       const errorContent = "I'm having trouble connecting right now. You can always call us directly at (520) 327-6753 — Kendell at the front desk will take great care of you!";
       setMessages((prev) => [

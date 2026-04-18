@@ -37,8 +37,8 @@ export const ExploreTab = ({ onSwitchTab }: ExploreTabProps) => {
       // Inject context so Luna knows what the user explored
       mergeConcierge({
         source: "Explore",
-        categories: [cat.serviceId as any],
-        category: cat.serviceId as any,
+        categories: [cat.serviceId as ServiceCategoryId],
+        category: cat.serviceId as ServiceCategoryId,
       });
       trackServiceClick(cat.label, cat.serviceId);
     }

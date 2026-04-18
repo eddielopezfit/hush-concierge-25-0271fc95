@@ -33,7 +33,7 @@ export const ArtistsTab = ({ onSwitchTab, onClosePanel }: ArtistsTabProps) => {
         const filterKey = departmentFilterMap[filter];
         return a.department === filterKey
           || a.serviceCategory === filterKey
-          || (a.serviceCategories?.includes(filterKey as any) ?? false);
+          || (a.serviceCategories?.includes(filterKey as never) ?? false);
       });
 
   const handleSelectArtist = (artist: TeamMember) => {

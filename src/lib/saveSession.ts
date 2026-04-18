@@ -88,7 +88,7 @@ export async function saveCallbackRequest(data: {
   timing?: string;
   message?: string;
   source?: string;
-  concierge_context?: any;
+  concierge_context?: Record<string, unknown> | null;
 }): Promise<boolean> {
   if (!data.full_name?.trim() || !data.phone?.trim()) {
     console.warn("[saveCallbackRequest] Missing required fields, skipping.");
