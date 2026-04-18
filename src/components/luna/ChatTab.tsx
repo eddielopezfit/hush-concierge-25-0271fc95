@@ -399,6 +399,7 @@ export const ChatTab = () => {
   const [quickReplies, setQuickReplies] = useState<string[]>([]);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [firstUnreadId, setFirstUnreadId] = useState<string | null>(null);
   const lastSeenAssistantIdRef = useRef<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
