@@ -4,12 +4,17 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
-import { LazyMotion, domAnimation } from "framer-motion";
 import Index from "./pages/Index";
 import { LunaProvider } from "./contexts/LunaContext";
 
 // Route-level code-splitting — keep entry bundle minimal
 const NotFound = lazy(() => import("./pages/NotFound"));
+
+// LazyMotion is loaded on-demand from a child chunk, so framer-motion no longer
+// ships in the eager bundle. The provider is mounted around all lazy children.
+const MotionProvider = lazy(() =>
+  import("./components/MotionProvider").then(m => ({ default: m.MotionProvider }))
+);
 
 // Code-split the chat widget — it's only needed after user interaction
 const LunaChatWidget = lazy(() =>
@@ -22,13 +27,13 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <LazyMotion features={domAnimation} strict>
-      <TooltipProvider>
-        <LunaProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Suspense fallback={<RouteFallback />}>
+    <TooltipProvider>
+      <LunaProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Suspense fallback={<RouteFallback />}>
+            <MotionProvider>
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/services" element={<Navigate to="/#services" replace />} />
@@ -39,15 +44,15 @@ const App = () => (
                 {/* New pages should follow the lazy pattern: const Page = lazy(() => import("./pages/Page")) */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
-            </Suspense>
-          </BrowserRouter>
-
-          <Suspense fallback={null}>
-            <LunaChatWidget />
+            </MotionProvider>
           </Suspense>
-        </LunaProvider>
-      </TooltipProvider>
-    </LazyMotion>
+        </BrowserRouter>
+
+        <Suspense fallback={null}>
+          <LunaChatWidget />
+        </Suspense>
+      </LunaProvider>
+    </TooltipProvider>
   </QueryClientProvider>
 );
 
