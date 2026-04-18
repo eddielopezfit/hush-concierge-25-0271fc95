@@ -871,6 +871,11 @@ export const ChatTab = () => {
     [handleSendInternal]
   );
 
+  // Keep ref in sync so the pending-prompt effect can call handleSend
+  useEffect(() => {
+    handleSendRef.current = handleSend;
+  }, [handleSend]);
+
   const handleLeadSubmit = async () => {
     if (!leadName.trim() || !leadPhone.trim()) return;
     setLeadCaptured(true);
