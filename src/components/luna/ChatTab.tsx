@@ -572,13 +572,17 @@ export const ChatTab = () => {
     if (!showScrollToBottom) {
       lastSeenAssistantIdRef.current = lastAssistant.id;
       setUnreadCount(0);
+      setFirstUnreadId(null);
       return;
     }
     if (lastAssistant.id !== lastSeenAssistantIdRef.current) {
-      const unread = messages.filter(
+      const assistantMsgs = messages.filter(
         m => m.role === "assistant" && m.id !== "greeting"
-      ).reverse().findIndex(m => m.id === lastSeenAssistantIdRef.current);
-      setUnreadCount(unread === -1 ? 1 : unread);
+      );
+      const lastSeenIdx = assistantMsgs.findIndex(m => m.id === lastSeenAssistantIdRef.current);
+      const unreadList = lastSeenIdx === -1 ? assistantMsgs.slice(-1) : assistantMsgs.slice(lastSeenIdx + 1);
+      setUnreadCount(unreadList.length || 1);
+      setFirstUnreadId(prev => prev ?? unreadList[0]?.id ?? lastAssistant.id);
     }
   }, [messages, showScrollToBottom]);
 
@@ -586,6 +590,7 @@ export const ChatTab = () => {
     const el = scrollContainerRef.current;
     if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
     setUnreadCount(0);
+    setFirstUnreadId(null);
     const lastAssistant = [...messages].reverse().find(m => m.role === "assistant");
     if (lastAssistant) lastSeenAssistantIdRef.current = lastAssistant.id;
   }, [messages]);
