@@ -572,7 +572,6 @@ export const ChatTab = () => {
     if (!showScrollToBottom) {
       lastSeenAssistantIdRef.current = lastAssistant.id;
       setUnreadCount(0);
-      setFirstUnreadId(null);
       return;
     }
     if (lastAssistant.id !== lastSeenAssistantIdRef.current) {
@@ -582,6 +581,8 @@ export const ChatTab = () => {
       const lastSeenIdx = assistantMsgs.findIndex(m => m.id === lastSeenAssistantIdRef.current);
       const unreadList = lastSeenIdx === -1 ? assistantMsgs.slice(-1) : assistantMsgs.slice(lastSeenIdx + 1);
       setUnreadCount(unreadList.length || 1);
+      // Pin the divider to the first unread message — keep it pinned even after read
+      // so the user can see exactly where the new content started.
       setFirstUnreadId(prev => prev ?? unreadList[0]?.id ?? lastAssistant.id);
     }
   }, [messages, showScrollToBottom]);
@@ -590,7 +591,8 @@ export const ChatTab = () => {
     const el = scrollContainerRef.current;
     if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
     setUnreadCount(0);
-    setFirstUnreadId(null);
+    // Keep firstUnreadId pinned briefly so the divider remains visible after tap.
+    // It will auto-clear when the user sends a new message.
     const lastAssistant = [...messages].reverse().find(m => m.role === "assistant");
     if (lastAssistant) lastSeenAssistantIdRef.current = lastAssistant.id;
   }, [messages]);
@@ -756,6 +758,8 @@ export const ChatTab = () => {
       const userMsg: ChatMessage = { id: `user-${Date.now()}`, role: "user", content: msg };
       const newMessages = [...messages, userMsg];
       setMessages(newMessages);
+      // Sending a new message clears any pinned "New" divider from the previous burst
+      setFirstUnreadId(null);
       setInput("");
       const newCount = userMessageCount + 1;
       setUserMessageCount(newCount);
@@ -863,8 +867,8 @@ export const ChatTab = () => {
       <div ref={scrollContainerRef} className="absolute inset-0 overflow-y-auto px-4 py-4 space-y-3 overscroll-contain">
         {messages.map((msg) => (
           <div key={msg.id}>
-            {firstUnreadId === msg.id && unreadCount > 0 && (
-              <div className="flex items-center gap-2 my-2" aria-label="New messages">
+            {firstUnreadId === msg.id && (
+              <div className="flex items-center gap-2 my-3" aria-label="New messages start here">
                 <div className="flex-1 h-px bg-primary/30" />
                 <span className="text-[10px] uppercase tracking-[0.15em] font-body text-primary/80 px-2 py-0.5 rounded-full border border-primary/30 bg-primary/5">
                   New
