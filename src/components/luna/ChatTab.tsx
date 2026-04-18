@@ -23,7 +23,7 @@ interface ChatMessage {
 
 interface ChatAction {
   label: string;
-  type: "scroll" | "tab" | "callback" | "phone";
+  type: "scroll" | "tab" | "callback" | "phone" | "text";
   target?: string;
 }
 
@@ -209,9 +209,10 @@ function detectChatActions(msg: string, ctx: ConciergeContext | null): ChatActio
     }
   }
 
-  // Call prompt
+  // Call prompt — always pair with Text option
   if (lower.includes("(520) 327-6753") || lower.includes("call us") || lower.includes("front desk")) {
     actions.push({ label: "Call (520) 327-6753", type: "phone" });
+    actions.push({ label: "Text us", type: "text" });
   }
 
   return actions.slice(0, 3); // max 3 actions
@@ -338,6 +339,7 @@ function ChatActionButtons({
         >
           {action.type === "phone" && <Phone className="w-3 h-3" />}
           {action.type === "callback" && <Phone className="w-3 h-3" />}
+          {action.type === "text" && <MessageSquare className="w-3 h-3" />}
           {action.type === "scroll" && <Calendar className="w-3 h-3" />}
           {action.type === "tab" && <ChevronRight className="w-3 h-3" />}
           {action.label}
@@ -635,6 +637,8 @@ export const ChatTab = () => {
   const handleChatAction = useCallback((action: ChatAction) => {
     if (action.type === "phone") {
       window.open("tel:+15203276753", "_self");
+    } else if (action.type === "text") {
+      window.open("sms:+15203276753", "_self");
     } else if (action.type === "callback") {
       setShowLeadForm(true);
     } else if (action.type === "scroll" && action.target) {
@@ -817,8 +821,11 @@ export const ChatTab = () => {
         setMessages(prev => [...prev, {
           id: `luna-phone-${Date.now()}`,
           role: "assistant",
-          content: "Give Kendell a call at **(520) 327-6753** — she'll get you all set up!",
-          actions: [{ label: "Call (520) 327-6753", type: "phone" as const }],
+          content: "Give Kendell a call at **(520) 327-6753** — or text us if that's easier!",
+          actions: [
+            { label: "Call (520) 327-6753", type: "phone" as const },
+            { label: "Text us", type: "text" as const },
+          ],
         }]);
       }
       return;
