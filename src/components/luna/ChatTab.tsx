@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Send, Loader2, ArrowRight, Sparkles, Phone, Calendar, ChevronRight, RotateCcw, ArrowDown } from "lucide-react";
+import { Send, Loader2, ArrowRight, Sparkles, Phone, Calendar, ChevronRight, RotateCcw, ArrowDown, X } from "lucide-react";
 import { m, AnimatePresence } from "framer-motion";
 import { getJourneyContextString } from "@/lib/journeyTracker";
 import { getConciergeContext } from "@/lib/conciergeStore";
@@ -382,7 +382,7 @@ function clearPersistedChat(): void {
 }
 
 export const ChatTab = () => {
-  const { conciergeContext, openChatWidget } = useLuna();
+  const { conciergeContext, openChatWidget, clearConcierge } = useLuna();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
@@ -878,6 +878,21 @@ export const ChatTab = () => {
                 {pill}
               </span>
             ))}
+            <button
+              onClick={() => {
+                clearConcierge();
+                toast.success("Vibe cleared", {
+                  description: "Tell me what you'd like to explore next.",
+                  duration: 2500,
+                });
+              }}
+              className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+              title="Clear vibe and start fresh"
+              aria-label="Clear vibe"
+            >
+              <X className="w-2.5 h-2.5" />
+              <span className="text-[9px] font-body uppercase tracking-wider">Clear</span>
+            </button>
           </div>
         ) : (
           <div className="flex-1" />
