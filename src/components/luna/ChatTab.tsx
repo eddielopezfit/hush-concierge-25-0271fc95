@@ -575,10 +575,15 @@ export const ChatTab = () => {
       return;
     }
     if (lastAssistant.id !== lastSeenAssistantIdRef.current) {
-      const unread = messages.filter(
+      const assistantMsgs = messages.filter(
         m => m.role === "assistant" && m.id !== "greeting"
-      ).reverse().findIndex(m => m.id === lastSeenAssistantIdRef.current);
-      setUnreadCount(unread === -1 ? 1 : unread);
+      );
+      const lastSeenIdx = assistantMsgs.findIndex(m => m.id === lastSeenAssistantIdRef.current);
+      const unreadList = lastSeenIdx === -1 ? assistantMsgs.slice(-1) : assistantMsgs.slice(lastSeenIdx + 1);
+      setUnreadCount(unreadList.length || 1);
+      // Pin the divider to the first unread message — keep it pinned even after read
+      // so the user can see exactly where the new content started.
+      setFirstUnreadId(prev => prev ?? unreadList[0]?.id ?? lastAssistant.id);
     }
   }, [messages, showScrollToBottom]);
 
@@ -586,6 +591,8 @@ export const ChatTab = () => {
     const el = scrollContainerRef.current;
     if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
     setUnreadCount(0);
+    // Keep firstUnreadId pinned briefly so the divider remains visible after tap.
+    // It will auto-clear when the user sends a new message.
     const lastAssistant = [...messages].reverse().find(m => m.role === "assistant");
     if (lastAssistant) lastSeenAssistantIdRef.current = lastAssistant.id;
   }, [messages]);
