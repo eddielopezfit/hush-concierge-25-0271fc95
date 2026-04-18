@@ -248,13 +248,15 @@ export const LunaChatWidget = () => {
                 </div>
                 <div className="min-w-0">
                   <p className="font-body text-sm text-foreground leading-snug">
-                    Want me to compare {nudge.section === "services" ? "these services" : "these artists"} for you?
+                    {nudge.kind === "compare"
+                      ? `Want me to compare ${nudge.section === "services" ? "these services" : "these artists"} for you?`
+                      : "Stuck? Want me to walk you through this?"}
                   </p>
                   <button
                     onClick={acceptNudge}
                     className="mt-2 font-body text-xs text-primary hover:text-primary/80 font-medium tracking-wide transition-colors"
                   >
-                    Yes, help me decide →
+                    {nudge.kind === "finder-stuck" ? "Yes, walk me through it →" : "Yes, help me decide →"}
                   </button>
                 </div>
               </div>
