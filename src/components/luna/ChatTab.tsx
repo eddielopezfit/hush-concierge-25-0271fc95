@@ -853,12 +853,30 @@ export const ChatTab = () => {
       timing: ctx?.timing || undefined,
     });
 
+    // Personalized confirmation — capitalize name + echo service/artist context
+    const firstName = leadName.trim().split(/\s+/)[0];
+    const capitalizedName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+    const serviceLabel = ctx?.categories?.length ? formatCategoryList(ctx.categories) : null;
+    const artistLabel = ctx?.preferredArtist || null;
+
+    let confirmMsg = `Thanks, ${capitalizedName}! `;
+    if (artistLabel && serviceLabel) {
+      confirmMsg += `Kendell will call you about your ${serviceLabel.toLowerCase()} appointment with ${artistLabel}.`;
+    } else if (serviceLabel) {
+      confirmMsg += `Kendell will call you about your ${serviceLabel.toLowerCase()} appointment.`;
+    } else if (artistLabel) {
+      confirmMsg += `Kendell will call you about booking with ${artistLabel}.`;
+    } else {
+      confirmMsg += `Kendell from our front desk will reach out to you shortly.`;
+    }
+    confirmMsg += ` In the meantime, keep asking me anything — I'm here!`;
+
     setMessages((prev) => [
       ...prev,
       {
         id: `luna-lead-${Date.now()}`,
         role: "assistant",
-        content: `Thanks, ${leadName}! Someone from our team will reach out to you shortly. In the meantime, keep asking me anything — I'm here!`,
+        content: confirmMsg,
       },
     ]);
   };
