@@ -120,6 +120,34 @@ function buildContextGreeting(ctx: ConciergeContext | null): string {
   return `You're exploring ${names.toLowerCase()}${timingStr ? " — " + timingStr : ""}. I know everything about our services and team. What would be most helpful?`;
 }
 
+// ── Soft transition line for mid-session context changes (no self-intro) ────
+function buildContextTransition(ctx: ConciergeContext | null): string {
+  if (!ctx?.categories?.length) {
+    return "Got it — starting fresh. What would you like to explore?";
+  }
+  const cats = ctx.categories;
+  const sub = ctx.service_subtype;
+  const timing = ctx.timing;
+  const timingStr = timing ? (timingLabels[timing] || timing).toLowerCase() : "";
+
+  if (cats.length > 1) {
+    const names = formatCategoryList(cats);
+    return `Switching gears — looks like you're now exploring ${names.toLowerCase()}${timingStr ? " " + timingStr : ""}. What would you like to know?`;
+  }
+
+  const cat = cats[0];
+  const catLabel = (categoryLabels[cat] || cat).toLowerCase();
+  const subDisplay: Record<string, string> = {
+    cut: "a cut", color: "color work", both: "cut + color",
+    manicure: "a manicure", pedicure: "a pedicure", full_set: "a full set", nail_art: "nail art",
+    fill: "a fill", lift: "a lash lift",
+    relaxation: "a relaxation massage", deep_tissue: "deep tissue", pain_relief: "pain relief work",
+    facial: "a facial", acne: "acne treatment", glow: "a glow treatment",
+  };
+  const focus = sub && subDisplay[sub] ? subDisplay[sub] : catLabel;
+  return `Got it — switching to ${focus}${timingStr ? " " + timingStr : ""}. What would you like to know?`;
+}
+
 // ── Persistent quick replies — shown after EVERY Luna response ──────────────
 function getQuickReplies(ctx: ConciergeContext | null, lastAssistantMsg: string): string[] {
   const lower = (lastAssistantMsg || "").toLowerCase();
