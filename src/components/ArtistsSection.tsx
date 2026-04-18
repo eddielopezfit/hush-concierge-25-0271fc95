@@ -539,14 +539,23 @@ export const ArtistsSection = () => {
                   </a>
                 )}
 
-                {/* Call front desk CTA */}
-                <a
-                  href="tel:+15203276753"
-                  className="flex items-center justify-center gap-2 text-xs font-body text-muted-foreground hover:text-primary transition-colors py-2"
-                >
-                  <Phone className="w-3.5 h-3.5" />
-                  Call front desk for matching
-                </a>
+                {/* Call + Text front desk CTAs */}
+                <div className="grid grid-cols-2 gap-2">
+                  <a
+                    href="tel:+15203276753"
+                    className="flex items-center justify-center gap-1.5 text-xs font-body text-muted-foreground hover:text-primary transition-colors py-2"
+                  >
+                    <Phone className="w-3.5 h-3.5" />
+                    Call front desk
+                  </a>
+                  <a
+                    href="sms:+15203276753"
+                    className="flex items-center justify-center gap-1.5 text-xs font-body text-muted-foreground hover:text-primary transition-colors py-2"
+                  >
+                    <MessageSquare className="w-3.5 h-3.5" />
+                    Text us
+                  </a>
+                </div>
               </div>
             </m.div>
           </m.div>
