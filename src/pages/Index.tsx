@@ -3,11 +3,11 @@ import { Navigation } from "@/components/Navigation";
 import { HeroSection } from "@/components/HeroSection";
 import { TrustBar } from "@/components/TrustBar";
 import { StepInsideSection } from "@/components/StepInsideSection";
-import { ExperienceFinderSection } from "@/components/ExperienceFinderSection";
 import { useLuna } from "@/contexts/LunaContext";
 import { initJourneyTracking } from "@/lib/journeyTracker";
 
 // Below-the-fold sections — lazy loaded to shrink initial bundle
+const ExperienceFinderSection = lazy(() => import("@/components/ExperienceFinderSection").then(m => ({ default: m.ExperienceFinderSection })));
 const PersonalizedPlanSection = lazy(() => import("@/components/PersonalizedPlanSection").then(m => ({ default: m.PersonalizedPlanSection })));
 const ServicesSection = lazy(() => import("@/components/ServicesSection").then(m => ({ default: m.ServicesSection })));
 const InlineCallbackCTA = lazy(() => import("@/components/InlineCallbackCTA").then(m => ({ default: m.InlineCallbackCTA })));
