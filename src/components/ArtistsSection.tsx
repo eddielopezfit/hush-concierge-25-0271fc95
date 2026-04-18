@@ -154,19 +154,26 @@ export const ArtistsSection = () => {
   }, [selectedArtist]);
 
   const handleBeginWithLuna = (artist: TeamMember) => {
-    setSelectedArtist(null);
+    // Direct booking intent from artist profile → skip the reveal/personalize step
+    // and go straight to the callback form. Artist context is merged so the form
+    // shows the "Requesting [Artist]" pill and includes "Preferred artist: X" in
+    // the submitted `interested_in` field. The reveal card stays reserved for
+    // category-level entry points (Experience Finder).
     const categories: ServiceCategoryId[] = artist.serviceCategories?.length
       ? artist.serviceCategories
       : artist.serviceCategory ? [artist.serviceCategory] : [];
-    const lunaContext: ConciergeContext = {
+    mergeConcierge({
       source: "Meet the Team",
       categories,
-      goal: null,
-      timing: null,
       preferredArtist: artist.name,
       preferredArtistId: artist.id,
-    };
-    openModal(lunaContext);
+    });
+    setSelectedArtist(null);
+    // Wait for the modal close animation before scrolling so the user sees the form land
+    setTimeout(() => {
+      const el = document.getElementById("callback");
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 250);
   };
 
 
