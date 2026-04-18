@@ -129,7 +129,7 @@ export const ArtistsSection = () => {
   const [selectedArtist, setSelectedArtist] = useState<TeamMember | null>(null);
   const [activeFilter, setActiveFilter] = useState("all");
   const [showAll, setShowAll] = useState(false);
-  const { openModal } = useLuna();
+  const { openModal, mergeConcierge } = useLuna();
 
   // Auto-filter from concierge context
   useEffect(() => {
