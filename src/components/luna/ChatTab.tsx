@@ -899,7 +899,12 @@ export const ChatTab = () => {
         {messages.map((msg) => (
           <div key={msg.id}>
             {firstUnreadId === msg.id && (
-              <div className="flex items-center gap-2 my-3" aria-label="New messages start here">
+              <div
+                className={`flex items-center gap-2 my-3 transition-opacity duration-[600ms] ease-out ${
+                  dividerFading ? "opacity-0" : "opacity-100"
+                }`}
+                aria-label="New messages start here"
+              >
                 <div className="flex-1 h-px bg-primary/30" />
                 <span className="text-[10px] uppercase tracking-[0.15em] font-body text-primary/80 px-2 py-0.5 rounded-full border border-primary/30 bg-primary/5">
                   New
