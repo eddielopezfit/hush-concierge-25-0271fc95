@@ -155,26 +155,26 @@ function getQuickReplies(ctx: ConciergeContext | null, lastAssistantMsg: string)
 
   // Contextual variants based on conversation state
   if (lower.includes("price") || lower.includes("cost") || lower.includes("pricing")) {
-    return ["I'm ready to book", "What affects the price?", "Help me decide", "Connect me with the team"];
+    return ["I'm ready to book", "Have someone call me", "Help me decide", "Connect me with the team"];
   }
   if (lower.includes("stylist") || lower.includes("artist") || lower.includes("specialist")) {
-    return ["I'm ready to book", "Help me find the right service", "What will it cost?", "Connect me with the team"];
+    return ["I'm ready to book", "Have someone call me", "Help me find the right service", "Connect me with the team"];
   }
   if (lower.includes("event") || lower.includes("wedding") || lower.includes("occasion")) {
-    return ["Let's plan my full look", "I'm ready to book", "What will it cost?", "Connect me with the team"];
+    return ["Let's plan my full look", "I'm ready to book", "Have someone call me", "Connect me with the team"];
   }
   if (lower.includes("option") || lower.includes("explore") || lower.includes("browse")) {
-    return ["Walk me through options", "I'm ready to book", "What will it cost?", "Connect me with the team"];
+    return ["Walk me through options", "I'm ready to book", "Have someone call me", "Connect me with the team"];
   }
   if (lower.includes("recommend") || lower.includes("suggest")) {
-    return ["That sounds perfect — book it", "Tell me more about that", "What will it cost?", "Connect me with the team"];
+    return ["That sounds perfect — book it", "Have someone call me", "Tell me more about that", "Connect me with the team"];
   }
   if (lower.includes("ready") || lower.includes("lock") || lower.includes("reserve") || lower.includes("book")) {
     return ["Let's lock it in", "Have someone call me", "Help me decide", "What will it cost?"];
   }
 
   // Default persistent set
-  return ["I'm ready to book", "Help me decide", "What will it cost?", "Connect me with the team"];
+  return ["I'm ready to book", "Have someone call me", "Help me decide", "Connect me with the team"];
 }
 
 // ── Detect intent from assistant message for in-chat CTAs ───────────────────
