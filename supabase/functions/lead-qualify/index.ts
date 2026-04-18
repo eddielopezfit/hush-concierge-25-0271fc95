@@ -28,11 +28,12 @@ const GHL_WEBHOOK_URL = Deno.env.get("GHL_WEBHOOK_URL");
 const TWILIO_ACCOUNT_SID = Deno.env.get("TWILIO_ACCOUNT_SID");
 const TWILIO_AUTH_TOKEN = Deno.env.get("TWILIO_AUTH_TOKEN");
 const TWILIO_FROM_NUMBER = Deno.env.get("TWILIO_FROM_NUMBER");
+const INTERNAL_FUNCTION_SECRET = Deno.env.get("INTERNAL_FUNCTION_SECRET");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+    "authorization, x-client-info, apikey, content-type, x-internal-secret",
   "Content-Type": "application/json",
 };
 
@@ -248,6 +249,25 @@ async function sendSmsFollowup(lead: LeadPayload): Promise<void> {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // ── Internal-only auth: require shared secret ─────────────────────────────
+  if (!INTERNAL_FUNCTION_SECRET) {
+    console.error("[lead-qualify] INTERNAL_FUNCTION_SECRET not configured");
+    return new Response(
+      JSON.stringify({ error: "Server misconfigured" }),
+      { status: 500, headers: corsHeaders }
+    );
+  }
+  const providedSecret =
+    req.headers.get("x-internal-secret") ??
+    req.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
+  if (providedSecret !== INTERNAL_FUNCTION_SECRET) {
+    console.warn("[lead-qualify] Unauthorized request blocked");
+    return new Response(
+      JSON.stringify({ error: "Unauthorized" }),
+      { status: 401, headers: corsHeaders }
+    );
   }
 
   try {

@@ -251,14 +251,20 @@ Deno.serve(async (req) => {
         source: convo.channel,
       };
 
-      fetch(`${SUPABASE_URL}/functions/v1/lead-qualify`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${SERVICE_ROLE_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(leadPayload),
-      }).catch((err) => console.error("[session-summarize] lead-qualify trigger error:", err));
+      const internalSecret = Deno.env.get("INTERNAL_FUNCTION_SECRET");
+      if (!internalSecret) {
+        console.error("[session-summarize] INTERNAL_FUNCTION_SECRET not set; skipping lead-qualify");
+      } else {
+        fetch(`${SUPABASE_URL}/functions/v1/lead-qualify`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${SERVICE_ROLE_KEY}`,
+            "x-internal-secret": internalSecret,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(leadPayload),
+        }).catch((err) => console.error("[session-summarize] lead-qualify trigger error:", err));
+      }
     }
 
     return new Response(
