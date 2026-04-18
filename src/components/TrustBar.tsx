@@ -1,4 +1,4 @@
-import { Star, Sparkles } from "lucide-react";
+import { Star } from "lucide-react";
 import { useState, useEffect } from "react";
 
 const miniReviews = [
@@ -21,7 +21,7 @@ export const TrustBar = () => {
 
   return (
     <section className="py-6 px-6 bg-card/50 border-y border-border">
-      <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5">
+      <div className="max-w-3xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6">
         {/* Rating badge */}
         <a
           href="https://www.google.com/maps/place/Hush+Salon+%26+Day+Spa/@32.2537155,-110.8837433,17z/"
@@ -35,19 +35,10 @@ export const TrustBar = () => {
           <span className="font-body text-sm text-muted-foreground">315+ reviews</span>
         </a>
 
-        {/* Category-claim badge — Tucson's first AI-guided salon */}
-        <span className="hidden sm:inline text-border">·</span>
-        <span className="flex items-center gap-1.5 shrink-0 px-2.5 py-1 rounded-full bg-gold/10 border border-gold/25">
-          <Sparkles className="w-3 h-3 text-gold" />
-          <span className="font-body text-[11px] uppercase tracking-wider text-gold/90 font-medium">
-            Tucson's first AI-guided salon
-          </span>
-        </span>
-
         {/* Rotating mini review — re-mounts via key for fresh CSS animation */}
         <p
           key={index}
-          className="font-body text-sm text-cream/60 italic text-center sm:text-left opacity-0 animate-fade-up-mini hidden md:block"
+          className="font-body text-sm text-cream/60 italic text-center sm:text-left opacity-0 animate-fade-up-mini"
         >
           "{review.text}" — <span className="text-gold/70 not-italic">{review.author}</span>
         </p>

@@ -79,9 +79,9 @@ export const HeroSection = () => {
           Five departments · Three founders still behind the chair · 24 years of transformations
         </p>
 
-        {/* CTAs — hidden on mobile (sticky bar handles it). Single primary; concierge demoted to ghost link. */}
+        {/* CTAs — hidden on mobile (sticky bar handles it) */}
         <div
-          className="hidden sm:flex flex-col items-center justify-center gap-3 mb-8 px-4 opacity-0 animate-fade-up-sm"
+          className="hidden sm:flex flex-col sm:flex-row items-center justify-center gap-4 mb-8 px-4 opacity-0 animate-fade-up-sm"
           style={{ animationDelay: "0.6s" }}
         >
           <button
@@ -94,10 +94,10 @@ export const HeroSection = () => {
 
           <button
             onClick={openChatWidget}
-            className="font-body text-sm text-cream/55 hover:text-gold transition-colors flex items-center gap-1.5 underline-offset-4 hover:underline"
+            className="btn-outline-gold py-4 px-8 hidden sm:flex items-center gap-3 transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]"
           >
-            <MessageSquare className="w-3.5 h-3.5" />
-            or chat with Luna, our AI concierge
+            <MessageSquare className="w-5 h-5" />
+            Talk to Our AI Concierge
           </button>
         </div>
 
