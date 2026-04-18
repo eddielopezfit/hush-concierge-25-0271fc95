@@ -400,6 +400,8 @@ export const ChatTab = () => {
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [firstUnreadId, setFirstUnreadId] = useState<string | null>(null);
+  const [dividerFading, setDividerFading] = useState(false);
+  const dividerFadeTimerRef = useRef<number | null>(null);
   const lastSeenAssistantIdRef = useRef<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -584,15 +586,44 @@ export const ChatTab = () => {
       // Pin the divider to the first unread message — keep it pinned even after read
       // so the user can see exactly where the new content started.
       setFirstUnreadId(prev => prev ?? unreadList[0]?.id ?? lastAssistant.id);
+      // Cancel any pending fade since new unread content arrived
+      setDividerFading(false);
+      if (dividerFadeTimerRef.current) {
+        window.clearTimeout(dividerFadeTimerRef.current);
+        dividerFadeTimerRef.current = null;
+      }
     }
   }, [messages, showScrollToBottom]);
+
+  // Schedule auto-fade of the "New" divider once the user is back at the bottom
+  useEffect(() => {
+    if (!firstUnreadId) return;
+    if (showScrollToBottom) return; // user is still scrolled up — keep divider solid
+    // User is at bottom and divider is still pinned — start fade after a short delay
+    if (dividerFadeTimerRef.current) window.clearTimeout(dividerFadeTimerRef.current);
+    dividerFadeTimerRef.current = window.setTimeout(() => {
+      setDividerFading(true);
+      // Remove from DOM after the 600ms fade transition
+      dividerFadeTimerRef.current = window.setTimeout(() => {
+        setFirstUnreadId(null);
+        setDividerFading(false);
+        dividerFadeTimerRef.current = null;
+      }, 600);
+    }, 3000);
+    return () => {
+      if (dividerFadeTimerRef.current) {
+        window.clearTimeout(dividerFadeTimerRef.current);
+        dividerFadeTimerRef.current = null;
+      }
+    };
+  }, [firstUnreadId, showScrollToBottom]);
 
   const scrollChatToBottom = useCallback(() => {
     const el = scrollContainerRef.current;
     if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
     setUnreadCount(0);
-    // Keep firstUnreadId pinned briefly so the divider remains visible after tap.
-    // It will auto-clear when the user sends a new message.
+    // Keep firstUnreadId pinned; the fade-out effect above will retire it ~3s
+    // after the user lands at the bottom.
     const lastAssistant = [...messages].reverse().find(m => m.role === "assistant");
     if (lastAssistant) lastSeenAssistantIdRef.current = lastAssistant.id;
   }, [messages]);
@@ -868,7 +899,12 @@ export const ChatTab = () => {
         {messages.map((msg) => (
           <div key={msg.id}>
             {firstUnreadId === msg.id && (
-              <div className="flex items-center gap-2 my-3" aria-label="New messages start here">
+              <div
+                className={`flex items-center gap-2 my-3 transition-opacity duration-[600ms] ease-out ${
+                  dividerFading ? "opacity-0" : "opacity-100"
+                }`}
+                aria-label="New messages start here"
+              >
                 <div className="flex-1 h-px bg-primary/30" />
                 <span className="text-[10px] uppercase tracking-[0.15em] font-body text-primary/80 px-2 py-0.5 rounded-full border border-primary/30 bg-primary/5">
                   New
