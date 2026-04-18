@@ -47,13 +47,17 @@ const App = () => (
                 {/* New pages should follow the lazy pattern: const Page = lazy(() => import("./pages/Page")) */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
+
+              {/* LunaChatWidget uses framer-motion's `m.*` components, so it MUST
+                  be rendered inside <LazyMotion> (provided by MotionProvider). */}
+              <LunaChatWidget />
             </MotionProvider>
           </Suspense>
         </BrowserRouter>
 
+        {/* Sonner has no framer-motion dependency — safe to mount outside MotionProvider */}
         <Suspense fallback={null}>
           <Sonner />
-          <LunaChatWidget />
         </Suspense>
       </LunaProvider>
     </TooltipProvider>
