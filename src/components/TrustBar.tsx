@@ -25,7 +25,7 @@ export const TrustBar = () => {
       <div className="max-w-3xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6">
         {/* Rating badge */}
         <a
-          href="https://www.google.com/search?q=Hush+Salon+%26+Day+Spa+Tucson#lrd=0x86d671a8eb8e5555:0x0,1"
+          href="https://www.google.com/search?q=Hush+Salon+%26+Day+Spa+Tucson+reviews"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-1.5 shrink-0 hover:opacity-80 transition-opacity"
