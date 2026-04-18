@@ -8,6 +8,7 @@ import { saveLead } from "@/lib/saveSession";
 import { getConversationId, startSession, clearConversation } from "@/lib/sessionManager";
 import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { useLuna } from "@/contexts/LunaContext";
 import { toast } from "sonner";
 
