@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { Scissors, Sparkles, Eye, Droplets, Heart, ChevronRight } from "lucide-react";
 import { useLuna } from "@/contexts/LunaContext";
@@ -40,7 +40,7 @@ export const ExperienceCategoriesSection = () => {
   return (
     <section id="experience-categories" className="py-20 md:py-28 bg-card">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -53,7 +53,7 @@ export const ExperienceCategoriesSection = () => {
           <p className="font-body text-muted-foreground text-lg max-w-xl mx-auto">
             Explore by category. Luna will guide you to the perfect fit.
           </p>
-        </motion.div>
+        </m.div>
 
         <div className="space-y-3 md:space-y-4">
           {categories.map((category, index) => {
@@ -61,7 +61,7 @@ export const ExperienceCategoriesSection = () => {
             const isActive = activeCategory === category.id;
 
             return (
-              <motion.div
+              <m.div
                 key={category.id}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -91,7 +91,7 @@ export const ExperienceCategoriesSection = () => {
 
                 <AnimatePresence>
                   {isActive && (
-                    <motion.div
+                    <m.div
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: "auto", opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
@@ -100,7 +100,7 @@ export const ExperienceCategoriesSection = () => {
                     >
                       <div className="pt-3 pb-2 px-2 md:px-4 flex flex-wrap gap-2 md:gap-3">
                         {category.subcategories.map((subcategory) => (
-                          <motion.button
+                          <m.button
                             key={subcategory}
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
@@ -110,13 +110,13 @@ export const ExperienceCategoriesSection = () => {
                             className="font-body text-sm text-cream bg-charcoal border border-border px-4 py-2.5 rounded-full hover:border-gold/50 hover:bg-gold/10 hover:text-gold transition-all duration-300"
                           >
                             {subcategory}
-                          </motion.button>
+                          </m.button>
                         ))}
                       </div>
-                    </motion.div>
+                    </m.div>
                   )}
                 </AnimatePresence>
-              </motion.div>
+              </m.div>
             );
           })}
         </div>

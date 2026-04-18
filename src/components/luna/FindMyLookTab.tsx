@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, Sparkles, ArrowRight, Clock, DollarSign, Users, RotateCcw, Scissors, Hand, Eye, Heart } from "lucide-react";
+import { m, AnimatePresence } from "framer-motion";
+import { ChevronLeft, Sparkles, ArrowRight, Clock, DollarSign, Users, RotateCcw, Scissors, Hand, Eye, Heart, Flower2 } from "lucide-react";
 import { generateRecommendation, LunaRecommendation } from "@/lib/lunaBrain";
 import { startSession } from "@/lib/sessionManager";
 import { ConciergeContext, ServiceCategoryId, ServiceSubtype } from "@/types/concierge";
@@ -76,7 +76,7 @@ export const FindMyLookTab = ({ onSwitchTab }: FindMyLookTabProps) => {
   const [selectedSubtype, setSelectedSubtype] = useState<string | null>(null);
   const [selectedGoal, setSelectedGoal] = useState<string | null>(null);
   const [selectedTiming, setSelectedTiming] = useState<string | null>(null);
-  const [, setRecommendation] = useState<LunaRecommendation | null>(null);
+  const [recommendation, setRecommendation] = useState<LunaRecommendation | null>(null);
   const [revealData, setRevealData] = useState<RevealData | null>(null);
   const [resumedFromContext, setResumedFromContext] = useState(false);
 
@@ -210,7 +210,7 @@ export const FindMyLookTab = ({ onSwitchTab }: FindMyLookTabProps) => {
       <div className="flex-1 overflow-y-auto px-4 pb-4">
         <AnimatePresence mode="wait">
           {step === 1 && (
-            <motion.div key="s1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3 pt-2">
+            <m.div key="s1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3 pt-2">
               <p className="font-body text-sm text-foreground">What are you looking for?</p>
               <p className="font-body text-xs text-muted-foreground">Select one or more</p>
               <div className="grid grid-cols-2 gap-2">
@@ -233,20 +233,20 @@ export const FindMyLookTab = ({ onSwitchTab }: FindMyLookTabProps) => {
                 })}
               </div>
               {selectedCategories.length > 0 && (
-                <motion.button
+                <m.button
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   onClick={handleCategoriesNext}
                   className="w-full btn-gold py-3 text-sm flex items-center justify-center gap-2"
                 >
                   Tell me more <ArrowRight className="w-4 h-4" />
-                </motion.button>
+                </m.button>
               )}
-            </motion.div>
+            </m.div>
           )}
 
           {step === 2 && selectedCategories.length === 1 && (
-            <motion.div key="s2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3 pt-2">
+            <m.div key="s2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3 pt-2">
               <p className="font-body text-sm text-foreground">What kind of {selectedCategories[0]} service?</p>
               <div className="space-y-2">
                 {(subtypeOptions[selectedCategories[0]] || []).map(opt => (
@@ -263,11 +263,11 @@ export const FindMyLookTab = ({ onSwitchTab }: FindMyLookTabProps) => {
                   </button>
                 ))}
               </div>
-            </motion.div>
+            </m.div>
           )}
 
           {step === 3 && (
-            <motion.div key="s3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3 pt-2">
+            <m.div key="s3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3 pt-2">
               <p className="font-body text-sm text-foreground">What's your goal?</p>
               <div className="space-y-2">
                 {goals.map(g => (
@@ -284,11 +284,11 @@ export const FindMyLookTab = ({ onSwitchTab }: FindMyLookTabProps) => {
                   </button>
                 ))}
               </div>
-            </motion.div>
+            </m.div>
           )}
 
           {step === 4 && (
-            <motion.div key="s4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3 pt-2">
+            <m.div key="s4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3 pt-2">
               <p className="font-body text-sm text-foreground">When are you thinking?</p>
               <div className="space-y-2">
                 {timings.map(t => (
@@ -305,11 +305,11 @@ export const FindMyLookTab = ({ onSwitchTab }: FindMyLookTabProps) => {
                   </button>
                 ))}
               </div>
-            </motion.div>
+            </m.div>
           )}
 
           {step === 5 && revealData && (
-            <motion.div key="s5" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4 pt-2">
+            <m.div key="s5" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4 pt-2">
               <div className="text-center">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 border border-gold/20 mb-3">
                   <Sparkles className="w-3 h-3 text-gold" />
@@ -352,7 +352,7 @@ export const FindMyLookTab = ({ onSwitchTab }: FindMyLookTabProps) => {
               >
                 <RotateCcw className="w-3 h-3" /> Edit selections
               </button>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
       </div>

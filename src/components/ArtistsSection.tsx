@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { useState, useMemo, useEffect } from "react";
 import { X, Sparkles, Scissors, Hand, Eye, Heart, Phone, MessageSquare, Instagram } from "lucide-react";
 import { useLuna } from "@/contexts/LunaContext";
@@ -92,7 +92,7 @@ const SmartCard = ({ artist, isFiltered, onClick }: SmartCardProps) => (
 
     {/* Smart matching info — only when a category filter is active */}
     {isFiltered && (
-      <motion.div
+      <m.div
         initial={{ opacity: 0, height: 0 }}
         animate={{ opacity: 1, height: "auto" }}
         exit={{ opacity: 0, height: 0 }}
@@ -118,7 +118,7 @@ const SmartCard = ({ artist, isFiltered, onClick }: SmartCardProps) => (
           </div>
         )}
 
-      </motion.div>
+      </m.div>
     )}
   </div>
 );
@@ -190,7 +190,7 @@ export const ArtistsSection = () => {
       <section id="artists" className="py-20 md:py-28 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -203,10 +203,10 @@ export const ArtistsSection = () => {
             <p className="font-body text-muted-foreground text-base max-w-lg mx-auto">
               Real people with real talent. Not sure who's right for you? Our front desk can help match you.
             </p>
-          </motion.div>
+          </m.div>
 
           {/* Category Filter Chips */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -233,11 +233,11 @@ export const ArtistsSection = () => {
                 </button>
               );
             })}
-          </motion.div>
+          </m.div>
 
           {/* Helper strip */}
           <AnimatePresence mode="wait">
-            <motion.p
+            <m.p
               key={activeFilter}
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
@@ -246,13 +246,13 @@ export const ArtistsSection = () => {
               className="font-body text-xs text-muted-foreground text-center mb-12 md:mb-16 max-w-md mx-auto"
             >
               {helperStrips[activeFilter] || helperStrips.all}
-            </motion.p>
+            </m.p>
           </AnimatePresence>
 
           {/* No results */}
           <AnimatePresence mode="wait">
             {!hasResults && (
-              <motion.div
+              <m.div
                 key="no-results"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -276,14 +276,14 @@ export const ArtistsSection = () => {
                 >
                   Luna can help you choose
                 </button>
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
 
           {/* Founders Row */}
           <AnimatePresence mode="wait">
             {filteredFounders.length > 0 && (
-              <motion.div
+              <m.div
                 key={`founders-${activeFilter}`}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -292,7 +292,7 @@ export const ArtistsSection = () => {
                 className="flex justify-center gap-4 md:gap-6 mb-10"
               >
                 {filteredFounders.map((artist, index) => (
-                  <motion.div
+                  <m.div
                     key={artist.id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -312,16 +312,16 @@ export const ArtistsSection = () => {
                         </span>
                       </div>
                     </div>
-                  </motion.div>
+                  </m.div>
                 ))}
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
 
           {/* Team Grid — Smart Matching Cards */}
           <AnimatePresence mode="wait">
             {filteredTeam.length > 0 && (
-              <motion.div
+              <m.div
                 key={`team-${activeFilter}`}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -334,7 +334,7 @@ export const ArtistsSection = () => {
                     : "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"
                 }`}>
                   {(showAll || isFiltered ? filteredTeam : filteredTeam.slice(0, 6)).map((artist, index) => (
-                    <motion.div
+                    <m.div
                       key={artist.id}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -345,7 +345,7 @@ export const ArtistsSection = () => {
                         isFiltered={isFiltered}
                         onClick={() => { trackArtistClick(artist.name); setSelectedArtist(artist); }}
                       />
-                    </motion.div>
+                    </m.div>
                   ))}
                 </div>
 
@@ -360,7 +360,7 @@ export const ArtistsSection = () => {
                     </button>
                   </div>
                 )}
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
         </div>
@@ -369,7 +369,7 @@ export const ArtistsSection = () => {
       {/* Artist Profile Modal */}
       <AnimatePresence>
         {selectedArtist && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -378,7 +378,7 @@ export const ArtistsSection = () => {
             role="dialog"
             aria-modal="true"
           >
-            <motion.div
+            <m.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -491,7 +491,7 @@ export const ArtistsSection = () => {
                 </div>
 
                 {/* Primary CTA — Book */}
-                <motion.button
+                <m.button
                   onClick={() => handleBeginWithLuna(selectedArtist)}
                   className="btn-gold py-3 px-5 flex items-center justify-center gap-2 w-full mb-2"
                   whileHover={{ scale: 1.02 }}
@@ -499,7 +499,7 @@ export const ArtistsSection = () => {
                 >
                   <Sparkles className="w-4 h-4" />
                   <span>Book with {selectedArtist.name.split(" ")[0]}</span>
-                </motion.button>
+                </m.button>
 
                 {/* Ask Luna CTA */}
                 <button
@@ -548,8 +548,8 @@ export const ArtistsSection = () => {
                   Call front desk for matching
                 </a>
               </div>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         )}
       </AnimatePresence>
     </>

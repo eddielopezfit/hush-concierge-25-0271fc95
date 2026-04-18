@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Scissors, Sparkles, Heart, Eye, Hand } from "lucide-react";
 import { ServiceMenuModal } from "./ServiceMenuModal";
 import { getCategoryById } from "@/data/servicesMenuData";
@@ -80,7 +80,7 @@ export const ServicesSection = () => {
   };
 
   const renderCard = (service: typeof services[0]) => (
-    <motion.div
+    <m.div
       key={service.title}
       variants={cardVariants}
       onClick={() => handleCardClick(service.id)}
@@ -119,14 +119,14 @@ export const ServicesSection = () => {
           View full menu & pricing
         </button>
       </div>
-    </motion.div>
+    </m.div>
   );
 
   return (
     <>
       <section id="services" className="py-20 md:py-24 px-6 bg-gradient-to-b from-background to-card">
         <div className="max-w-7xl mx-auto">
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
@@ -148,10 +148,10 @@ export const ServicesSection = () => {
             >
               View All Services & Pricing
             </button>
-          </motion.div>
+          </m.div>
 
           {/* Top row: 3 cards */}
-          <motion.div
+          <m.div
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
@@ -159,10 +159,10 @@ export const ServicesSection = () => {
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6"
           >
             {services.slice(0, 3).map((service) => renderCard(service))}
-          </motion.div>
+          </m.div>
 
           {/* Bottom row: 2 cards centered */}
-          <motion.div
+          <m.div
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
@@ -170,7 +170,7 @@ export const ServicesSection = () => {
             className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:max-w-[calc(66.666%+0.75rem)] mx-auto"
           >
             {services.slice(3).map((service) => renderCard(service))}
-          </motion.div>
+          </m.div>
         </div>
       </section>
 

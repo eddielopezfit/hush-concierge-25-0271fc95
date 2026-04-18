@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Send, Loader2, Phone, Calendar, ChevronRight, RotateCcw, ArrowDown } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Send, Loader2, ArrowRight, Sparkles, Phone, Calendar, ChevronRight, RotateCcw, ArrowDown } from "lucide-react";
+import { m, AnimatePresence } from "framer-motion";
 import { getJourneyContextString } from "@/lib/journeyTracker";
+import { getConciergeContext } from "@/lib/conciergeStore";
 import { formatCategoryList, categoryLabels, goalLabels, timingLabels } from "@/lib/conciergeLabels";
 import { saveLead } from "@/lib/saveSession";
 import { getConversationId, startSession, clearConversation } from "@/lib/sessionManager";
-import { ConciergeContext } from "@/types/concierge";
+import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
 import ReactMarkdown from "react-markdown";
 import { useLuna } from "@/contexts/LunaContext";
 import { toast } from "sonner";
@@ -27,6 +28,17 @@ interface ChatAction {
 }
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/luna-chat`;
+
+// Known error fallback phrases used to detect error responses
+const ERROR_PHRASES = [
+  "having trouble connecting",
+  "give me just a moment and try again",
+];
+
+function isErrorResponse(content: string): boolean {
+  const lower = content.toLowerCase();
+  return ERROR_PHRASES.some(p => lower.includes(p));
+}
 
 // ── Error-specific quick replies ────────────────────────────────────────────
 const ERROR_QUICK_REPLIES = [
@@ -165,7 +177,7 @@ function getQuickReplies(ctx: ConciergeContext | null, lastAssistantMsg: string)
 }
 
 // ── Detect intent from assistant message for in-chat CTAs ───────────────────
-function detectChatActions(msg: string, _ctx: ConciergeContext | null): ChatAction[] {
+function detectChatActions(msg: string, ctx: ConciergeContext | null): ChatAction[] {
   const lower = msg.toLowerCase();
   const actions: ChatAction[] = [];
 
@@ -312,7 +324,7 @@ function ChatActionButtons({
 }) {
   if (!actions.length) return null;
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3 }}
@@ -331,7 +343,7 @@ function ChatActionButtons({
           {action.label}
         </button>
       ))}
-    </motion.div>
+    </m.div>
   );
 }
 
@@ -370,7 +382,7 @@ function clearPersistedChat(): void {
 }
 
 export const ChatTab = () => {
-  const { conciergeContext } = useLuna();
+  const { conciergeContext, openChatWidget } = useLuna();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
@@ -841,6 +853,11 @@ export const ChatTab = () => {
     ]);
   };
 
+  const handleScrollToSection = (sectionId: string) => {
+    const el = document.getElementById(sectionId);
+    if (el) el.scrollIntoView({ behavior: "smooth" });
+  };
+
   // Find the last assistant message for quick reply context
   const lastAssistantMsg = [...messages].reverse().find(m => m.role === "assistant");
 
@@ -938,7 +955,7 @@ export const ChatTab = () => {
         {messages.length === 1 && !isStreaming && (
           <div className="flex flex-wrap gap-1.5 mt-1">
             {smartChips.map((chip) => (
-              <motion.button
+              <m.button
                 key={chip}
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -947,14 +964,14 @@ export const ChatTab = () => {
                 className="px-3 py-2 rounded-full border border-primary/30 text-primary text-xs font-body hover:bg-primary/10 active:scale-95 transition-all"
               >
                 {chip}
-              </motion.button>
+              </m.button>
             ))}
           </div>
         )}
 
         {/* Persistent Quick Replies — shown after EVERY assistant response (except greeting) */}
         {messages.length > 1 && !isStreaming && lastAssistantMsg && (
-          <motion.div
+          <m.div
             key={lastAssistantMsg.id}
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
@@ -970,13 +987,13 @@ export const ChatTab = () => {
                 {reply}
               </button>
             ))}
-          </motion.div>
+          </m.div>
         )}
 
         {/* Lead capture form */}
         <AnimatePresence>
           {showLeadForm && !leadCaptured && (
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
@@ -1014,7 +1031,7 @@ export const ChatTab = () => {
                   Not now
                 </button>
               </div>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
 
@@ -1022,7 +1039,7 @@ export const ChatTab = () => {
       </div>
         <AnimatePresence>
           {showScrollToBottom && (
-            <motion.button
+            <m.button
               initial={{ opacity: 0, y: 8, scale: 0.9 }}
               animate={
                 unreadCount > 0
@@ -1055,7 +1072,7 @@ export const ChatTab = () => {
                   {unreadCount > 9 ? "9+" : unreadCount}
                 </span>
               )}
-            </motion.button>
+            </m.button>
           )}
         </AnimatePresence>
       </div>

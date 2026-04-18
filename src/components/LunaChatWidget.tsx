@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { MessageCircle, X, Minus } from "lucide-react";
 import { FindMyLookTab } from "./luna/FindMyLookTab";
 import { ExploreTab } from "./luna/ExploreTab";
@@ -87,14 +87,14 @@ export const LunaChatWidget = () => {
       {/* Collapsed Bubble + Label */}
       <AnimatePresence>
         {!isOpen && (
-          <motion.div
+          <m.div
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
             transition={{ type: "spring", stiffness: 260, damping: 20 }}
             className="fixed bottom-[6.5rem] md:bottom-6 right-6 z-[9999] flex flex-col items-center gap-1.5"
           >
-            <motion.button
+            <m.button
               onClick={handleOpen}
               className="w-[56px] h-[56px] rounded-full bg-primary flex items-center justify-center shadow-[var(--shadow-gold)] hover:shadow-[0_0_50px_hsl(38_50%_55%/0.5)] transition-shadow"
             >
@@ -102,16 +102,16 @@ export const LunaChatWidget = () => {
               {showBadge && (
                 <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-foreground rounded-full border-2 border-primary" />
               )}
-            </motion.button>
+            </m.button>
             <span className="font-body text-[10px] text-muted-foreground tracking-wide">Your Hush Guide</span>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
 
       {/* Expanded Panel */}
       <AnimatePresence>
         {isOpen && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 30, scale: 0.92 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
@@ -119,29 +119,29 @@ export const LunaChatWidget = () => {
             className="fixed z-[9999] bottom-6 right-6 w-[390px] h-[560px] md:w-[390px] md:h-[560px] max-md:bottom-0 max-md:right-0 max-md:left-0 max-md:w-full max-md:h-[100dvh] max-md:rounded-none rounded-2xl border border-primary/25 bg-card flex flex-col overflow-hidden shadow-[var(--shadow-elegant)]"
           >
             {/* Header */}
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: -6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15, duration: 0.3 }}
               className="flex items-center justify-between px-4 py-3 border-b border-border"
             >
               <div className="flex items-center gap-2.5">
-                <motion.div
+                <m.div
                   initial={{ scale: 0.5, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ delay: 0.25, type: "spring", stiffness: 300, damping: 15 }}
                   className="w-7 h-7 rounded-full bg-primary flex items-center justify-center"
                 >
                   <span className="font-display text-xs text-primary-foreground font-semibold">L</span>
-                </motion.div>
-                <motion.div
+                </m.div>
+                <m.div
                   initial={{ opacity: 0, x: -8 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.35, duration: 0.3 }}
                 >
                   <span className="font-display text-base text-foreground">Luna</span>
                   <span className="font-body text-[10px] text-muted-foreground ml-1.5">at Hush Salon & Day Spa</span>
-                </motion.div>
+                </m.div>
               </div>
               <button
                 onClick={handleClose}
@@ -157,7 +157,7 @@ export const LunaChatWidget = () => {
               >
                 <X className="w-4 h-4" />
               </button>
-            </motion.div>
+            </m.div>
 
             {/* Tab Navigation */}
             <LunaTabNav activeTab={activeTab} onTabChange={setActiveTab} />
@@ -165,7 +165,7 @@ export const LunaChatWidget = () => {
             {/* Tab Content with transitions */}
             <div className="flex-1 overflow-hidden">
               <AnimatePresence mode="wait">
-                <motion.div
+                <m.div
                   key={activeTab}
                   variants={tabVariants}
                   initial="enter"
@@ -175,10 +175,10 @@ export const LunaChatWidget = () => {
                   className="h-full"
                 >
                   {renderTabContent()}
-                </motion.div>
+                </m.div>
               </AnimatePresence>
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </>

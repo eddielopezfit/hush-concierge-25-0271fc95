@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Mic, Heart, ArrowRight, Phone } from "lucide-react";
 
 /**
@@ -20,7 +20,7 @@ export const JoinHushSection = () => {
 
       <div className="max-w-6xl mx-auto relative z-10">
         {/* Section header */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
@@ -36,12 +36,12 @@ export const JoinHushSection = () => {
           <p className="font-body text-cream/70 max-w-xl mx-auto">
             Two ways into the Hush story — bring a friend, or bring your craft.
           </p>
-        </motion.div>
+        </m.div>
 
         {/* Two cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
           {/* Groupies Only — Referral */}
-          <motion.article
+          <m.article
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
@@ -80,10 +80,10 @@ export const JoinHushSection = () => {
               Mention a friend at booking
               <ArrowRight className="w-4 h-4 transition-transform group-hover/cta:translate-x-1" />
             </a>
-          </motion.article>
+          </m.article>
 
           {/* Be a Rockstar — Careers */}
-          <motion.article
+          <m.article
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
@@ -121,7 +121,7 @@ export const JoinHushSection = () => {
               Send your story
               <ArrowRight className="w-4 h-4 transition-transform group-hover/cta:translate-x-1" />
             </a>
-          </motion.article>
+          </m.article>
         </div>
       </div>
     </section>

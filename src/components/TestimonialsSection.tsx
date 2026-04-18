@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Star, Quote, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState, useEffect, useCallback, useRef } from "react";
 
@@ -98,7 +98,7 @@ export const TestimonialsSection = () => {
   return (
     <section className="py-20 md:py-24 px-6 bg-card">
       <div className="max-w-6xl mx-auto">
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
@@ -116,13 +116,13 @@ export const TestimonialsSection = () => {
           <p className="font-body text-muted-foreground">
             4.7 stars · 315+ verified reviews across Google & Facebook
           </p>
-        </motion.div>
+        </m.div>
 
         {/* Desktop: 2x3 grid showing 6 reviews at once */}
         <div className="hidden md:block" onMouseEnter={() => setIsAutoPlaying(false)} onMouseLeave={() => setIsAutoPlaying(true)}>
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
             {testimonials.slice(0, 6).map((testimonial, index) => (
-              <motion.div
+              <m.div
                 key={testimonial.author}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -145,7 +145,7 @@ export const TestimonialsSection = () => {
                     {testimonial.source}
                   </div>
                 </div>
-              </motion.div>
+              </m.div>
             ))}
           </div>
 
@@ -165,7 +165,7 @@ export const TestimonialsSection = () => {
         {/* Mobile: single-card carousel with swipe feel */}
         <div className="md:hidden relative">
           <div className="overflow-hidden">
-            <motion.div
+            <m.div
               key={currentIndex}
               initial={{ opacity: 0, x: 40 }}
               animate={{ opacity: 1, x: 0 }}
@@ -188,7 +188,7 @@ export const TestimonialsSection = () => {
                   {testimonials[currentIndex].source}
                 </div>
               </div>
-            </motion.div>
+            </m.div>
           </div>
 
           {/* Mobile nav */}
@@ -218,7 +218,7 @@ export const TestimonialsSection = () => {
         </div>
 
         {/* Review CTA — mobile only (desktop has its own link above) */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
@@ -233,7 +233,7 @@ export const TestimonialsSection = () => {
           >
             Read more reviews on Google →
           </a>
-        </motion.div>
+        </m.div>
       </div>
     </section>
   );

@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Sparkles, Clock, DollarSign, ChevronDown } from "lucide-react";
 import { RevealData } from "@/lib/experienceReveal";
 import { useLuna } from "@/contexts/LunaContext";
@@ -9,7 +9,7 @@ interface ExperienceRevealCardProps {
   onBook?: () => void;
 }
 
-export const ExperienceRevealCard = ({ data, onBook: _onBook }: ExperienceRevealCardProps) => {
+export const ExperienceRevealCard = ({ data, onBook }: ExperienceRevealCardProps) => {
   const { conciergeContext } = useLuna();
 
   const handleScrollToPlan = () => {
@@ -18,7 +18,7 @@ export const ExperienceRevealCard = ({ data, onBook: _onBook }: ExperienceReveal
   };
 
   return (
-    <motion.div
+    <m.div
       id="experience-reveal"
       initial={{ opacity: 0, y: 30, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -31,7 +31,7 @@ export const ExperienceRevealCard = ({ data, onBook: _onBook }: ExperienceReveal
 
         <div className="p-6 md:p-8 space-y-6">
           {/* Title */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
@@ -44,10 +44,10 @@ export const ExperienceRevealCard = ({ data, onBook: _onBook }: ExperienceReveal
             <h3 className="font-display text-2xl md:text-3xl text-cream">
               {data.experienceLabel}
             </h3>
-          </motion.div>
+          </m.div>
 
           {/* Info pills */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.35 }}
@@ -61,10 +61,10 @@ export const ExperienceRevealCard = ({ data, onBook: _onBook }: ExperienceReveal
               <DollarSign className="w-3.5 h-3.5 text-gold" />
               <span className="text-xs font-body text-cream">{data.priceRange}</span>
             </div>
-          </motion.div>
+          </m.div>
 
           {/* Booking Decision */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
@@ -73,10 +73,10 @@ export const ExperienceRevealCard = ({ data, onBook: _onBook }: ExperienceReveal
               revealData={data}
               context={conciergeContext}
             />
-          </motion.div>
+          </m.div>
 
           {/* Scroll link to full plan */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
@@ -89,9 +89,9 @@ export const ExperienceRevealCard = ({ data, onBook: _onBook }: ExperienceReveal
               See your full personalized plan
               <ChevronDown className="w-3.5 h-3.5 group-hover:translate-y-0.5 transition-transform" />
             </button>
-          </motion.div>
+          </m.div>
         </div>
       </div>
-    </motion.div>
+    </m.div>
   );
 };

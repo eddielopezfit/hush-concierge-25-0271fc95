@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import foundersPhoto from "@/assets/Founders_Hush.jpg";
 
 export const AboutSection = () => {
@@ -14,7 +14,7 @@ export const AboutSection = () => {
       <div className="max-w-5xl mx-auto relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Content */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, x: -40 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-100px" }}
@@ -54,10 +54,10 @@ export const AboutSection = () => {
                 <div className="text-sm text-muted-foreground uppercase tracking-wider">Team Members</div>
               </div>
             </div>
-          </motion.div>
+          </m.div>
 
           {/* Image placeholder — designed for real salon photo */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, x: 40 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-100px" }}
@@ -78,7 +78,7 @@ export const AboutSection = () => {
                 <p className="font-body text-sm text-gold/70 mt-2">— The Founders</p>
               </div>
             </div>
-          </motion.div>
+          </m.div>
         </div>
       </div>
     </section>

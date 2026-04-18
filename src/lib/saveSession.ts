@@ -1,4 +1,5 @@
 import { ConciergeContext } from "@/types/concierge";
+import type { Json } from "@/integrations/supabase/types";
 import { normalizeTiming, normalizeGoal, normalizeCategory } from "@/lib/conciergeLabels";
 
 const SUBMIT_LEAD_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/submit-lead`;
@@ -7,7 +8,7 @@ const SUBMIT_LEAD_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/submi
  * Save a concierge session to the database via edge function.
  * Never throws — returns null on failure.
  */
-export async function saveSession(_context: ConciergeContext | null | undefined): Promise<string | null> {
+export async function saveSession(context: ConciergeContext | null | undefined): Promise<string | null> {
   // Sessions are now handled by session-start edge function.
   // This function is kept for backward compatibility but is a no-op.
   console.debug("[saveSession] Sessions now managed by session-start edge function.");

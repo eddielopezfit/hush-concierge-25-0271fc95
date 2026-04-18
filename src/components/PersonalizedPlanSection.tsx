@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Clock, Layers, ChevronRight, Sparkles, CalendarClock, Plus, Zap, RefreshCw, Heart, Star } from "lucide-react";
 import { useLuna } from "@/contexts/LunaContext";
 import { categoryLabels, goalLabels, timingLabels } from "@/lib/conciergeLabels";
@@ -93,7 +93,7 @@ export const PersonalizedPlanSection = () => {
         {isLoading ? (
           <PlanSkeleton />
         ) : (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -105,7 +105,7 @@ export const PersonalizedPlanSection = () => {
 
             <div className="p-6 md:p-8 space-y-6">
               {/* Header */}
-              <motion.div
+              <m.div
                 initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -127,10 +127,10 @@ export const PersonalizedPlanSection = () => {
                     {emotionalLine}
                   </p>
                 )}
-              </motion.div>
+              </m.div>
 
               {/* Service + context pills */}
-              <motion.div
+              <m.div
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
@@ -158,11 +158,11 @@ export const PersonalizedPlanSection = () => {
                     Multi-service
                   </span>
                 )}
-              </motion.div>
+              </m.div>
 
               {/* Time estimate */}
               {timeEstimate && (
-                <motion.p
+                <m.p
                   initial={{ opacity: 0 }}
                   whileInView={{ opacity: 1 }}
                   viewport={{ once: true }}
@@ -171,12 +171,12 @@ export const PersonalizedPlanSection = () => {
                 >
                   <Clock className="w-3 h-3 text-primary/50" />
                   Estimated visit: {timeEstimate}
-                </motion.p>
+                </m.p>
               )}
 
               {/* Enhance Your Visit (Upsells) */}
               {upsells.length > 0 && (
-                <motion.div
+                <m.div
                   initial={{ opacity: 0, y: 10 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -191,7 +191,7 @@ export const PersonalizedPlanSection = () => {
                   </div>
                   <div className="space-y-2">
                     {upsells.map((item: UpsellItem) => (
-                      <motion.div
+                      <m.div
                         key={item.name}
                         className="flex items-center justify-between py-2 px-3 rounded-lg bg-background/50 border border-border/50 transition-colors hover:border-gold/20 hover:bg-gold/[0.02]"
                         whileHover={{ x: 2 }}
@@ -202,18 +202,18 @@ export const PersonalizedPlanSection = () => {
                           <p className="font-body text-xs text-muted-foreground mt-0.5">{item.description}</p>
                         </div>
                         <span className="font-body text-xs text-gold ml-3 shrink-0">{item.price}</span>
-                      </motion.div>
+                      </m.div>
                     ))}
                   </div>
                   <p className="font-body text-[10px] text-muted-foreground/60 mt-3 text-center">
                     Mention these add-ons when booking — your concierge will include them
                   </p>
-                </motion.div>
+                </m.div>
               )}
 
               {/* Your Ideal Cadence */}
               {cadence.length > 0 && (
-                <motion.div
+                <m.div
                   initial={{ opacity: 0, y: 10 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -241,11 +241,11 @@ export const PersonalizedPlanSection = () => {
                       </div>
                     ))}
                   </div>
-                </motion.div>
+                </m.div>
               )}
 
               {/* Artist matching — neutral */}
-              <motion.div
+              <m.div
                 initial={{ opacity: 0, y: 8 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -255,10 +255,10 @@ export const PersonalizedPlanSection = () => {
                 <p className="font-body text-sm text-cream/70 leading-relaxed">
                   For this experience, our team will pair you with a stylist who specializes in exactly what you're looking for.
                 </p>
-              </motion.div>
+              </m.div>
 
               {/* CTA */}
-              <motion.div
+              <m.div
                 initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -271,9 +271,9 @@ export const PersonalizedPlanSection = () => {
                   Reserve Your Experience
                   <ChevronRight className="w-4 h-4" />
                 </button>
-              </motion.div>
+              </m.div>
             </div>
-          </motion.div>
+          </m.div>
         )}
       </div>
     </section>

@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Sparkles, Search, Users, ClipboardList, MessageSquare } from "lucide-react";
 
 export type LunaTabId = "find" | "explore" | "artists" | "plan" | "chat";
@@ -33,7 +33,7 @@ export const LunaTabNav = ({ activeTab, onTabChange }: LunaTabNavProps) => {
             <Icon className="w-4 h-4" />
             <span className="leading-none">{tab.label}</span>
             {isActive && (
-              <motion.div
+              <m.div
                 layoutId="luna-tab-indicator"
                 className="absolute bottom-0 left-1 right-1 h-0.5 bg-primary rounded-full"
               />
