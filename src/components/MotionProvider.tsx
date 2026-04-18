@@ -7,7 +7,7 @@ import type { ReactNode } from "react";
  * Lazy-imported via React.lazy so framer-motion stays out of the eager bundle.
  */
 export const MotionProvider = ({ children }: { children: ReactNode }) => (
-  <LazyMotion features={domMax} strict>
+  <LazyMotion features={domMax}>
     {children}
   </LazyMotion>
 );
