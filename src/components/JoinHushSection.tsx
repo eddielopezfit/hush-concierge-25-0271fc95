@@ -1,5 +1,10 @@
+import { useState } from "react";
 import { m } from "framer-motion";
-import { Mic, Heart, ArrowRight, Phone } from "lucide-react";
+import { Mic, Heart, ArrowRight, Phone, Check, Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 /**
  * JoinHushSection — combined "Be a Rockstar" (careers) + "Groupies Only" (referrals).
@@ -7,6 +12,42 @@ import { Mic, Heart, ArrowRight, Phone } from "lucide-react";
  * keeping the homepage narrative tight.
  */
 export const JoinHushSection = () => {
+  const [showForm, setShowForm] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [form, setForm] = useState({ name: "", phone: "", email: "", role: "", story: "" });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.name.trim() || !form.phone.trim()) {
+      toast.error("Please share your name and phone number.");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const { error } = await supabase.functions.invoke("request-callback", {
+        body: {
+          guest_name: form.name.trim(),
+          phone: form.phone.trim(),
+          email: form.email.trim() || undefined,
+          service_category: "careers",
+          service_name: form.role.trim() || "Career inquiry",
+          timing: "planning",
+          urgency: "low",
+          call_summary: `Career inquiry — Role: ${form.role || "unspecified"}. Story: ${form.story || "(none provided)"}`,
+        },
+      });
+      if (error) throw error;
+      setSubmitted(true);
+      toast.success("Story received — Kendell will be in touch.");
+    } catch (err) {
+      console.error("[JoinHushSection] career submit failed:", err);
+      toast.error("Couldn't send right now. Please call (520) 327-6753.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <section
       id="join"
@@ -114,13 +155,83 @@ export const JoinHushSection = () => {
               <li className="flex gap-2"><span className="text-gold">·</span> Apprenticeship pathway</li>
             </ul>
 
-            <a
-              href="mailto:hello@hushsalonandspa.com?subject=Be%20a%20Rockstar%20%E2%80%94%20Career%20Inquiry"
-              className="inline-flex items-center gap-2 font-body text-sm text-gold hover:text-gold/80 transition-colors group/cta"
-            >
-              Send your story
-              <ArrowRight className="w-4 h-4 transition-transform group-hover/cta:translate-x-1" />
-            </a>
+            {!showForm && !submitted && (
+              <button
+                type="button"
+                onClick={() => setShowForm(true)}
+                className="inline-flex items-center gap-2 font-body text-sm text-gold hover:text-gold/80 transition-colors group/cta"
+              >
+                Send your story
+                <ArrowRight className="w-4 h-4 transition-transform group-hover/cta:translate-x-1" />
+              </button>
+            )}
+
+            {showForm && !submitted && (
+              <form onSubmit={handleSubmit} className="space-y-3 mt-2">
+                <Input
+                  required
+                  placeholder="Your name"
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  className="bg-background/40 border-border/60 text-cream"
+                />
+                <Input
+                  required
+                  type="tel"
+                  placeholder="Phone number"
+                  value={form.phone}
+                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                  className="bg-background/40 border-border/60 text-cream"
+                />
+                <Input
+                  type="email"
+                  placeholder="Email (optional)"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  className="bg-background/40 border-border/60 text-cream"
+                />
+                <Input
+                  placeholder="Role you're interested in (stylist, nail tech, etc.)"
+                  value={form.role}
+                  onChange={(e) => setForm({ ...form, role: e.target.value })}
+                  className="bg-background/40 border-border/60 text-cream"
+                />
+                <Textarea
+                  placeholder="Tell us a little about yourself (optional)"
+                  value={form.story}
+                  onChange={(e) => setForm({ ...form, story: e.target.value })}
+                  className="bg-background/40 border-border/60 text-cream min-h-[80px]"
+                />
+                <div className="flex items-center gap-3 pt-1">
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-gold/50 bg-gold/10 text-gold hover:bg-gold/20 transition-colors font-body text-sm disabled:opacity-60"
+                  >
+                    {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
+                    {submitting ? "Sending…" : "Send your story"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowForm(false)}
+                    className="font-body text-sm text-cream/60 hover:text-cream/90 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {submitted && (
+              <div className="flex items-start gap-3 p-4 rounded-lg border border-gold/30 bg-gold/5">
+                <Check className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
+                <div className="font-body text-sm text-cream/85">
+                  <span className="text-cream font-medium">Thank you, {form.name.split(" ")[0]}.</span>{" "}
+                  Kendell will reach out about joining the Hush team. You can also call{" "}
+                  <a href="tel:+15203276753" className="text-gold hover:underline">(520) 327-6753</a>.
+                </div>
+              </div>
+            )}
           </m.article>
         </div>
       </div>
