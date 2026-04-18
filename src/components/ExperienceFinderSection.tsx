@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import {
   Scissors, Hand, Sparkles, Eye, Heart,
   Check, ArrowLeft, HelpCircle, Layers,
@@ -363,7 +363,7 @@ export const ExperienceFinderSection = () => {
       <div className="max-w-4xl mx-auto relative z-10">
 
         {/* Heading */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
@@ -376,10 +376,10 @@ export const ExperienceFinderSection = () => {
           <p className="font-body text-base text-muted-foreground max-w-lg mx-auto">
             A few questions. Luna does the rest.
           </p>
-        </motion.div>
+        </m.div>
 
         {/* Step indicator */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="flex justify-center items-center gap-2 mb-12"
@@ -402,7 +402,7 @@ export const ExperienceFinderSection = () => {
               )}
             </div>
           ))}
-        </motion.div>
+        </m.div>
 
         {/* Step content */}
         <div className="min-h-[420px] flex items-center justify-center pb-24 md:pb-0">
@@ -410,7 +410,7 @@ export const ExperienceFinderSection = () => {
 
             {/* ── STEP 1 — Category ─────────────────────────────────────── */}
             {currentStep === 1 && (
-              <motion.div
+              <m.div
                 key="step1"
                 variants={stepVariants}
                 initial="initial" animate="animate" exit="exit"
@@ -422,14 +422,14 @@ export const ExperienceFinderSection = () => {
                 <p className="font-body text-sm text-muted-foreground text-center mb-10">
                   {getStepSubtitle(1)}
                 </p>
-                <motion.div
+                <m.div
                   variants={containerVariants} initial="hidden" animate="visible"
                   className="grid grid-cols-2 md:grid-cols-5 gap-4"
                 >
                   {categories.map(cat => {
                     const sel = selection.services.includes(cat.id);
                     return (
-                      <motion.button
+                      <m.button
                         key={cat.id}
                         variants={itemVariants}
                         onClick={() => toggleService(cat.id)}
@@ -438,14 +438,14 @@ export const ExperienceFinderSection = () => {
                       >
                         <AnimatePresence>
                           {sel && (
-                            <motion.div
+                            <m.div
                               initial={{ scale: 0, opacity: 0 }}
                               animate={{ scale: 1, opacity: 1 }}
                               exit={{ scale: 0, opacity: 0 }}
                               className="absolute top-2 right-2 w-6 h-6 rounded-full bg-gold flex items-center justify-center"
                             >
                               <Check className="w-4 h-4 text-background" />
-                            </motion.div>
+                            </m.div>
                           )}
                         </AnimatePresence>
                         <cat.icon className={`w-8 h-8 mx-auto mb-4 transition-colors ${sel ? "text-gold" : "text-muted-foreground group-hover:text-gold"}`} />
@@ -455,13 +455,13 @@ export const ExperienceFinderSection = () => {
                         {cat.id === "hair" && (
                           <span className="block text-[9px] font-body text-gold/60 mt-1 uppercase tracking-wider">Most popular</span>
                         )}
-                      </motion.button>
+                      </m.button>
                     );
                   })}
-                </motion.div>
+                </m.div>
 
                 {/* ── Name capture ──────────────────────────────────── */}
-                <motion.div
+                <m.div
                   initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
                   className="max-w-xs mx-auto mt-8"
@@ -479,14 +479,14 @@ export const ExperienceFinderSection = () => {
                       }
                     }}
                   />
-                </motion.div>
+                </m.div>
 
-                <motion.div
+                <m.div
                   initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 }}
                   className="flex flex-col items-center gap-4 mt-6"
                 >
-                  <motion.button
+                  <m.button
                     onClick={() => {
                       if (selection.services.length === 0) return;
                       if (guestName.trim()) setGuestFirstName(guestName.trim());
@@ -498,23 +498,23 @@ export const ExperienceFinderSection = () => {
                     whileTap={selection.services.length > 0 ? { scale: 0.98 } : {}}
                   >
                     Show Me Options
-                  </motion.button>
+                  </m.button>
                   {selection.services.length > 0 && (
-                    <motion.button
+                    <m.button
                       initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                       onClick={() => setSelection(p => ({ ...p, services: [] }))}
                       className="font-body text-sm text-muted-foreground hover:text-gold transition-colors underline underline-offset-4"
                     >
                       Clear
-                    </motion.button>
+                    </m.button>
                   )}
-                </motion.div>
-              </motion.div>
+                </m.div>
+              </m.div>
             )}
 
             {/* ── STEP 2 — Goal ─────────────────────────────────────────── */}
             {currentStep === 2 && (
-              <motion.div
+              <m.div
                 key="step2"
                 variants={stepVariants}
                 initial="initial" animate="animate" exit="exit"
@@ -526,12 +526,12 @@ export const ExperienceFinderSection = () => {
                 <p className="font-body text-sm text-muted-foreground text-center mb-10">
                   {getStepSubtitle(2)}
                 </p>
-                <motion.div
+                <m.div
                   variants={containerVariants} initial="hidden" animate="visible"
                   className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto"
                 >
                   {goals.map(goal => (
-                    <motion.button
+                    <m.button
                       key={goal.id} variants={itemVariants}
                       onClick={() => handleGoalSelect(goal.id)}
                       className={`${optionBase} ${selection.goal === goal.id ? optionActive : optionIdle}`}
@@ -540,16 +540,16 @@ export const ExperienceFinderSection = () => {
                       <span className={`font-display text-xl transition-colors ${selection.goal === goal.id ? "text-gold" : "text-cream group-hover:text-gold"}`}>
                         {goal.label}
                       </span>
-                    </motion.button>
+                    </m.button>
                   ))}
-                </motion.div>
+                </m.div>
                 <BackButton onClick={handleBack} />
-              </motion.div>
+              </m.div>
             )}
 
             {/* ── STEP 3 — Timing ───────────────────────────────────────── */}
             {currentStep === 3 && (
-              <motion.div
+              <m.div
                 key="step3"
                 variants={stepVariants}
                 initial="initial" animate="animate" exit="exit"
@@ -561,12 +561,12 @@ export const ExperienceFinderSection = () => {
                 <p className="font-body text-sm text-muted-foreground text-center mb-10">
                   {getStepSubtitle(3)}
                 </p>
-                <motion.div
+                <m.div
                   variants={containerVariants} initial="hidden" animate="visible"
                   className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto"
                 >
                   {timings.map(t => (
-                    <motion.button
+                    <m.button
                       key={t.id} variants={itemVariants}
                       onClick={() => handleTimingSelect(t.id)}
                       className={`${optionBase} ${selection.timing === t.id ? optionActive : optionIdle}`}
@@ -575,16 +575,16 @@ export const ExperienceFinderSection = () => {
                       <span className={`font-display text-lg md:text-xl transition-colors ${selection.timing === t.id ? "text-gold" : "text-cream group-hover:text-gold"}`}>
                         {t.label}
                       </span>
-                    </motion.button>
+                    </m.button>
                   ))}
-                </motion.div>
+                </m.div>
                 <BackButton onClick={handleBack} />
-              </motion.div>
+              </m.div>
             )}
 
             {/* ── STEP 4 — Multi-service: priority picker OR Single-service: qualifier */}
             {currentStep === 4 && isMultiService && (
-              <motion.div
+              <m.div
                 key="step4-multi"
                 variants={stepVariants}
                 initial="initial" animate="animate" exit="exit"
@@ -596,7 +596,7 @@ export const ExperienceFinderSection = () => {
                 <p className="font-body text-sm text-muted-foreground text-center mb-10">
                   {getStepSubtitle(4)}
                 </p>
-                <motion.div
+                <m.div
                   variants={containerVariants} initial="hidden" animate="visible"
                   className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-3xl mx-auto"
                 >
@@ -606,7 +606,7 @@ export const ExperienceFinderSection = () => {
                     if (!cat) return null;
                     const sel = selection.primaryCategory === svcId;
                     return (
-                      <motion.button
+                      <m.button
                         key={cat.id} variants={itemVariants}
                         onClick={() => handlePrimaryPick(cat.id as ServiceCategoryId)}
                         className={`${optionBase} ${sel ? optionActive : optionIdle}`}
@@ -616,12 +616,12 @@ export const ExperienceFinderSection = () => {
                         <span className={`font-display text-lg transition-colors ${sel ? "text-gold" : "text-cream group-hover:text-gold"}`}>
                           {cat.label}
                         </span>
-                      </motion.button>
+                      </m.button>
                     );
                   })}
 
                   {/* Help me combine them */}
-                  <motion.button
+                  <m.button
                     variants={itemVariants}
                     onClick={handleBundleGuidance}
                     className={`${optionBase} ${optionIdle}`}
@@ -631,10 +631,10 @@ export const ExperienceFinderSection = () => {
                     <span className="font-display text-lg text-cream group-hover:text-gold transition-colors">
                       Help me combine them
                     </span>
-                  </motion.button>
+                  </m.button>
 
                   {/* Not sure yet */}
-                  <motion.button
+                  <m.button
                     variants={itemVariants}
                     onClick={handleMultiUnsure}
                     className={`${optionBase} ${optionIdle}`}
@@ -644,10 +644,10 @@ export const ExperienceFinderSection = () => {
                     <span className="font-display text-lg text-cream group-hover:text-gold transition-colors">
                       Not sure yet
                     </span>
-                  </motion.button>
-                </motion.div>
+                  </m.button>
+                </m.div>
                 <BackButton onClick={handleBack} />
-              </motion.div>
+              </m.div>
             )}
 
             {/* ── STEP 4 — Single-service qualifier ─────────────────────── */}
@@ -680,14 +680,14 @@ export const ExperienceFinderSection = () => {
 
             {/* ── REVEAL — Experience Reveal Card ────────────────────── */}
             {currentStep === "reveal" && revealData && (
-              <motion.div
+              <m.div
                 key="step-reveal"
                 variants={stepVariants}
                 initial="initial" animate="animate" exit="exit"
                 className="w-full"
               >
                 <ExperienceRevealCard data={revealData} />
-              </motion.div>
+              </m.div>
             )}
 
           </AnimatePresence>
@@ -695,14 +695,14 @@ export const ExperienceFinderSection = () => {
 
         {/* Reset link */}
         {currentStep !== 1 && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center mt-4">
+          <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center mt-4">
             <button
               onClick={handleReset}
               className="font-body text-xs text-muted-foreground hover:text-gold transition-colors underline underline-offset-4"
             >
               Start over
             </button>
-          </motion.div>
+          </m.div>
         )}
       </div>
     </section>
@@ -723,7 +723,7 @@ interface QualifierStepProps {
 }
 
 const QualifierStep = ({ step, title, subtitle, category, selectedSubtype, onSelect, onLunaAction, onBack }: QualifierStepProps) => (
-  <motion.div
+  <m.div
     key={`step${step}-qualifier`}
     variants={stepVariants}
     initial="initial" animate="animate" exit="exit"
@@ -735,12 +735,12 @@ const QualifierStep = ({ step, title, subtitle, category, selectedSubtype, onSel
     <p className="font-body text-sm text-muted-foreground text-center mb-10">
       {subtitle}
     </p>
-    <motion.div
+    <m.div
       variants={containerVariants} initial="hidden" animate="visible"
       className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto"
     >
       {subtypeOptions[category]?.map(opt => (
-        <motion.button
+        <m.button
           key={opt.id} variants={itemVariants}
           onClick={() => onSelect(opt.id as ServiceSubtype)}
           className={`${optionBase} ${selectedSubtype === opt.id ? optionActive : optionIdle}`}
@@ -749,17 +749,17 @@ const QualifierStep = ({ step, title, subtitle, category, selectedSubtype, onSel
           <span className={`font-display text-lg transition-colors ${selectedSubtype === opt.id ? "text-gold" : "text-cream group-hover:text-gold"}`}>
             {opt.label}
           </span>
-        </motion.button>
+        </m.button>
       ))}
-    </motion.div>
+    </m.div>
 
     {/* Manual CTA */}
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.5 }}
       className="flex justify-center mt-10"
     >
-      <motion.button
+      <m.button
         onClick={onLunaAction}
         disabled={!selectedSubtype}
         className={`btn-gold py-4 px-10 flex items-center gap-3 ${!selectedSubtype ? "opacity-40 cursor-not-allowed" : ""}`}
@@ -768,25 +768,25 @@ const QualifierStep = ({ step, title, subtitle, category, selectedSubtype, onSel
       >
         <Sparkles className="w-5 h-5" />
         See My Results
-      </motion.button>
-    </motion.div>
+      </m.button>
+    </m.div>
     <BackButton onClick={onBack} className="mt-4" />
-  </motion.div>
+  </m.div>
 );
 
 // ── Shared sub-components ─────────────────────────────────────────────────────
 
 const BackButton = ({ onClick, className = "" }: { onClick: () => void; className?: string }) => (
-  <motion.div
+  <m.div
     initial={{ opacity: 0 }} animate={{ opacity: 1 }}
     className={`flex justify-center mt-8 ${className}`}
   >
-    <motion.button
+    <m.button
       onClick={onClick}
       className="flex items-center gap-2 font-body text-sm text-muted-foreground hover:text-gold transition-colors"
       whileHover={{ x: -3 }}
     >
       <ArrowLeft className="w-4 h-4" /> Back
-    </motion.button>
-  </motion.div>
+    </m.button>
+  </m.div>
 );

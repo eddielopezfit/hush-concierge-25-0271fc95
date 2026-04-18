@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Phone, CheckCircle, Check } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLuna } from "@/contexts/LunaContext";
@@ -127,7 +127,7 @@ export const BookingCallbackSection = () => {
       </div>
 
       <div className="max-w-6xl mx-auto relative z-10">
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
@@ -140,10 +140,10 @@ export const BookingCallbackSection = () => {
           <p className="font-body text-base text-muted-foreground max-w-lg mx-auto">
             Drop your info and we'll reach out personally — or call us anytime.
           </p>
-        </motion.div>
+        </m.div>
 
         {/* First-Visit Reassurance */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -171,10 +171,10 @@ export const BookingCallbackSection = () => {
               ))}
             </div>
           </div>
-        </motion.div>
+        </m.div>
 
         {/* Callback Form */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -191,7 +191,7 @@ export const BookingCallbackSection = () => {
           </div>
 
           {conciergeContext?.preferredArtist && !isSubmitted && (
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               className="mb-6"
@@ -205,7 +205,7 @@ export const BookingCallbackSection = () => {
                   We'll pass this along to our front desk.
                 </span>
               </div>
-            </motion.div>
+            </m.div>
           )}
 
           {!isSubmitted ? (
@@ -340,7 +340,7 @@ export const BookingCallbackSection = () => {
 
               <div className="flex flex-col items-center gap-4">
                 <div className="flex flex-col sm:flex-row gap-4 items-center justify-center w-full">
-                  <motion.button
+                  <m.button
                     type="submit"
                     disabled={isSubmitting || !isFormValid}
                     className={`w-full sm:w-auto font-body text-base px-10 py-4 rounded-lg transition-all duration-300 ${
@@ -352,7 +352,7 @@ export const BookingCallbackSection = () => {
                     whileTap={isFormValid ? { scale: 0.98 } : {}}
                   >
                     {isSubmitting ? "Submitting..." : "Request Callback"}
-                  </motion.button>
+                  </m.button>
                   <span className="text-cream/40 text-sm">or</span>
                   <a
                     href="tel:+15203276753"
@@ -382,20 +382,20 @@ export const BookingCallbackSection = () => {
               </div>
             </form>
           ) : (
-            <motion.div
+            <m.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
               className="bg-charcoal/50 backdrop-blur-sm border border-gold/15 rounded-2xl p-12 md:p-16 text-center"
             >
-              <motion.div
+              <m.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
                 className="w-16 h-16 mx-auto mb-6 rounded-full bg-gold/15 flex items-center justify-center"
               >
                 <CheckCircle className="w-8 h-8 text-gold" />
-              </motion.div>
+              </m.div>
               <h3 className="font-display text-2xl md:text-3xl text-gold-gradient mb-4">
                 Your request was sent.
               </h3>
@@ -406,9 +406,9 @@ export const BookingCallbackSection = () => {
               <button onClick={handleScrollToTop} className="btn-outline-gold">
                 Back to Home
               </button>
-            </motion.div>
+            </m.div>
           )}
-        </motion.div>
+        </m.div>
       </div>
     </section>
   );

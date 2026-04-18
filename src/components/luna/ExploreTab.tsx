@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { servicesMenuData } from "@/data/servicesMenuData";
 import { ChevronRight, ArrowLeft, Sun, Heart, Palette, Scissors, Eye, Hand, Sparkles, Flower2, MessageSquare } from "lucide-react";
 import { useState } from "react";
@@ -142,7 +142,7 @@ export const ExploreTab = ({ onSwitchTab }: ExploreTabProps) => {
           {lookCategories.map((cat, i) => {
             const Icon = cat.icon;
             return (
-              <motion.button
+              <m.button
                 key={cat.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -153,7 +153,7 @@ export const ExploreTab = ({ onSwitchTab }: ExploreTabProps) => {
                 <Icon className="w-4 h-4 text-primary/70 group-hover:text-primary transition-colors" />
                 <span className="flex-1 text-left">{cat.label}</span>
                 <ChevronRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
-              </motion.button>
+              </m.button>
             );
           })}
         </div>

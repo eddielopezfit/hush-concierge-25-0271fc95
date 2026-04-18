@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import { Menu, X, PhoneCall } from "lucide-react";
 
@@ -74,7 +74,7 @@ export const Navigation = () => {
   }, [isMobileMenuOpen]);
 
   return (
-    <motion.header
+    <m.header
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
@@ -125,7 +125,7 @@ export const Navigation = () => {
 
       <AnimatePresence>
         {isMobileMenuOpen && (
-          <motion.div
+          <m.div
             ref={menuRef}
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
@@ -154,9 +154,9 @@ export const Navigation = () => {
                 Call (520) 327-6753
               </a>
             </nav>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
-    </motion.header>
+    </m.header>
   );
 };

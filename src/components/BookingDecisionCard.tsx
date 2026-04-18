@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { Phone, MessageSquare, ArrowRight, CheckCircle, Loader2, Sparkles } from "lucide-react";
 import { RevealData, BookingMode, getBookingModeConfig, deriveBookingMode } from "@/lib/experienceReveal";
 import { ConciergeContext } from "@/types/concierge";
@@ -105,7 +105,7 @@ export const BookingDecisionCard = ({
   if (revealData.timeEstimate) contextLines.push(revealData.timeEstimate);
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.1 }}
@@ -133,7 +133,7 @@ export const BookingDecisionCard = ({
       {/* Inline capture form — ALL modes */}
       <AnimatePresence mode="wait">
         {showCapture && !submitted && (
-          <motion.div
+          <m.div
             key="capture"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
@@ -161,7 +161,7 @@ export const BookingDecisionCard = ({
               onChange={e => setCaptureContact(e.target.value)}
               className="bg-secondary border-border text-foreground text-sm"
             />
-            <motion.button
+            <m.button
               onClick={handleSubmitCapture}
               disabled={submitting || !captureName.trim() || !captureContact.trim()}
               className={`w-full btn-gold ${py} ${textSm} font-display flex items-center justify-center gap-2 disabled:opacity-50`}
@@ -175,12 +175,12 @@ export const BookingDecisionCard = ({
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
-            </motion.button>
-          </motion.div>
+            </m.button>
+          </m.div>
         )}
 
         {submitted && (
-          <motion.div
+          <m.div
             key="success"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -195,7 +195,7 @@ export const BookingDecisionCard = ({
             <p className="text-[11px] font-body text-muted-foreground">
               {config.confirmSubcopy}
             </p>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
 
@@ -204,7 +204,7 @@ export const BookingDecisionCard = ({
         <div className="space-y-2">
           {/* Primary */}
           {!showCapture && (
-            <motion.button
+            <m.button
               onClick={handlePrimary}
               className={`w-full btn-gold ${py} ${textSm} font-display flex items-center justify-center gap-2`}
               whileHover={{ scale: 1.01 }}
@@ -212,30 +212,30 @@ export const BookingDecisionCard = ({
             >
               {config.primaryLabel}
               <ArrowRight className="w-4 h-4" />
-            </motion.button>
+            </m.button>
           )}
 
           {/* Secondary + Tertiary */}
           <div className="grid grid-cols-2 gap-2">
-            <motion.button
+            <m.button
               onClick={handleSecondary}
               className={`btn-outline-gold ${compact ? "py-2" : "py-2.5"} text-xs font-body flex items-center justify-center gap-1.5`}
               whileTap={{ scale: 0.98 }}
             >
               <Phone className="w-3.5 h-3.5" />
               {config.secondaryLabel}
-            </motion.button>
-            <motion.button
+            </m.button>
+            <m.button
               onClick={handleTertiary}
               className={`btn-outline-gold ${compact ? "py-2" : "py-2.5"} text-xs font-body flex items-center justify-center gap-1.5`}
               whileTap={{ scale: 0.98 }}
             >
               <MessageSquare className="w-3.5 h-3.5" />
               {config.tertiaryLabel}
-            </motion.button>
+            </m.button>
           </div>
         </div>
       )}
-    </motion.div>
+    </m.div>
   );
 };

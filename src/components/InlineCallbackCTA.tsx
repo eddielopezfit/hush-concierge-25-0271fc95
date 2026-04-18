@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Phone } from "lucide-react";
 
 export const InlineCallbackCTA = () => {
@@ -8,13 +8,13 @@ export const InlineCallbackCTA = () => {
   };
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       viewport={{ once: true }}
       className="py-8 px-6 flex items-center justify-center gap-4"
     >
-      <motion.button
+      <m.button
         onClick={handleScroll}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
@@ -22,7 +22,7 @@ export const InlineCallbackCTA = () => {
       >
         <Phone className="w-4 h-4" />
         Request a Callback
-      </motion.button>
-    </motion.div>
+      </m.button>
+    </m.div>
   );
 };

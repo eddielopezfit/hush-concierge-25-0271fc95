@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Phone, MapPin, Clock, Instagram, Facebook } from "lucide-react";
 import { useState } from "react";
 

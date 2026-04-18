@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { X, MessageSquare, Phone } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
@@ -70,14 +70,14 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-background/90 backdrop-blur-md"
           onClick={onClose}
         >
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 100 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 100 }}
@@ -192,7 +192,7 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
             {/* Sticky Footer */}
             <div className="flex-shrink-0 p-6 md:p-8 border-t border-secondary bg-card">
               <div className="flex flex-col sm:flex-row gap-3">
-                <motion.button
+                <m.button
                   onClick={handleChatWithLuna}
                   className="btn-gold py-4 px-6 flex items-center justify-center gap-3 flex-1"
                   whileHover={{ scale: 1.02 }}
@@ -200,7 +200,7 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
                 >
                   <MessageSquare className="w-5 h-5" />
                   <span>Chat with Luna</span>
-                </motion.button>
+                </m.button>
               </div>
 
               <a
@@ -211,8 +211,8 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
                 <span>Call front desk (520) 327-6753</span>
               </a>
             </div>
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       )}
     </AnimatePresence>
   );

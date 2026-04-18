@@ -1,4 +1,4 @@
-import { motion, useScroll, useTransform } from "framer-motion";
+import { m, useScroll, useTransform } from "framer-motion";
 import { ArrowDown } from "lucide-react";
 import { useRef } from "react";
 
@@ -28,11 +28,11 @@ export const StepInsideSection = () => {
     >
       {/* Video layer with parallax + slow Ken Burns zoom */}
       {/* Outer wrapper is OVER-SIZED on all axes so the parallax translate never reveals the page background */}
-      <motion.div
+      <m.div
         style={{ y }}
         className="absolute -left-[5%] -right-[5%] -top-[15%] h-[130%] bg-background overflow-hidden will-change-transform"
       >
-        <motion.div
+        <m.div
           initial={{ scale: 1.02 }}
           animate={{ scale: 1.08 }}
           transition={{ duration: 22, ease: "easeInOut", repeat: Infinity, repeatType: "reverse" }}
@@ -52,17 +52,17 @@ export const StepInsideSection = () => {
             <source src={MOBILE_SRC} type="video/mp4" media="(max-width: 767px)" />
             <source src={DESKTOP_SRC} type="video/mp4" />
           </video>
-        </motion.div>
+        </m.div>
 
         {/* Cinematic overlay — softer so the video reads as full-frame, with a focused left-side scrim for headline readability */}
         <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/30 to-transparent md:from-background/75 md:via-background/15 md:to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-transparent to-background/40" />
-      </motion.div>
+      </m.div>
 
       {/* Copy */}
       <div className="relative z-10 h-full flex items-center">
         <div className="max-w-7xl mx-auto px-6 md:px-10 w-full">
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
@@ -92,7 +92,7 @@ export const StepInsideSection = () => {
               </span>
               <ArrowDown className="w-4 h-4 transition-transform duration-300 group-hover:translate-y-0.5" />
             </a>
-          </motion.div>
+          </m.div>
         </div>
       </div>
     </section>

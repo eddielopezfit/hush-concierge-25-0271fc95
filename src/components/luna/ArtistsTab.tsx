@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { useState } from "react";
 import { ArrowLeft, Sparkles, Phone, MessageSquare, Instagram } from "lucide-react";
 import { teamMembers, photoMap, getBookableArtists, departmentLabels, TeamMember } from "@/data/teamData";
@@ -81,7 +81,7 @@ export const ArtistsTab = ({ onSwitchTab, onClosePanel }: ArtistsTabProps) => {
         </button>
 
         <div className="flex-1 overflow-y-auto px-4 py-4">
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             className="flex flex-col items-center text-center space-y-3"
@@ -181,7 +181,7 @@ export const ArtistsTab = ({ onSwitchTab, onClosePanel }: ArtistsTabProps) => {
                 Call front desk for matching
               </a>
             </div>
-          </motion.div>
+          </m.div>
         </div>
       </div>
     );
@@ -211,7 +211,7 @@ export const ArtistsTab = ({ onSwitchTab, onClosePanel }: ArtistsTabProps) => {
         {filtered.map((artist, i) => {
           const deptLabel = departmentLabels[artist.department] || artist.department;
           return (
-            <motion.div
+            <m.div
               key={artist.id}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -257,7 +257,7 @@ export const ArtistsTab = ({ onSwitchTab, onClosePanel }: ArtistsTabProps) => {
                   Full Profile
                 </button>
               </div>
-            </motion.div>
+            </m.div>
           );
         })}
       </div>

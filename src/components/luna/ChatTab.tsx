@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Send, Loader2, ArrowRight, Sparkles, Phone, Calendar, ChevronRight, RotateCcw, ArrowDown } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { getJourneyContextString } from "@/lib/journeyTracker";
 import { getConciergeContext } from "@/lib/conciergeStore";
 import { formatCategoryList, categoryLabels, goalLabels, timingLabels } from "@/lib/conciergeLabels";
@@ -324,7 +324,7 @@ function ChatActionButtons({
 }) {
   if (!actions.length) return null;
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3 }}
@@ -343,7 +343,7 @@ function ChatActionButtons({
           {action.label}
         </button>
       ))}
-    </motion.div>
+    </m.div>
   );
 }
 
@@ -955,7 +955,7 @@ export const ChatTab = () => {
         {messages.length === 1 && !isStreaming && (
           <div className="flex flex-wrap gap-1.5 mt-1">
             {smartChips.map((chip) => (
-              <motion.button
+              <m.button
                 key={chip}
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -964,14 +964,14 @@ export const ChatTab = () => {
                 className="px-3 py-2 rounded-full border border-primary/30 text-primary text-xs font-body hover:bg-primary/10 active:scale-95 transition-all"
               >
                 {chip}
-              </motion.button>
+              </m.button>
             ))}
           </div>
         )}
 
         {/* Persistent Quick Replies — shown after EVERY assistant response (except greeting) */}
         {messages.length > 1 && !isStreaming && lastAssistantMsg && (
-          <motion.div
+          <m.div
             key={lastAssistantMsg.id}
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
@@ -987,13 +987,13 @@ export const ChatTab = () => {
                 {reply}
               </button>
             ))}
-          </motion.div>
+          </m.div>
         )}
 
         {/* Lead capture form */}
         <AnimatePresence>
           {showLeadForm && !leadCaptured && (
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
@@ -1031,7 +1031,7 @@ export const ChatTab = () => {
                   Not now
                 </button>
               </div>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
 
@@ -1039,7 +1039,7 @@ export const ChatTab = () => {
       </div>
         <AnimatePresence>
           {showScrollToBottom && (
-            <motion.button
+            <m.button
               initial={{ opacity: 0, y: 8, scale: 0.9 }}
               animate={
                 unreadCount > 0
@@ -1072,7 +1072,7 @@ export const ChatTab = () => {
                   {unreadCount > 9 ? "9+" : unreadCount}
                 </span>
               )}
-            </motion.button>
+            </m.button>
           )}
         </AnimatePresence>
       </div>

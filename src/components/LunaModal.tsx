@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { X, MessageSquare, Phone } from "lucide-react";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { ConciergeContext } from "@/types/concierge";
@@ -177,14 +177,14 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 bg-background/85 backdrop-blur-md"
           onClick={handleClose}
         >
-          <motion.div
+          <m.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -204,7 +204,7 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
             {/* ── EXIT-INTENT LEAD CAPTURE ──────────── */}
             <AnimatePresence>
               {showLeadCapture && (
-                <motion.div
+                <m.div
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 20 }}
@@ -212,7 +212,7 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
                   className="absolute inset-0 rounded-xl bg-card flex flex-col items-center justify-center p-8 z-10"
                 >
                   {leadSubmitted ? (
-                    <motion.div
+                    <m.div
                       initial={{ scale: 0.9, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       className="text-center"
@@ -221,7 +221,7 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
                       <p className="font-body text-sm text-muted-foreground">
                         We'll text you a booking link shortly.
                       </p>
-                    </motion.div>
+                    </m.div>
                   ) : (
                     <>
                       <p className="font-display text-xl text-cream mb-1 text-center">
@@ -257,13 +257,13 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
                       </button>
                     </>
                   )}
-                </motion.div>
+                </m.div>
               )}
             </AnimatePresence>
 
             {/* ── Context reflection ────────────────────────── */}
             {hasContext && (
-              <motion.div
+              <m.div
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05 }}
@@ -287,12 +287,12 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
                     </span>
                   )}
                 </div>
-              </motion.div>
+              </m.div>
             )}
 
             {/* ── Soft direction ────────────────────────────── */}
             {softDirection && (
-              <motion.div
+              <m.div
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
@@ -304,21 +304,21 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
                 <p className="font-body text-sm text-cream/80 leading-relaxed">
                   {softDirection}
                 </p>
-              </motion.div>
+              </m.div>
             )}
 
             {/* ── Trust layer ───────────────────────────────── */}
-            <motion.p
+            <m.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.15 }}
               className="font-body text-xs text-muted-foreground leading-relaxed mb-7 italic"
             >
               This isn't final — Luna can refine this with you based on your preferences, history, and desired outcome.
-            </motion.p>
+            </m.p>
 
             {/* ── Primary CTA — Chat ───────────────────────── */}
-            <motion.button
+            <m.button
               onClick={handleChatWithLuna}
               className="w-full btn-gold py-4 px-6 flex items-center justify-center gap-3 text-base mb-3"
               whileHover={{ scale: 1.02 }}
@@ -329,27 +329,27 @@ export const LunaModal = ({ isOpen, onClose, context }: LunaModalProps) => {
             >
               <MessageSquare className="w-5 h-5" />
               Chat with Luna to personalize this
-            </motion.button>
+            </m.button>
 
             {/* ── Secondary CTA — Callback ─────────────────── */}
-            <motion.div
+            <m.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.28 }}
               className="flex flex-col gap-2"
             >
-              <motion.button
+              <m.button
                 onClick={handleRequestCallback}
                 className="w-full py-3 px-6 flex items-center justify-center gap-2 text-xs text-muted-foreground hover:text-gold transition-colors font-body"
                 whileHover={{ scale: 1.01 }}
               >
                 <Phone className="w-3.5 h-3.5" />
                 Request a callback
-              </motion.button>
-            </motion.div>
+              </m.button>
+            </m.div>
 
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       )}
     </AnimatePresence>
   );

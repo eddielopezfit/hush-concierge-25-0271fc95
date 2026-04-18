@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Star } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -37,7 +37,7 @@ export const TrustBar = () => {
         </a>
 
         {/* Rotating mini review */}
-        <motion.p
+        <m.p
           key={index}
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
@@ -46,7 +46,7 @@ export const TrustBar = () => {
           className="font-body text-sm text-cream/60 italic text-center sm:text-left"
         >
           "{review.text}" — <span className="text-gold/70 not-italic">{review.author}</span>
-        </motion.p>
+        </m.p>
       </div>
     </section>
   );
