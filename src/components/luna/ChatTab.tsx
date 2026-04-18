@@ -986,9 +986,26 @@ export const ChatTab = () => {
           {showScrollToBottom && (
             <motion.button
               initial={{ opacity: 0, y: 8, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
+              animate={
+                unreadCount > 0
+                  ? {
+                      opacity: 1,
+                      y: 0,
+                      scale: [1, 1.06, 1],
+                      boxShadow: [
+                        "0 4px 12px hsl(var(--primary) / 0.25)",
+                        "0 4px 18px hsl(var(--primary) / 0.55)",
+                        "0 4px 12px hsl(var(--primary) / 0.25)",
+                      ],
+                    }
+                  : { opacity: 1, y: 0, scale: 1 }
+              }
               exit={{ opacity: 0, y: 8, scale: 0.9 }}
-              transition={{ duration: 0.18 }}
+              transition={
+                unreadCount > 0
+                  ? { duration: 1.6, repeat: Infinity, ease: "easeInOut" }
+                  : { duration: 0.18 }
+              }
               onClick={scrollChatToBottom}
               className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary text-primary-foreground shadow-lg text-[11px] font-body font-medium hover:bg-primary/90 transition-colors"
               aria-label={unreadCount > 0 ? `Scroll to ${unreadCount} new message${unreadCount > 1 ? "s" : ""}` : "Scroll to latest message"}
