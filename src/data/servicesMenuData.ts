@@ -34,7 +34,7 @@ export const servicesMenuData: ServiceCategory[] = [
     id: "hair",
     title: "Hair",
     icon: Scissors,
-    pricePreview: "Women's from $60+ | Men's from $35+ | Color from $68+",
+    pricePreview: "Women's cuts from $60 · Color from $68",
     groups: [
       {
         name: "Precision Haircuts",
@@ -119,7 +119,7 @@ export const servicesMenuData: ServiceCategory[] = [
     id: "nails",
     title: "Nails",
     icon: Hand,
-    pricePreview: "Manicure from $35+ | Full set from $95+",
+    pricePreview: "Manicure from $35 · Full set from $95",
     groups: [
       {
         name: "Nail Services",
@@ -149,19 +149,19 @@ export const servicesMenuData: ServiceCategory[] = [
     id: "lashes",
     title: "Lashes",
     icon: Eye,
-    pricePreview: "Sets from $180 | Fills from $70",
+    pricePreview: "Sets from $180 · Fills from $70",
     groups: [
       {
         name: "Lash Services",
         items: [
-          { name: "Classic Lash Set", price: "$180" },
-          { name: "Classic Lash Fill", price: "$70" },
-          { name: "Hybrid Lash Set", price: "$220" },
-          { name: "Hybrid Lash Fill", price: "$80" },
-          { name: "Volume Lash Set", price: "$250" },
-          { name: "Volume Lash Fill", price: "$90" },
-          { name: "Lash Lift & Perm", price: "$65" },
-          { name: "Lash or Brow Tint", price: "$20", sharedId: "brow-lash-tint", crossCategories: ["skincare"] },
+          { name: "Classic Lash Set", price: "from $180" },
+          { name: "Classic Lash Fill", price: "from $70" },
+          { name: "Hybrid Lash Set", price: "from $220" },
+          { name: "Hybrid Lash Fill", price: "from $80" },
+          { name: "Volume Lash Set", price: "from $250" },
+          { name: "Volume Lash Fill", price: "from $90" },
+          { name: "Lash Lift & Perm", price: "from $65" },
+          { name: "Lash or Brow Tint", price: "from $20", sharedId: "brow-lash-tint", crossCategories: ["skincare"] },
         ],
       },
     ],
@@ -173,16 +173,16 @@ export const servicesMenuData: ServiceCategory[] = [
     id: "skincare",
     title: "Skincare & Spray Tan",
     icon: Sparkles,
-    pricePreview: "Facials from $95 | Spray tan $35",
+    pricePreview: "Facials from $95 · Spray tan from $35",
     groups: [
       {
         name: "Skincare & Spray Tan Services",
         items: [
-          { name: "Signature Facial", price: "$95" },
-          { name: "Dermaplane / Hydrafacial / Microdermabrasion Facials", price: "$115" },
-          { name: "Microneedling", price: "$299" },
-          { name: "Brow Wax", price: "$20", sharedId: "brow-wax", crossCategories: ["lashes"] },
-          { name: "Airbrush Spray Tan", price: "$35" },
+          { name: "Signature Facial", price: "from $95" },
+          { name: "Dermaplane / Hydrafacial / Microdermabrasion Facials", price: "from $115" },
+          { name: "Microneedling", price: "from $299" },
+          { name: "Brow Wax", price: "from $20", sharedId: "brow-wax", crossCategories: ["lashes"] },
+          { name: "Airbrush Spray Tan", price: "from $35" },
           { name: "Other waxing services", price: "Call for pricing" },
         ],
       },
@@ -195,14 +195,14 @@ export const servicesMenuData: ServiceCategory[] = [
     id: "massage",
     title: "Massage",
     icon: Heart,
-    pricePreview: "60 min $105 | 90 min $140",
+    pricePreview: "60 min from $105 · 90 min from $140",
     groups: [
       {
         name: "Massage Sessions",
         items: [
-          { name: "60 min", price: "$105" },
-          { name: "90 min", price: "$140" },
-          { name: "120 min", price: "$190" },
+          { name: "60 min", price: "from $105" },
+          { name: "90 min", price: "from $140" },
+          { name: "120 min", price: "from $190" },
         ],
       },
     ],
