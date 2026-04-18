@@ -79,9 +79,9 @@ export const HeroSection = () => {
           Five departments · Three founders still behind the chair · 24 years of transformations
         </p>
 
-        {/* CTAs — hidden on mobile (sticky bar handles it) */}
+        {/* CTAs — single dominant primary, secondary as ghost link */}
         <div
-          className="hidden sm:flex flex-col sm:flex-row items-center justify-center gap-4 mb-8 px-4 opacity-0 animate-fade-up-sm"
+          className="hidden sm:flex flex-col items-center justify-center gap-3 mb-8 px-4 opacity-0 animate-fade-up-sm"
           style={{ animationDelay: "0.6s" }}
         >
           <button
@@ -94,10 +94,12 @@ export const HeroSection = () => {
 
           <button
             onClick={openChatWidget}
-            className="btn-outline-gold py-4 px-8 hidden sm:flex items-center gap-3 transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]"
+            className="group inline-flex items-center gap-2 text-cream/60 hover:text-gold font-body text-sm transition-colors duration-200"
           >
-            <MessageSquare className="w-5 h-5" />
-            Talk to Our AI Concierge
+            <MessageSquare className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100 transition-opacity" />
+            <span className="border-b border-transparent group-hover:border-gold/40 transition-colors">
+              or talk to our AI concierge
+            </span>
           </button>
         </div>
 

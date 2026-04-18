@@ -339,6 +339,12 @@ export const BookingCallbackSection = () => {
               </div>
 
               <div className="flex flex-col items-center gap-4">
+                {!isFormValid && (
+                  <p className="font-body text-xs text-muted-foreground">
+                    Name and a valid 10-digit phone number required
+                  </p>
+                )}
+
                 <div className="flex flex-col sm:flex-row gap-4 items-center justify-center w-full">
                   <m.button
                     type="submit"
@@ -362,12 +368,6 @@ export const BookingCallbackSection = () => {
                     Call Now: (520) 327-6753
                   </a>
                 </div>
-
-                {!isFormValid && (
-                  <p className="font-body text-xs text-muted-foreground">
-                    Name and phone number required
-                  </p>
-                )}
 
                 {submitError && (
                   <p className="font-body text-xs text-destructive">

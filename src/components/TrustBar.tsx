@@ -21,7 +21,7 @@ export const TrustBar = () => {
 
   return (
     <section className="py-6 px-6 bg-card/50 border-y border-border">
-      <div className="max-w-3xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6">
+      <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5">
         {/* Rating badge */}
         <a
           href="https://www.google.com/maps/place/Hush+Salon+%26+Day+Spa/@32.2537155,-110.8837433,17z/"
@@ -34,6 +34,14 @@ export const TrustBar = () => {
           <span className="text-border">·</span>
           <span className="font-body text-sm text-muted-foreground">315+ reviews</span>
         </a>
+
+        {/* Category-claim badge */}
+        <span className="hidden sm:inline-flex items-center gap-1.5 shrink-0 px-3 py-1 rounded-full border border-gold/40 bg-gold/5">
+          <span className="w-1.5 h-1.5 rounded-full bg-gold" />
+          <span className="font-body text-xs text-gold/90 tracking-wide uppercase">
+            Tucson's First AI-Guided Salon
+          </span>
+        </span>
 
         {/* Rotating mini review — re-mounts via key for fresh CSS animation */}
         <p
