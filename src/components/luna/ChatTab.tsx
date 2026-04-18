@@ -863,6 +863,15 @@ export const ChatTab = () => {
       <div ref={scrollContainerRef} className="absolute inset-0 overflow-y-auto px-4 py-4 space-y-3 overscroll-contain">
         {messages.map((msg) => (
           <div key={msg.id}>
+            {firstUnreadId === msg.id && unreadCount > 0 && (
+              <div className="flex items-center gap-2 my-2" aria-label="New messages">
+                <div className="flex-1 h-px bg-primary/30" />
+                <span className="text-[10px] uppercase tracking-[0.15em] font-body text-primary/80 px-2 py-0.5 rounded-full border border-primary/30 bg-primary/5">
+                  New
+                </span>
+                <div className="flex-1 h-px bg-primary/30" />
+              </div>
+            )}
             <div className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
               {msg.role === "assistant" && (
                 <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2.5 mr-2 flex-shrink-0" />
