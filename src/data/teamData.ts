@@ -20,6 +20,7 @@ import imgZaidaDelgado from "@/assets/artists/Zaida_Delgado.webp";
 import imgFounders from "@/assets/Founders_Hush.jpg";
 import imgSheriTurner from "@/assets/sheri-turner.jpg";
 import imgDanielleColucci from "@/assets/danielle-colucci.jpg";
+import imgKathyCrawford from "@/assets/kathy-crawford.jpg";
 
 export type TeamDepartment = "hair" | "skincare" | "nails" | "massage" | "lashes" | "front-desk" | "founders";
 export type TeamRole = "founder" | "senior-stylist" | "stylist" | "esthetician" | "nail-tech" | "massage-therapist" | "coordinator" | "lash-specialist";
@@ -57,7 +58,7 @@ export interface TeamMember {
 export const photoMap: Record<string, string> = {
   f1: imgSheriTurner,
   f2: imgDanielleColucci,
-  f3: imgFounders,
+  f3: imgKathyCrawford,
   h1: imgCharlyCamano,
   h2: imgMichelleYrigolla,
   h3: imgSilviyaWarren,
