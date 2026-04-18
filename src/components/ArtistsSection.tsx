@@ -390,16 +390,18 @@ export const ArtistsSection = () => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.3 }}
-              className="relative w-full max-w-md p-6 md:p-8 rounded-xl border border-gold/25 bg-card shadow-[0_0_50px_-15px_hsl(38_50%_55%/0.25)] max-h-[90vh] overflow-y-auto"
+              className="relative w-full max-w-md rounded-xl border border-gold/25 bg-card shadow-[0_0_50px_-15px_hsl(38_50%_55%/0.25)] max-h-[90vh] overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
               <button
                 onClick={() => setSelectedArtist(null)}
-                className="sticky top-0 float-right -mr-2 -mt-2 z-10 w-11 h-11 rounded-full bg-secondary/95 backdrop-blur-sm flex items-center justify-center text-cream hover:text-cream hover:bg-gold/25 border border-border/60 shadow-lg transition-all"
+                className="absolute top-3 right-3 z-20 w-10 h-10 rounded-full bg-secondary/95 backdrop-blur-sm flex items-center justify-center text-cream hover:text-cream hover:bg-gold/25 border border-border/60 shadow-lg transition-all"
                 aria-label="Close"
               >
                 <X className="w-5 h-5" />
               </button>
+
+              <div className="overflow-y-auto max-h-[90vh] p-6 md:p-8 pt-12 md:pt-14">
 
               <div className="flex flex-col items-center text-center">
                 <div className="w-28 h-28 md:w-32 md:h-32 rounded-full overflow-hidden border-2 border-gold/30 mb-5 shadow-[0_0_25px_-5px_hsl(38_50%_55%/0.25)]">
