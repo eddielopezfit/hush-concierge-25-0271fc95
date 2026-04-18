@@ -5,6 +5,7 @@ import { RevealData, BookingMode, getBookingModeConfig, deriveBookingMode } from
 import { ConciergeContext } from "@/types/concierge";
 import { useLuna } from "@/contexts/LunaContext";
 import { saveLead, saveCallbackRequest } from "@/lib/saveSession";
+import { formatCategoryList } from "@/lib/conciergeLabels";
 import { Input } from "@/components/ui/input";
 
 interface BookingDecisionCardProps {
@@ -179,24 +180,46 @@ export const BookingDecisionCard = ({
           </m.div>
         )}
 
-        {submitted && (
-          <m.div
-            key="success"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center py-4 space-y-2"
-          >
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 border border-primary/20">
-              <CheckCircle className="w-6 h-6 text-primary" />
-            </div>
-            <p className="font-display text-sm text-foreground">
-              {config.confirmHeadline}
-            </p>
-            <p className="text-[11px] font-body text-muted-foreground">
-              {config.confirmSubcopy}
-            </p>
-          </m.div>
-        )}
+        {submitted && (() => {
+          // Personalized confirmation — mirrors ChatTab + BookingCallbackSection
+          const firstNameRaw = captureName.trim().split(/\s+/)[0] || "";
+          const firstName = firstNameRaw
+            ? firstNameRaw.charAt(0).toUpperCase() + firstNameRaw.slice(1).toLowerCase()
+            : "";
+          const artist = context?.preferredArtist || null;
+          const services = context?.categories?.length ? formatCategoryList(context.categories).toLowerCase() : null;
+
+          let headline = "";
+          if (artist && services) headline = `Kendell will call you about your ${services} appointment with ${artist}.`;
+          else if (services) headline = `Kendell will call you about your ${services} appointment.`;
+          else if (artist) headline = `Kendell will call you about booking with ${artist}.`;
+          else headline = config.confirmHeadline;
+
+          const greeting = firstName ? `Thank you, ${firstName}.` : headline;
+          const showHeadlineLine = !!firstName;
+
+          return (
+            <m.div
+              key="success"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center py-4 space-y-2"
+            >
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 border border-primary/20">
+                <CheckCircle className="w-6 h-6 text-primary" />
+              </div>
+              <p className="font-display text-sm text-foreground">
+                {greeting}
+              </p>
+              {showHeadlineLine && (
+                <p className="text-xs font-body text-foreground/80">{headline}</p>
+              )}
+              <p className="text-[11px] font-body text-muted-foreground">
+                {config.confirmSubcopy}
+              </p>
+            </m.div>
+          );
+        })()}
       </AnimatePresence>
 
       {/* CTAs — only show if not in capture/submitted state */}
