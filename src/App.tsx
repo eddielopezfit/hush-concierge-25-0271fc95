@@ -42,13 +42,14 @@ const App = () => (
                 {/* New pages should follow the lazy pattern: const Page = lazy(() => import("./pages/Page")) */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              {/* LunaChatWidget MUST be inside MotionProvider — it uses framer-motion's
+                  `m.*` components which silently render nothing without LazyMotion. */}
+              <Suspense fallback={null}>
+                <LunaChatWidget />
+              </Suspense>
             </MotionProvider>
           </Suspense>
         </BrowserRouter>
-
-        <Suspense fallback={null}>
-          <LunaChatWidget />
-        </Suspense>
       </LunaProvider>
     </TooltipProvider>
   </QueryClientProvider>
