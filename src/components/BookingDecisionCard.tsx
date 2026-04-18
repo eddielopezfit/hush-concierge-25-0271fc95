@@ -5,6 +5,7 @@ import { RevealData, BookingMode, getBookingModeConfig, deriveBookingMode } from
 import { ConciergeContext } from "@/types/concierge";
 import { useLuna } from "@/contexts/LunaContext";
 import { saveLead, saveCallbackRequest } from "@/lib/saveSession";
+import { formatCategoryList } from "@/lib/conciergeLabels";
 import { Input } from "@/components/ui/input";
 
 interface BookingDecisionCardProps {
