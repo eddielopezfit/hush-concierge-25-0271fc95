@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Phone, MessageSquare, ArrowRight, CheckCircle, Loader2, Sparkles } from "lucide-react";
-import { RevealData, BookingMode, getBookingModeConfig, deriveBookingMode } from "@/lib/experienceReveal";
+import { Phone, MessageSquare, ArrowRight, CheckCircle, Loader2 } from "lucide-react";
+import { RevealData, getBookingModeConfig, deriveBookingMode } from "@/lib/experienceReveal";
 import { ConciergeContext } from "@/types/concierge";
 import { useLuna } from "@/contexts/LunaContext";
 import { saveLead, saveCallbackRequest } from "@/lib/saveSession";
@@ -21,7 +21,7 @@ export const BookingDecisionCard = ({
   compact = false,
   onChatWithLuna,
 }: BookingDecisionCardProps) => {
-  const { openChatWidget, openModal } = useLuna();
+  const { openChatWidget } = useLuna();
   const mode = deriveBookingMode(revealData, context);
   const config = getBookingModeConfig(mode, context?.timing);
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, Sparkles, ArrowRight, Clock, DollarSign, Users, RotateCcw, Scissors, Hand, Eye, Heart, Flower2 } from "lucide-react";
+import { ChevronLeft, Sparkles, ArrowRight, Clock, DollarSign, Users, RotateCcw, Scissors, Hand, Eye, Heart } from "lucide-react";
 import { generateRecommendation, LunaRecommendation } from "@/lib/lunaBrain";
 import { startSession } from "@/lib/sessionManager";
 import { ConciergeContext, ServiceCategoryId, ServiceSubtype } from "@/types/concierge";
@@ -76,7 +76,7 @@ export const FindMyLookTab = ({ onSwitchTab }: FindMyLookTabProps) => {
   const [selectedSubtype, setSelectedSubtype] = useState<string | null>(null);
   const [selectedGoal, setSelectedGoal] = useState<string | null>(null);
   const [selectedTiming, setSelectedTiming] = useState<string | null>(null);
-  const [recommendation, setRecommendation] = useState<LunaRecommendation | null>(null);
+  const [, setRecommendation] = useState<LunaRecommendation | null>(null);
   const [revealData, setRevealData] = useState<RevealData | null>(null);
   const [resumedFromContext, setResumedFromContext] = useState(false);
 

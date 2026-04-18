@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
 import { ArrowDown, Sparkles, MessageSquare } from "lucide-react";
-import heroImage from "@/assets/hero-salon.jpg";
 import { useLuna } from "@/contexts/LunaContext";
 
 export const HeroSection = () => {

@@ -109,7 +109,7 @@ export const MyPlanTab = ({ onSwitchTab }: MyPlanTabProps) => {
             </div>
 
             <div className="space-y-1.5">
-              {planItems.map((item, idx) => {
+              {planItems.map((item) => {
                 const Icon = categoryIcon[item.category] || Sparkles;
                 return (
                   <div key={item.category} className="flex items-start gap-2.5 py-1.5 border-b border-border/40 last:border-0">
