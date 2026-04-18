@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { ArrowLeft, Sparkles, Phone, MessageSquare, Instagram } from "lucide-react";
-import { teamMembers, photoMap, getBookableArtists, departmentLabels, TeamMember } from "@/data/teamData";
+import { photoMap, getBookableArtists, departmentLabels, TeamMember } from "@/data/teamData";
 import { useLuna } from "@/contexts/LunaContext";
 import { trackArtistClick } from "@/lib/journeyTracker";
 

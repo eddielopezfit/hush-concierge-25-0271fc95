@@ -1,12 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Send, Loader2, ArrowRight, Sparkles, Phone, Calendar, ChevronRight, RotateCcw, ArrowDown } from "lucide-react";
+import { Send, Loader2, Phone, Calendar, ChevronRight, RotateCcw, ArrowDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getJourneyContextString } from "@/lib/journeyTracker";
-import { getConciergeContext } from "@/lib/conciergeStore";
 import { formatCategoryList, categoryLabels, goalLabels, timingLabels } from "@/lib/conciergeLabels";
 import { saveLead } from "@/lib/saveSession";
 import { getConversationId, startSession, clearConversation } from "@/lib/sessionManager";
-import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
+import { ConciergeContext } from "@/types/concierge";
 import ReactMarkdown from "react-markdown";
 import { useLuna } from "@/contexts/LunaContext";
 import { toast } from "sonner";
@@ -34,11 +33,6 @@ const ERROR_PHRASES = [
   "having trouble connecting",
   "give me just a moment and try again",
 ];
-
-function isErrorResponse(content: string): boolean {
-  const lower = content.toLowerCase();
-  return ERROR_PHRASES.some(p => lower.includes(p));
-}
 
 // ── Error-specific quick replies ────────────────────────────────────────────
 const ERROR_QUICK_REPLIES = [
@@ -177,7 +171,7 @@ function getQuickReplies(ctx: ConciergeContext | null, lastAssistantMsg: string)
 }
 
 // ── Detect intent from assistant message for in-chat CTAs ───────────────────
-function detectChatActions(msg: string, ctx: ConciergeContext | null): ChatAction[] {
+function detectChatActions(msg: string, _ctx: ConciergeContext | null): ChatAction[] {
   const lower = msg.toLowerCase();
   const actions: ChatAction[] = [];
 
@@ -382,7 +376,7 @@ function clearPersistedChat(): void {
 }
 
 export const ChatTab = () => {
-  const { conciergeContext, openChatWidget } = useLuna();
+  const { conciergeContext } = useLuna();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
@@ -851,11 +845,6 @@ export const ChatTab = () => {
         content: `Thanks, ${leadName}! Someone from our team will reach out to you shortly. In the meantime, keep asking me anything — I'm here!`,
       },
     ]);
-  };
-
-  const handleScrollToSection = (sectionId: string) => {
-    const el = document.getElementById(sectionId);
-    if (el) el.scrollIntoView({ behavior: "smooth" });
   };
 
   // Find the last assistant message for quick reply context

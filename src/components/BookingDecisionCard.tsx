@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Phone, MessageSquare, ArrowRight, CheckCircle, Loader2, Sparkles } from "lucide-react";
+import { Phone, MessageSquare, ArrowRight, CheckCircle, Loader2 } from "lucide-react";
 import { RevealData, BookingMode, getBookingModeConfig, deriveBookingMode } from "@/lib/experienceReveal";
 import { ConciergeContext } from "@/types/concierge";
 import { useLuna } from "@/contexts/LunaContext";
