@@ -59,27 +59,24 @@ export const LunaChatWidget = () => {
     const NUDGE_KEY = "hush_luna_compare_nudge_shown";
     if (sessionStorage.getItem(NUDGE_KEY)) return;
 
-    const sections: Array<{ id: "services" | "artists"; el: Element | null }> = [
-      { id: "services", el: document.getElementById("services") },
-      { id: "artists", el: document.getElementById("artists") },
-    ];
-    if (!sections.some(s => s.el)) return;
-
     const dwellMs: Record<string, number> = { services: 0, artists: 0 };
     const visible: Record<string, boolean> = { services: false, artists: false };
     let lastTick = performance.now();
     let rafId: number | null = null;
+    let observer: IntersectionObserver | null = null;
+    let mutationObserver: MutationObserver | null = null;
+    const observed = new Set<Element>();
     const THRESHOLD = 30_000;
 
     const tick = (now: number) => {
       const delta = now - lastTick;
       lastTick = now;
-      for (const s of sections) {
-        if (visible[s.id]) {
-          dwellMs[s.id] += delta;
-          if (dwellMs[s.id] >= THRESHOLD && !isOpen && !sessionStorage.getItem(NUDGE_KEY)) {
+      for (const id of ["services", "artists"] as const) {
+        if (visible[id]) {
+          dwellMs[id] += delta;
+          if (dwellMs[id] >= THRESHOLD && !isOpen && !sessionStorage.getItem(NUDGE_KEY)) {
             sessionStorage.setItem(NUDGE_KEY, "1");
-            setNudge({ kind: "compare", section: s.id });
+            setNudge({ kind: "compare", section: id });
             cleanup();
             return;
           }
@@ -88,7 +85,7 @@ export const LunaChatWidget = () => {
       rafId = requestAnimationFrame(tick);
     };
 
-    const observer = new IntersectionObserver(
+    observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
           const id = (entry.target as HTMLElement).id as "services" | "artists";
@@ -98,13 +95,31 @@ export const LunaChatWidget = () => {
       { threshold: [0, 0.4, 1] }
     );
 
-    sections.forEach(s => s.el && observer.observe(s.el));
+    const tryObserve = (id: string) => {
+      const el = document.getElementById(id);
+      if (el && !observed.has(el)) {
+        observed.add(el);
+        observer!.observe(el);
+      }
+    };
+
+    tryObserve("services");
+    tryObserve("artists");
+
+    // Watch for lazy-loaded sections appearing later
+    mutationObserver = new MutationObserver(() => {
+      tryObserve("services");
+      tryObserve("artists");
+    });
+    mutationObserver.observe(document.body, { childList: true, subtree: true });
+
     lastTick = performance.now();
     rafId = requestAnimationFrame(tick);
 
     function cleanup() {
       if (rafId !== null) cancelAnimationFrame(rafId);
-      observer.disconnect();
+      observer?.disconnect();
+      mutationObserver?.disconnect();
     }
     return cleanup;
   }, [isOpen]);
@@ -115,12 +130,12 @@ export const LunaChatWidget = () => {
     const NUDGE_KEY = "hush_luna_finder_stuck_nudge_shown";
     if (sessionStorage.getItem(NUDGE_KEY)) return;
 
-    const el = document.getElementById("experience-finder");
-    if (!el) return;
-
     const INACTIVITY_MS = 20_000;
     let visible = false;
     let timeoutId: number | null = null;
+    let observer: IntersectionObserver | null = null;
+    let mutationObserver: MutationObserver | null = null;
+    let el: HTMLElement | null = null;
 
     const clearTimer = () => {
       if (timeoutId !== null) {
@@ -144,31 +159,49 @@ export const LunaChatWidget = () => {
 
     const onActivity = () => armTimer();
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          visible = entry.isIntersecting && entry.intersectionRatio >= 0.4;
-        }
-        if (visible) armTimer();
-        else clearTimer();
-      },
-      { threshold: [0, 0.4, 1] }
-    );
-
-    observer.observe(el);
-
-    // Activity within the finder section resets the timer
     const events: Array<keyof DocumentEventMap> = ["click", "keydown", "pointerdown", "touchstart"];
-    events.forEach(ev => el.addEventListener(ev, onActivity, { passive: true } as AddEventListenerOptions));
-    // Scrolling on the page while finder is visible also counts as activity
-    window.addEventListener("scroll", onActivity, { passive: true });
 
     function teardown() {
       clearTimer();
-      observer.disconnect();
-      events.forEach(ev => el?.removeEventListener(ev, onActivity));
+      observer?.disconnect();
+      mutationObserver?.disconnect();
+      if (el) events.forEach(ev => el!.removeEventListener(ev, onActivity));
       window.removeEventListener("scroll", onActivity);
     }
+
+    const attach = (target: HTMLElement) => {
+      el = target;
+      observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            visible = entry.isIntersecting && entry.intersectionRatio >= 0.4;
+          }
+          if (visible) armTimer();
+          else clearTimer();
+        },
+        { threshold: [0, 0.4, 1] }
+      );
+      observer.observe(target);
+      events.forEach(ev => target.addEventListener(ev, onActivity, { passive: true } as AddEventListenerOptions));
+      window.addEventListener("scroll", onActivity, { passive: true });
+    };
+
+    const found = document.getElementById("experience-finder");
+    if (found) {
+      attach(found);
+    } else {
+      // Section is lazy-loaded — wait for it to appear in the DOM
+      mutationObserver = new MutationObserver(() => {
+        const target = document.getElementById("experience-finder");
+        if (target) {
+          mutationObserver?.disconnect();
+          mutationObserver = null;
+          attach(target);
+        }
+      });
+      mutationObserver.observe(document.body, { childList: true, subtree: true });
+    }
+
     return teardown;
   }, [isOpen]);
 
