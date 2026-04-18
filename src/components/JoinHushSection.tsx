@@ -3,8 +3,18 @@ import { m } from "framer-motion";
 import { Mic, Heart, ArrowRight, Phone, Check, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
+const CAREER_ROLES = [
+  "Stylist",
+  "Esthetician",
+  "Nail Tech",
+  "Massage Therapist",
+  "Apprentice",
+  "Other",
+] as const;
 
 /**
  * JoinHushSection — combined "Be a Rockstar" (careers) + "Groupies Only" (referrals).
@@ -294,12 +304,19 @@ export const JoinHushSection = () => {
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   className="bg-background/40 border-border/60 text-cream"
                 />
-                <Input
-                  placeholder="Role you're interested in (stylist, nail tech, etc.)"
+                <Select
                   value={form.role}
-                  onChange={(e) => setForm({ ...form, role: e.target.value })}
-                  className="bg-background/40 border-border/60 text-cream"
-                />
+                  onValueChange={(value) => setForm({ ...form, role: value })}
+                >
+                  <SelectTrigger className="bg-background/40 border-border/60 text-cream">
+                    <SelectValue placeholder="Role you're interested in" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CAREER_ROLES.map((role) => (
+                      <SelectItem key={role} value={role}>{role}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <Textarea
                   placeholder="Tell us a little about yourself (optional)"
                   value={form.story}
