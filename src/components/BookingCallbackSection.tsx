@@ -396,13 +396,48 @@ export const BookingCallbackSection = () => {
               >
                 <CheckCircle className="w-8 h-8 text-gold" />
               </m.div>
-              <h3 className="font-display text-2xl md:text-3xl text-gold-gradient mb-4">
-                Your request was sent.
-              </h3>
-              <p className="font-body text-cream/60 text-base max-w-md mx-auto mb-8">
-                The Hush team will follow up during business hours. You can also reach us anytime at{" "}
-                <a href="tel:+15203276753" className="text-gold hover:underline">(520) 327-6753</a>.
-              </p>
+              {(() => {
+                const artist = conciergeContext?.preferredArtist?.split(" ")[0];
+                const services = formData.interestedIn
+                  .map(v => serviceOptions.find(o => o.value === v)?.label)
+                  .filter(Boolean) as string[];
+                const serviceSummary = services.length === 0
+                  ? null
+                  : services.length === 1
+                    ? services[0]!.toLowerCase()
+                    : services.length === 2
+                      ? `${services[0]!.toLowerCase()} and ${services[1]!.toLowerCase()}`
+                      : "your visit";
+                const firstName = formData.fullName.trim().split(" ")[0];
+                const headline = artist
+                  ? `Kendell will call you about booking with ${artist}.`
+                  : serviceSummary
+                    ? `Kendell will call you about your ${serviceSummary}.`
+                    : "Your request was sent.";
+                const subline = artist && serviceSummary
+                  ? `She'll confirm timing for your ${serviceSummary} with ${artist} and walk you through what to expect.`
+                  : artist
+                    ? `She'll confirm ${artist}'s availability and help you coordinate the rest of your visit.`
+                    : "The Hush team will follow up during business hours to confirm details.";
+                return (
+                  <>
+                    <h3 className="font-display text-2xl md:text-3xl text-gold-gradient mb-4">
+                      {firstName ? `Thank you, ${firstName}.` : headline}
+                    </h3>
+                    {firstName && (
+                      <p className="font-display text-lg md:text-xl text-cream mb-3">
+                        {headline}
+                      </p>
+                    )}
+                    <p className="font-body text-cream/60 text-base max-w-md mx-auto mb-8">
+                      {subline} You can also reach us anytime at{" "}
+                      <a href="tel:+15203276753" className="text-gold hover:underline">(520) 327-6753</a>{" "}
+                      or text{" "}
+                      <a href="sms:+15203276753" className="text-gold hover:underline">(520) 327-6753</a>.
+                    </p>
+                  </>
+                );
+              })()}
               <button onClick={handleScrollToTop} className="btn-outline-gold">
                 Back to Home
               </button>
