@@ -566,6 +566,7 @@ export const ArtistsSection = () => {
                   </a>
                 </div>
               </div>
+              </div>
             </m.div>
           </m.div>
         )}
