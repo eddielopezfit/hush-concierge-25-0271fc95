@@ -215,19 +215,27 @@ export const BookingDecisionCard = ({
             </m.button>
           )}
 
-          {/* Secondary + Tertiary */}
-          <div className="grid grid-cols-2 gap-2">
+          {/* Secondary (Call) + Text + Tertiary (Chat) */}
+          <div className="grid grid-cols-3 gap-2">
             <m.button
               onClick={handleSecondary}
-              className={`btn-outline-gold ${compact ? "py-2" : "py-2.5"} text-xs font-body flex items-center justify-center gap-1.5`}
+              className={`btn-outline-gold ${compact ? "py-2" : "py-2.5"} text-[11px] font-body flex items-center justify-center gap-1`}
               whileTap={{ scale: 0.98 }}
             >
               <Phone className="w-3.5 h-3.5" />
-              {config.secondaryLabel}
+              Call
             </m.button>
+            <m.a
+              href="sms:+15203276753"
+              className={`btn-outline-gold ${compact ? "py-2" : "py-2.5"} text-[11px] font-body flex items-center justify-center gap-1`}
+              whileTap={{ scale: 0.98 }}
+            >
+              <MessageSquare className="w-3.5 h-3.5" />
+              Text us
+            </m.a>
             <m.button
               onClick={handleTertiary}
-              className={`btn-outline-gold ${compact ? "py-2" : "py-2.5"} text-xs font-body flex items-center justify-center gap-1.5`}
+              className={`btn-outline-gold ${compact ? "py-2" : "py-2.5"} text-[11px] font-body flex items-center justify-center gap-1`}
               whileTap={{ scale: 0.98 }}
             >
               <MessageSquare className="w-3.5 h-3.5" />
