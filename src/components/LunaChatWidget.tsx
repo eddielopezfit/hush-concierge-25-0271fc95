@@ -21,7 +21,11 @@ export const LunaChatWidget = () => {
   const [showBadge, setShowBadge] = useState(false);
   const [activeTab, setActiveTab] = useState<LunaTabId>("find");
   const [isFirstOpen, setIsFirstOpen] = useState(true);
-  const [nudge, setNudge] = useState<{ section: "services" | "artists" } | null>(null);
+  const [nudge, setNudge] = useState<
+    | { kind: "compare"; section: "services" | "artists" }
+    | { kind: "finder-stuck" }
+    | null
+  >(null);
   const { chatWidgetRequested, clearChatWidgetRequest } = useLuna();
   const chimeRef = useRef<HTMLAudioElement | null>(null);
   const chimeBuilt = useRef(false);
@@ -75,7 +79,7 @@ export const LunaChatWidget = () => {
           dwellMs[s.id] += delta;
           if (dwellMs[s.id] >= THRESHOLD && !isOpen && !sessionStorage.getItem(NUDGE_KEY)) {
             sessionStorage.setItem(NUDGE_KEY, "1");
-            setNudge({ section: s.id });
+            setNudge({ kind: "compare", section: s.id });
             cleanup();
             return;
           }
@@ -103,6 +107,69 @@ export const LunaChatWidget = () => {
       observer.disconnect();
     }
     return cleanup;
+  }, [isOpen]);
+
+  // Proactive nudge: 20s inactivity on Experience Finder section → "stuck?" prompt, once per session
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const NUDGE_KEY = "hush_luna_finder_stuck_nudge_shown";
+    if (sessionStorage.getItem(NUDGE_KEY)) return;
+
+    const el = document.getElementById("experience-finder");
+    if (!el) return;
+
+    const INACTIVITY_MS = 20_000;
+    let visible = false;
+    let timeoutId: number | null = null;
+
+    const clearTimer = () => {
+      if (timeoutId !== null) {
+        window.clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+    };
+
+    const fire = () => {
+      if (isOpen || sessionStorage.getItem(NUDGE_KEY)) return;
+      sessionStorage.setItem(NUDGE_KEY, "1");
+      setNudge({ kind: "finder-stuck" });
+      teardown();
+    };
+
+    const armTimer = () => {
+      clearTimer();
+      if (!visible || isOpen) return;
+      timeoutId = window.setTimeout(fire, INACTIVITY_MS);
+    };
+
+    const onActivity = () => armTimer();
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          visible = entry.isIntersecting && entry.intersectionRatio >= 0.4;
+        }
+        if (visible) armTimer();
+        else clearTimer();
+      },
+      { threshold: [0, 0.4, 1] }
+    );
+
+    observer.observe(el);
+
+    // Activity within the finder section resets the timer
+    const events: Array<keyof DocumentEventMap> = ["click", "keydown", "pointerdown", "touchstart"];
+    events.forEach(ev => el.addEventListener(ev, onActivity, { passive: true } as AddEventListenerOptions));
+    // Scrolling on the page while finder is visible also counts as activity
+    window.addEventListener("scroll", onActivity, { passive: true });
+
+    function teardown() {
+      clearTimer();
+      observer.disconnect();
+      events.forEach(ev => el?.removeEventListener(ev, onActivity));
+      window.removeEventListener("scroll", onActivity);
+    }
+    return teardown;
   }, [isOpen]);
 
   const acceptNudge = () => {
