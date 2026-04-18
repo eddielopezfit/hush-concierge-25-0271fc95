@@ -17,6 +17,16 @@ export const JoinHushSection = () => {
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState({ name: "", phone: "", email: "", role: "", story: "" });
 
+  const [showReferralForm, setShowReferralForm] = useState(false);
+  const [referralSubmitting, setReferralSubmitting] = useState(false);
+  const [referralSubmitted, setReferralSubmitted] = useState(false);
+  const [referralForm, setReferralForm] = useState({
+    yourName: "",
+    yourPhone: "",
+    friendName: "",
+    friendPhone: "",
+  });
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim() || !form.phone.trim()) {
@@ -45,6 +55,36 @@ export const JoinHushSection = () => {
       toast.error("Couldn't send right now. Please call (520) 327-6753.");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleReferralSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!referralForm.yourName.trim() || !referralForm.yourPhone.trim() || !referralForm.friendName.trim()) {
+      toast.error("Please share your name, phone, and your friend's name.");
+      return;
+    }
+    setReferralSubmitting(true);
+    try {
+      const { error } = await supabase.functions.invoke("request-callback", {
+        body: {
+          guest_name: referralForm.yourName.trim(),
+          phone: referralForm.yourPhone.trim(),
+          service_category: "referral",
+          service_name: "Groupies Only referral",
+          timing: "planning",
+          urgency: "low",
+          call_summary: `Referral — ${referralForm.yourName} is referring ${referralForm.friendName}${referralForm.friendPhone ? ` (${referralForm.friendPhone})` : ""}. Apply $10 off to both on next visit.`,
+        },
+      });
+      if (error) throw error;
+      setReferralSubmitted(true);
+      toast.success("Referral logged — $10 off waiting for both of you.");
+    } catch (err) {
+      console.error("[JoinHushSection] referral submit failed:", err);
+      toast.error("Couldn't send right now. Please call (520) 327-6753.");
+    } finally {
+      setReferralSubmitting(false);
     }
   };
 
@@ -113,14 +153,78 @@ export const JoinHushSection = () => {
               <li className="flex gap-2"><span className="text-gold">·</span> Unlimited referrals</li>
             </ul>
 
-            <a
-              href="tel:+15203276753"
-              className="inline-flex items-center gap-2 font-body text-sm text-gold hover:text-gold/80 transition-colors group/cta"
-            >
-              <Phone className="w-4 h-4" />
-              Mention a friend at booking
-              <ArrowRight className="w-4 h-4 transition-transform group-hover/cta:translate-x-1" />
-            </a>
+            {!showReferralForm && !referralSubmitted && (
+              <button
+                type="button"
+                onClick={() => setShowReferralForm(true)}
+                className="inline-flex items-center gap-2 font-body text-sm text-gold hover:text-gold/80 transition-colors group/cta"
+              >
+                <Phone className="w-4 h-4" />
+                Mention a friend at booking
+                <ArrowRight className="w-4 h-4 transition-transform group-hover/cta:translate-x-1" />
+              </button>
+            )}
+
+            {showReferralForm && !referralSubmitted && (
+              <form onSubmit={handleReferralSubmit} className="space-y-3 mt-2">
+                <Input
+                  required
+                  placeholder="Your name"
+                  value={referralForm.yourName}
+                  onChange={(e) => setReferralForm({ ...referralForm, yourName: e.target.value })}
+                  className="bg-background/40 border-border/60 text-cream"
+                />
+                <Input
+                  required
+                  type="tel"
+                  placeholder="Your phone number"
+                  value={referralForm.yourPhone}
+                  onChange={(e) => setReferralForm({ ...referralForm, yourPhone: e.target.value })}
+                  className="bg-background/40 border-border/60 text-cream"
+                />
+                <Input
+                  required
+                  placeholder="Friend's name"
+                  value={referralForm.friendName}
+                  onChange={(e) => setReferralForm({ ...referralForm, friendName: e.target.value })}
+                  className="bg-background/40 border-border/60 text-cream"
+                />
+                <Input
+                  type="tel"
+                  placeholder="Friend's phone (optional)"
+                  value={referralForm.friendPhone}
+                  onChange={(e) => setReferralForm({ ...referralForm, friendPhone: e.target.value })}
+                  className="bg-background/40 border-border/60 text-cream"
+                />
+                <div className="flex items-center gap-3 pt-1">
+                  <button
+                    type="submit"
+                    disabled={referralSubmitting}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-gold/50 bg-gold/10 text-gold hover:bg-gold/20 transition-colors font-body text-sm disabled:opacity-60"
+                  >
+                    {referralSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
+                    {referralSubmitting ? "Sending…" : "Send referral"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowReferralForm(false)}
+                    className="font-body text-sm text-cream/60 hover:text-cream/90 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {referralSubmitted && (
+              <div className="flex items-start gap-3 p-4 rounded-lg border border-gold/30 bg-gold/5">
+                <Check className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
+                <div className="font-body text-sm text-cream/85">
+                  <span className="text-cream font-medium">Thanks, {referralForm.yourName.split(" ")[0]}!</span>{" "}
+                  We've logged your referral for {referralForm.friendName}. You'll both get $10 off your next visit.
+                </div>
+              </div>
+            )}
           </m.article>
 
           {/* Be a Rockstar — Careers */}
