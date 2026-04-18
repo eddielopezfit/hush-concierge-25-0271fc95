@@ -155,6 +155,49 @@ export const LunaChatWidget = () => {
 
   return (
     <>
+      {/* Proactive nudge tooltip — anchored above the bubble */}
+      <AnimatePresence>
+        {!isOpen && nudge && (
+          <m.div
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="fixed bottom-[10.5rem] md:bottom-24 right-6 z-[9999] max-w-[260px]"
+            role="dialog"
+            aria-label="Luna concierge suggestion"
+          >
+            <div className="relative rounded-2xl border border-primary/30 bg-card shadow-[var(--shadow-elegant)] p-4 pr-8">
+              <button
+                onClick={dismissNudge}
+                aria-label="Dismiss"
+                className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
+              >
+                <X className="w-3 h-3" />
+              </button>
+              <div className="flex items-start gap-2.5">
+                <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="font-display text-[11px] text-primary-foreground font-semibold">L</span>
+                </div>
+                <div className="min-w-0">
+                  <p className="font-body text-sm text-foreground leading-snug">
+                    Want me to compare {nudge.section === "services" ? "these services" : "these artists"} for you?
+                  </p>
+                  <button
+                    onClick={acceptNudge}
+                    className="mt-2 font-body text-xs text-primary hover:text-primary/80 font-medium tracking-wide transition-colors"
+                  >
+                    Yes, help me decide →
+                  </button>
+                </div>
+              </div>
+              {/* tail */}
+              <span className="absolute -bottom-1.5 right-8 w-3 h-3 rotate-45 bg-card border-r border-b border-primary/30" />
+            </div>
+          </m.div>
+        )}
+      </AnimatePresence>
+
       {/* Collapsed Bubble + Label */}
       <AnimatePresence>
         {!isOpen && (
@@ -170,7 +213,7 @@ export const LunaChatWidget = () => {
               className="w-[56px] h-[56px] rounded-full bg-primary flex items-center justify-center shadow-[var(--shadow-gold)] hover:shadow-[0_0_50px_hsl(38_50%_55%/0.5)] transition-shadow"
             >
               <MessageCircle className="w-6 h-6 text-primary-foreground" />
-              {showBadge && (
+              {(showBadge || nudge) && (
                 <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-foreground rounded-full border-2 border-primary" />
               )}
             </m.button>
