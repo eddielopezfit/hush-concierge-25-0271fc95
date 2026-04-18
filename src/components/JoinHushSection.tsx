@@ -304,12 +304,19 @@ export const JoinHushSection = () => {
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   className="bg-background/40 border-border/60 text-cream"
                 />
-                <Input
-                  placeholder="Role you're interested in (stylist, nail tech, etc.)"
+                <Select
                   value={form.role}
-                  onChange={(e) => setForm({ ...form, role: e.target.value })}
-                  className="bg-background/40 border-border/60 text-cream"
-                />
+                  onValueChange={(value) => setForm({ ...form, role: value })}
+                >
+                  <SelectTrigger className="bg-background/40 border-border/60 text-cream">
+                    <SelectValue placeholder="Role you're interested in" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CAREER_ROLES.map((role) => (
+                      <SelectItem key={role} value={role}>{role}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <Textarea
                   placeholder="Tell us a little about yourself (optional)"
                   value={form.story}
