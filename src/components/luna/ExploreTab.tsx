@@ -47,6 +47,15 @@ export const ExploreTab = ({ onSwitchTab }: ExploreTabProps) => {
 
   const handleChatAboutService = () => {
     if (selectedService) {
+      const focus = selectedLookCat && selectedLookCat.keywords.length > 0
+        ? `${selectedLookCat.label} (${selectedService.title})`
+        : selectedService.title;
+      try {
+        sessionStorage.setItem(
+          "hush_chat_pending_prompt",
+          `Tell me more about ${focus} at Hush — what's involved, typical pricing, who it's a great fit for, and how I should book.`
+        );
+      } catch { /* ignore */ }
       onSwitchTab("chat");
     }
   };
