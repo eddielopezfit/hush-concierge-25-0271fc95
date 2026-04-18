@@ -115,12 +115,12 @@ export const LunaChatWidget = () => {
     const NUDGE_KEY = "hush_luna_finder_stuck_nudge_shown";
     if (sessionStorage.getItem(NUDGE_KEY)) return;
 
-    const el = document.getElementById("experience-finder");
-    if (!el) return;
-
     const INACTIVITY_MS = 20_000;
     let visible = false;
     let timeoutId: number | null = null;
+    let observer: IntersectionObserver | null = null;
+    let mutationObserver: MutationObserver | null = null;
+    let el: HTMLElement | null = null;
 
     const clearTimer = () => {
       if (timeoutId !== null) {
@@ -144,31 +144,49 @@ export const LunaChatWidget = () => {
 
     const onActivity = () => armTimer();
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          visible = entry.isIntersecting && entry.intersectionRatio >= 0.4;
-        }
-        if (visible) armTimer();
-        else clearTimer();
-      },
-      { threshold: [0, 0.4, 1] }
-    );
-
-    observer.observe(el);
-
-    // Activity within the finder section resets the timer
     const events: Array<keyof DocumentEventMap> = ["click", "keydown", "pointerdown", "touchstart"];
-    events.forEach(ev => el.addEventListener(ev, onActivity, { passive: true } as AddEventListenerOptions));
-    // Scrolling on the page while finder is visible also counts as activity
-    window.addEventListener("scroll", onActivity, { passive: true });
 
     function teardown() {
       clearTimer();
-      observer.disconnect();
-      events.forEach(ev => el?.removeEventListener(ev, onActivity));
+      observer?.disconnect();
+      mutationObserver?.disconnect();
+      if (el) events.forEach(ev => el!.removeEventListener(ev, onActivity));
       window.removeEventListener("scroll", onActivity);
     }
+
+    const attach = (target: HTMLElement) => {
+      el = target;
+      observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            visible = entry.isIntersecting && entry.intersectionRatio >= 0.4;
+          }
+          if (visible) armTimer();
+          else clearTimer();
+        },
+        { threshold: [0, 0.4, 1] }
+      );
+      observer.observe(target);
+      events.forEach(ev => target.addEventListener(ev, onActivity, { passive: true } as AddEventListenerOptions));
+      window.addEventListener("scroll", onActivity, { passive: true });
+    };
+
+    const found = document.getElementById("experience-finder");
+    if (found) {
+      attach(found);
+    } else {
+      // Section is lazy-loaded — wait for it to appear in the DOM
+      mutationObserver = new MutationObserver(() => {
+        const target = document.getElementById("experience-finder");
+        if (target) {
+          mutationObserver?.disconnect();
+          mutationObserver = null;
+          attach(target);
+        }
+      });
+      mutationObserver.observe(document.body, { childList: true, subtree: true });
+    }
+
     return teardown;
   }, [isOpen]);
 
