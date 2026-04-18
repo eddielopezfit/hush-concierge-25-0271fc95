@@ -34,11 +34,8 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         manualChunks: {
-          // Stable vendor chunks that DO ship eagerly (used by Index synchronously).
-          // framer-motion is intentionally NOT listed here — keeping it out of
-          // manualChunks lets Rollup attach it to the lazy chunk that first
-          // imports it (MotionProvider), preventing eager preload.
           "react-vendor": ["react", "react-dom", "react-router-dom"],
+          "framer": ["framer-motion"],
           "radix": [
             "@radix-ui/react-dialog",
             "@radix-ui/react-popover",

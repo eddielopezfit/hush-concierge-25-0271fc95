@@ -20,11 +20,6 @@ const LunaChatWidget = lazy(() =>
   import("./components/LunaChatWidget").then(m => ({ default: m.LunaChatWidget }))
 );
 
-// NOTE on Sonner: we tried lazy-loading it for a ~9 KB savings, but the toast
-// queue only flushes once <Toaster /> has mounted. Because ChatTab can call
-// toast() the same tick the lazy chunk resolves, toasts were lost in race
-// conditions. Sonner is small and stays eager — correctness > 9 KB.
-
 const RouteFallback = () => <div className="min-h-screen bg-background" aria-hidden="true" />;
 
 const queryClient = new QueryClient();
@@ -33,6 +28,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <LunaProvider>
+        <Sonner />
         <BrowserRouter>
           <Suspense fallback={<RouteFallback />}>
             <MotionProvider>
@@ -46,15 +42,13 @@ const App = () => (
                 {/* New pages should follow the lazy pattern: const Page = lazy(() => import("./pages/Page")) */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
-
-              {/* LunaChatWidget uses framer-motion's `m.*` components, so it MUST
-                  be rendered inside <LazyMotion> (provided by MotionProvider). */}
-              <LunaChatWidget />
             </MotionProvider>
           </Suspense>
         </BrowserRouter>
 
-        <Sonner />
+        <Suspense fallback={null}>
+          <LunaChatWidget />
+        </Suspense>
       </LunaProvider>
     </TooltipProvider>
   </QueryClientProvider>
