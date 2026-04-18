@@ -758,6 +758,8 @@ export const ChatTab = () => {
       const userMsg: ChatMessage = { id: `user-${Date.now()}`, role: "user", content: msg };
       const newMessages = [...messages, userMsg];
       setMessages(newMessages);
+      // Sending a new message clears any pinned "New" divider from the previous burst
+      setFirstUnreadId(null);
       setInput("");
       const newCount = userMessageCount + 1;
       setUserMessageCount(newCount);
