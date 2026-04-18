@@ -28,12 +28,6 @@ interface ChatAction {
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/luna-chat`;
 
-// Known error fallback phrases used to detect error responses
-const ERROR_PHRASES = [
-  "having trouble connecting",
-  "give me just a moment and try again",
-];
-
 // ── Error-specific quick replies ────────────────────────────────────────────
 const ERROR_QUICK_REPLIES = [
   "Try again",
