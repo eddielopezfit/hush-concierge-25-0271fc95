@@ -419,7 +419,66 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      artists_public: {
+        Row: {
+          badge: string | null
+          best_for: string | null
+          created_at: string | null
+          department: string | null
+          description: string | null
+          fit_statement: string | null
+          id: string | null
+          is_active: boolean | null
+          is_primary_booking: boolean | null
+          known_for: string[] | null
+          name: string | null
+          role: string | null
+          service_categories: string[] | null
+          service_category: string | null
+          specialties: string[] | null
+          specialty: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          badge?: string | null
+          best_for?: string | null
+          created_at?: string | null
+          department?: string | null
+          description?: string | null
+          fit_statement?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          is_primary_booking?: boolean | null
+          known_for?: string[] | null
+          name?: string | null
+          role?: string | null
+          service_categories?: string[] | null
+          service_category?: string | null
+          specialties?: string[] | null
+          specialty?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          badge?: string | null
+          best_for?: string | null
+          created_at?: string | null
+          department?: string | null
+          description?: string | null
+          fit_statement?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          is_primary_booking?: boolean | null
+          known_for?: string[] | null
+          name?: string | null
+          role?: string | null
+          service_categories?: string[] | null
+          service_category?: string | null
+          specialties?: string[] | null
+          specialty?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never
