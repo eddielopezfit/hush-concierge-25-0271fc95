@@ -18,7 +18,10 @@ const allowedOrigins = [
 ];
 
 function getCorsHeaders(origin: string | null) {
-  const isLovablePreview = !!origin && /^https:\/\/.*\.lovable\.app$/.test(origin);
+  const isLovablePreview =
+    !!origin &&
+    (/^https:\/\/.*\.lovable\.app$/.test(origin) ||
+      /^https:\/\/.*\.lovableproject\.com$/.test(origin));
   const allowed =
     !!origin && (allowedOrigins.includes(origin) || isLovablePreview);
 
