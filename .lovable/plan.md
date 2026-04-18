@@ -1,46 +1,57 @@
 
 
-## Audit Reality Check — Most Findings Are Outdated
+The user wants a deep external audit of the live Hush Salon site using Perplexity Comet (browser-based AI agent) to assess: blue ocean positioning, category differentiation, perceived value, and end-user experience. Then we'll optimize from findings.
 
-The audit was run against an older `eddielopezfit/hush-concierge-25-0271fc95` GitHub repo. The live `hush-salon.lovable.app` Lovable project has already shipped fixes for most of the "critical" items. Let me verify each claim against current code, then plan the genuinely missing fixes.
+I cannot drive Comet (a separate consumer browser product) from this environment, but I can run an equivalent deep audit using the tools I do have: Perplexity API (for grounded competitive/category research) + browser automation (for first-person UX walkthrough across viewports) + Firecrawl (for full-site structural crawl). This produces the same artifact: a deep audit report.
 
-### Verification pass needed
+## Plan: Deep Site Audit — "Comet-Style" Multi-Agent Pass
 
-1. **Callback form captures no data (P0)** — Need to verify `BookingCallbackSection.tsx` actually calls `saveCallbackRequest` → `submit-lead` edge function. Audit claims it's a `setTimeout(1000)` fake. I know from prior work that `submit-lead` exists and writes to `callback_requests` + `leads` tables.
-2. **"Chat with Luna" is a stub redirect (P0)** — Need to verify Luna chat is real (we have `luna-chat` edge function streaming Gemini responses + `ChatTab.tsx`). Audit claims it scrolls to callback.
-3. **handleReset doesn't clear localStorage (P1)** — Need to check `ExperienceFinderSection.tsx` reset handler against current `LunaContext.clearConcierge()`.
-4. **Voice widget / ElevenLabs (P1)** — Audit references `LunaVoiceWidget.tsx` and mic permission UX. Per `mem://constraints/no-voice-integration`, voice was REMOVED. This file shouldn't exist anymore.
-5. **No backend at all** — False. Project has Lovable Cloud, 7+ edge functions, `leads`, `callback_requests`, `conversations`, `messages` tables.
-6. **Massage 20% discount note never surfaced** — Worth verifying in `servicesMenuData.ts` + Luna system prompt.
-7. **Pricing claims** — Verify Women's haircut, Balayage (we just normalized it to "$96+ (final price after consultation)"), Brazilian Blowout.
+### Phase 1 — Connect research tools
+- Connect **Perplexity** connector → grounded analysis of Tucson salon market, luxury salon category benchmarks, AI-concierge differentiation
+- Connect **Firecrawl** connector → full crawl of `https://hush-salon.lovable.app` (every section, every modal copy, every CTA)
 
-### Genuinely actionable items (if confirmed)
+### Phase 2 — First-person UX walkthrough (browser automation)
+Run scripted journeys at 3 viewports (375 mobile, 834 tablet, 1440 desktop) capturing screenshots + console logs + network timing at each step:
+1. Cold land on hero → time-to-meaningful-paint, video poster, CTA clarity
+2. Trust bar → social-proof legibility
+3. Experience Finder full quiz (new client path + "I know what I want" fast lane)
+4. Personalized Plan reveal
+5. Services accordion (open Hair, Nails, Massage)
+6. Artists section → click into a stylist
+7. Luna chat widget → send 3 prompts (price, booking, off-topic), test exit-intent capture
+8. Booking callback form submission flow (no actual submit)
+9. Mobile sticky bar interactions
 
-After verification, the only fixes likely still needed:
-- **A.** `handleReset` in Experience Finder calling `clearConcierge()` (if missing)
-- **B.** Massage 20% "name your stylist" discount surfaced in Luna system prompt + visible in services UI
-- **C.** Phone/email format validation on `BookingCallbackSection` (zod)
-- **D.** Women's haircut pricing visibility in `pricePreview`
-- **E.** Remove any stale references to `LunaVoiceWidget` if found
+### Phase 3 — Category & blue-ocean analysis (Perplexity)
+Run 6 grounded research queries:
+- Tucson salon competitive landscape (top 10 + price positioning)
+- AI concierge adoption in salon/spa industry (rare? saturated?)
+- Luxury independent salon UX benchmarks (Sally Hershberger, Hair by Sam McKnight, Nine Zero One, etc.)
+- "Guided experience finder" pattern in service businesses
+- Industry conversion-rate benchmarks for salon websites
+- Perceived-value signals that drive premium booking intent
 
-### Plan
+### Phase 4 — Synthesis report (`/mnt/documents/hush-deep-audit.md` + PDF)
+Structured deliverable:
+1. **Executive Summary** — 1-page verdict: blue ocean? category-of-one? value tier?
+2. **Category Position Map** — Hush vs. Tucson local + national luxury benchmarks (axes: tech-forward × hospitality)
+3. **Perceived Value Audit** — what the site signals (premium / mid / mass) at each scroll depth, with screenshot evidence
+4. **End-User Journey Heatmap** — friction points scored 1-5 per step (cold land → booking intent), per device
+5. **Luna Differentiation Analysis** — how rare an AI concierge is in this category, defensibility window
+6. **Blue Ocean Verdict** — is "AI-guided luxury salon discovery" an uncontested space, and for how long
+7. **Top 10 Optimization Opportunities** — ranked by impact × effort, each with concrete code-level recommendation tied to actual files (HeroSection, ExperienceFinder, LunaChatWidget, etc.)
+8. **Appendix** — full screenshot reel, raw Perplexity citations, Firecrawl URL map
 
-**Phase 1 — Verify (read-only)**
-- View `BookingCallbackSection.tsx` to confirm `saveCallbackRequest` is wired
-- View `ExperienceFinderSection.tsx` reset handler
-- View `LunaModal.tsx` "Chat with Luna" button handler
-- View `servicesMenuData.ts` for massage discount note + Women's haircut pricePreview
-- Search for `LunaVoiceWidget` references
-- View Luna system prompt (`SYSTEM_PROMPT_v7.md`) for massage discount mention
+### Technical notes
+- All connector calls happen via edge functions reading `LOVABLE_API_KEY`, `PERPLEXITY_API_KEY`, `FIRECRAWL_API_KEY` from env
+- Browser automation runs against the **published URL** (`hush-salon.lovable.app`) not the preview, so we audit what real users see
+- Final PDF generated with the AI-gateway script + a small markdown→PDF pass; both `.md` and `.pdf` delivered to `/mnt/documents/`
+- Estimated runtime: ~8-12 minutes of tool calls; no code changes to the app itself in this pass — pure audit
 
-**Phase 2 — Reply with verified audit response**
-- For each audit claim: ✅ already fixed / ⚠️ partially true / ❌ outdated
-- Present a TIGHT fix plan covering only the genuinely missing items (likely A–D above)
-- No re-implementation of items already shipped
+### What you'll get
+Two artifacts in `/mnt/documents/`:
+- `hush-deep-audit.md` (full report, ~15-20 pages)
+- `hush-deep-audit.pdf` (presentation-ready)
 
-**Phase 3 (after approval) — Ship the real gaps**
-- Fix items A–D in single pass
-- All low-risk, data + small UI changes
-
-Reply **"verify and plan"** to run the verification pass and return the cleaned-up audit response with the real fix plan, or **"skip verify, ship A–D"** if you trust the shortlist.
+After you review, we open a follow-up loop to implement the top 3-5 recommendations.
 
