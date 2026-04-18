@@ -991,11 +991,11 @@ export const ChatTab = () => {
                   ? {
                       opacity: 1,
                       y: 0,
-                      scale: [1, 1.06, 1],
+                      scale: [1, 1.08, 1],
                       boxShadow: [
-                        "0 4px 12px hsl(var(--primary) / 0.25)",
-                        "0 4px 18px hsl(var(--primary) / 0.55)",
-                        "0 4px 12px hsl(var(--primary) / 0.25)",
+                        "0 4px 12px hsl(var(--primary) / 0.25), 0 0 0 0 hsl(var(--primary) / 0.45)",
+                        "0 4px 20px hsl(var(--primary) / 0.6), 0 0 0 6px hsl(var(--primary) / 0.15)",
+                        "0 4px 12px hsl(var(--primary) / 0.25), 0 0 0 0 hsl(var(--primary) / 0)",
                       ],
                     }
                   : { opacity: 1, y: 0, scale: 1 }
