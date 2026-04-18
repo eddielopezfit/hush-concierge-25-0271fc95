@@ -182,41 +182,57 @@ function detectChatActions(msg: string, ctx: ConciergeContext | null): ChatActio
   const lower = msg.toLowerCase();
   const actions: ChatAction[] = [];
 
+  // PRIORITY 1: Call prompt — always pair with Text option (front desk is the most actionable CTA)
+  const mentionsFrontDesk = lower.includes("(520) 327-6753") || lower.includes("call us") || lower.includes("front desk") || lower.includes("call kendell") || lower.includes("give them a call");
+  if (mentionsFrontDesk) {
+    actions.push({ label: "Call (520) 327-6753", type: "phone" });
+    actions.push({ label: "Text us", type: "text" });
+  }
+
   // Service identified → offer booking + explore
   if (lower.includes("i'd suggest") || lower.includes("i'd recommend") || lower.includes("great option") || lower.includes("perfect for")) {
-    actions.push({ label: "Reserve this service", type: "scroll", target: "callback" });
-    actions.push({ label: "Build my personalized plan", type: "tab", target: "plan" });
+    if (!actions.find(a => a.type === "scroll")) {
+      actions.push({ label: "Reserve this service", type: "scroll", target: "callback" });
+    }
+    if (!mentionsFrontDesk) {
+      actions.push({ label: "Build my personalized plan", type: "tab", target: "plan" });
+    }
   }
 
   // Stylist mentioned → offer artist browse
   if (lower.includes("stylist") || lower.includes("specialist") || lower.includes("artist") || lower.includes("our team")) {
-    if (!actions.find(a => a.label.includes("Reserve"))) {
+    if (!actions.find(a => a.label.includes("Reserve")) && !mentionsFrontDesk) {
       actions.push({ label: "See our team", type: "tab", target: "artists" });
     }
   }
 
   // Booking/ready signals
   if (lower.includes("ready to book") || lower.includes("lock in") || lower.includes("reserve") || lower.includes("help you book")) {
-    if (!actions.find(a => a.type === "scroll")) {
-      actions.push({ label: "Reserve your experience", type: "scroll", target: "callback" });
+    if (!actions.find(a => a.type === "callback")) {
+      actions.push({ label: "Get a quick call back", type: "callback" });
     }
-    actions.push({ label: "Get a quick call back", type: "callback" });
   }
 
   // Pricing mentioned → offer plan view
   if (lower.includes("pricing") || lower.includes("price range") || lower.includes("starts at")) {
-    if (!actions.find(a => a.label.includes("plan"))) {
+    if (!actions.find(a => a.label.includes("plan")) && actions.length < 3) {
       actions.push({ label: "See my personalized plan", type: "tab", target: "plan" });
     }
   }
 
-  // Call prompt — always pair with Text option
-  if (lower.includes("(520) 327-6753") || lower.includes("call us") || lower.includes("front desk")) {
-    actions.push({ label: "Call (520) 327-6753", type: "phone" });
-    actions.push({ label: "Text us", type: "text" });
-  }
-
   return actions.slice(0, 3); // max 3 actions
+}
+
+// ── Detect high-intent user phrases that should auto-open the lead form ─────
+function userHasHighBookingIntent(text: string): boolean {
+  const lower = text.toLowerCase().trim();
+  const phrases = [
+    "i'm ready to book", "im ready to book", "ready to book",
+    "let's lock it in", "lets lock it in", "lock it in",
+    "have someone call me", "call me back", "get a call back",
+    "book it", "book me", "schedule me",
+  ];
+  return phrases.some(p => lower === p || lower.includes(p));
 }
 
 // ── Initial smart chips for greeting only ───────────────────────────────────
