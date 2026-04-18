@@ -64,6 +64,12 @@ export const ArtistsTab = ({ onSwitchTab, onClosePanel }: ArtistsTabProps) => {
       preferredArtist: artist.name,
       preferredArtistId: artist.id,
     });
+    try {
+      sessionStorage.setItem(
+        "hush_chat_pending_prompt",
+        `Tell me more about ${artist.name} — what they specialize in, who they're a great fit for, and how to book with them.`
+      );
+    } catch { /* ignore */ }
     onSwitchTab("chat");
   };
 
