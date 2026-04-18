@@ -428,6 +428,7 @@ export const ChatTab = () => {
     // Skip if already initialized with this exact context
     if (initialized && newFingerprint === contextFingerprintRef.current) return;
 
+    const previousFingerprint = contextFingerprintRef.current;
     contextFingerprintRef.current = newFingerprint;
 
     // Try to restore from localStorage if fingerprint matches
@@ -439,24 +440,35 @@ export const ChatTab = () => {
       setLeadDismissed(persisted.leadDismissed || false);
       const lastAssistant = [...persisted.messages].reverse().find(m => m.role === "assistant");
       setQuickReplies(getQuickReplies(ctx, lastAssistant?.content || ""));
+    } else if (initialized && previousFingerprint && previousFingerprint !== "none") {
+      // Mid-session context change → keep history, append a soft transition line
+      const transition = buildContextTransition(ctx);
+      const transitionMsg: ChatMessage = {
+        id: `transition-${Date.now()}`,
+        role: "assistant",
+        content: transition,
+      };
+      setMessages(prev => [...prev, transitionMsg]);
+      setQuickReplies(getQuickReplies(ctx, transition));
     } else {
-      // Fresh greeting (new context or no valid persistence)
+      // First load with no valid persistence → fresh greeting (no self-intro repeat needed)
       const greeting = buildContextGreeting(ctx);
       setMessages([{ id: "greeting", role: "assistant", content: greeting }]);
       setSuccessfulExchangeCount(0);
       setLeadCaptured(false);
       setLeadDismissed(false);
       setQuickReplies(getQuickReplies(ctx, greeting));
-      if (initialized) clearPersistedChat(); // context changed mid-session
     }
 
     setContextPills(getContextPills(ctx));
     setSmartChips(getSmartChips(ctx));
-    setInput("");
-    setUserMessageCount(0);
-    setShowLeadForm(false);
-    setLeadName("");
-    setLeadPhone("");
+    if (!initialized) {
+      setInput("");
+      setUserMessageCount(0);
+      setShowLeadForm(false);
+      setLeadName("");
+      setLeadPhone("");
+    }
     setInitialized(true);
 
     if (!getConversationId()) {
