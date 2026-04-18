@@ -399,6 +399,7 @@ export const ChatTab = () => {
   const [quickReplies, setQuickReplies] = useState<string[]>([]);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [firstUnreadId, setFirstUnreadId] = useState<string | null>(null);
   const lastSeenAssistantIdRef = useRef<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -571,13 +572,17 @@ export const ChatTab = () => {
     if (!showScrollToBottom) {
       lastSeenAssistantIdRef.current = lastAssistant.id;
       setUnreadCount(0);
+      setFirstUnreadId(null);
       return;
     }
     if (lastAssistant.id !== lastSeenAssistantIdRef.current) {
-      const unread = messages.filter(
+      const assistantMsgs = messages.filter(
         m => m.role === "assistant" && m.id !== "greeting"
-      ).reverse().findIndex(m => m.id === lastSeenAssistantIdRef.current);
-      setUnreadCount(unread === -1 ? 1 : unread);
+      );
+      const lastSeenIdx = assistantMsgs.findIndex(m => m.id === lastSeenAssistantIdRef.current);
+      const unreadList = lastSeenIdx === -1 ? assistantMsgs.slice(-1) : assistantMsgs.slice(lastSeenIdx + 1);
+      setUnreadCount(unreadList.length || 1);
+      setFirstUnreadId(prev => prev ?? unreadList[0]?.id ?? lastAssistant.id);
     }
   }, [messages, showScrollToBottom]);
 
@@ -585,6 +590,7 @@ export const ChatTab = () => {
     const el = scrollContainerRef.current;
     if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
     setUnreadCount(0);
+    setFirstUnreadId(null);
     const lastAssistant = [...messages].reverse().find(m => m.role === "assistant");
     if (lastAssistant) lastSeenAssistantIdRef.current = lastAssistant.id;
   }, [messages]);
@@ -857,6 +863,15 @@ export const ChatTab = () => {
       <div ref={scrollContainerRef} className="absolute inset-0 overflow-y-auto px-4 py-4 space-y-3 overscroll-contain">
         {messages.map((msg) => (
           <div key={msg.id}>
+            {firstUnreadId === msg.id && unreadCount > 0 && (
+              <div className="flex items-center gap-2 my-2" aria-label="New messages">
+                <div className="flex-1 h-px bg-primary/30" />
+                <span className="text-[10px] uppercase tracking-[0.15em] font-body text-primary/80 px-2 py-0.5 rounded-full border border-primary/30 bg-primary/5">
+                  New
+                </span>
+                <div className="flex-1 h-px bg-primary/30" />
+              </div>
+            )}
             <div className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
               {msg.role === "assistant" && (
                 <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2.5 mr-2 flex-shrink-0" />
