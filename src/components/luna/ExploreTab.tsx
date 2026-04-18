@@ -3,6 +3,7 @@ import { servicesMenuData } from "@/data/servicesMenuData";
 import { ChevronRight, ArrowLeft, Sun, Heart, Palette, Scissors, Eye, Hand, Sparkles, Flower2, MessageSquare } from "lucide-react";
 import { useState } from "react";
 import { useLuna } from "@/contexts/LunaContext";
+import { ServiceCategoryId } from "@/types/concierge";
 import { trackServiceClick } from "@/lib/journeyTracker";
 
 // keywords let us narrow the displayed pricing list to what the user actually clicked
