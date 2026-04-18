@@ -820,8 +820,12 @@ export const ChatTab = () => {
 
       streamChat(newMessages.filter((m) => m.id !== "greeting"));
 
+      // High-intent phrases auto-surface the lead form immediately
+      if (userHasHighBookingIntent(msg) && !leadCaptured && !showLeadForm && !leadDismissed) {
+        setTimeout(() => setShowLeadForm(true), 600);
+      }
       // Use successfulExchangeCount for lead form trigger, not raw message count
-      if (successfulExchangeCount >= 3 && !leadCaptured && !showLeadForm && !leadDismissed) {
+      else if (successfulExchangeCount >= 3 && !leadCaptured && !showLeadForm && !leadDismissed) {
         setTimeout(() => setShowLeadForm(true), 3000);
       }
     },
