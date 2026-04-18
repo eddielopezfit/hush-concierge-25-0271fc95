@@ -153,14 +153,78 @@ export const JoinHushSection = () => {
               <li className="flex gap-2"><span className="text-gold">·</span> Unlimited referrals</li>
             </ul>
 
-            <a
-              href="tel:+15203276753"
-              className="inline-flex items-center gap-2 font-body text-sm text-gold hover:text-gold/80 transition-colors group/cta"
-            >
-              <Phone className="w-4 h-4" />
-              Mention a friend at booking
-              <ArrowRight className="w-4 h-4 transition-transform group-hover/cta:translate-x-1" />
-            </a>
+            {!showReferralForm && !referralSubmitted && (
+              <button
+                type="button"
+                onClick={() => setShowReferralForm(true)}
+                className="inline-flex items-center gap-2 font-body text-sm text-gold hover:text-gold/80 transition-colors group/cta"
+              >
+                <Phone className="w-4 h-4" />
+                Mention a friend at booking
+                <ArrowRight className="w-4 h-4 transition-transform group-hover/cta:translate-x-1" />
+              </button>
+            )}
+
+            {showReferralForm && !referralSubmitted && (
+              <form onSubmit={handleReferralSubmit} className="space-y-3 mt-2">
+                <Input
+                  required
+                  placeholder="Your name"
+                  value={referralForm.yourName}
+                  onChange={(e) => setReferralForm({ ...referralForm, yourName: e.target.value })}
+                  className="bg-background/40 border-border/60 text-cream"
+                />
+                <Input
+                  required
+                  type="tel"
+                  placeholder="Your phone number"
+                  value={referralForm.yourPhone}
+                  onChange={(e) => setReferralForm({ ...referralForm, yourPhone: e.target.value })}
+                  className="bg-background/40 border-border/60 text-cream"
+                />
+                <Input
+                  required
+                  placeholder="Friend's name"
+                  value={referralForm.friendName}
+                  onChange={(e) => setReferralForm({ ...referralForm, friendName: e.target.value })}
+                  className="bg-background/40 border-border/60 text-cream"
+                />
+                <Input
+                  type="tel"
+                  placeholder="Friend's phone (optional)"
+                  value={referralForm.friendPhone}
+                  onChange={(e) => setReferralForm({ ...referralForm, friendPhone: e.target.value })}
+                  className="bg-background/40 border-border/60 text-cream"
+                />
+                <div className="flex items-center gap-3 pt-1">
+                  <button
+                    type="submit"
+                    disabled={referralSubmitting}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-gold/50 bg-gold/10 text-gold hover:bg-gold/20 transition-colors font-body text-sm disabled:opacity-60"
+                  >
+                    {referralSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
+                    {referralSubmitting ? "Sending…" : "Send referral"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowReferralForm(false)}
+                    className="font-body text-sm text-cream/60 hover:text-cream/90 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {referralSubmitted && (
+              <div className="flex items-start gap-3 p-4 rounded-lg border border-gold/30 bg-gold/5">
+                <Check className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
+                <div className="font-body text-sm text-cream/85">
+                  <span className="text-cream font-medium">Thanks, {referralForm.yourName.split(" ")[0]}!</span>{" "}
+                  We've logged your referral for {referralForm.friendName}. You'll both get $10 off your next visit.
+                </div>
+              </div>
+            )}
           </m.article>
 
           {/* Be a Rockstar — Careers */}
