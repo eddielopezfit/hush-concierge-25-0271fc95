@@ -147,7 +147,7 @@ export function generateRecommendation(context: ConciergeContext | null | undefi
     facial: "Signature Facial", acne: "Microneedling",
     glow: "Dermaplane / Hydrafacial / Microdermabrasion Facials",
   };
-  const subtype = (context as any).service_subtype;
+  const subtype = context.service_subtype;
   if (subtype && subtype !== "unsure" && subtypeServiceOverride[subtype]) {
     recommendedService = subtypeServiceOverride[subtype];
   }

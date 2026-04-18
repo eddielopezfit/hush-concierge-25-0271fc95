@@ -58,7 +58,8 @@ export const LunaChatWidget = () => {
     if (chimeBuilt.current) return;
     chimeBuilt.current = true;
     try {
-      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const ctx = new AudioCtx();
       const sr = ctx.sampleRate;
       const len = sr * 0.6;
       const buf = ctx.createBuffer(1, len, sr);

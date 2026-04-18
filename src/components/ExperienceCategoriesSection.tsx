@@ -2,10 +2,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { Scissors, Sparkles, Eye, Droplets, Heart, ChevronRight } from "lucide-react";
 import { useLuna } from "@/contexts/LunaContext";
-import { ConciergeContext } from "@/types/concierge";
+import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
 
 interface Category {
-  id: string;
+  id: ServiceCategoryId;
   name: string;
   icon: React.ElementType;
   subcategories: string[];
@@ -30,7 +30,7 @@ export const ExperienceCategoriesSection = () => {
   const handleSubcategoryClick = (category: Category, subcategory: string) => {
     const lunaContext: ConciergeContext = {
       source: "Choose Your Experience",
-      categories: [category.id as any],
+      categories: [category.id],
       goal: subcategory,
       timing: null,
     };

@@ -3,6 +3,7 @@ import { servicesMenuData } from "@/data/servicesMenuData";
 import { ChevronRight, ArrowLeft, Sun, Heart, Palette, Scissors, Eye, Hand, Sparkles, Flower2, MessageSquare } from "lucide-react";
 import { useState } from "react";
 import { useLuna } from "@/contexts/LunaContext";
+import { ServiceCategoryId } from "@/types/concierge";
 import { trackServiceClick } from "@/lib/journeyTracker";
 
 // keywords let us narrow the displayed pricing list to what the user actually clicked
@@ -37,8 +38,8 @@ export const ExploreTab = ({ onSwitchTab }: ExploreTabProps) => {
       // Inject context so Luna knows what the user explored
       mergeConcierge({
         source: "Explore",
-        categories: [cat.serviceId as any],
-        category: cat.serviceId as any,
+        categories: [cat.serviceId as ServiceCategoryId],
+        category: cat.serviceId as ServiceCategoryId,
       });
       trackServiceClick(cat.label, cat.serviceId);
     }
