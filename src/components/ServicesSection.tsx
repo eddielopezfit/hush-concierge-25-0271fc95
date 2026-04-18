@@ -5,6 +5,9 @@ import { ServiceMenuModal } from "./ServiceMenuModal";
 import { getCategoryById } from "@/data/servicesMenuData";
 import hairHero from "@/assets/hair-hero.jpg";
 import lashesHero from "@/assets/lashes-hero.jpg";
+import nailsHero from "@/assets/nails-hero.jpg";
+import skincareHero from "@/assets/skincare-hero.jpg";
+import massageHero from "@/assets/massage-hero.jpg";
 
 const services = [
   {
@@ -20,7 +23,7 @@ const services = [
     id: "nails",
     title: "Nails",
     description: "From clean classics to creative nail art. Walk out feeling polished and put-together.",
-    image: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=800&q=80",
+    image: nailsHero,
     testimonial: { text: "Bria did my nails and I am way above satisfied!", author: "Kelly N Gilbert Rodriguez" },
   },
   {
@@ -28,7 +31,7 @@ const services = [
     id: "skincare",
     title: "Skincare & Spray Tan",
     description: "Results-driven facials, peels, and a sun-kissed glow — your skin will thank you.",
-    image: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80",
+    image: skincareHero,
     testimonial: null,
   },
   {
@@ -44,7 +47,7 @@ const services = [
     id: "massage",
     title: "Massage",
     description: "Deep tissue, Swedish, therapeutic, and relaxation — leave feeling reset and completely renewed.",
-    image: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=800&q=80",
+    image: massageHero,
     testimonial: null,
   },
 ];
