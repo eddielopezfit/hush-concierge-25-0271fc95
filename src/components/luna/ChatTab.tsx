@@ -548,13 +548,15 @@ export const ChatTab = () => {
     return () => clearTimeout(t);
   }, [messages, isStreaming, quickReplies, showLeadForm]);
 
-  // Show floating "scroll to bottom" button when user has scrolled up
+  // Show floating "scroll to bottom" button when user has scrolled up.
+  // Threshold raised to 240px (≈ one full assistant bubble) so the pill never
+  // appears while a long response is simply streaming in below the viewport.
   useEffect(() => {
     const el = scrollContainerRef.current;
     if (!el) return;
     const handleScroll = () => {
       const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
-      const scrolledUp = distanceFromBottom > 120;
+      const scrolledUp = distanceFromBottom > 240;
       setShowScrollToBottom(scrolledUp);
       if (!scrolledUp) {
         setUnreadCount(0);
@@ -1038,7 +1040,7 @@ export const ChatTab = () => {
         <div ref={messagesEndRef} />
       </div>
         <AnimatePresence>
-          {showScrollToBottom && (
+          {showScrollToBottom && !isStreaming && (
             <m.button
               initial={{ opacity: 0, y: 8, scale: 0.9 }}
               animate={
