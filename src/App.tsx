@@ -1,5 +1,3 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
@@ -21,6 +19,13 @@ const LunaChatWidget = lazy(() =>
   import("./components/LunaChatWidget").then(m => ({ default: m.LunaChatWidget }))
 );
 
+// Sonner toaster — lazy-loaded so the ~9 KB sonner bundle stays out of initial JS.
+// Toasts are only triggered after user interaction (via ChatTab), so the provider
+// only needs to mount when a lazy section is already on its way in.
+const Sonner = lazy(() =>
+  import("@/components/ui/sonner").then(m => ({ default: m.Toaster }))
+);
+
 const RouteFallback = () => <div className="min-h-screen bg-background" aria-hidden="true" />;
 
 const queryClient = new QueryClient();
@@ -29,8 +34,6 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <LunaProvider>
-        <Toaster />
-        <Sonner />
         <BrowserRouter>
           <Suspense fallback={<RouteFallback />}>
             <MotionProvider>
@@ -49,6 +52,7 @@ const App = () => (
         </BrowserRouter>
 
         <Suspense fallback={null}>
+          <Sonner />
           <LunaChatWidget />
         </Suspense>
       </LunaProvider>
