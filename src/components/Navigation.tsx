@@ -1,4 +1,3 @@
-import { m, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import { Menu, X, PhoneCall } from "lucide-react";
 
@@ -32,7 +31,6 @@ export const Navigation = () => {
       (entries) => {
         const visible = entries.filter(e => e.isIntersecting);
         if (visible.length > 0) {
-          // Pick the one with highest intersection ratio
           const best = visible.reduce((a, b) => a.intersectionRatio > b.intersectionRatio ? a : b);
           setActiveSection(`#${best.target.id}`);
         }
@@ -74,11 +72,8 @@ export const Navigation = () => {
   }, [isMobileMenuOpen]);
 
   return (
-    <m.header
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 opacity-0 animate-fade-in-down transition-all duration-500 ${
         isScrolled
           ? "bg-background/95 backdrop-blur-md border-b border-border"
           : "bg-transparent"
@@ -118,45 +113,45 @@ export const Navigation = () => {
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           className="md:hidden text-cream"
+          aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
         >
           {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
       </div>
 
-      <AnimatePresence>
-        {isMobileMenuOpen && (
-          <m.div
-            ref={menuRef}
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="md:hidden bg-background/98 backdrop-blur-md border-t border-border overflow-hidden"
-          >
-            <nav className="flex flex-col items-center gap-6 py-8">
-              {navLinks.map((link) => (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={`font-body text-lg transition-colors ${
-                    activeSection === link.href ? "text-gold" : "text-cream/70 hover:text-gold"
-                  }`}
-                >
-                  {link.label}
-                </a>
-              ))}
+      {/* Mobile menu — pure CSS slide-down via grid-rows trick (no framer) */}
+      <div
+        className={`md:hidden grid overflow-hidden transition-[grid-template-rows,opacity] duration-300 ease-out ${
+          isMobileMenuOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+        }`}
+        aria-hidden={!isMobileMenuOpen}
+      >
+        <div className="min-h-0 bg-background/98 backdrop-blur-md border-t border-border">
+          <nav ref={menuRef} className="flex flex-col items-center gap-6 py-8">
+            {navLinks.map((link) => (
               <a
-                href="tel:+15203276753"
-                className="flex items-center gap-2 bg-gold text-background font-body px-6 py-3 rounded-lg"
+                key={link.label}
+                href={link.href}
+                onClick={() => setIsMobileMenuOpen(false)}
+                tabIndex={isMobileMenuOpen ? 0 : -1}
+                className={`font-body text-lg transition-colors ${
+                  activeSection === link.href ? "text-gold" : "text-cream/70 hover:text-gold"
+                }`}
               >
-                <PhoneCall className="w-5 h-5" />
-                Call (520) 327-6753
+                {link.label}
               </a>
-            </nav>
-          </m.div>
-        )}
-      </AnimatePresence>
-    </m.header>
+            ))}
+            <a
+              href="tel:+15203276753"
+              tabIndex={isMobileMenuOpen ? 0 : -1}
+              className="flex items-center gap-2 bg-gold text-background font-body px-6 py-3 rounded-lg"
+            >
+              <PhoneCall className="w-5 h-5" />
+              Call (520) 327-6753
+            </a>
+          </nav>
+        </div>
+      </div>
+    </header>
   );
 };

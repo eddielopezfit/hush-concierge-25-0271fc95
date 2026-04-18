@@ -1,4 +1,3 @@
-import { m } from "framer-motion";
 import { Star } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -36,17 +35,13 @@ export const TrustBar = () => {
           <span className="font-body text-sm text-muted-foreground">315+ reviews</span>
         </a>
 
-        {/* Rotating mini review */}
-        <m.p
+        {/* Rotating mini review — re-mounts via key for fresh CSS animation */}
+        <p
           key={index}
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -6 }}
-          transition={{ duration: 0.4 }}
-          className="font-body text-sm text-cream/60 italic text-center sm:text-left"
+          className="font-body text-sm text-cream/60 italic text-center sm:text-left opacity-0 animate-fade-up-mini"
         >
           "{review.text}" — <span className="text-gold/70 not-italic">{review.author}</span>
-        </m.p>
+        </p>
       </div>
     </section>
   );
