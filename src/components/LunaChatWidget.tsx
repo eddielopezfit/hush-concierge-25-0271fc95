@@ -23,11 +23,7 @@ export const LunaChatWidget = () => {
   const [showBadge, setShowBadge] = useState(false);
   const [activeTab, setActiveTab] = useState<LunaTabId>("find");
   const [isFirstOpen, setIsFirstOpen] = useState(true);
-  const [nudge, setNudge] = useState<
-    | { kind: "compare"; section: "services" | "artists" }
-    | { kind: "finder-stuck" }
-    | null
-  >(null);
+  const [nudge, setNudge] = useState<DwellNudge | InactivityNudge | null>(null);
   const { chatWidgetRequested, clearChatWidgetRequest } = useLuna();
   const chimeRef = useRef<HTMLAudioElement | null>(null);
   const chimeBuilt = useRef(false);
