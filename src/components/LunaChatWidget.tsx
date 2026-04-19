@@ -11,6 +11,9 @@ import { useLuna } from "@/contexts/LunaContext";
 import { buildChimeAudio } from "@/lib/lunaChime";
 import { useDwellNudge, type DwellNudge } from "@/hooks/luna/useDwellNudge";
 import { useInactivityNudge, type InactivityNudge } from "@/hooks/luna/useInactivityNudge";
+import { saveLead } from "@/lib/saveSession";
+import { loadPersistedChat, clearPersistedChat } from "./luna/chat/useChatPersistence";
+import { toast } from "sonner";
 
 const tabVariants = {
   enter: { opacity: 0, y: 8 },
@@ -79,9 +82,61 @@ export const LunaChatWidget = () => {
     }
   };
 
-  const handleClose = () => setIsOpen(false);
+  const [showExitCapture, setShowExitCapture] = useState(false);
+  const [exitName, setExitName] = useState("");
+  const [exitPhone, setExitPhone] = useState("");
+  const [exitSubmitting, setExitSubmitting] = useState(false);
+
+  const hasUnsavedChat = useCallback((): boolean => {
+    try {
+      const persisted = loadPersistedChat();
+      if (!persisted) return false;
+      const userMsgs = persisted.messages.filter(m => m.role === "user").length;
+      return userMsgs >= 1 && !persisted.leadCaptured && !persisted.leadDismissed;
+    } catch { return false; }
+  }, []);
+
+  const handleClose = () => {
+    if (hasUnsavedChat() && !showExitCapture) {
+      setShowExitCapture(true);
+      return;
+    }
+    setIsOpen(false);
+    setShowExitCapture(false);
+  };
   const closePanel = () => setIsOpen(false);
   const switchTab = (tab: string) => setActiveTab(tab as LunaTabId);
+
+  const handleExitSubmit = async () => {
+    if (!exitName.trim() || !exitPhone.trim()) return;
+    setExitSubmitting(true);
+    await saveLead({ name: exitName, phone: exitPhone, goal: "exit_intent_chat" });
+    setExitSubmitting(false);
+    // Mark persisted chat as captured so the prompt doesn't re-fire
+    try {
+      const persisted = loadPersistedChat();
+      if (persisted) {
+        const updated = { ...persisted, leadCaptured: true };
+        localStorage.setItem("hush_luna_chat_v1", JSON.stringify(updated));
+      }
+    } catch { /* ignore */ }
+    toast.success("Got it — Kendell will reach out soon.", { duration: 3000 });
+    setShowExitCapture(false);
+    setIsOpen(false);
+  };
+
+  const handleExitDismiss = () => {
+    // User explicitly skipped — mark dismissed and close
+    try {
+      const persisted = loadPersistedChat();
+      if (persisted) {
+        const updated = { ...persisted, leadDismissed: true };
+        localStorage.setItem("hush_luna_chat_v1", JSON.stringify(updated));
+      }
+    } catch { /* ignore */ }
+    setShowExitCapture(false);
+    setIsOpen(false);
+  };
 
   // Listen for tab-switch events from ChatTab action buttons
   useEffect(() => {
