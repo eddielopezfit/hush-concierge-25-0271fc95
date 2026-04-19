@@ -84,7 +84,7 @@ describe("computePlanTotals", () => {
       { category: "hair", label: "color", timeEstimate: "2–3 hours", priceRange: "$95–$300+", consultationRequired: true },
     ];
     const t = computePlanTotals(items);
-    expect(t?.timeRange).toBe("2 hrs–3 hrs");
+    expect(t?.timeRange).toBe("2 hr–3 hr");
     expect(t?.priceRange).toBe("$95–$300+");
     expect(t?.hasConsultationItem).toBe(true);
   });
