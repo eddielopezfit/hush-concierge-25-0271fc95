@@ -152,7 +152,7 @@ export const TestimonialsSection = () => {
           {/* See all link */}
           <div className="text-center mt-8">
             <a
-              href="https://www.google.com/maps/place/Hush+Salon+%26+Day+Spa/@32.2537155,-110.8837433,17z/"
+              href="https://search.google.com/local/reviews?placeid=ChIJl3jKGKdr1oYRYjQYKzKdfFE"
               target="_blank"
               rel="noopener noreferrer"
               className="font-body text-sm text-muted-foreground hover:text-gold transition-colors underline underline-offset-4"
@@ -226,7 +226,7 @@ export const TestimonialsSection = () => {
           className="text-center mt-10 md:hidden"
         >
           <a
-            href="https://www.google.com/maps/place/Hush+Salon+%26+Day+Spa/@32.2537155,-110.8837433,17z/"
+            href="https://search.google.com/local/reviews?placeid=ChIJl3jKGKdr1oYRYjQYKzKdfFE"
             target="_blank"
             rel="noopener noreferrer"
             className="font-body text-sm text-muted-foreground hover:text-gold transition-colors underline underline-offset-4"
