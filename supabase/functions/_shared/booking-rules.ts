@@ -189,8 +189,37 @@ export const PRIORITY_LABEL: Record<Priority, string> = {
   P1: "HIGH PRIORITY", P2: "MEDIUM", P3: "STANDARD", P4: "LOW",
 };
 
-export function getUrgencyAction(priority: Priority): string {
-  if (priority === "P1") return "🚨 *Action:* @Kendell — Call within 10 minutes";
-  if (priority === "P2") return "⏰ *Action:* @Kendell — Follow up today";
-  return "📋 *Action:* @Kendell — Add to follow-up queue";
+/**
+ * Returns a Slack-pingable mention string for a given channel.
+ * Reads SLACK_MENTION_<CHANNEL> env vars (e.g. SLACK_MENTION_NAILS = "U07ABC1234").
+ * Falls back to SLACK_MENTION_DEFAULT, then to plain text "@Kendell".
+ *
+ * Slack mention syntax:
+ *   - User:  <@U07ABC1234>
+ *   - Group: <!subteam^S07ABC1234|team-name>
+ *   - Here:  <!here>
+ *   - All:   <!channel>
+ *
+ * Accepts either a raw user ID ("U07ABC1234") or a pre-formatted mention
+ * ("<@U07...>", "<!subteam^...>", "<!here>") — passes the latter through unchanged.
+ */
+export function getSlackMention(channel?: SlackChannel | string | null): string {
+  const key = (channel ?? "default").toString().toUpperCase();
+  const raw =
+    Deno.env.get(`SLACK_MENTION_${key}`) ||
+    Deno.env.get("SLACK_MENTION_DEFAULT") ||
+    "";
+
+  const v = raw.trim();
+  if (!v) return "@Kendell"; // plain-text fallback (won't ping, but won't break)
+  if (v.startsWith("<")) return v; // already formatted
+  if (/^[UWST][A-Z0-9]{6,}$/i.test(v)) return `<@${v}>`; // bare user/workspace ID
+  return v; // arbitrary string — trust caller
+}
+
+export function getUrgencyAction(priority: Priority, channel?: SlackChannel | string | null): string {
+  const who = getSlackMention(channel);
+  if (priority === "P1") return `🚨 *Action:* ${who} — Call within 10 minutes`;
+  if (priority === "P2") return `⏰ *Action:* ${who} — Follow up today`;
+  return `📋 *Action:* ${who} — Add to follow-up queue`;
 }

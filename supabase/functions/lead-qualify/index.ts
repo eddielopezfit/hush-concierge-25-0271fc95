@@ -58,11 +58,11 @@ interface LeadPayload {
 
 // ── Slack Alert Formatting ──────────────────────────────────────────────────
 
-function formatSlackMessage(lead: LeadPayload, priority: Priority): object {
+function formatSlackMessage(lead: LeadPayload, priority: Priority, channel: SlackChannel): object {
   const routing = deriveInternalRouting(lead.category ?? null, lead.service ?? null);
   const bookingDisplay = getInternalBookingPath(lead.category);
   const rule = getRoutingRule(lead.category);
-  const urgencyAction = getUrgencyAction(priority);
+  const urgencyAction = getUrgencyAction(priority, channel);
 
   const notesLines: string[] = [];
   if (lead.consultation_required) {
@@ -156,7 +156,7 @@ async function sendSlackAlert(
   const channelWebhookKey = `SLACK_WEBHOOK_URL_${channel.toUpperCase()}`;
   const webhookUrl = Deno.env.get(channelWebhookKey) || SLACK_WEBHOOK_URL;
 
-  const payload = formatSlackMessage(lead, priority);
+  const payload = formatSlackMessage(lead, priority, channel);
 
   try {
     const res = await fetch(webhookUrl, {
