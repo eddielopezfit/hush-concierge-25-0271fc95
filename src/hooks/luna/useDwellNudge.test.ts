@@ -28,10 +28,8 @@ class MockMutationObserver {
 beforeEach(() => {
   sessionStorage.clear();
   ioCallback = null;
-  // @ts-expect-error - install mocks
-  globalThis.IntersectionObserver = MockIntersectionObserver;
-  // @ts-expect-error - install mocks
-  globalThis.MutationObserver = MockMutationObserver;
+  globalThis.IntersectionObserver = MockIntersectionObserver as unknown as typeof IntersectionObserver;
+  globalThis.MutationObserver = MockMutationObserver as unknown as typeof MutationObserver;
 
   // Stub rAF to a setTimeout-driven loop so vi.advanceTimersByTime drives it
   let rafCounter = 0;

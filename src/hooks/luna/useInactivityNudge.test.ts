@@ -28,10 +28,8 @@ class MockMutationObserver {
 beforeEach(() => {
   sessionStorage.clear();
   ioCallback = null;
-  // @ts-expect-error - install mocks
-  globalThis.IntersectionObserver = MockIntersectionObserver;
-  // @ts-expect-error - install mocks
-  globalThis.MutationObserver = MockMutationObserver;
+  globalThis.IntersectionObserver = MockIntersectionObserver as unknown as typeof IntersectionObserver;
+  globalThis.MutationObserver = MockMutationObserver as unknown as typeof MutationObserver;
   document.body.innerHTML = `<section id="experience-finder"></section>`;
   vi.useFakeTimers();
 });
