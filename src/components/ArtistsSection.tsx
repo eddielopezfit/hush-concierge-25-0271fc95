@@ -129,7 +129,7 @@ export const ArtistsSection = () => {
   const [selectedArtist, setSelectedArtist] = useState<TeamMember | null>(null);
   const [activeFilter, setActiveFilter] = useState("all");
   const [showAll, setShowAll] = useState(false);
-  const { openModal, mergeConcierge } = useLuna();
+  const { openModal, openChatWidget, mergeConcierge } = useLuna();
 
   // Auto-filter from concierge context
   useEffect(() => {
@@ -510,26 +510,27 @@ export const ArtistsSection = () => {
                   <span>Book with {selectedArtist.name.split(" ")[0]}</span>
                 </m.button>
 
-                {/* Ask Luna CTA */}
+                {/* Ask Luna CTA — opens Luna panel + auto-sends prompt */}
                 <button
                   onClick={() => {
                     const categories: ServiceCategoryId[] = selectedArtist.serviceCategories?.length
                       ? selectedArtist.serviceCategories
                       : selectedArtist.serviceCategory ? [selectedArtist.serviceCategory] : [];
-                    const lunaContext: ConciergeContext = {
+                    mergeConcierge({
                       source: "Meet the Team",
                       categories,
-                      goal: null,
-                      timing: null,
                       preferredArtist: selectedArtist.name,
                       preferredArtistId: selectedArtist.id,
-                    };
+                    });
+                    try {
+                      sessionStorage.setItem(
+                        "hush_chat_pending_prompt",
+                        `Tell me more about ${selectedArtist.name} — what they specialize in, who they're a great fit for, and how to book with them.`,
+                      );
+                    } catch { /* ignore */ }
+                    trackArtistClick(selectedArtist.name);
                     setSelectedArtist(null);
-                    openModal(lunaContext);
-                    // Switch to chat tab
-                    setTimeout(() => {
-                      window.dispatchEvent(new CustomEvent("luna-switch-tab", { detail: "chat" }));
-                    }, 200);
+                    openChatWidget();
                   }}
                   className="flex items-center justify-center gap-2 text-xs font-body text-primary hover:text-primary/80 transition-colors py-2 w-full border border-primary/20 rounded-lg mb-2"
                 >
