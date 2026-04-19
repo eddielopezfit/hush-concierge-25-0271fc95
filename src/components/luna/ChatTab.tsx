@@ -235,7 +235,7 @@ export const ChatTab = () => {
     if (!el) return;
     const handleScroll = () => {
       const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
-      const scrolledUp = distanceFromBottom > 240;
+      const scrolledUp = distanceFromBottom > 140;
       setShowScrollToBottom(scrolledUp);
       if (!scrolledUp) {
         setUnreadCount(0);
@@ -329,6 +329,15 @@ export const ChatTab = () => {
       setInput("");
       const newCount = userMessageCount + 1;
       setUserMessageCount(newCount);
+
+      // Force-scroll to bottom on send so the user follows their own message
+      // and Luna's incoming response — eliminates the "1 new" hidden-reply problem.
+      requestAnimationFrame(() => {
+        const el = scrollContainerRef.current;
+        if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+        setUnreadCount(0);
+        setShowScrollToBottom(false);
+      });
 
       streamChat(newMessages.filter((m) => m.id !== "greeting"));
 
