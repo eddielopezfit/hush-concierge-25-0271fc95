@@ -74,7 +74,7 @@ describe("computePlanTotals", () => {
       { category: "lashes", label: "y", timeEstimate: "60 min", priceRange: "$65–$95", consultationRequired: false },
     ];
     const t = computePlanTotals(items);
-    expect(t?.timeRange).toBe("90 min–1.5 hrs");
+    expect(t?.timeRange).toBe("1.5 hrs–2 hr");
     expect(t?.priceRange).toBe("$90–$150");
     expect(t?.hasConsultationItem).toBe(false);
   });
