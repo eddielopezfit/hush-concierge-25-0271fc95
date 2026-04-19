@@ -1,0 +1,28 @@
+# CODEOWNERS — default reviewers for the Hush Salon repo
+# Docs: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for everything
+*                                   @hush-salon/maintainers
+
+# CI / repo config
+/.github/                           @hush-salon/maintainers
+/.lovable/                          @hush-salon/maintainers
+
+# Backend (edge functions, migrations, shared brain)
+/supabase/                          @hush-salon/backend
+/src/integrations/supabase/         @hush-salon/backend
+
+# Luna brain & revenue/retention logic
+/src/lib/lunaBrain.ts               @hush-salon/backend
+/src/lib/cadenceEngine.ts           @hush-salon/backend
+/src/lib/upsellEngine.ts            @hush-salon/backend
+/supabase/functions/_shared/        @hush-salon/backend
+
+# Design system & brand surfaces
+/src/index.css                      @hush-salon/design
+/tailwind.config.ts                 @hush-salon/design
+/src/components/ui/                 @hush-salon/design
+
+# Tests
+**/*.test.ts                        @hush-salon/maintainers
+**/*.test.tsx                       @hush-salon/maintainers
