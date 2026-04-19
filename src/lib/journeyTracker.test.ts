@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi, type MockInstance } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 
 // The module holds singleton state, so we re-import a fresh copy in each test.
 type Tracker = typeof import("./journeyTracker");
