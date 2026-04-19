@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: ["**"]
 
+permissions:
+  contents: read
+  pull-requests: write   # required for the coverage PR comment
+
 jobs:
   quality:
     name: Typecheck • Lint • Test
@@ -28,5 +32,20 @@ jobs:
       - name: Lint (oxlint)
         run: bunx oxlint@latest --deny-warnings
 
-      - name: Run tests (vitest)
-        run: bunx vitest run --reporter=verbose
+      - name: Run tests with coverage (vitest)
+        run: bunx vitest run --coverage --reporter=verbose
+
+      - name: Report coverage on PR
+        if: github.event_name == 'pull_request'
+        uses: davelosert/vitest-coverage-report-action@v2
+        with:
+          json-summary-path: ./coverage/coverage-summary.json
+          json-final-path: ./coverage/coverage-final.json
+
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 14
