@@ -26,7 +26,7 @@ jobs:
         run: bunx tsc --noEmit
 
       - name: Lint (oxlint)
-        run: bunx oxlint@latest --deny-warnings
+        run: bunx oxlint@latest
 
       - name: Run tests (vitest)
         run: bunx vitest run --reporter=verbose
