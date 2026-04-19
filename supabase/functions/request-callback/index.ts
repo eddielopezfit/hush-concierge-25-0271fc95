@@ -55,7 +55,7 @@ function deriveLocalPriority(body: RequestCallbackBody): Priority {
 // ── Slack Block Kit ───────────────────────────────────────────────────────────
 function buildSlackMessage(body: RequestCallbackBody, priority: Priority): object {
   const bookingPathDisplay = getInternalBookingPath(body.service_category);
-  const action = getUrgencyAction(priority);
+  const action = getUrgencyAction(priority, "callbacks");
 
   const flags: string[] = ["📞 Guest requested a callback — Luna made the commitment"];
   if (body.consultation_required) flags.push("⚠️ Consultation required — no pricing until consult");

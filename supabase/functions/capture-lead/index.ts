@@ -65,9 +65,9 @@ function scorePriority(body: CaptureLeadBody): { priority: Priority; intent_scor
 }
 
 // ── Slack Block Kit message ───────────────────────────────────────────────────
-function buildSlackMessage(body: CaptureLeadBody, priority: Priority, intent_score: number): object {
+function buildSlackMessage(body: CaptureLeadBody, priority: Priority, intent_score: number, channel: string): object {
   const bookingPathDisplay = getInternalBookingPath(body.service_category);
-  const action = getUrgencyAction(priority);
+  const action = getUrgencyAction(priority, channel);
 
   const flags: string[] = [];
   if (body.consultation_required)      flags.push("⚠️ Consultation required — no price until consult");
@@ -234,7 +234,7 @@ Deno.serve(async (req) => {
     const channel = resolveSlackChannel(body.service_category ?? null, body.callback_requested ?? false);
     const channelName = channel === "callbacks" ? "CALLBACKS" : channel.toUpperCase();
     const webhook = getSlackWebhook(channelName) || getSlackWebhook(channel);
-    const slackMsg = buildSlackMessage(body, priority, intent_score);
+    const slackMsg = buildSlackMessage(body, priority, intent_score, channel);
 
     if (webhook) {
       fetch(webhook, {
