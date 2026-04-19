@@ -137,9 +137,11 @@ describe("journeyTracker", () => {
     });
 
     it("schedules section discovery via requestAnimationFrame", () => {
+      const rafSpy = vi.spyOn(globalThis, "requestAnimationFrame");
       makeSection("services");
       tracker.initJourneyTracking();
       expect(rafSpy).toHaveBeenCalledTimes(1);
+      rafSpy.mockRestore();
     });
   });
 
