@@ -129,11 +129,12 @@ export const LunaChatWidget = () => {
   };
 
   const handleExitDismiss = () => {
-    // User explicitly skipped — mark dismissed and close
+    // User explicitly skipped the exit-intent overlay — suppress future re-fires this session
+    // by marking leadCaptured (semantically: "capture opportunity is closed for this chat").
     try {
       const persisted = loadPersistedChat();
       if (persisted) {
-        const updated = { ...persisted, leadDismissed: true };
+        const updated = { ...persisted, leadDismissed: true, leadCaptured: true };
         localStorage.setItem("hush_luna_chat_v1", JSON.stringify(updated));
       }
     } catch { /* ignore */ }
