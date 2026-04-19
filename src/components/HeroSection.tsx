@@ -16,7 +16,7 @@ export const HeroSection = () => {
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Video — Ken Burns slow zoom via CSS */}
       <div className="absolute inset-0 z-0 overflow-hidden bg-background">
-        <div className="absolute inset-0 animate-ken-burns will-change-transform">
+        <div className="absolute inset-0 overflow-hidden animate-ken-burns will-change-transform [transform-origin:center_center]">
           {/* Desktop / tablet */}
           <video
             autoPlay
