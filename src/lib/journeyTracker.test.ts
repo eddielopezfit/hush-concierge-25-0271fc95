@@ -169,29 +169,23 @@ describe("journeyTracker", () => {
       expect(tracker.getProactiveSuggestion()).toBeNull();
     });
 
-    it("suggests artist help after 3+ artist views and >30s on site", () => {
+    it("suggests artist help after 3+ artist views and >30s on site", async () => {
       vi.useFakeTimers();
       const start = Date.now();
       vi.setSystemTime(start);
-
-      tracker = require("./journeyTracker"); // reload so pageLoadTime aligns? not needed — module already loaded
-      // Reload module so pageLoadTime = `start`
       vi.resetModules();
-      // Re-stub IO before reloading
-      // @ts-expect-error
-      globalThis.IntersectionObserver = MockIntersectionObserver;
+      installEnv();
 
-      return import("./journeyTracker").then((fresh) => {
-        fresh.trackArtistClick("Sheri");
-        fresh.trackArtistClick("Danielle");
-        fresh.trackArtistClick("Kathy");
+      const fresh = await import("./journeyTracker");
+      fresh.trackArtistClick("Sheri");
+      fresh.trackArtistClick("Danielle");
+      fresh.trackArtistClick("Kathy");
 
-        vi.setSystemTime(start + 31_000);
-        const sug = fresh.getProactiveSuggestion();
-        expect(sug?.type).toBe("artist");
-        expect(sug?.message).toContain("Sheri");
-        vi.useRealTimers();
-      });
+      vi.setSystemTime(start + 31_000);
+      const sug = fresh.getProactiveSuggestion();
+      expect(sug?.type).toBe("artist");
+      expect(sug?.message).toContain("Sheri");
+      vi.useRealTimers();
     });
 
     it("suggests booking after 2min on site + booking section viewed", async () => {
@@ -199,8 +193,7 @@ describe("journeyTracker", () => {
       const start = Date.now();
       vi.setSystemTime(start);
       vi.resetModules();
-      // @ts-expect-error
-      globalThis.IntersectionObserver = MockIntersectionObserver;
+      installEnv();
 
       const fresh = await import("./journeyTracker");
       const booking = makeSection("booking");
