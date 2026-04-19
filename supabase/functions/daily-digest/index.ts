@@ -38,6 +38,9 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
+    const url = new URL(req.url);
+    const dryRun = url.searchParams.get("dryRun") === "true";
+
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const SLACK_URL = Deno.env.get("SLACK_WEBHOOK_URL");
