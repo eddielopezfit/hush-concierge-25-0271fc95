@@ -1,30 +1,37 @@
 
-User confirmed the normalized secret names and asked to also add SLACK_MENTION_SKIN and SLACK_MENTION_MASSAGE for full symmetry. Code is already wired (booking-rules.ts reads `SLACK_MENTION_${CHANNEL}` and falls back to `SLACK_MENTION_DEFAULT`). Just need to request the secret values from the user.
+Build a daily Slack digest. Plan:
 
-## Plan: Request all 11 secrets in one batch
+**1. New edge function: `daily-digest`**
+- Queries yesterday's `callback_requests` + `leads` (00:00–23:59 local — use UTC for simplicity, can adjust).
+- Aggregates by category (hair/nails/lashes/skin/massage/other), counts by priority (P1 = callbacks, P2/P3 = regular leads), and conversion status (`callback_requests.status`: new/contacted/converted/etc.).
+- Posts a formatted summary to `SLACK_WEBHOOK_URL` (the `#hush-leads` fallback channel — most visible to whole team).
+- Returns JSON summary so it's also testable via curl.
 
-I'll request these 11 secrets (5 webhooks + 6 mentions, adding SKIN and MASSAGE per your suggestion):
+**2. Schedule it**
+- Use `pg_cron` + `pg_net` to invoke daily at 8:00 AM Arizona time (15:00 UTC, no DST in AZ).
+- Cron expression: `0 15 * * *`
+- Insert via `supabase--insert` (not migration) since it contains the project URL + anon key.
 
-**Webhook URLs** (paste the full `https://hooks.slack.com/services/...` URL from each channel's Incoming Webhook):
-- `SLACK_WEBHOOK_URL_CALLBACKS` → `#hush-callbacks`
-- `SLACK_WEBHOOK_URL_NAILS` → `#hush-nails`
-- `SLACK_WEBHOOK_URL_LASHES` → `#hush-lashes`
-- `SLACK_WEBHOOK_URL_SKIN` → `#hush-skin`
-- `SLACK_WEBHOOK_URL_MASSAGE` → `#hush-massage`
+**3. Slack message format**
+```
+📊 *Hush Daily Digest — Mon Apr 18*
+_Yesterday's lead activity_
 
-**Slack member IDs** (paste raw ID like `U07ABC1234` — code auto-wraps in `<@...>`):
-- `SLACK_MENTION_DEFAULT` → Kendell (fallback for any unspecified channel)
-- `SLACK_MENTION_CALLBACKS` → Kendell (callback queue owner)
-- `SLACK_MENTION_NAILS` → Nail dept lead (or repeat Kendell)
-- `SLACK_MENTION_LASHES` → Allison Griessel
-- `SLACK_MENTION_SKIN` → Skincare lead
-- `SLACK_MENTION_MASSAGE` → Tammi
+*Total:* 12 leads · 4 callbacks · 2 converted
 
-## Fallback behavior (already coded — no changes needed)
-- Missing `SLACK_WEBHOOK_URL_*` → falls back to `SLACK_WEBHOOK_URL` (`#hush-leads`)
-- Missing `SLACK_MENTION_*` → falls back to `SLACK_MENTION_DEFAULT` → falls back to plain text `@Kendell`
+*By Category*
+• Hair — 5 (1 callback)
+• Nails — 3 (2 callbacks)
+• Lashes — 2
+• Skin — 1 (1 callback)
+• Massage — 1
 
-So you can leave any secret blank and nothing breaks. Safe to ship partial.
+*Status*
+🆕 New: 8 · 📞 Contacted: 2 · ✅ Converted: 2
 
-## After secrets are added
-Quick end-to-end test: trigger one callback per category through the Hub, confirm each lands in the right channel with a working ping.
+🔗 Full details in #hush-callbacks + dept channels
+```
+
+**4. No mentions** — digest is informational, not actionable, so no @ping.
+
+After build → deploy + run a one-off curl to confirm format, then schedule.
