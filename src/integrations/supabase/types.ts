@@ -399,24 +399,6 @@ export type Database = {
         }
         Relationships: []
       }
-      sessions: {
-        Row: {
-          context: Json | null
-          created_at: string | null
-          id: string
-        }
-        Insert: {
-          context?: Json | null
-          created_at?: string | null
-          id?: string
-        }
-        Update: {
-          context?: Json | null
-          created_at?: string | null
-          id?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       artists_public: {
