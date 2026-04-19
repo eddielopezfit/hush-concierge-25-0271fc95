@@ -55,4 +55,36 @@ describe("cadenceEngine.getCadenceRecommendations", () => {
       expect(r.nextDateRange).toMatch(/^[A-Z][a-z]{2} \d{1,2} – [A-Z][a-z]{2} \d{1,2}$/);
     }
   });
+
+  describe("edge cases", () => {
+    it("preserves duplicate categories (no dedupe — caller controls list)", () => {
+      const recs = getCadenceRecommendations(["hair", "hair"]);
+      expect(recs).toHaveLength(2);
+      expect(recs[0].nextDateRange).toBe(recs[1].nextDateRange);
+    });
+
+    it("returns a fresh array on each call (no shared reference)", () => {
+      const a = getCadenceRecommendations(["hair"]);
+      const b = getCadenceRecommendations(["hair"]);
+      expect(a).not.toBe(b);
+      expect(a[0]).not.toBe(b[0]);
+    });
+
+    it("handles month rollover correctly (Dec → Jan/Feb)", () => {
+      vi.setSystemTime(new Date("2026-12-15T12:00:00Z"));
+      const [rec] = getCadenceRecommendations(["hair"]); // +6w / +8w
+      expect(rec.nextDateRange).toBe("Jan 26 – Feb 9");
+    });
+
+    it("handles year rollover end-of-year (lashes 2-3 weeks)", () => {
+      vi.setSystemTime(new Date("2026-12-28T12:00:00Z"));
+      const [rec] = getCadenceRecommendations(["lashes"]);
+      expect(rec.nextDateRange).toBe("Jan 11 – Jan 18");
+    });
+
+    it("recommendation order matches input order even when reversed", () => {
+      const recs = getCadenceRecommendations(["massage", "skincare", "hair"]);
+      expect(recs.map(r => r.category)).toEqual(["massage", "skincare", "hair"]);
+    });
+  });
 });
