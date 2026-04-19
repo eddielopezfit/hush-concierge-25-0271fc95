@@ -37,27 +37,21 @@ function makeSection(id: string): HTMLElement {
   return el;
 }
 
-describe("journeyTracker", () => {
-  let rafSpy: MockInstance;
+function installEnv() {
+  // @ts-expect-error — install mock IO on globalThis (module reads it at call time)
+  globalThis.IntersectionObserver = MockIntersectionObserver;
+  // Synchronous rAF — assign directly so it survives fake timers
+  // @ts-expect-error
+  globalThis.requestAnimationFrame = (cb: FrameRequestCallback) => { cb(0); return 1; };
+}
 
+describe("journeyTracker", () => {
   beforeEach(async () => {
-    // Reset module state between tests (singleton state)
     vi.resetModules();
     document.body.innerHTML = "";
     localStorage.clear();
     MockIntersectionObserver.instances = [];
-
-    // @ts-expect-error — install mock IO on window
-    window.IntersectionObserver = MockIntersectionObserver;
-    // @ts-expect-error — and on globalThis for the module under test
-    globalThis.IntersectionObserver = MockIntersectionObserver;
-
-    // Run rAF callbacks synchronously so observe() happens immediately
-    rafSpy = vi.spyOn(window, "requestAnimationFrame").mockImplementation((cb) => {
-      cb(0);
-      return 1;
-    });
-
+    installEnv();
     tracker = await import("./journeyTracker");
   });
 
