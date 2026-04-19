@@ -17,7 +17,7 @@ import imgPriscilla from "@/assets/artists/Priscilla.webp";
 import imgSilviyaWarren from "@/assets/artists/Silviya_Warren.webp";
 import imgWhitneyHernandez from "@/assets/artists/Whitney_Hernandez.webp";
 import imgZaidaDelgado from "@/assets/artists/Zaida_Delgado.webp";
-import imgFounders from "@/assets/Founders_Hush.jpg";
+
 import imgSheriTurner from "@/assets/sheri-turner.jpg";
 import imgDanielleColucci from "@/assets/danielle-colucci.jpg";
 import imgKathyCrawford from "@/assets/kathy-crawford.jpg";

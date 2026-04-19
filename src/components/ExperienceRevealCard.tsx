@@ -9,7 +9,7 @@ interface ExperienceRevealCardProps {
   onBook?: () => void;
 }
 
-export const ExperienceRevealCard = ({ data, onBook }: ExperienceRevealCardProps) => {
+export const ExperienceRevealCard = ({ data, onBook: _onBook }: ExperienceRevealCardProps) => {
   const { conciergeContext } = useLuna();
 
   const handleScrollToPlan = () => {
