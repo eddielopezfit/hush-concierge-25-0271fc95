@@ -1,31 +1,63 @@
 
 
-The user wants a prompt they can paste into Perplexity Comet (browser-controlling AI) to perform a full UI/UX audit of the Hush Salon site. Comet can navigate, click, scroll, fill forms, screenshot, and read the DOM — so the prompt needs to direct it through every critical flow and surface findings in a structured report.
+The user pasted a comprehensive Comet UI/UX audit report. They want me to plan fixes. I'll group the 15 issues into a tight implementation plan focused on the critical/high items, with mediums bundled and lows noted.
 
-## Deliverable
+## Fix plan — ranked by leverage
 
-A single, copy-pasteable prompt saved to `/mnt/documents/comet-uiux-audit-prompt.md` plus shown inline in chat. Targets the published URL `https://hush-salon.lovable.app`.
+### Phase 1 — Critical (ship first)
 
-## Prompt structure
+**1. Eliminate black-screen FCP delay**
+- `index.html`: add inline `<style>html,body{background:#0d0d0d;color:#f5f3ee}</style>` in `<head>` and `style="background:#0d0d0d"` on `<body>`. Set `<meta name="theme-color" content="#0d0d0d">`.
+- `HeroSection.tsx`: keep video lazy, but ensure poster loads first — already set; add `fetchpriority="high"` to the desktop poster `<img>` fallback and `preload="metadata"` only.
+- Verify `MotionProvider` / `App.tsx` doesn't wrap initial paint in a Suspense fallback that's blank — add a minimal branded fallback (gold "L" mark on charcoal).
 
-1. **Role & objective** — senior product designer auditing a luxury salon site for conversion, accessibility, and polish.
-2. **Scope** — desktop (1440) + mobile (390) viewports, every section of homepage, Luna panel (all 5 tabs), Experience Finder quiz, Services pricing modal, Booking callback, exit-intent flow.
-3. **Audit dimensions** (rate each 1–5 with evidence + screenshot):
-   - Visual hierarchy & brand consistency (gold/charcoal, Playfair/DM Sans)
-   - Conversion clarity (no "Continue" copy, intent-driven CTAs, zero dead ends)
-   - Luna concierge flow — open bubble, switch tabs, send messages, trigger nudges, exit intent
-   - Experience Finder — complete the 3-step quiz with multi-service path
-   - Mobile responsiveness — sticky bar, full-screen Luna, tap targets ≥44px
-   - Accessibility — focus rings, skip link, contrast (AA), aria labels, keyboard nav
-   - Performance feel — LCP, lazy-load jank, animation smoothness
-   - Trust signals — reviews, hours badge, founders portrait, contact number visibility
-   - Copy quality — voice/tone, no broken neutrality (Luna shouldn't recommend stylist for multi-provider services)
-   - Broken states — 404, dead anchors, "Ask Luna about [artist]" must open chat thread
-4. **Step-by-step task list** Comet must execute (numbered, deterministic).
-5. **Output format** — markdown report with: Executive Summary, Severity-ranked Issues table (Critical/High/Medium/Low), Screenshot evidence per issue, Quick wins, Strategic recommendations.
-6. **Constraints** — don't submit real PII in lead forms (use "Audit Bot" + 555 number), don't spam phone calls, capture before leaving each page.
+**2. Wire exit-intent lead capture on Luna close**
+- `LunaChatWidget.tsx` `handleClose`: if chat tab has ≥1 user message AND no lead captured (check `conciergeStore.hasLead`), open `LeadCaptureForm` as an inline overlay inside the panel before dismissing. Cancel actually closes; submit saves then closes.
 
-## Format
+**3. Fix 4-message lead form trigger**
+- `ChatTab.tsx` / `useChatPersistence.ts`: locate the message-counter trigger. Current threshold likely gated on a stale flag. Refactor to derive `userMessageCount` from messages array each render and show `<LeadCaptureForm>` inline when `userMessageCount >= 4 && !leadCaptured`. Add unit test.
 
-Markdown file ~250 lines, ready to paste into Comet. Plain prose + numbered steps + a final "Report template" Comet fills in.
+### Phase 2 — High
+
+**4. Brand the 404 page** (`src/pages/NotFound.tsx`)
+- Add `<Navigation>`, Hush logo, gold gradient headline "Looks like this page stepped out.", body "Let's get you back where the magic happens.", two CTAs: "Find Your Experience" (→ `/#experience-finder`) and "Talk to Luna" (triggers `openChatWidget`). Keep `LunaChatWidget` mounted via App layout.
+
+**5. Footer social icon a11y** (`FooterSection.tsx`)
+- Add `aria-label="Follow Hush on Instagram"` / `…on Facebook"` to the anchor wrappers.
+
+**6. Experience Finder fast-lane fork** (`ExperienceFinderSection.tsx`)
+- Step 0: under category tiles add a subtle text link "Already know what you want? Skip to booking →" that scrolls to `BookingCallbackSection` and pre-fills nothing (or carries selected categories if any).
+
+**7. Mobile sticky bottom bar**
+- `MobileStickyBar.tsx` already exists with Find Experience / Call / Directions. Spec asks for Call / Text / Luna. Replace Directions with "Talk to Luna" (calls `openChatWidget`), keep Call, change primary from "Find Your Experience" to a smaller layout giving all three equal weight, ensure all targets ≥44px. Confirm it's mounted in `App.tsx`/`Index.tsx`.
+
+### Phase 3 — Medium
+
+**8. Skip-link target** (`index.html` / `Index.tsx`): wrap homepage sections in `<main id="main-content">`; update skip link `href="#main-content"`.
+
+**9. Luna neutrality tightening** (`supabase/functions/_shared/luna-brain.ts` + `SYSTEM_PROMPT_v7.md`): for hair color / hair cut / nails (3+ providers), instruct to describe team capability collectively, never enumerate names. Single-provider services (Allison-lashes, Tammi-massage, Patty-microneedling, nails by Kelli/Anita/Jacky factually) may be named. Redeploy `luna-chat`.
+
+**10. Pre-footer CTA copy** — change "BOOK AN APPOINTMENT" → "Reserve My Visit" (locate in `BookingCallbackSection.tsx` or `FooterSection.tsx`).
+
+**11. Hero left-edge artifact** — audit hero video container for `object-fit:cover; width:100%; overflow:hidden` and remove any `clip-path`/transform causing bleed.
+
+**12. Artist card image preloading** — add `loading="lazy"` only to below-fold artist cards (index ≥ 6); ensure first 6 are eager.
+
+### Phase 4 — Low (bundled)
+
+**13. 404 copy** — covered by #4.
+**14. Booking form fieldsets** — wrap "Interested In" and "How soon?" button groups in `<fieldset>` with `<legend>` (visually hidden via `sr-only`).
+**15. Trust bar live status** — add green/red dot + "Open Now · Closes 7 PM" / "Closed · Opens Tue 9 AM" to `TrustBar.tsx`, reusing the day/hours logic from `HeroSection`.
+
+## Out of scope for this pass
+- Full SSR for FCP (architectural; inline body bg + branded suspense fallback is sufficient quick fix).
+- Real HTTP 404 status (requires hosting-level rewrite; not actionable in SPA).
+
+## Files touched (~15)
+`index.html`, `src/App.tsx`, `src/pages/Index.tsx`, `src/pages/NotFound.tsx`, `src/components/HeroSection.tsx`, `src/components/LunaChatWidget.tsx`, `src/components/luna/ChatTab.tsx`, `src/components/luna/chat/useChatPersistence.ts`, `src/components/MobileStickyBar.tsx`, `src/components/FooterSection.tsx`, `src/components/ExperienceFinderSection.tsx`, `src/components/BookingCallbackSection.tsx`, `src/components/TrustBar.tsx`, `supabase/functions/_shared/luna-brain.ts`, `src/lib/SYSTEM_PROMPT_v7.md`.
+
+## Validation
+- Run `bunx vitest run --coverage` after each phase.
+- Add new tests: 4-message trigger, exit-intent gate, neutrality prompt regression.
+- Manual: cold-load home (expect charcoal frame instantly), close Luna mid-chat (expect capture overlay), 404 route (expect branded page).
 
