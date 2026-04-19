@@ -69,7 +69,7 @@ describe("useDwellNudge", () => {
           target: document.getElementById("services")!,
           isIntersecting: true,
           intersectionRatio: 0.6,
-        } as IntersectionObserverEntry,
+        } as unknown as IntersectionObserverEntry,
       ]);
     });
 
@@ -95,7 +95,7 @@ describe("useDwellNudge", () => {
           target: document.getElementById("services")!,
           isIntersecting: true,
           intersectionRatio: 1,
-        } as IntersectionObserverEntry,
+        } as unknown as IntersectionObserverEntry,
       ]);
     });
 
@@ -130,7 +130,7 @@ describe("useDwellNudge", () => {
           target: document.getElementById("artists")!,
           isIntersecting: true,
           intersectionRatio: 0.1, // below 0.4 threshold
-        } as IntersectionObserverEntry,
+        } as unknown as IntersectionObserverEntry,
       ]);
     });
 

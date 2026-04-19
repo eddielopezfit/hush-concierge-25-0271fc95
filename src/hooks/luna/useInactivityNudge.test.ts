@@ -54,7 +54,7 @@ describe("useInactivityNudge", () => {
           target: document.getElementById("experience-finder")!,
           isIntersecting: true,
           intersectionRatio: 0.6,
-        } as IntersectionObserverEntry,
+        } as unknown as IntersectionObserverEntry,
       ]);
     });
 
@@ -80,7 +80,7 @@ describe("useInactivityNudge", () => {
           target,
           isIntersecting: true,
           intersectionRatio: 0.6,
-        } as IntersectionObserverEntry,
+        } as unknown as IntersectionObserverEntry,
       ]);
     });
 
@@ -125,7 +125,7 @@ describe("useInactivityNudge", () => {
           target: document.getElementById("experience-finder")!,
           isIntersecting: true,
           intersectionRatio: 1,
-        } as IntersectionObserverEntry,
+        } as unknown as IntersectionObserverEntry,
       ]);
     });
     act(() => {
