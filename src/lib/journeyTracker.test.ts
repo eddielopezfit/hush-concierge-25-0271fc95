@@ -38,11 +38,9 @@ function makeSection(id: string): HTMLElement {
 }
 
 function installEnv() {
-  // @ts-expect-error — install mock IO on globalThis (module reads it at call time)
-  globalThis.IntersectionObserver = MockIntersectionObserver;
+  (globalThis as unknown as { IntersectionObserver: typeof MockIntersectionObserver }).IntersectionObserver = MockIntersectionObserver;
   // Synchronous rAF — assign directly so it survives fake timers
-  // @ts-expect-error
-  globalThis.requestAnimationFrame = (cb: FrameRequestCallback) => { cb(0); return 1; };
+  globalThis.requestAnimationFrame = ((cb: FrameRequestCallback) => { cb(0); return 1; }) as typeof requestAnimationFrame;
 }
 
 describe("journeyTracker", () => {
