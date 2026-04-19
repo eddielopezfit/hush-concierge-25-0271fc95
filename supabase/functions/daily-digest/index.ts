@@ -38,6 +38,9 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
+    const url = new URL(req.url);
+    const dryRun = url.searchParams.get("dryRun") === "true";
+
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const SLACK_URL = Deno.env.get("SLACK_WEBHOOK_URL");
@@ -134,7 +137,9 @@ Deno.serve(async (req) => {
     const slackText = lines.join("\n");
 
     let slackPosted = false;
-    if (SLACK_URL) {
+    if (dryRun) {
+      console.log("dryRun=true — skipping Slack post");
+    } else if (SLACK_URL) {
       const r = await fetch(SLACK_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -149,6 +154,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         ok: true,
+        dryRun,
         slackPosted,
         window: { start: start.toISOString(), end: end.toISOString() },
         totals: { leads: totalLeads, callbacks: totalCallbacks, converted: totalConverted },
