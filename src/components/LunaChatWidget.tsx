@@ -92,7 +92,10 @@ export const LunaChatWidget = () => {
       const persisted = loadPersistedChat();
       if (!persisted) return false;
       const userMsgs = persisted.messages.filter(m => m.role === "user").length;
-      return userMsgs >= 1 && !persisted.leadCaptured && !persisted.leadDismissed;
+      // Exit-intent fires whenever there's a real chat in progress without a captured lead.
+      // Dismissing the inline 4-message form does NOT waive the exit-intent — it's the user's
+      // last chance and a distinct conversion surface.
+      return userMsgs >= 1 && !persisted.leadCaptured;
     } catch { return false; }
   }, []);
 
