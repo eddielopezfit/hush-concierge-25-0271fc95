@@ -1,5 +1,5 @@
 import { m } from "framer-motion";
-import { Star, Quote, ChevronLeft, ChevronRight } from "lucide-react";
+import { Star, Quote } from "lucide-react";
 import { useState, useEffect, useCallback, useRef } from "react";
 
 const testimonials = [
@@ -66,14 +66,14 @@ const testimonials = [
 ];
 
 export const TestimonialsSection = () => {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
   const nextSlide = useCallback(() => {
     setCurrentIndex((prev) => (prev + 1) % testimonials.length);
   }, []);
 
-  const prevSlide = useCallback(() => {
+  const _prevSlide = useCallback(() => {
     setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
   }, []);
 
@@ -85,7 +85,7 @@ export const TestimonialsSection = () => {
   }, [isAutoPlaying, nextSlide]);
 
   const resumeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const handleInteraction = () => {
+  const _handleInteraction = () => {
     setIsAutoPlaying(false);
     if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
     resumeTimerRef.current = setTimeout(() => setIsAutoPlaying(true), 10000);
