@@ -158,7 +158,18 @@ export const TestimonialsSection = () => {
               className="font-body text-sm text-muted-foreground hover:text-gold transition-colors underline underline-offset-4"
             >
               See all 315+ reviews →
-...
+            </a>
+          </div>
+        </div>
+
+        {/* Review CTA — mobile only (desktop has its own link above) */}
+        <m.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.5 }}
+          className="text-center mt-10 md:hidden"
+        >
           <a
             href="https://www.google.com/maps/place/Hush+Salon+%26+Day+Spa/reviews/?hl=en"
             target="_blank"
