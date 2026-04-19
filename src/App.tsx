@@ -20,7 +20,20 @@ const LunaChatWidget = lazy(() =>
   import("./components/LunaChatWidget").then(m => ({ default: m.LunaChatWidget }))
 );
 
-const RouteFallback = () => <div className="min-h-screen bg-background" aria-hidden="true" />;
+const RouteFallback = () => (
+  <div
+    className="min-h-screen flex items-center justify-center"
+    style={{ background: "#0d0d0d" }}
+    aria-hidden="true"
+  >
+    <div
+      className="w-10 h-10 rounded-full flex items-center justify-center"
+      style={{ background: "hsl(38 50% 55%)" }}
+    >
+      <span style={{ color: "#0d0d0d", fontFamily: "Playfair Display, serif", fontWeight: 600 }}>L</span>
+    </div>
+  </div>
+);
 
 const queryClient = new QueryClient();
 

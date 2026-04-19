@@ -508,6 +508,13 @@ export const ExperienceFinderSection = () => {
                       Clear
                     </m.button>
                   )}
+                  <button
+                    type="button"
+                    onClick={() => document.getElementById("callback")?.scrollIntoView({ behavior: "smooth" })}
+                    className="font-body text-xs text-muted-foreground/70 hover:text-gold transition-colors mt-2"
+                  >
+                    Already know what you want? Skip to booking →
+                  </button>
                 </m.div>
               </m.div>
             )}

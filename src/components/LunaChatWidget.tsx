@@ -11,6 +11,9 @@ import { useLuna } from "@/contexts/LunaContext";
 import { buildChimeAudio } from "@/lib/lunaChime";
 import { useDwellNudge, type DwellNudge } from "@/hooks/luna/useDwellNudge";
 import { useInactivityNudge, type InactivityNudge } from "@/hooks/luna/useInactivityNudge";
+import { saveLead } from "@/lib/saveSession";
+import { loadPersistedChat, clearPersistedChat } from "./luna/chat/useChatPersistence";
+import { toast } from "sonner";
 
 const tabVariants = {
   enter: { opacity: 0, y: 8 },
@@ -79,9 +82,61 @@ export const LunaChatWidget = () => {
     }
   };
 
-  const handleClose = () => setIsOpen(false);
+  const [showExitCapture, setShowExitCapture] = useState(false);
+  const [exitName, setExitName] = useState("");
+  const [exitPhone, setExitPhone] = useState("");
+  const [exitSubmitting, setExitSubmitting] = useState(false);
+
+  const hasUnsavedChat = useCallback((): boolean => {
+    try {
+      const persisted = loadPersistedChat();
+      if (!persisted) return false;
+      const userMsgs = persisted.messages.filter(m => m.role === "user").length;
+      return userMsgs >= 1 && !persisted.leadCaptured && !persisted.leadDismissed;
+    } catch { return false; }
+  }, []);
+
+  const handleClose = () => {
+    if (hasUnsavedChat() && !showExitCapture) {
+      setShowExitCapture(true);
+      return;
+    }
+    setIsOpen(false);
+    setShowExitCapture(false);
+  };
   const closePanel = () => setIsOpen(false);
   const switchTab = (tab: string) => setActiveTab(tab as LunaTabId);
+
+  const handleExitSubmit = async () => {
+    if (!exitName.trim() || !exitPhone.trim()) return;
+    setExitSubmitting(true);
+    await saveLead({ name: exitName, phone: exitPhone, goal: "exit_intent_chat" });
+    setExitSubmitting(false);
+    // Mark persisted chat as captured so the prompt doesn't re-fire
+    try {
+      const persisted = loadPersistedChat();
+      if (persisted) {
+        const updated = { ...persisted, leadCaptured: true };
+        localStorage.setItem("hush_luna_chat_v1", JSON.stringify(updated));
+      }
+    } catch { /* ignore */ }
+    toast.success("Got it — Kendell will reach out soon.", { duration: 3000 });
+    setShowExitCapture(false);
+    setIsOpen(false);
+  };
+
+  const handleExitDismiss = () => {
+    // User explicitly skipped — mark dismissed and close
+    try {
+      const persisted = loadPersistedChat();
+      if (persisted) {
+        const updated = { ...persisted, leadDismissed: true };
+        localStorage.setItem("hush_luna_chat_v1", JSON.stringify(updated));
+      }
+    } catch { /* ignore */ }
+    setShowExitCapture(false);
+    setIsOpen(false);
+  };
 
   // Listen for tab-switch events from ChatTab action buttons
   useEffect(() => {
@@ -244,6 +299,59 @@ export const LunaChatWidget = () => {
                 </m.div>
               </AnimatePresence>
             </div>
+
+            {/* Exit-intent capture overlay — fires when closing mid-chat */}
+            <AnimatePresence>
+              {showExitCapture && (
+                <m.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 z-10 flex items-end md:items-center justify-center bg-background/80 backdrop-blur-sm p-4"
+                >
+                  <m.div
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: 20, opacity: 0 }}
+                    className="w-full max-w-sm rounded-2xl border border-primary/30 bg-card p-5 shadow-[var(--shadow-elegant)]"
+                  >
+                    <p className="font-display text-lg text-foreground mb-1">Before you go —</p>
+                    <p className="font-body text-sm text-muted-foreground mb-4">
+                      Want Kendell to follow up personally? Drop your name and number and we'll reach out.
+                    </p>
+                    <input
+                      type="text"
+                      value={exitName}
+                      onChange={(e) => setExitName(e.target.value)}
+                      placeholder="Your name"
+                      className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:outline-none mb-2"
+                    />
+                    <input
+                      type="tel"
+                      value={exitPhone}
+                      onChange={(e) => setExitPhone(e.target.value)}
+                      placeholder="(520) 000-0000"
+                      className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:outline-none mb-3"
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleExitSubmit}
+                        disabled={!exitName.trim() || !exitPhone.trim() || exitSubmitting}
+                        className="flex-1 bg-primary text-primary-foreground text-sm font-body py-2 rounded-lg disabled:opacity-40 transition-opacity"
+                      >
+                        {exitSubmitting ? "Sending…" : "Yes, follow up"}
+                      </button>
+                      <button
+                        onClick={handleExitDismiss}
+                        className="px-3 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        No thanks
+                      </button>
+                    </div>
+                  </m.div>
+                </m.div>
+              )}
+            </AnimatePresence>
           </m.div>
         )}
       </AnimatePresence>

@@ -343,8 +343,8 @@ export const ChatTab = () => {
 
       if (userHasHighBookingIntent(msg) && !leadCaptured && !showLeadForm && !leadDismissed) {
         setTimeout(() => setShowLeadForm(true), 600);
-      } else if (successfulExchangeCount >= 3 && !leadCaptured && !showLeadForm && !leadDismissed) {
-        setTimeout(() => setShowLeadForm(true), 3000);
+      } else if ((newCount >= 4 || successfulExchangeCount >= 3) && !leadCaptured && !showLeadForm && !leadDismissed) {
+        setTimeout(() => setShowLeadForm(true), 1500);
       }
     },
     [input, isStreaming, messages, userMessageCount, successfulExchangeCount, leadCaptured, showLeadForm, leadDismissed, streamChat]

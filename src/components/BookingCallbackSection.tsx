@@ -280,16 +280,17 @@ export const BookingCallbackSection = () => {
                   )}
                 </div>
 
-                <div className="space-y-2 md:col-span-2">
-                  <label className="font-body text-sm text-cream/75 block">
+                <fieldset className="space-y-2 md:col-span-2 border-0 p-0 m-0 min-w-0">
+                  <legend className="font-body text-sm text-cream/75 mb-2 px-0">
                     Interested In <span className="text-cream/35">(select up to 3)</span>
-                  </label>
+                  </legend>
                   <div className="flex flex-wrap gap-3">
                     {serviceOptions.map((option) => (
                       <button
                         key={option.value}
                         type="button"
                         onClick={() => toggleService(option.value)}
+                        aria-pressed={formData.interestedIn.includes(option.value)}
                         className={`px-5 py-3 rounded-lg border text-sm font-body transition-all duration-300 ${
                           formData.interestedIn.includes(option.value)
                             ? "bg-gold/15 border-gold text-gold"
@@ -300,18 +301,19 @@ export const BookingCallbackSection = () => {
                       </button>
                     ))}
                   </div>
-                </div>
+                </fieldset>
 
-                <div className="space-y-2 md:col-span-2">
-                  <label className="font-body text-sm text-cream/75 block">
+                <fieldset className="space-y-2 md:col-span-2 border-0 p-0 m-0 min-w-0">
+                  <legend className="font-body text-sm text-cream/75 mb-2 px-0">
                     How soon are you looking to book?
-                  </label>
+                  </legend>
                   <div className="flex flex-wrap gap-3">
                     {timingOptions.map((option) => (
                       <button
                         key={option.value}
                         type="button"
                         onClick={() => handleInputChange("timing", option.value)}
+                        aria-pressed={formData.timing === option.value}
                         className={`px-5 py-3 rounded-lg border text-sm font-body transition-all duration-300 ${
                           formData.timing === option.value
                             ? "bg-gold/15 border-gold text-gold"
@@ -322,7 +324,7 @@ export const BookingCallbackSection = () => {
                       </button>
                     ))}
                   </div>
-                </div>
+                </fieldset>
               </div>
 
               <div className="space-y-2 mb-8">

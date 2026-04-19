@@ -9,12 +9,50 @@ const miniReviews = [
   { text: "Absolutely LOVE Hush Salon and my stylist Silviya!!!", author: "Amber Eghtesadi" },
 ];
 
+/**
+ * Compute current open/closed status from local time.
+ * Hours: Tue/Thu 9–7, Wed/Fri 9–5, Sat 9–4, Closed Sun/Mon.
+ */
+function getLiveStatus(): { open: boolean; label: string } {
+  const now = new Date();
+  const day = now.getDay(); // 0=Sun ... 6=Sat
+  const hour = now.getHours();
+  const closeByDay: Record<number, number | null> = {
+    0: null, // Sun
+    1: null, // Mon
+    2: 19,   // Tue
+    3: 17,   // Wed
+    4: 19,   // Thu
+    5: 17,   // Fri
+    6: 16,   // Sat
+  };
+  const close = closeByDay[day];
+  if (close == null) {
+    // Closed today — find next open day
+    const nextOpen: Record<number, string> = {
+      0: "Opens Tue 9 AM",
+      1: "Opens Tue 9 AM",
+    };
+    return { open: false, label: `Closed · ${nextOpen[day] || "Opens soon"}` };
+  }
+  if (hour < 9) return { open: false, label: `Opens Today · 9 AM` };
+  if (hour >= close) {
+    // After close
+    const nextDay = day === 6 ? "Tue" : day === 5 ? "Sat" : day === 4 ? "Fri" : day === 3 ? "Thu" : "Wed";
+    return { open: false, label: `Closed · Opens ${nextDay} 9 AM` };
+  }
+  const closeLabel = close > 12 ? `${close - 12} PM` : `${close} ${close === 12 ? "PM" : "AM"}`;
+  return { open: true, label: `Open Now · Closes ${closeLabel}` };
+}
+
 export const TrustBar = () => {
   const [index, setIndex] = useState(0);
+  const [status, setStatus] = useState(() => getLiveStatus());
 
   useEffect(() => {
     const timer = setInterval(() => setIndex(i => (i + 1) % miniReviews.length), 5000);
-    return () => clearInterval(timer);
+    const statusTimer = setInterval(() => setStatus(getLiveStatus()), 60000);
+    return () => { clearInterval(timer); clearInterval(statusTimer); };
   }, []);
 
   const review = miniReviews[index];
@@ -29,17 +67,25 @@ export const TrustBar = () => {
           rel="noopener noreferrer"
           className="flex items-center gap-1.5 shrink-0 hover:opacity-80 transition-opacity"
         >
-          <Star className="w-4 h-4 text-gold fill-gold" />
+          <Star className="w-4 h-4 text-gold fill-gold" aria-hidden="true" />
           <span className="font-body text-sm text-cream/80 font-medium">4.7★</span>
-          <span className="text-border">·</span>
+          <span className="text-border" aria-hidden="true">·</span>
           <span className="font-body text-sm text-muted-foreground">315+ reviews</span>
         </a>
 
-        {/* Category-claim badge */}
-        <span className="hidden sm:inline-flex items-center gap-1.5 shrink-0 px-3 py-1 rounded-full border border-gold/40 bg-gold/5">
-          <span className="w-1.5 h-1.5 rounded-full bg-gold" />
-          <span className="font-body text-xs text-gold/90 tracking-wide uppercase">
-            Tucson's First AI-Guided Salon
+        {/* Live open/closed badge */}
+        <span
+          className={`inline-flex items-center gap-1.5 shrink-0 px-3 py-1 rounded-full border ${
+            status.open ? "border-emerald-500/40 bg-emerald-500/5" : "border-rose-500/30 bg-rose-500/5"
+          }`}
+          aria-live="polite"
+        >
+          <span
+            className={`w-1.5 h-1.5 rounded-full ${status.open ? "bg-emerald-500" : "bg-rose-400"}`}
+            aria-hidden="true"
+          />
+          <span className={`font-body text-xs tracking-wide ${status.open ? "text-emerald-400" : "text-rose-300/90"}`}>
+            {status.label}
           </span>
         </span>
 
