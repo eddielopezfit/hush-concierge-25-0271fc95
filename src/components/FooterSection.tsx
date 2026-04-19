@@ -28,7 +28,7 @@ export const FooterSection = () => {
             className="btn-gold py-3 px-8 inline-flex items-center gap-2 text-sm"
           >
             <Calendar className="w-4 h-4" />
-            Book an Appointment
+            Reserve My Visit
           </m.button>
         </div>
       </div>
@@ -93,17 +93,19 @@ export const FooterSection = () => {
                   href="https://www.instagram.com/hushsalonaz" 
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label="Follow Hush Salon on Instagram"
                   className="w-10 h-10 rounded-full border border-gold/25 flex items-center justify-center hover:bg-gold/10 transition-colors"
                 >
-                  <Instagram className="w-5 h-5 text-gold" />
+                  <Instagram className="w-5 h-5 text-gold" aria-hidden="true" />
                 </a>
                 <a 
                   href="https://www.facebook.com/profile.php?id=100063717333500" 
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label="Follow Hush Salon on Facebook"
                   className="w-10 h-10 rounded-full border border-gold/25 flex items-center justify-center hover:bg-gold/10 transition-colors"
                 >
-                  <Facebook className="w-5 h-5 text-gold" />
+                  <Facebook className="w-5 h-5 text-gold" aria-hidden="true" />
                 </a>
               </div>
               <p className="mt-4 text-sm text-muted-foreground font-body">
