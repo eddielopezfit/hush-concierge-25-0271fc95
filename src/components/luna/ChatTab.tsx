@@ -1,336 +1,31 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Send, Loader2, ArrowRight, Sparkles, Phone, Calendar, ChevronRight, RotateCcw, ArrowDown, X, MessageSquare } from "lucide-react";
+import { Send, Loader2, Phone, Calendar, ChevronRight, RotateCcw, ArrowDown, X, MessageSquare } from "lucide-react";
 import { m, AnimatePresence } from "framer-motion";
-import { getJourneyContextString } from "@/lib/journeyTracker";
-import { getConciergeContext } from "@/lib/conciergeStore";
-import { formatCategoryList, categoryLabels, goalLabels, timingLabels } from "@/lib/conciergeLabels";
 import { saveLead } from "@/lib/saveSession";
 import { getConversationId, startSession, clearConversation } from "@/lib/sessionManager";
-import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
+import { formatCategoryList } from "@/lib/conciergeLabels";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useLuna } from "@/contexts/LunaContext";
 import { toast } from "sonner";
 
-interface ChatMessage {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  /** Optional in-chat action buttons rendered below the message */
-  actions?: ChatAction[];
-  /** When true, render the inline booking form below this message */
-  showInlineBooking?: boolean;
-}
-
-interface ChatAction {
-  label: string;
-  type: "scroll" | "tab" | "callback" | "phone" | "text";
-  target?: string;
-}
-
-const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/luna-chat`;
-
-// Known error fallback phrases used to detect error responses
-const ERROR_PHRASES = [
-  "having trouble connecting",
-  "give me just a moment and try again",
-];
-
-function isErrorResponse(content: string): boolean {
-  const lower = content.toLowerCase();
-  return ERROR_PHRASES.some(p => lower.includes(p));
-}
-
-// ── Error-specific quick replies ────────────────────────────────────────────
-const ERROR_QUICK_REPLIES = [
-  "Try again",
-  "Call (520) 327-6753",
-  "Browse services",
-  "Help me choose",
-];
-
-// ── Context-aware greeting builder ──────────────────────────────────────────
-function buildContextGreeting(ctx: ConciergeContext | null): string {
-  if (!ctx?.categories?.length) {
-    return "Hey there — welcome to Hush. I'm Luna, your digital concierge.\n\nI know our entire team, every service we offer, and how to get you exactly what you're looking for. Think of me as your personal guide to the salon.\n\nWhat brings you in today?";
-  }
-
-  const cats = ctx.categories;
-  const sub = ctx.service_subtype;
-  const goal = ctx.goal;
-  const timing = ctx.timing;
-  const timingStr = timing ? (timingLabels[timing] || timing).toLowerCase() : "";
-
-  // Multi-service
-  if (cats.length > 1) {
-    const names = formatCategoryList(cats);
-    const timingPart = timingStr ? ` ${timingStr}` : "";
-    return `You're building a ${names.toLowerCase()} experience${timingPart} — love that. Want me to help map out the best combination, or do you have questions about specific services?`;
-  }
-
-  const cat = cats[0];
-
-  // Hair flows
-  if (cat === "hair") {
-    if (sub === "color") {
-      const goalPart = goal === "transform" ? ", a full transformation" : "";
-      const timingPart = timingStr ? ` ${timingStr}` : "";
-      return `You're thinking color work${goalPart}${timingPart ? " —" + timingPart : ""}. I can help you understand the process, compare options, or figure out timing. What would be most helpful?`;
-    }
-    if (sub === "cut") {
-      return `Looking for a fresh cut${timingStr ? " " + timingStr : ""}. Want help understanding what our stylists specialize in, or do you have questions about pricing?`;
-    }
-    if (sub === "both") {
-      return `Cut and color together${timingStr ? " — " + timingStr : ""}. That's a great combo. Want me to walk you through what to expect, or help you compare options?`;
-    }
-    const goalPart = goal ? `, looking for ${(goalLabels[goal] || goal).toLowerCase()}` : "";
-    return `You're exploring hair services${goalPart}${timingStr ? " — " + timingStr : ""}. Tell me more — are you thinking a cut, color, or something else?`;
-  }
-
-  // Nails
-  if (cat === "nails") {
-    if (sub === "manicure") return `Thinking about a manicure${timingStr ? " " + timingStr : ""}. Gel or regular? I can walk you through what we offer.`;
-    if (sub === "pedicure") return `A pedicure sounds perfect${timingStr ? " for " + timingStr : ""}. Want details on our options, or ready to figure out timing?`;
-    if (sub === "full_set") return `Full nail set${timingStr ? " " + timingStr : ""} — great choice. Want to know about gel options, or have questions about pricing?`;
-    return `You're looking at nails${timingStr ? " " + timingStr : ""}. I can help you figure out the right service — gel, regular, full set, or nail art?`;
-  }
-
-  // Lashes
-  if (cat === "lashes") {
-    if (sub === "full_set") return `Lash full set${timingStr ? " " + timingStr : ""} — exciting! Want me to explain classic vs hybrid vs volume?`;
-    if (sub === "fill") return `Lash fill${timingStr ? " " + timingStr : ""}. Quick question — do you know if you have classic, hybrid, or volume?`;
-    return `You're exploring lashes${timingStr ? " — " + timingStr : ""}. Are you thinking a full set, fill, or lash lift?`;
-  }
-
-  // Skincare
-  if (cat === "skincare") {
-    if (sub === "facial") return `A facial${timingStr ? " " + timingStr : ""} — we have several options from signature to microneedling. What's your skin goal right now?`;
-    if (sub === "acne") return `Dealing with breakouts or skin concerns${timingStr ? " — hoping to come in " + timingStr : ""}. Our estheticians are incredible at this. Want me to walk you through options?`;
-    return `You're thinking skincare${timingStr ? " " + timingStr : ""}. Are you looking for relaxation, correction, or a glow-up?`;
-  }
-
-  // Massage
-  if (cat === "massage") {
-    if (sub === "relaxation") return `A relaxation massage${timingStr ? " " + timingStr : ""} — that sounds perfect. Are you thinking 60, 90, or 120 minutes?`;
-    if (sub === "deep_tissue") return `Deep tissue work${timingStr ? " " + timingStr : ""}. Tammi is amazing at this. Are you thinking 60 or 90 minutes?`;
-    return `You're interested in a massage${timingStr ? " — " + timingStr : ""}. Relaxation, deep tissue, or pain relief?`;
-  }
-
-  // Generic with context
-  const names = formatCategoryList(cats);
-  return `You're exploring ${names.toLowerCase()}${timingStr ? " — " + timingStr : ""}. I know everything about our services and team. What would be most helpful?`;
-}
-
-// ── Soft transition line for mid-session context changes (no self-intro) ────
-function buildContextTransition(ctx: ConciergeContext | null): string {
-  if (!ctx?.categories?.length) {
-    return "Got it — starting fresh. What would you like to explore?";
-  }
-  const cats = ctx.categories;
-  const sub = ctx.service_subtype;
-  const timing = ctx.timing;
-  const timingStr = timing ? (timingLabels[timing] || timing).toLowerCase() : "";
-
-  if (cats.length > 1) {
-    const names = formatCategoryList(cats);
-    return `Switching gears — looks like you're now exploring ${names.toLowerCase()}${timingStr ? " " + timingStr : ""}. What would you like to know?`;
-  }
-
-  const cat = cats[0];
-  const catLabel = (categoryLabels[cat] || cat).toLowerCase();
-  const subDisplay: Record<string, string> = {
-    cut: "a cut", color: "color work", both: "cut + color",
-    manicure: "a manicure", pedicure: "a pedicure", full_set: "a full set", nail_art: "nail art",
-    fill: "a fill", lift: "a lash lift",
-    relaxation: "a relaxation massage", deep_tissue: "deep tissue", pain_relief: "pain relief work",
-    facial: "a facial", acne: "acne treatment", glow: "a glow treatment",
-  };
-  const focus = sub && subDisplay[sub] ? subDisplay[sub] : catLabel;
-  return `Got it — switching to ${focus}${timingStr ? " " + timingStr : ""}. What would you like to know?`;
-}
-
-// ── Persistent quick replies — shown after EVERY Luna response ──────────────
-function getQuickReplies(ctx: ConciergeContext | null, lastAssistantMsg: string): string[] {
-  const lower = (lastAssistantMsg || "").toLowerCase();
-
-  // Contextual variants based on conversation state
-  if (lower.includes("price") || lower.includes("cost") || lower.includes("pricing")) {
-    return ["I'm ready to book", "Have someone call me", "Help me decide", "Connect me with the team"];
-  }
-  if (lower.includes("stylist") || lower.includes("artist") || lower.includes("specialist")) {
-    return ["I'm ready to book", "Have someone call me", "Help me find the right service", "Connect me with the team"];
-  }
-  if (lower.includes("event") || lower.includes("wedding") || lower.includes("occasion")) {
-    return ["Let's plan my full look", "I'm ready to book", "Have someone call me", "Connect me with the team"];
-  }
-  if (lower.includes("option") || lower.includes("explore") || lower.includes("browse")) {
-    return ["Walk me through options", "I'm ready to book", "Have someone call me", "Connect me with the team"];
-  }
-  if (lower.includes("recommend") || lower.includes("suggest")) {
-    return ["That sounds perfect — book it", "Have someone call me", "Tell me more about that", "Connect me with the team"];
-  }
-  if (lower.includes("ready") || lower.includes("lock") || lower.includes("reserve") || lower.includes("book")) {
-    return ["Let's lock it in", "Have someone call me", "Help me decide", "What will it cost?"];
-  }
-
-  // Default persistent set
-  return ["I'm ready to book", "Have someone call me", "Help me decide", "Connect me with the team"];
-}
-
-// ── Detect intent from assistant message for in-chat CTAs ───────────────────
-function detectChatActions(msg: string, ctx: ConciergeContext | null): ChatAction[] {
-  const lower = msg.toLowerCase();
-  const actions: ChatAction[] = [];
-
-  // PRIORITY 1: Call prompt — always pair with Text option (front desk is the most actionable CTA)
-  const mentionsFrontDesk = lower.includes("(520) 327-6753") || lower.includes("call us") || lower.includes("front desk") || lower.includes("call kendell") || lower.includes("give them a call");
-  if (mentionsFrontDesk) {
-    actions.push({ label: "Call (520) 327-6753", type: "phone" });
-    actions.push({ label: "Text us", type: "text" });
-  }
-
-  // Service identified → offer booking + explore
-  if (lower.includes("i'd suggest") || lower.includes("i'd recommend") || lower.includes("great option") || lower.includes("perfect for")) {
-    if (!actions.find(a => a.type === "scroll")) {
-      actions.push({ label: "Reserve this service", type: "scroll", target: "callback" });
-    }
-    if (!mentionsFrontDesk) {
-      actions.push({ label: "Build my personalized plan", type: "tab", target: "plan" });
-    }
-  }
-
-  // Stylist mentioned → offer artist browse
-  if (lower.includes("stylist") || lower.includes("specialist") || lower.includes("artist") || lower.includes("our team")) {
-    if (!actions.find(a => a.label.includes("Reserve")) && !mentionsFrontDesk) {
-      actions.push({ label: "See our team", type: "tab", target: "artists" });
-    }
-  }
-
-  // Booking/ready signals
-  if (lower.includes("ready to book") || lower.includes("lock in") || lower.includes("reserve") || lower.includes("help you book")) {
-    if (!actions.find(a => a.type === "callback")) {
-      actions.push({ label: "Get a quick call back", type: "callback" });
-    }
-  }
-
-  // Pricing mentioned → offer plan view
-  if (lower.includes("pricing") || lower.includes("price range") || lower.includes("starts at")) {
-    if (!actions.find(a => a.label.includes("plan")) && actions.length < 3) {
-      actions.push({ label: "See my personalized plan", type: "tab", target: "plan" });
-    }
-  }
-
-  return actions.slice(0, 3); // max 3 actions
-}
-
-// ── Detect high-intent user phrases that should auto-open the lead form ─────
-function userHasHighBookingIntent(text: string): boolean {
-  const lower = text.toLowerCase().trim();
-  const phrases = [
-    "i'm ready to book", "im ready to book", "ready to book",
-    "let's lock it in", "lets lock it in", "lock it in",
-    "have someone call me", "call me back", "get a call back",
-    "book it", "book me", "schedule me",
-  ];
-  return phrases.some(p => lower === p || lower.includes(p));
-}
-
-// ── Initial smart chips for greeting only ───────────────────────────────────
-function getSmartChips(ctx: ConciergeContext | null): string[] {
-  if (!ctx?.categories?.length) {
-    return [
-      "I'm new — what should I know?",
-      "What's everyone loving right now?",
-      "I have something specific in mind",
-    ];
-  }
-
-  const cat = ctx.categories[0];
-  const sub = ctx.service_subtype;
-
-  if (ctx.categories.length > 1) {
-    return [
-      "Help me combine these services",
-      "How long will everything take?",
-      "What's the total cost look like?",
-    ];
-  }
-
-  if (cat === "hair") {
-    if (sub === "color") return [
-      "Balayage vs highlights — what's the difference?",
-      "How long does color take?",
-      "What's the price range for color?",
-    ];
-    if (sub === "cut") return [
-      "What styles are trending right now?",
-      "How much is a women's haircut?",
-      "Do I need a consultation first?",
-    ];
-    if (sub === "both") return [
-      "How long does cut + color take?",
-      "What's the price range?",
-      "Do you do consultations?",
-    ];
-    return [
-      "Help me figure out what I need",
-      "What's the difference between services?",
-      "Show me hair pricing",
-    ];
-  }
-
-  if (cat === "nails") return [
-    "Gel vs regular — what's best?",
-    "How long does a full set last?",
-    "What's nail pricing like?",
-  ];
-
-  if (cat === "lashes") return [
-    "Classic vs volume — what's the difference?",
-    "How long do lashes last?",
-    "What's lash pricing?",
-  ];
-
-  if (cat === "skincare") return [
-    "Which facial is right for me?",
-    "What's the difference between treatments?",
-    "What's skincare pricing?",
-  ];
-
-  if (cat === "massage") return [
-    "60 vs 90 minutes — what do you recommend?",
-    "What's massage pricing?",
-    "Do you have openings this week?",
-  ];
-
-  return [
-    "Help me figure out what I need",
-    "What's popular right now?",
-    "Show me pricing",
-  ];
-}
-
-// ── Context bar pills ───────────────────────────────────────────────────────
-function getContextPills(ctx: ConciergeContext | null): string[] {
-  if (!ctx) return [];
-  const pills: string[] = [];
-  if (ctx.categories?.length) {
-    ctx.categories.forEach(c => pills.push(categoryLabels[c] || c));
-  }
-  if (ctx.service_subtype && ctx.service_subtype !== "unsure") {
-    const subtypeDisplay: Record<string, string> = {
-      cut: "Cut", color: "Color", both: "Cut + Color",
-      manicure: "Manicure", pedicure: "Pedicure", full_set: "Full Set", nail_art: "Nail Art",
-      fill: "Fill", lift: "Lash Lift",
-      relaxation: "Relaxation", deep_tissue: "Deep Tissue", pain_relief: "Pain Relief",
-      facial: "Facial", acne: "Acne Treatment", glow: "Glow Treatment",
-    };
-    pills.push(subtypeDisplay[ctx.service_subtype] || ctx.service_subtype);
-  }
-  if (ctx.goal) pills.push(goalLabels[ctx.goal] || ctx.goal);
-  if (ctx.timing) pills.push(timingLabels[ctx.timing] || ctx.timing);
-  return pills;
-}
+import type { ChatMessage, ChatAction } from "./chat/types";
+import {
+  buildContextGreeting,
+  buildContextTransition,
+  getQuickReplies,
+  getSmartChips,
+  getContextPills,
+  getContextFingerprint,
+  userHasHighBookingIntent,
+} from "./chat/chatActionDetectors";
+import {
+  loadPersistedChat,
+  savePersistedChat,
+  clearPersistedChat,
+} from "./chat/useChatPersistence";
+import { useChatStreaming } from "./chat/useChatStreaming";
+import { LeadCaptureForm } from "./chat/LeadCaptureForm";
 
 // ── In-Chat Action Button Component ─────────────────────────────────────────
 function ChatActionButtons({
@@ -366,45 +61,10 @@ function ChatActionButtons({
   );
 }
 
-// ── Persistence: store chat history in localStorage with TTL ────────────────
-const CHAT_STORAGE_KEY = "hush_luna_chat_v1";
-const CHAT_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
-
-interface PersistedChat {
-  messages: ChatMessage[];
-  fingerprint: string;
-  successfulExchangeCount: number;
-  leadCaptured: boolean;
-  leadDismissed: boolean;
-  savedAt: number;
-}
-
-function loadPersistedChat(): PersistedChat | null {
-  try {
-    const raw = localStorage.getItem(CHAT_STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as PersistedChat;
-    if (!parsed?.savedAt || Date.now() - parsed.savedAt > CHAT_TTL_MS) {
-      localStorage.removeItem(CHAT_STORAGE_KEY);
-      return null;
-    }
-    return parsed;
-  } catch { return null; }
-}
-
-function savePersistedChat(data: PersistedChat): void {
-  try { localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(data)); } catch { /* ignore */ }
-}
-
-function clearPersistedChat(): void {
-  try { localStorage.removeItem(CHAT_STORAGE_KEY); } catch { /* ignore */ }
-}
-
 export const ChatTab = () => {
-  const { conciergeContext, openChatWidget, clearConcierge } = useLuna();
+  const { conciergeContext, clearConcierge } = useLuna();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
-  const [isStreaming, setIsStreaming] = useState(false);
   const [userMessageCount, setUserMessageCount] = useState(0);
   const [successfulExchangeCount, setSuccessfulExchangeCount] = useState(0);
   const [leadCaptured, setLeadCaptured] = useState(false);
@@ -425,22 +85,23 @@ export const ChatTab = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const abortRef = useRef<AbortController | null>(null);
-
-  // Track the context fingerprint to detect meaningful changes
   const contextFingerprintRef = useRef<string>("");
 
-  const getContextFingerprint = (ctx: ConciergeContext | null): string => {
-    if (!ctx) return "none";
-    return `${ctx.categories?.join(",") || ""}_${ctx.service_subtype || ""}_${ctx.goal || ""}_${ctx.timing || ""}_${ctx.source || ""}`;
-  };
+  // ── Streaming hook ───────────────────────────────────────────────────────
+  const { isStreaming, streamChat, abort } = useChatStreaming({
+    setMessages,
+    setQuickReplies,
+    onExchangeComplete: () => setSuccessfulExchangeCount((p) => p + 1),
+    onInlineBookingDetected: () => {
+      if (!leadCaptured && !leadDismissed) setShowLeadForm(true);
+    },
+    conciergeContext,
+    getQuickReplies,
+  });
 
-  // ── Reset / New conversation ────────────────────────────────────────────────
+  // ── Reset / New conversation ─────────────────────────────────────────────
   const resetChat = useCallback(() => {
-    // Cancel any in-flight stream before resetting state
-    abortRef.current?.abort();
-    setIsStreaming(false);
-
+    abort();
     const ctx = conciergeContext;
     const greeting = buildContextGreeting(ctx);
     setMessages([{ id: "greeting", role: "assistant", content: greeting }]);
@@ -457,51 +118,42 @@ export const ChatTab = () => {
     setQuickReplies(getQuickReplies(ctx, greeting));
     clearPersistedChat();
 
-    // Start a brand-new server-side conversation so the next message gets a
-    // fresh self-intro (the no-self-intro guard relies on prior assistant
-    // messages in the request payload — clearing local history alone is enough
-    // for that, but we also rotate the conversation_id so the new turn lands
-    // in a fresh row instead of appending to the old one).
+    // Rotate the server-side conversation_id so the next turn lands fresh
     clearConversation();
     startSession(ctx, "chat");
     toast.success("Started a fresh chat", {
       description: "Luna will reintroduce herself on your next message.",
       duration: 3000,
     });
-  }, [conciergeContext]);
+  }, [conciergeContext, abort]);
 
-  // Build contextual greeting + chips on first render AND when context changes meaningfully
+  // Build contextual greeting + chips on first render AND when context changes
   useEffect(() => {
     const ctx = conciergeContext;
     const newFingerprint = getContextFingerprint(ctx);
-
-    // Skip if already initialized with this exact context
     if (initialized && newFingerprint === contextFingerprintRef.current) return;
 
     const previousFingerprint = contextFingerprintRef.current;
     contextFingerprintRef.current = newFingerprint;
 
-    // Try to restore from localStorage if fingerprint matches
     const persisted = loadPersistedChat();
     if (!initialized && persisted && persisted.fingerprint === newFingerprint && persisted.messages.length > 0) {
       setMessages(persisted.messages);
       setSuccessfulExchangeCount(persisted.successfulExchangeCount || 0);
       setLeadCaptured(persisted.leadCaptured || false);
       setLeadDismissed(persisted.leadDismissed || false);
-      const lastAssistant = [...persisted.messages].reverse().find(m => m.role === "assistant");
+      const lastAssistant = [...persisted.messages].reverse().find((m) => m.role === "assistant");
       setQuickReplies(getQuickReplies(ctx, lastAssistant?.content || ""));
     } else if (initialized && previousFingerprint && previousFingerprint !== "none") {
-      // Mid-session context change → keep history, append a soft transition line
       const transition = buildContextTransition(ctx);
       const transitionMsg: ChatMessage = {
         id: `transition-${Date.now()}`,
         role: "assistant",
         content: transition,
       };
-      setMessages(prev => [...prev, transitionMsg]);
+      setMessages((prev) => [...prev, transitionMsg]);
       setQuickReplies(getQuickReplies(ctx, transition));
     } else {
-      // First load with no valid persistence → fresh greeting (no self-intro repeat needed)
       const greeting = buildContextGreeting(ctx);
       setMessages([{ id: "greeting", role: "assistant", content: greeting }]);
       setSuccessfulExchangeCount(0);
@@ -526,7 +178,7 @@ export const ChatTab = () => {
     }
   }, [initialized, conciergeContext]);
 
-  // Consume a pending prompt seeded by other tabs (e.g. "Ask Luna about <artist>")
+  // Consume a pending prompt seeded by other tabs
   const handleSendRef = useRef<((text?: string) => void) | null>(null);
   useEffect(() => {
     if (!initialized || isStreaming) return;
@@ -541,7 +193,7 @@ export const ChatTab = () => {
   // Persist messages whenever they change (skip greeting-only state)
   useEffect(() => {
     if (!initialized || isStreaming) return;
-    if (messages.length <= 1) return; // don't persist greeting-only
+    if (messages.length <= 1) return;
     savePersistedChat({
       messages,
       fingerprint: contextFingerprintRef.current,
@@ -558,14 +210,12 @@ export const ChatTab = () => {
     setContextPills(getContextPills(conciergeContext));
   }, [conciergeContext, initialized]);
 
-  // Auto-scroll the chat container itself (not the page) to the latest message.
-  // Skips auto-scroll when user has intentionally scrolled up to read older messages.
+  // Auto-scroll the chat container itself (not the page) to the latest message
   useEffect(() => {
     const el = scrollContainerRef.current;
     if (!el) return;
     const isNearBottom = () => el.scrollHeight - el.scrollTop - el.clientHeight < 80;
     const scrollToBottom = () => { el.scrollTop = el.scrollHeight; };
-    // Always pin to bottom on a fresh user message; otherwise respect user's scroll position
     if (isNearBottom()) scrollToBottom();
     if (isStreaming) {
       const interval = setInterval(() => {
@@ -579,9 +229,7 @@ export const ChatTab = () => {
     return () => clearTimeout(t);
   }, [messages, isStreaming, quickReplies, showLeadForm]);
 
-  // Show floating "scroll to bottom" button when user has scrolled up.
-  // Threshold raised to 240px (≈ one full assistant bubble) so the pill never
-  // appears while a long response is simply streaming in below the viewport.
+  // Show floating "scroll to bottom" button when user has scrolled up
   useEffect(() => {
     const el = scrollContainerRef.current;
     if (!el) return;
@@ -591,7 +239,7 @@ export const ChatTab = () => {
       setShowScrollToBottom(scrolledUp);
       if (!scrolledUp) {
         setUnreadCount(0);
-        const lastAssistant = [...messages].reverse().find(m => m.role === "assistant");
+        const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant");
         if (lastAssistant) lastSeenAssistantIdRef.current = lastAssistant.id;
       }
     };
@@ -602,7 +250,7 @@ export const ChatTab = () => {
 
   // Track unread assistant messages when user is scrolled up
   useEffect(() => {
-    const lastAssistant = [...messages].reverse().find(m => m.role === "assistant");
+    const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant");
     if (!lastAssistant) return;
     if (!showScrollToBottom) {
       lastSeenAssistantIdRef.current = lastAssistant.id;
@@ -610,16 +258,11 @@ export const ChatTab = () => {
       return;
     }
     if (lastAssistant.id !== lastSeenAssistantIdRef.current) {
-      const assistantMsgs = messages.filter(
-        m => m.role === "assistant" && m.id !== "greeting"
-      );
-      const lastSeenIdx = assistantMsgs.findIndex(m => m.id === lastSeenAssistantIdRef.current);
+      const assistantMsgs = messages.filter((m) => m.role === "assistant" && m.id !== "greeting");
+      const lastSeenIdx = assistantMsgs.findIndex((m) => m.id === lastSeenAssistantIdRef.current);
       const unreadList = lastSeenIdx === -1 ? assistantMsgs.slice(-1) : assistantMsgs.slice(lastSeenIdx + 1);
       setUnreadCount(unreadList.length || 1);
-      // Pin the divider to the first unread message — keep it pinned even after read
-      // so the user can see exactly where the new content started.
-      setFirstUnreadId(prev => prev ?? unreadList[0]?.id ?? lastAssistant.id);
-      // Cancel any pending fade since new unread content arrived
+      setFirstUnreadId((prev) => prev ?? unreadList[0]?.id ?? lastAssistant.id);
       setDividerFading(false);
       if (dividerFadeTimerRef.current) {
         window.clearTimeout(dividerFadeTimerRef.current);
@@ -628,15 +271,13 @@ export const ChatTab = () => {
     }
   }, [messages, showScrollToBottom]);
 
-  // Schedule auto-fade of the "New" divider once the user is back at the bottom
+  // Schedule auto-fade of the "New" divider once user is back at the bottom
   useEffect(() => {
     if (!firstUnreadId) return;
-    if (showScrollToBottom) return; // user is still scrolled up — keep divider solid
-    // User is at bottom and divider is still pinned — start fade after a short delay
+    if (showScrollToBottom) return;
     if (dividerFadeTimerRef.current) window.clearTimeout(dividerFadeTimerRef.current);
     dividerFadeTimerRef.current = window.setTimeout(() => {
       setDividerFading(true);
-      // Remove from DOM after the 600ms fade transition
       dividerFadeTimerRef.current = window.setTimeout(() => {
         setFirstUnreadId(null);
         setDividerFading(false);
@@ -655,14 +296,11 @@ export const ChatTab = () => {
     const el = scrollContainerRef.current;
     if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
     setUnreadCount(0);
-    // Keep firstUnreadId pinned; the fade-out effect above will retire it ~3s
-    // after the user lands at the bottom.
-    const lastAssistant = [...messages].reverse().find(m => m.role === "assistant");
+    const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant");
     if (lastAssistant) lastSeenAssistantIdRef.current = lastAssistant.id;
   }, [messages]);
 
-
-  // ── Handle in-chat action buttons ──────────────────────────────────────────
+  // ── Handle in-chat action buttons ────────────────────────────────────────
   const handleChatAction = useCallback((action: ChatAction) => {
     if (action.type === "phone") {
       window.open("tel:+15203276753", "_self");
@@ -679,143 +317,6 @@ export const ChatTab = () => {
     }
   }, []);
 
-  const streamChat = useCallback(async (allMessages: ChatMessage[]) => {
-    setIsStreaming(true);
-    abortRef.current = new AbortController();
-
-    const journeyContext = getJourneyContextString();
-    const apiMessages = allMessages.map((m) => ({
-      role: m.role === "assistant" ? "assistant" : "user",
-      content: m.content,
-    }));
-
-    try {
-      const conversationId = getConversationId();
-      const resp = await fetch(CHAT_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify({ messages: apiMessages, journeyContext, conversation_id: conversationId }),
-        signal: abortRef.current.signal,
-      });
-
-      if (!resp.ok || !resp.body) {
-        if (resp.status === 429) {
-          const errorContent = "I'm getting a lot of questions right now — give me just a moment and try again!";
-          setMessages((prev) => [
-            ...prev,
-            { id: `err-${Date.now()}`, role: "assistant", content: errorContent },
-          ]);
-          setQuickReplies(ERROR_QUICK_REPLIES);
-          setIsStreaming(false);
-          return;
-        }
-        throw new Error(`Stream failed: ${resp.status}`);
-      }
-
-      const reader = resp.body.getReader();
-      const decoder = new TextDecoder();
-      let textBuffer = "";
-      let assistantContent = "";
-      let streamDone = false;
-
-      const assistantId = `luna-${Date.now()}`;
-      setMessages((prev) => [...prev, { id: assistantId, role: "assistant", content: "" }]);
-
-      while (!streamDone) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        textBuffer += decoder.decode(value, { stream: true });
-
-        let newlineIndex: number;
-        while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
-          let line = textBuffer.slice(0, newlineIndex);
-          textBuffer = textBuffer.slice(newlineIndex + 1);
-
-          if (line.endsWith("\r")) line = line.slice(0, -1);
-          if (line.startsWith(":") || line.trim() === "") continue;
-          if (!line.startsWith("data: ")) continue;
-
-          const jsonStr = line.slice(6).trim();
-          if (jsonStr === "[DONE]") { streamDone = true; break; }
-
-          try {
-            const parsed = JSON.parse(jsonStr);
-            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
-            if (content) {
-              assistantContent += content;
-              setMessages((prev) =>
-                prev.map((m) => (m.id === assistantId ? { ...m, content: assistantContent } : m))
-              );
-            }
-          } catch {
-            textBuffer = line + "\n" + textBuffer;
-            break;
-          }
-        }
-      }
-
-      // Final flush
-      if (textBuffer.trim()) {
-        for (let raw of textBuffer.split("\n")) {
-          if (!raw) continue;
-          if (raw.endsWith("\r")) raw = raw.slice(0, -1);
-          if (raw.startsWith(":") || raw.trim() === "") continue;
-          if (!raw.startsWith("data: ")) continue;
-          const jsonStr = raw.slice(6).trim();
-          if (jsonStr === "[DONE]") continue;
-          try {
-            const parsed = JSON.parse(jsonStr);
-            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
-            if (content) {
-              assistantContent += content;
-              setMessages((prev) =>
-                prev.map((m) => (m.id === assistantId ? { ...m, content: assistantContent } : m))
-              );
-            }
-          } catch { /* ignore */ }
-        }
-      }
-
-      // Detect & strip the inline-booking marker emitted by the edge function
-      const INLINE_BOOKING_MARKER = "[[INLINE_BOOKING_FORM]]";
-      const showInlineBooking = assistantContent.includes(INLINE_BOOKING_MARKER);
-      if (showInlineBooking) {
-        assistantContent = assistantContent.replace(INLINE_BOOKING_MARKER, "").trim();
-      }
-
-      // After streaming completes — attach actions + update quick replies
-      const actions = detectChatActions(assistantContent, conciergeContext);
-      setMessages((prev) =>
-        prev.map((m) => (m.id === assistantId ? { ...m, content: assistantContent, actions, showInlineBooking } : m))
-      );
-      setQuickReplies(getQuickReplies(conciergeContext, assistantContent));
-
-      // Auto-open the inline lead form if booking intent was detected
-      if (showInlineBooking && !leadCaptured && !leadDismissed) {
-        setShowLeadForm(true);
-      }
-
-      // Count as a successful exchange (for lead form timing)
-      setSuccessfulExchangeCount(prev => prev + 1);
-
-    } catch (err: unknown) {
-      if (err instanceof Error && err.name === "AbortError") return;
-      console.error("[ChatTab] Stream error:", err);
-      const errorContent = "I'm having trouble connecting right now. You can always call us directly at (520) 327-6753 — Kendell at the front desk will take great care of you!";
-      setMessages((prev) => [
-        ...prev,
-        { id: `err-${Date.now()}`, role: "assistant", content: errorContent },
-      ]);
-      // Show error-specific quick replies instead of generic ones
-      setQuickReplies(ERROR_QUICK_REPLIES);
-    } finally {
-      setIsStreaming(false);
-    }
-  }, [conciergeContext]);
-
   const handleSendInternal = useCallback(
     (text?: string) => {
       const msg = text || input.trim();
@@ -824,7 +325,6 @@ export const ChatTab = () => {
       const userMsg: ChatMessage = { id: `user-${Date.now()}`, role: "user", content: msg };
       const newMessages = [...messages, userMsg];
       setMessages(newMessages);
-      // Sending a new message clears any pinned "New" divider from the previous burst
       setFirstUnreadId(null);
       setInput("");
       const newCount = userMessageCount + 1;
@@ -832,46 +332,48 @@ export const ChatTab = () => {
 
       streamChat(newMessages.filter((m) => m.id !== "greeting"));
 
-      // High-intent phrases auto-surface the lead form immediately
       if (userHasHighBookingIntent(msg) && !leadCaptured && !showLeadForm && !leadDismissed) {
         setTimeout(() => setShowLeadForm(true), 600);
-      }
-      // Use successfulExchangeCount for lead form trigger, not raw message count
-      else if (successfulExchangeCount >= 3 && !leadCaptured && !showLeadForm && !leadDismissed) {
+      } else if (successfulExchangeCount >= 3 && !leadCaptured && !showLeadForm && !leadDismissed) {
         setTimeout(() => setShowLeadForm(true), 3000);
       }
     },
     [input, isStreaming, messages, userMessageCount, successfulExchangeCount, leadCaptured, showLeadForm, leadDismissed, streamChat]
   );
 
-  // ── Handle quick reply chips — preserves full conversation context ─────────
-  const handleQuickReply = useCallback((reply: string) => {
-    if (reply === "Connect me with the team" || reply === "Call the front desk" || reply === "Call (520) 327-6753") {
-      const isTouchDevice = "ontouchstart" in window || navigator.maxTouchPoints > 0;
-      if (isTouchDevice) {
-        window.open("tel:+15203276753", "_self");
-      } else {
-        setMessages(prev => [...prev, {
-          id: `luna-phone-${Date.now()}`,
-          role: "assistant",
-          content: "Give Kendell a call at **(520) 327-6753** — or text us if that's easier!",
-          actions: [
-            { label: "Call (520) 327-6753", type: "phone" as const },
-            { label: "Text us", type: "text" as const },
-          ],
-        }]);
+  // Quick reply chips — preserves full conversation context
+  const handleQuickReply = useCallback(
+    (reply: string) => {
+      if (reply === "Connect me with the team" || reply === "Call the front desk" || reply === "Call (520) 327-6753") {
+        const isTouchDevice = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+        if (isTouchDevice) {
+          window.open("tel:+15203276753", "_self");
+        } else {
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: `luna-phone-${Date.now()}`,
+              role: "assistant",
+              content: "Give Kendell a call at **(520) 327-6753** — or text us if that's easier!",
+              actions: [
+                { label: "Call (520) 327-6753", type: "phone" as const },
+                { label: "Text us", type: "text" as const },
+              ],
+            },
+          ]);
+        }
+        return;
       }
-      return;
-    }
-    handleSendInternal(reply);
-  }, [handleSendInternal]);
+      handleSendInternal(reply);
+    },
+    [handleSendInternal]
+  );
 
   const handleSend = useCallback(
     (text?: string) => handleSendInternal(text),
     [handleSendInternal]
   );
 
-  // Keep ref in sync so the pending-prompt effect can call handleSend
   useEffect(() => {
     handleSendRef.current = handleSend;
   }, [handleSend]);
@@ -890,7 +392,6 @@ export const ChatTab = () => {
       timing: ctx?.timing || undefined,
     });
 
-    // Personalized confirmation — capitalize name + echo service/artist context
     const firstName = leadName.trim().split(/\s+/)[0];
     const capitalizedName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
     const serviceLabel = ctx?.categories?.length ? formatCategoryList(ctx.categories) : null;
@@ -910,21 +411,11 @@ export const ChatTab = () => {
 
     setMessages((prev) => [
       ...prev,
-      {
-        id: `luna-lead-${Date.now()}`,
-        role: "assistant",
-        content: confirmMsg,
-      },
+      { id: `luna-lead-${Date.now()}`, role: "assistant", content: confirmMsg },
     ]);
   };
 
-  const handleScrollToSection = (sectionId: string) => {
-    const el = document.getElementById(sectionId);
-    if (el) el.scrollIntoView({ behavior: "smooth" });
-  };
-
-  // Find the last assistant message for quick reply context
-  const lastAssistantMsg = [...messages].reverse().find(m => m.role === "assistant");
+  const lastAssistantMsg = [...messages].reverse().find((m) => m.role === "assistant");
 
   return (
     <div className="flex flex-col h-full">
@@ -960,7 +451,6 @@ export const ChatTab = () => {
         ) : (
           <div className="flex-1" />
         )}
-        {/* Start new chat button — always visible so guests can reset on demand */}
         <button
           onClick={resetChat}
           disabled={messages.length <= 1 && !isStreaming}
@@ -1012,7 +502,6 @@ export const ChatTab = () => {
                 )}
               </div>
             </div>
-            {/* In-chat action buttons */}
             {msg.role === "assistant" && msg.actions && !isStreaming && (
               <ChatActionButtons actions={msg.actions} onAction={handleChatAction} />
             )}
@@ -1031,7 +520,7 @@ export const ChatTab = () => {
           </div>
         )}
 
-        {/* Smart Chips — shown after greeting only (first message) */}
+        {/* Smart Chips — shown after greeting only */}
         {messages.length === 1 && !isStreaming && (
           <div className="flex flex-wrap gap-1.5 mt-1">
             {smartChips.map((chip) => (
@@ -1049,7 +538,7 @@ export const ChatTab = () => {
           </div>
         )}
 
-        {/* Persistent Quick Replies — shown after EVERY assistant response (except greeting) */}
+        {/* Persistent Quick Replies — after every assistant response */}
         {messages.length > 1 && !isStreaming && lastAssistantMsg && (
           <m.div
             key={lastAssistantMsg.id}
@@ -1073,45 +562,14 @@ export const ChatTab = () => {
         {/* Lead capture form */}
         <AnimatePresence>
           {showLeadForm && !leadCaptured && (
-            <m.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              className="ml-4 p-3 rounded-xl border border-primary/20 bg-card/50 space-y-2"
-            >
-              <p className="text-xs text-muted-foreground font-body">
-                Love chatting with you — want me to have Kendell or the team follow up personally?
-              </p>
-              <input
-                type="text"
-                value={leadName}
-                onChange={(e) => setLeadName(e.target.value)}
-                placeholder="Your name"
-                className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:outline-none"
-              />
-              <input
-                type="tel"
-                value={leadPhone}
-                onChange={(e) => setLeadPhone(e.target.value)}
-                placeholder="(520) 000-0000"
-                className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:outline-none"
-              />
-              <div className="flex gap-2">
-                <button
-                  onClick={handleLeadSubmit}
-                  disabled={!leadName.trim() || !leadPhone.trim()}
-                  className="flex-1 bg-primary text-primary-foreground text-sm font-body py-2 rounded-lg disabled:opacity-40 transition-opacity"
-                >
-                  Submit
-                </button>
-                <button
-                  onClick={() => { setShowLeadForm(false); setLeadDismissed(true); }}
-                  className="px-3 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Not now
-                </button>
-              </div>
-            </m.div>
+            <LeadCaptureForm
+              name={leadName}
+              phone={leadPhone}
+              onNameChange={setLeadName}
+              onPhoneChange={setLeadPhone}
+              onSubmit={handleLeadSubmit}
+              onDismiss={() => { setShowLeadForm(false); setLeadDismissed(true); }}
+            />
           )}
         </AnimatePresence>
 
