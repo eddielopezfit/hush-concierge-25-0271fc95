@@ -8,6 +8,7 @@ import {
   setGuestFirstName,
   getGuestFirstName,
   buildDynamicVariables,
+  buildLunaFirstMessage,
 } from "./conciergeStore";
 import type { ConciergeContext } from "@/types/concierge";
 
