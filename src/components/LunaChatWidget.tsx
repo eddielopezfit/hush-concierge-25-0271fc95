@@ -92,7 +92,10 @@ export const LunaChatWidget = () => {
       const persisted = loadPersistedChat();
       if (!persisted) return false;
       const userMsgs = persisted.messages.filter(m => m.role === "user").length;
-      return userMsgs >= 1 && !persisted.leadCaptured && !persisted.leadDismissed;
+      // Exit-intent fires whenever there's a real chat in progress without a captured lead.
+      // Dismissing the inline 4-message form does NOT waive the exit-intent — it's the user's
+      // last chance and a distinct conversion surface.
+      return userMsgs >= 1 && !persisted.leadCaptured;
     } catch { return false; }
   }, []);
 
@@ -126,11 +129,12 @@ export const LunaChatWidget = () => {
   };
 
   const handleExitDismiss = () => {
-    // User explicitly skipped — mark dismissed and close
+    // User explicitly skipped the exit-intent overlay — suppress future re-fires this session
+    // by marking leadCaptured (semantically: "capture opportunity is closed for this chat").
     try {
       const persisted = loadPersistedChat();
       if (persisted) {
-        const updated = { ...persisted, leadDismissed: true };
+        const updated = { ...persisted, leadDismissed: true, leadCaptured: true };
         localStorage.setItem("hush_luna_chat_v1", JSON.stringify(updated));
       }
     } catch { /* ignore */ }
