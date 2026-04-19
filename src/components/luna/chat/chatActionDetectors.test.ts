@@ -123,29 +123,135 @@ describe("getSmartChips", () => {
   });
 });
 
-describe("detectChatActions", () => {
-  it("surfaces phone + text actions when front desk is mentioned", () => {
-    const actions = detectChatActions("Give them a call at (520) 327-6753.", null);
-    expect(actions.find((a) => a.type === "phone")).toBeTruthy();
+describe("detectChatActions — front-desk handoff", () => {
+  it.each([
+    "Give them a call at (520) 327-6753.",
+    "Best to call us directly.",
+    "Our front desk can help.",
+    "Call Kendell at the desk.",
+    "Just give them a call.",
+  ])("surfaces phone + text for front-desk phrase: %s", (msg) => {
+    const actions = detectChatActions(msg, null);
+    expect(actions.find((a) => a.type === "phone")?.label).toBe("Call (520) 327-6753");
     expect(actions.find((a) => a.type === "text")).toBeTruthy();
   });
 
-  it("offers a callback action on booking intent", () => {
-    const actions = detectChatActions("Happy to help you book — let's lock in a time.", null);
-    expect(actions.find((a) => a.type === "callback")).toBeTruthy();
+  it("suppresses the 'Build my plan' tab action when handing off to front desk", () => {
+    const actions = detectChatActions(
+      "I'd recommend our balayage — but it's best to call us at (520) 327-6753.",
+      null
+    );
+    expect(actions.find((a) => a.type === "phone")).toBeTruthy();
+    expect(actions.find((a) => a.target === "plan")).toBeFalsy();
   });
 
+  it("suppresses 'See our team' when front desk is already mentioned", () => {
+    const actions = detectChatActions(
+      "Our stylist team is incredible — call (520) 327-6753 to book.",
+      null
+    );
+    expect(actions.find((a) => a.target === "artists")).toBeFalsy();
+  });
+});
+
+describe("detectChatActions — booking intent / callback", () => {
+  it.each([
+    "Happy to help you book a time that works.",
+    "Ready to book? I can get you in.",
+    "Let's lock in a time this week.",
+    "I can reserve that slot for you.",
+  ])("surfaces a callback action for booking phrase: %s", (msg) => {
+    const actions = detectChatActions(msg, null);
+    const callback = actions.find((a) => a.type === "callback");
+    expect(callback).toBeTruthy();
+    expect(callback?.label).toBe("Get a quick call back");
+  });
+
+  it("does not duplicate the callback action when multiple booking phrases appear", () => {
+    const actions = detectChatActions(
+      "Ready to book? Let's lock in a time and reserve it.",
+      null
+    );
+    const callbacks = actions.filter((a) => a.type === "callback");
+    expect(callbacks).toHaveLength(1);
+  });
+
+  it("does not produce a callback when the message is purely informational", () => {
+    const actions = detectChatActions("Our hours are Tue–Sat.", null);
+    expect(actions.find((a) => a.type === "callback")).toBeFalsy();
+  });
+
+  it("offers 'Reserve this service' scroll action on a recommendation phrase", () => {
+    const actions = detectChatActions(
+      "I'd recommend our signature facial — perfect for sensitive skin.",
+      null
+    );
+    const scroll = actions.find((a) => a.type === "scroll");
+    expect(scroll?.target).toBe("callback");
+    expect(scroll?.label).toBe("Reserve this service");
+  });
+
+  it("recommendation triggers BOTH scroll-to-callback AND plan tab when no front-desk handoff", () => {
+    const actions = detectChatActions("That would be a great option for you.", null);
+    expect(actions.find((a) => a.type === "scroll" && a.target === "callback")).toBeTruthy();
+    expect(actions.find((a) => a.type === "tab" && a.target === "plan")).toBeTruthy();
+  });
+
+  it("does not offer 'See our team' when a Reserve action is already queued", () => {
+    const actions = detectChatActions(
+      "I'd recommend our top stylist for color work.",
+      null
+    );
+    expect(actions.find((a) => a.label.includes("Reserve"))).toBeTruthy();
+    expect(actions.find((a) => a.target === "artists")).toBeFalsy();
+  });
+});
+
+describe("detectChatActions — pricing & team", () => {
   it("offers the team tab when stylists are referenced (without front-desk handoff)", () => {
     const actions = detectChatActions("Our team has incredible artists for that.", null);
     expect(actions.find((a) => a.target === "artists")).toBeTruthy();
   });
 
-  it("caps actions at 3", () => {
+  it("offers 'See my personalized plan' when pricing is mentioned", () => {
+    const actions = detectChatActions("Color services typically start at $200.", null);
+    expect(actions.find((a) => a.label.includes("personalized plan"))).toBeTruthy();
+  });
+
+  it("caps actions at 3 even when many triggers fire at once", () => {
     const actions = detectChatActions(
       "Pricing starts at $100. I'd recommend our stylist. Ready to book? Call (520) 327-6753.",
       null
     );
     expect(actions.length).toBeLessThanOrEqual(3);
+  });
+
+  it("returns an empty array for plain conversational text", () => {
+    const actions = detectChatActions("Hello, how are you today?", null);
+    expect(actions).toEqual([]);
+  });
+});
+
+describe("userHasHighBookingIntent — extended cases", () => {
+  it("matches every canonical phrase in the list", () => {
+    const phrases = [
+      "i'm ready to book", "im ready to book", "ready to book",
+      "let's lock it in", "lets lock it in", "lock it in",
+      "have someone call me", "call me back", "get a call back",
+      "book it", "book me", "schedule me",
+    ];
+    phrases.forEach((p) => expect(userHasHighBookingIntent(p)).toBe(true));
+  });
+
+  it("matches when the phrase is embedded in a longer sentence", () => {
+    expect(userHasHighBookingIntent("yes please, schedule me for Saturday")).toBe(true);
+    expect(userHasHighBookingIntent("can you get a call back for me?")).toBe(true);
+  });
+
+  it("does not match weak/ambiguous phrases", () => {
+    expect(userHasHighBookingIntent("maybe I'll book later")).toBe(false);
+    expect(userHasHighBookingIntent("how do I book?")).toBe(false);
+    expect(userHasHighBookingIntent("looking at the booking page")).toBe(false);
   });
 });
 
