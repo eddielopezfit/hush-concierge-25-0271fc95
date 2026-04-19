@@ -152,68 +152,13 @@ export const TestimonialsSection = () => {
           {/* See all link */}
           <div className="text-center mt-8">
             <a
-              href="https://search.google.com/local/reviews?placeid=ChIJl3jKGKdr1oYRYjQYKzKdfFE"
+              href="https://www.google.com/maps/place/Hush+Salon+%26+Day+Spa/reviews/?hl=en"
               target="_blank"
               rel="noopener noreferrer"
               className="font-body text-sm text-muted-foreground hover:text-gold transition-colors underline underline-offset-4"
             >
               See all 315+ reviews →
             </a>
-          </div>
-        </div>
-
-        {/* Mobile: single-card carousel with swipe feel */}
-        <div className="md:hidden relative">
-          <div className="overflow-hidden">
-            <m.div
-              key={currentIndex}
-              initial={{ opacity: 0, x: 40 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -40 }}
-              transition={{ duration: 0.35 }}
-              className="card-luxury rounded-lg p-8 relative"
-            >
-              <Quote className="absolute top-6 right-6 w-8 h-8 text-gold/15" />
-              <span className="inline-block text-[10px] font-body uppercase tracking-wider bg-gold/10 text-gold border border-gold/20 px-2.5 py-1 rounded-full mb-4">
-                {testimonials[currentIndex].tag}
-              </span>
-              <p className="font-body text-cream/85 leading-relaxed mb-6 italic">
-                "{testimonials[currentIndex].text}"
-              </p>
-              <div>
-                <div className="font-display text-lg text-cream">
-                  {testimonials[currentIndex].author}
-                </div>
-                <div className="text-sm text-gold/80">
-                  {testimonials[currentIndex].source}
-                </div>
-              </div>
-            </m.div>
-          </div>
-
-          {/* Mobile nav */}
-          <div className="flex items-center justify-between mt-6 px-2">
-            <button
-              onClick={() => { prevSlide(); handleInteraction(); }}
-              className="w-10 h-10 rounded-full border border-gold/20 flex items-center justify-center text-gold/60 hover:text-gold hover:border-gold/40 transition-colors"
-              aria-label="Previous review"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-
-            <div className="flex items-center gap-1.5">
-              <span className="font-body text-xs text-cream/50">
-                {currentIndex + 1} / {testimonials.length}
-              </span>
-            </div>
-
-            <button
-              onClick={() => { nextSlide(); handleInteraction(); }}
-              className="w-10 h-10 rounded-full border border-gold/20 flex items-center justify-center text-gold/60 hover:text-gold hover:border-gold/40 transition-colors"
-              aria-label="Next review"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
           </div>
         </div>
 
@@ -226,7 +171,7 @@ export const TestimonialsSection = () => {
           className="text-center mt-10 md:hidden"
         >
           <a
-            href="https://search.google.com/local/reviews?placeid=ChIJl3jKGKdr1oYRYjQYKzKdfFE"
+            href="https://www.google.com/maps/place/Hush+Salon+%26+Day+Spa/reviews/?hl=en"
             target="_blank"
             rel="noopener noreferrer"
             className="font-body text-sm text-muted-foreground hover:text-gold transition-colors underline underline-offset-4"
