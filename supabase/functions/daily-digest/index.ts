@@ -137,7 +137,9 @@ Deno.serve(async (req) => {
     const slackText = lines.join("\n");
 
     let slackPosted = false;
-    if (SLACK_URL) {
+    if (dryRun) {
+      console.log("dryRun=true — skipping Slack post");
+    } else if (SLACK_URL) {
       const r = await fetch(SLACK_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -152,6 +154,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         ok: true,
+        dryRun,
         slackPosted,
         window: { start: start.toISOString(), end: end.toISOString() },
         totals: { leads: totalLeads, callbacks: totalCallbacks, converted: totalConverted },
