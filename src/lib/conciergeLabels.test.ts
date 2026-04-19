@@ -110,8 +110,7 @@ describe("normalizeCategory", () => {
 describe("formatCategoryList", () => {
   it("returns empty string for empty / nullish inputs", () => {
     expect(formatCategoryList([])).toBe("");
-    // @ts-expect-error – defensive null guard
-    expect(formatCategoryList(null)).toBe("");
+    expect(formatCategoryList(null as unknown as never)).toBe("");
   });
 
   it("renders single category", () => {
