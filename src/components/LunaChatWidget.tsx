@@ -9,6 +9,8 @@ import { ChatTab } from "./luna/ChatTab";
 import { LunaTabNav, type LunaTabId } from "./luna/LunaTabNav";
 import { useLuna } from "@/contexts/LunaContext";
 import { buildChimeAudio } from "@/lib/lunaChime";
+import { useDwellNudge, type DwellNudge } from "@/hooks/luna/useDwellNudge";
+import { useInactivityNudge, type InactivityNudge } from "@/hooks/luna/useInactivityNudge";
 
 const tabVariants = {
   enter: { opacity: 0, y: 8 },
