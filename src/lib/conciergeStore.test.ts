@@ -176,4 +176,164 @@ describe("conciergeStore — buildDynamicVariables", () => {
     expect(vars.multi_service_mode).toBe("bundle_guidance");
     expect(vars.recommendation_confidence).toBe("low");
   });
+
+  it("reads recommendation from sessionStorage and exposes confidence=high on urgency=high", () => {
+    sessionStorage.setItem(
+      "hush_luna_recommendation",
+      JSON.stringify({
+        recommendedService: "Balayage",
+        recommendedArtist: "Allison",
+        priceRange: "$$",
+        urgency: "high",
+      }),
+    );
+    const vars = buildDynamicVariables(baseCtx);
+    expect(vars.recommended_service).toBe("Balayage");
+    expect(vars.recommended_artist).toBe("Allison");
+    expect(vars.recommended_price).toBe("$$");
+    expect(vars.urgency).toBe("high");
+    expect(vars.recommendation_confidence).toBe("high");
+  });
+
+  it("downgrades confidence to low when service_subtype is 'unsure'", () => {
+    const vars = buildDynamicVariables({ ...baseCtx, service_subtype: "unsure" });
+    expect(vars.recommendation_confidence).toBe("low");
+    expect(vars.service_subtype).toBe("open to guidance");
+  });
+
+  it("ignores malformed recommendation JSON in sessionStorage", () => {
+    sessionStorage.setItem("hush_luna_recommendation", "{not json");
+    const vars = buildDynamicVariables(baseCtx);
+    expect(vars.recommended_service).toBe("");
+    expect(vars.urgency).toBe("");
+  });
+
+  it("uses Team Compare summary path when source is 'Team Compare'", () => {
+    const vars = buildDynamicVariables({
+      ...baseCtx,
+      source: "Team Compare",
+      categories: ["hair"],
+      group: "Allison",
+      item: "Allison, Sheri",
+    });
+    expect(vars.luna_context_summary).toContain("comparing stylists");
+    expect(vars.luna_context_summary).toContain("Allison");
+  });
+
+  it("prefers primary_category label over the first category", () => {
+    const vars = buildDynamicVariables({
+      ...baseCtx,
+      categories: ["hair", "nails"],
+      primary_category: "nails",
+    });
+    expect(vars.primary_category.toLowerCase()).toContain("nail");
+    expect(vars.service_category.toLowerCase()).toContain("nail");
+  });
+});
+
+describe("conciergeStore — buildLunaFirstMessage", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+  });
+
+  it("returns the default greeting when no context is provided", () => {
+    expect(buildLunaFirstMessage(null)).toMatch(/welcome to Hush/i);
+  });
+
+  it("personalizes the greeting with the guest's first name", () => {
+    setGuestFirstName("Charly");
+    const msg = buildLunaFirstMessage({ ...baseCtx, categories: ["hair"], service_subtype: null });
+    expect(msg.startsWith("Hey Charly")).toBe(true);
+  });
+
+  it("uses the multi-service 'unsure' opener when several categories with no priority", () => {
+    const msg = buildLunaFirstMessage({
+      ...baseCtx,
+      categories: ["hair", "nails"],
+      service_subtype: null,
+      multi_service_mode: "unsure",
+    });
+    expect(msg).toContain("hair");
+    expect(msg).toContain("nails");
+    expect(msg.toLowerCase()).toContain("most important");
+  });
+
+  it("uses bundle_guidance opener", () => {
+    const msg = buildLunaFirstMessage({
+      ...baseCtx,
+      categories: ["hair", "skincare"],
+      multi_service_mode: "bundle_guidance",
+    });
+    expect(msg).toContain("hair");
+    expect(msg).toContain("skincare");
+    expect(msg.toLowerCase()).toContain("combine");
+  });
+
+  it("massage + subtype opener mentions Tammi and duration question", () => {
+    const msg = buildLunaFirstMessage({
+      ...baseCtx,
+      categories: ["massage"],
+      service_subtype: "deep_tissue",
+    });
+    expect(msg).toContain("Tammi");
+    expect(msg).toMatch(/60.*90.*120/);
+  });
+
+  it("hair + subtype opener asks about stylist preference", () => {
+    const msg = buildLunaFirstMessage({
+      ...baseCtx,
+      categories: ["hair"],
+      service_subtype: "color",
+    });
+    expect(msg.toLowerCase()).toContain("stylist");
+  });
+
+  it("hair without subtype asks cut/color/both", () => {
+    const msg = buildLunaFirstMessage({
+      ...baseCtx,
+      categories: ["hair"],
+      service_subtype: null,
+    });
+    expect(msg.toLowerCase()).toMatch(/cut.*color.*both/);
+  });
+
+  it("skincare + subtype mentions estheticians", () => {
+    const msg = buildLunaFirstMessage({
+      ...baseCtx,
+      categories: ["skincare"],
+      service_subtype: "facial",
+    });
+    expect(msg.toLowerCase()).toContain("esthetician");
+  });
+
+  it("nails + subtype mentions Anita", () => {
+    const msg = buildLunaFirstMessage({
+      ...baseCtx,
+      categories: ["nails"],
+      service_subtype: "manicure",
+    });
+    expect(msg).toContain("Anita");
+  });
+
+  it("falls back to generic detail prompt for lashes + subtype", () => {
+    const msg = buildLunaFirstMessage({
+      ...baseCtx,
+      categories: ["lashes"],
+      service_subtype: "lift",
+    });
+    expect(msg.toLowerCase()).toContain("walk away");
+  });
+
+  it("falls back to category exploration when only categories are known", () => {
+    const msg = buildLunaFirstMessage({
+      ...baseCtx,
+      categories: ["lashes"],
+      service_subtype: null,
+      goal: null,
+      timing: null,
+    });
+    expect(msg.toLowerCase()).toContain("exploring");
+    expect(msg.toLowerCase()).toContain("lashes");
+  });
 });
