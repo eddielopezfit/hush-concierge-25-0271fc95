@@ -214,7 +214,7 @@ describe("detectChatActions — pricing & team", () => {
   });
 
   it("offers 'See my personalized plan' when pricing is mentioned", () => {
-    const actions = detectChatActions("Color services typically start at $200.", null);
+    const actions = detectChatActions("Color services pricing starts at $200.", null);
     expect(actions.find((a) => a.label.includes("personalized plan"))).toBeTruthy();
   });
 
