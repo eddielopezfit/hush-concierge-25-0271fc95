@@ -11,6 +11,9 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const url = new URL(req.url);
+  const notify = url.searchParams.get("notify") === "true";
+
   const startedAt = Date.now();
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -111,6 +114,29 @@ Deno.serve(async (req) => {
   }
 
   result.total_latency_ms = Date.now() - startedAt;
+
+  // Optional Slack alert when degraded (used by scheduled cron)
+  let slackPosted = false;
+  if (notify && result.status === "degraded") {
+    const webhook = Deno.env.get("SLACK_WEBHOOK_URL");
+    if (webhook) {
+      try {
+        const text =
+          `🚨 *Hush health-check: DEGRADED*\n` +
+          `Time: ${result.timestamp}\n` +
+          "```" + JSON.stringify(checks, null, 2).slice(0, 2500) + "```";
+        const r = await fetch(webhook, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text }),
+        });
+        slackPosted = r.ok;
+      } catch (e) {
+        console.error("[health-check] Slack post failed:", e);
+      }
+    }
+  }
+  result.slack_posted = slackPosted;
 
   return new Response(JSON.stringify(result, null, 2), {
     status: result.status === "degraded" ? 503 : 200,
