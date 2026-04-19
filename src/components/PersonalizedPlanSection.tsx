@@ -5,6 +5,7 @@ import { categoryLabels, goalLabels, timingLabels } from "@/lib/conciergeLabels"
 import { ServiceCategoryId } from "@/types/concierge";
 import { getUpsells, UpsellItem } from "@/lib/upsellEngine";
 import { getCadenceRecommendations, CadenceRecommendation } from "@/lib/cadenceEngine";
+import { buildCategoryPlanItems, computePlanTotals } from "@/lib/experienceReveal";
 import { getEmotionalLine } from "@/lib/emotionalCopy";
 import { useMemo, useState, useEffect } from "react";
 
@@ -15,19 +16,6 @@ const visitTypeMap: Record<string, { label: string; icon: typeof Sparkles }> = {
   event:     { label: "Event Prep", icon: Star },
 };
 
-function getTimeEstimate(categories: ServiceCategoryId[]): string | null {
-  if (categories.length === 0) return null;
-  const timeMap: Record<ServiceCategoryId, [number, number]> = {
-    hair: [45, 180], nails: [30, 90], lashes: [45, 120], skincare: [45, 90], massage: [60, 120],
-  };
-  let min = 0, max = 0;
-  for (const cat of categories) {
-    const [lo, hi] = timeMap[cat] || [30, 60];
-    min += lo; max += hi;
-  }
-  const fmt = (m: number) => m >= 60 ? `${Math.round(m / 60 * 10) / 10}`.replace(/\.0$/, "") + " hr" + (m > 60 ? "s" : "") : `${m} min`;
-  return min === max ? `~${fmt(min)}` : `${fmt(min)} – ${fmt(max)}`;
-}
 
 const PlanSkeleton = () => (
   <div className="rounded-2xl border border-gold/20 bg-gradient-to-b from-card to-background overflow-hidden">
@@ -59,7 +47,8 @@ export const PersonalizedPlanSection = () => {
 
   const upsells = useMemo(() => getUpsells(conciergeContext), [conciergeContext]);
   const cadence = useMemo(() => getCadenceRecommendations(categories), [categories]);
-  const timeEstimate = getTimeEstimate(categories);
+  const planTotals = useMemo(() => computePlanTotals(buildCategoryPlanItems(conciergeContext)), [conciergeContext]);
+  const timeEstimate = planTotals?.timeRange || null;
   const emotionalLine = getEmotionalLine(goal);
 
   useEffect(() => {

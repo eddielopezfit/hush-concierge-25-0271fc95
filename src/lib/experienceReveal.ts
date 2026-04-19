@@ -179,7 +179,8 @@ export function buildRevealData(context: ConciergeContext | null | undefined): R
     experienceLabel = catLabels.join(" + ") + " Experience";
   }
 
-  const timeEstimate = profile?.timeEstimate || (isMulti ? "2–4 hours" : "60–90 min");
+  const multiTotals = isMulti && !profile ? computePlanTotals(buildCategoryPlanItems(context)) : null;
+  const timeEstimate = profile?.timeEstimate || multiTotals?.timeRange || (isMulti ? "2–4 hours" : "60–90 min");
   // Safe estimated ranges for multi-service combos — never calculated, never promised
   const multiServicePriceRange = (() => {
     const cats = context.categories;
