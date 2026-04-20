@@ -12,7 +12,7 @@ import { buildChimeAudio } from "@/lib/lunaChime";
 import { useDwellNudge, type DwellNudge } from "@/hooks/luna/useDwellNudge";
 import { useInactivityNudge, type InactivityNudge } from "@/hooks/luna/useInactivityNudge";
 import { saveLead } from "@/lib/saveSession";
-import { loadPersistedChat, clearPersistedChat } from "./luna/chat/useChatPersistence";
+import { loadPersistedChat } from "./luna/chat/useChatPersistence";
 import { toast } from "sonner";
 
 const tabVariants = {
