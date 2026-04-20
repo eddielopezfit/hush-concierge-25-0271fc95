@@ -2,7 +2,7 @@ import { m } from "framer-motion";
 import { Clock, Layers, ChevronRight, Sparkles, CalendarClock, Plus, Zap, RefreshCw, Heart, Star } from "lucide-react";
 import { useLuna } from "@/contexts/LunaContext";
 import { categoryLabels, goalLabels, timingLabels } from "@/lib/conciergeLabels";
-import { ServiceCategoryId } from "@/types/concierge";
+
 import { getUpsells, UpsellItem } from "@/lib/upsellEngine";
 import { getCadenceRecommendations, CadenceRecommendation } from "@/lib/cadenceEngine";
 import { buildCategoryPlanItems, computePlanTotals } from "@/lib/experienceReveal";
