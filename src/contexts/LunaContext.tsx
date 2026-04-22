@@ -23,7 +23,7 @@ interface LunaContextType {
   context: ConciergeContext | undefined;
   openModal: (ctx?: ConciergeContext) => void;
   closeModal: () => void;
-  openChatWidget: (preferredTab?: string) => void;
+  openChatWidget: (preferredTab?: unknown) => void;
   chatWidgetRequested: boolean;
   requestedTab: string | null;
   clearChatWidgetRequest: () => void;
@@ -118,8 +118,11 @@ export const LunaProvider = ({ children }: { children: ReactNode }) => {
 
   const closeModal = useCallback(() => setIsModalOpen(false), []);
 
-  const openChatWidget = useCallback((preferredTab?: string) => {
-    setRequestedTab(preferredTab ?? null);
+  const openChatWidget = useCallback((preferredTab?: unknown) => {
+    // Accept an optional tab string. Guard against being passed as a raw
+    // onClick handler (where the first arg is a SyntheticEvent, not a string).
+    const tab = typeof preferredTab === "string" ? preferredTab : null;
+    setRequestedTab(tab);
     setChatWidgetRequested(true);
     setHasInteracted(true);
   }, []);
