@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { Menu, X, PhoneCall } from "lucide-react";
+import { Menu, X, PhoneCall, Sparkles } from "lucide-react";
+import { useStartLuna } from "@/hooks/useStartLuna";
 
 const navLinks = [
   { label: "Menu", href: "#services" },
@@ -14,6 +15,7 @@ export const Navigation = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
+  const startLuna = useStartLuna();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -101,6 +103,14 @@ export const Navigation = () => {
               {link.label}
             </a>
           ))}
+          <button
+            onClick={startLuna}
+            className="flex items-center gap-1.5 border border-gold/40 hover:bg-gold/10 text-gold font-body text-sm px-4 py-2.5 rounded-lg transition-all duration-300"
+            aria-label="Start Luna concierge chat"
+          >
+            <Sparkles className="w-4 h-4" />
+            Start Luna
+          </button>
           <a
             href="tel:+15203276753"
             className="flex items-center gap-2 bg-gold hover:bg-gold/90 text-background font-body text-sm px-5 py-2.5 rounded-lg transition-all duration-300"
@@ -141,6 +151,14 @@ export const Navigation = () => {
                 {link.label}
               </a>
             ))}
+            <button
+              onClick={() => { setIsMobileMenuOpen(false); startLuna(); }}
+              tabIndex={isMobileMenuOpen ? 0 : -1}
+              className="flex items-center gap-2 border border-gold/40 text-gold font-body px-6 py-3 rounded-lg"
+            >
+              <Sparkles className="w-5 h-5" />
+              Start Luna
+            </button>
             <a
               href="tel:+15203276753"
               tabIndex={isMobileMenuOpen ? 0 : -1}

@@ -1,9 +1,9 @@
 import { m } from "framer-motion";
-import { Phone, MessageCircle, Calendar } from "lucide-react";
-import { useLuna } from "@/contexts/LunaContext";
+import { Phone, Sparkles, Calendar } from "lucide-react";
+import { useStartLuna } from "@/hooks/useStartLuna";
 
 export const MobileStickyBar = () => {
-  const { openChatWidget } = useLuna();
+  const startLuna = useStartLuna();
 
   const handleBookVisit = () => {
     const el = document.getElementById("callback");
@@ -40,14 +40,15 @@ export const MobileStickyBar = () => {
           <span>Call</span>
         </m.a>
 
-        {/* Luna — concierge entry (compact) */}
+        {/* Start Luna — one-tap concierge with remembered category */}
         <m.button
-          onClick={openChatWidget}
-          className="min-h-[48px] w-12 rounded-lg border border-gold/40 text-gold flex items-center justify-center"
+          onClick={startLuna}
+          className="min-h-[48px] px-3 rounded-lg border border-gold/40 text-gold flex items-center justify-center gap-1.5 text-sm font-body"
           whileTap={{ scale: 0.95 }}
-          aria-label="Open Luna concierge chat"
+          aria-label="Start Luna concierge chat"
         >
-          <MessageCircle className="w-4 h-4" aria-hidden="true" />
+          <Sparkles className="w-4 h-4" aria-hidden="true" />
+          <span>Luna</span>
         </m.button>
       </div>
     </m.div>
