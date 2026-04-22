@@ -70,9 +70,10 @@ interface SmartCardProps {
   artist: TeamMember;
   isFiltered: boolean;
   onClick: () => void;
+  onRequest: (artist: TeamMember) => void;
 }
 
-const SmartCard = ({ artist, isFiltered, onClick }: SmartCardProps) => (
+const SmartCard = ({ artist, isFiltered, onClick, onRequest }: SmartCardProps) => (
   <div className="group cursor-pointer flex flex-col">
     <div
       className="relative aspect-[3/4] rounded-t-lg overflow-hidden border border-b-0 border-border hover:border-primary/30 transition-all duration-500 group-hover:shadow-[0_0_25px_-5px_hsl(38_50%_55%/0.2)]"
@@ -120,6 +121,16 @@ const SmartCard = ({ artist, isFiltered, onClick }: SmartCardProps) => (
 
       </m.div>
     )}
+
+    {/* Request CTA — always visible, gold outline, tap-friendly */}
+    <button
+      type="button"
+      onClick={(e) => { e.stopPropagation(); onRequest(artist); }}
+      className={`mt-2 w-full min-h-[40px] rounded-lg border border-gold/40 text-gold text-xs font-body hover:bg-gold/10 hover:border-gold/60 transition-colors ${isFiltered ? "rounded-t-none border-t-0 mt-0" : ""}`}
+      aria-label={`Request ${artist.name}`}
+    >
+      Request {artist.name.split(" ")[0]}
+    </button>
   </div>
 );
 
@@ -304,10 +315,12 @@ export const ArtistsSection = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.35, delay: index * 0.06 }}
-                    className="group cursor-pointer w-40 md:w-48"
-                    onClick={() => setSelectedArtist(artist)}
+                    className="group w-40 md:w-48 flex flex-col"
                   >
-                    <div className="relative aspect-[3/4] rounded-lg overflow-hidden border border-gold/25 hover:border-gold/50 transition-all duration-500 group-hover:shadow-[0_0_25px_-5px_hsl(38_50%_55%/0.2)]">
+                    <div
+                      className="relative aspect-[3/4] rounded-lg overflow-hidden border border-gold/25 hover:border-gold/50 transition-all duration-500 group-hover:shadow-[0_0_25px_-5px_hsl(38_50%_55%/0.2)] cursor-pointer"
+                      onClick={() => setSelectedArtist(artist)}
+                    >
                       <ArtistAvatar artist={artist} />
                       <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent" />
                       <div className="absolute bottom-0 left-0 right-0 p-3">
@@ -319,6 +332,14 @@ export const ArtistsSection = () => {
                         </span>
                       </div>
                     </div>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); handleBeginWithLuna(artist); }}
+                      className="mt-2 w-full min-h-[40px] rounded-lg border border-gold/40 text-gold text-xs font-body hover:bg-gold/10 hover:border-gold/60 transition-colors"
+                      aria-label={`Request ${artist.name}`}
+                    >
+                      Request {artist.name.split(" ")[0]}
+                    </button>
                   </m.div>
                 ))}
               </m.div>
@@ -351,6 +372,7 @@ export const ArtistsSection = () => {
                         artist={artist}
                         isFiltered={isFiltered}
                         onClick={() => { trackArtistClick(artist.name); setSelectedArtist(artist); }}
+                        onRequest={handleBeginWithLuna}
                       />
                     </m.div>
                   ))}
