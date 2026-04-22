@@ -3,7 +3,24 @@ import { useLuna } from "@/contexts/LunaContext";
 import type { ServiceCategoryId } from "@/types/concierge";
 
 const LAST_CATEGORY_KEY = "hush_last_category";
+const LAST_GUIDE_KEY = "hush_last_guide";
 const VALID: ServiceCategoryId[] = ["hair", "nails", "lashes", "skincare", "massage"];
+
+/** Luna's panel tabs — kept loose to avoid importing UI types into this hook. */
+export type LunaGuideId = "find" | "explore" | "artists" | "plan" | "chat";
+const VALID_GUIDES: LunaGuideId[] = ["find", "explore", "artists", "plan", "chat"];
+
+export function rememberLastGuide(guide: LunaGuideId | null | undefined): void {
+  if (!guide || !VALID_GUIDES.includes(guide)) return;
+  try { localStorage.setItem(LAST_GUIDE_KEY, guide); } catch { /* ignore */ }
+}
+
+export function readLastGuide(): LunaGuideId | null {
+  try {
+    const v = localStorage.getItem(LAST_GUIDE_KEY) as LunaGuideId | null;
+    return v && VALID_GUIDES.includes(v) ? v : null;
+  } catch { return null; }
+}
 
 export function rememberLastCategory(category: ServiceCategoryId | null | undefined): void {
   if (!category || !VALID.includes(category)) return;
@@ -37,6 +54,6 @@ export function useStartLuna() {
         category: conciergeContext?.category ?? last,
       });
     }
-    openChatWidget();
+    openChatWidget(readLastGuide() ?? undefined);
   }, [openChatWidget, mergeConcierge, conciergeContext]);
 }
