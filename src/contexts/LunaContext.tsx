@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
 import { ConciergeContext } from "@/types/concierge";
+import { rememberLastCategory } from "@/hooks/useStartLuna";
 
 const STORAGE_KEY = "hush_concierge_context";
 
@@ -95,6 +96,8 @@ export const LunaProvider = ({ children }: { children: ReactNode }) => {
         quizCompletedAt:    partial.quizCompletedAt    !== undefined ? partial.quizCompletedAt    : (prev?.quizCompletedAt    ?? null),
       };
       writeToStorage(merged);
+      // Persist the last meaningful service category for one-tap "Start Luna".
+      rememberLastCategory(merged.primary_category ?? merged.category ?? merged.categories?.[0] ?? null);
       return merged;
     });
   }, []);
