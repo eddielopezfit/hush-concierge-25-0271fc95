@@ -10,6 +10,7 @@ import {
 import { ServiceCategory, getCategoryWithCrossRefs } from "@/data/servicesMenuData";
 import { useLuna } from "@/contexts/LunaContext";
 import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
+import { PriceConfidenceAccordion } from "@/components/PriceConfidenceAccordion";
 
 interface ServiceMenuModalProps {
   isOpen: boolean;
@@ -113,6 +114,11 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
 
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto overscroll-contain px-6 md:px-8 py-4">
+              {resolvedCategory.id === "hair" && (
+                <div className="mb-4">
+                  <PriceConfidenceAccordion />
+                </div>
+              )}
               <Accordion
                 type="multiple"
                 value={openAccordions}
