@@ -23,8 +23,9 @@ interface LunaContextType {
   context: ConciergeContext | undefined;
   openModal: (ctx?: ConciergeContext) => void;
   closeModal: () => void;
-  openChatWidget: () => void;
+  openChatWidget: (preferredTab?: unknown) => void;
   chatWidgetRequested: boolean;
+  requestedTab: string | null;
   clearChatWidgetRequest: () => void;
   hasInteracted: boolean;
   markInteracted: () => void;
@@ -42,6 +43,7 @@ const LunaCtx = createContext<LunaContextType>({
   closeModal: () => {},
   openChatWidget: () => {},
   chatWidgetRequested: false,
+  requestedTab: null,
   clearChatWidgetRequest: () => {},
   hasInteracted: false,
   markInteracted: () => {},
@@ -55,6 +57,7 @@ export const LunaProvider = ({ children }: { children: ReactNode }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [context, setContext] = useState<ConciergeContext | undefined>();
   const [chatWidgetRequested, setChatWidgetRequested] = useState(false);
+  const [requestedTab, setRequestedTab] = useState<string | null>(null);
   const [hasInteracted, setHasInteracted] = useState(false);
   const [conciergeContext, setConciergeContextState] = useState<ConciergeContext | null>(() => readFromStorage());
 
@@ -115,18 +118,25 @@ export const LunaProvider = ({ children }: { children: ReactNode }) => {
 
   const closeModal = useCallback(() => setIsModalOpen(false), []);
 
-  const openChatWidget = useCallback(() => {
+  const openChatWidget = useCallback((preferredTab?: unknown) => {
+    // Accept an optional tab string. Guard against being passed as a raw
+    // onClick handler (where the first arg is a SyntheticEvent, not a string).
+    const tab = typeof preferredTab === "string" ? preferredTab : null;
+    setRequestedTab(tab);
     setChatWidgetRequested(true);
     setHasInteracted(true);
   }, []);
 
-  const clearChatWidgetRequest = useCallback(() => setChatWidgetRequested(false), []);
+  const clearChatWidgetRequest = useCallback(() => {
+    setChatWidgetRequested(false);
+    setRequestedTab(null);
+  }, []);
   const markInteracted = useCallback(() => setHasInteracted(true), []);
 
   return (
     <LunaCtx.Provider value={{
       isModalOpen, context, openModal, closeModal,
-      openChatWidget, chatWidgetRequested, clearChatWidgetRequest,
+      openChatWidget, chatWidgetRequested, requestedTab, clearChatWidgetRequest,
       hasInteracted, markInteracted,
       conciergeContext, setConcierge, mergeConcierge, clearConcierge,
     }}>

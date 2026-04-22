@@ -8,6 +8,7 @@ import { MyPlanTab } from "./luna/MyPlanTab";
 import { ChatTab } from "./luna/ChatTab";
 import { LunaTabNav, type LunaTabId } from "./luna/LunaTabNav";
 import { useLuna } from "@/contexts/LunaContext";
+import { rememberLastGuide, type LunaGuideId } from "@/hooks/useStartLuna";
 import { buildChimeAudio } from "@/lib/lunaChime";
 import { useDwellNudge, type DwellNudge } from "@/hooks/luna/useDwellNudge";
 import { useInactivityNudge, type InactivityNudge } from "@/hooks/luna/useInactivityNudge";
@@ -27,7 +28,7 @@ export const LunaChatWidget = () => {
   const [activeTab, setActiveTab] = useState<LunaTabId>("find");
   const [isFirstOpen, setIsFirstOpen] = useState(true);
   const [nudge, setNudge] = useState<DwellNudge | InactivityNudge | null>(null);
-  const { chatWidgetRequested, clearChatWidgetRequest } = useLuna();
+  const { chatWidgetRequested, requestedTab, clearChatWidgetRequest } = useLuna();
   const chimeRef = useRef<HTMLAudioElement | null>(null);
   const chimeBuilt = useRef(false);
 
@@ -37,14 +38,24 @@ export const LunaChatWidget = () => {
     chimeRef.current = buildChimeAudio();
   }, []);
 
-  // Respond to external "open chat widget" requests
+  // Respond to external "open chat widget" requests. Honor a requested tab
+  // (e.g. last guide remembered by Start Luna); fall back to "chat".
   useEffect(() => {
     if (chatWidgetRequested) {
       setIsOpen(true);
-      setActiveTab("chat");
+      const valid: LunaTabId[] = ["find", "explore", "artists", "plan", "chat"];
+      const next = (requestedTab && (valid as string[]).includes(requestedTab))
+        ? (requestedTab as LunaTabId)
+        : "chat";
+      setActiveTab(next);
       clearChatWidgetRequest();
     }
-  }, [chatWidgetRequested, clearChatWidgetRequest]);
+  }, [chatWidgetRequested, requestedTab, clearChatWidgetRequest]);
+
+  // Persist the last visited guide whenever the user changes tabs while open.
+  useEffect(() => {
+    if (isOpen) rememberLastGuide(activeTab as LunaGuideId);
+  }, [isOpen, activeTab]);
 
   // Show subtle badge dot after 15s — passive, no pop-ups
   useEffect(() => {
