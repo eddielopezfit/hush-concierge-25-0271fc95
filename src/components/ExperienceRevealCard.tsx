@@ -3,6 +3,7 @@ import { Sparkles, Clock, DollarSign, ChevronDown } from "lucide-react";
 import { RevealData } from "@/lib/experienceReveal";
 import { useLuna } from "@/contexts/LunaContext";
 import { BookingDecisionCard } from "@/components/BookingDecisionCard";
+import { PriceConfidenceAccordion } from "@/components/PriceConfidenceAccordion";
 
 interface ExperienceRevealCardProps {
   data: RevealData;
@@ -62,6 +63,17 @@ export const ExperienceRevealCard = ({ data, onBook: _onBook }: ExperienceReveal
               <span className="text-xs font-body text-cream">{data.priceRange}</span>
             </div>
           </m.div>
+
+          {/* Price confidence — hair only */}
+          {conciergeContext?.categories?.includes("hair") && (
+            <m.div
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.42 }}
+            >
+              <PriceConfidenceAccordion />
+            </m.div>
+          )}
 
           {/* Booking Decision */}
           <m.div

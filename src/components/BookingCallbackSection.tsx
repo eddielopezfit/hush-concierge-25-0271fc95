@@ -188,6 +188,9 @@ export const BookingCallbackSection = () => {
             <p className="font-body text-cream/60 text-sm">
               Drop your info and our front desk will reach out personally.
             </p>
+            <p className="font-body text-xs text-gold/70 italic mt-2">
+              We typically respond within 2 business hours during salon hours.
+            </p>
           </div>
 
           {conciergeContext?.preferredArtist && !isSubmitted && (
