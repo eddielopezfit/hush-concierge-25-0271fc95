@@ -80,7 +80,9 @@ function getPriceRange(categoryId: ServiceCategoryId, serviceName: string): stri
     if (!category) return null;
     for (const group of category.groups) {
       for (const item of group.items) {
-        if (serviceName.toLowerCase().includes(item.name.toLowerCase())) {
+        const service = serviceName.toLowerCase();
+        const candidate = item.name.toLowerCase();
+        if (service.includes(candidate) || candidate.includes(service)) {
           return item.price;
         }
       }
@@ -137,6 +139,18 @@ export function generateRecommendation(context: ConciergeContext | null | undefi
   // Get recommended service based on goal + category
   const serviceMap = goalServiceMap[normalizedGoal] || goalServiceMap.refresh;
   let recommendedService = serviceMap[primaryCategory] || serviceMap.hair;
+
+  const exactItem = typeof context.item === "string" ? context.item.trim() : "";
+  if (exactItem && primaryCategory === "hair") {
+    const hairCategory = servicesMenuData.find(c => c.id === "hair");
+    const matchedItem = hairCategory?.groups
+      .flatMap(group => group.items)
+      .find(item => item.name.toLowerCase() === exactItem.toLowerCase());
+
+    if (matchedItem) {
+      recommendedService = matchedItem.name;
+    }
+  }
 
   // Subtype overrides goal-based suggestion with specific service
   const subtypeServiceOverride: Record<string, string> = {
