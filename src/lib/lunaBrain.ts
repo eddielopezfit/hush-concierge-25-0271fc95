@@ -230,11 +230,13 @@ export function generateChatResponse(message: string, context: ConciergeContext 
       const rec = generateRecommendation(context);
 
       if (lower.includes("recommend") || lower.includes("suggest") || lower.includes("what should")) {
-        const parts = [`Based on your selections, I'd suggest exploring **${rec.recommendedService}**`];
-        if (rec.priceRange) parts.push(`(${rec.priceRange})`);
-        if (rec.whatToExpect) parts.push(`. ${rec.whatToExpect}`);
-        parts.push(`. ${rec.nextStep}`);
-        return parts.join(" ");
+        let response = `Based on your selections, I'd suggest exploring **${rec.recommendedService}**`;
+        if (rec.priceRange) response += ` (${rec.priceRange})`;
+        if (rec.whatToExpect) {
+          response += `\n\n**What to expect:** ${rec.whatToExpect.replace(/^What to expect:\s*/i, "")}`;
+        }
+        response += `\n\n${rec.nextStep}`;
+        return response;
       }
 
       if (lower.includes("price") || lower.includes("cost") || lower.includes("how much")) {
