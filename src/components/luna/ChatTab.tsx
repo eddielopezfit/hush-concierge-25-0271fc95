@@ -23,6 +23,8 @@ import {
   loadPersistedChat,
   savePersistedChat,
   clearPersistedChat,
+  getVisitThreadId,
+  setVisitThreadId,
 } from "./chat/useChatPersistence";
 import { useChatStreaming } from "./chat/useChatStreaming";
 import { LeadCaptureForm } from "./chat/LeadCaptureForm";
@@ -137,7 +139,17 @@ export const ChatTab = () => {
     contextFingerprintRef.current = newFingerprint;
 
     const persisted = loadPersistedChat();
-    if (!initialized && persisted && persisted.fingerprint === newFingerprint && persisted.messages.length > 0) {
+    const currentVisitThreadId = getVisitThreadId();
+    const matchesCurrentVisit = Boolean(
+      persisted?.visitThreadId && currentVisitThreadId && persisted.visitThreadId === currentVisitThreadId,
+    );
+
+    if (
+      !initialized &&
+      persisted &&
+      (matchesCurrentVisit || persisted.fingerprint === newFingerprint) &&
+      persisted.messages.length > 0
+    ) {
       setMessages(persisted.messages);
       setSuccessfulExchangeCount(persisted.successfulExchangeCount || 0);
       setLeadCaptured(persisted.leadCaptured || false);
@@ -175,6 +187,8 @@ export const ChatTab = () => {
 
     if (!getConversationId()) {
       startSession(ctx, "chat");
+    } else {
+      setVisitThreadId(getConversationId());
     }
   }, [initialized, conciergeContext]);
 
@@ -197,6 +211,7 @@ export const ChatTab = () => {
     savePersistedChat({
       messages,
       fingerprint: contextFingerprintRef.current,
+      visitThreadId: getConversationId() ?? getVisitThreadId() ?? undefined,
       successfulExchangeCount,
       leadCaptured,
       leadDismissed,
