@@ -82,10 +82,10 @@ Applied to clean, dry hair in sections. The liquid keratin formula is worked thr
 | Women's Haircut | 45 min – 1.5 hrs |
 | Men's Haircut | 30 – 45 min |
 | Bang/Beard Trim | 15 – 20 min |
-| Luxury Wash & Blowout | 45 min – 1 hr |
+| Luxury Wash and Blowout | 45 min – 1 hr |
 | Special Occasion Style | 1 – 1.5 hrs |
 | Texture Waves | 2 – 3 hrs |
-| Brazilian Blowout Smoothing | 2 – 3 hrs |
+| Brazilian Blowout Smoothing Treatment | 2 – 3 hrs |
 | Conditioning Treatment (add-on) | 15 – 20 min added to existing service |
 
 ---
