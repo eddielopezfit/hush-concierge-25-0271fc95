@@ -15,7 +15,6 @@ const services = [
     title: "Hair",
     description: "Precision cuts, lived-in color, blonding, extensions — whatever your vision, we'll bring it to life.",
     image: hairHero,
-    testimonial: { text: "Whitney is the best with blondes!! She nailed it.", author: "Andrea Mitchell" },
   },
   {
     icon: Hand,
@@ -23,7 +22,6 @@ const services = [
     title: "Nails",
     description: "From clean classics to creative nail art. Walk out feeling polished and put-together.",
     image: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=800&q=80",
-    testimonial: { text: "Bria did my nails and I am way above satisfied!", author: "Kelly N Gilbert Rodriguez" },
   },
   {
     icon: Sparkles,
@@ -31,7 +29,6 @@ const services = [
     title: "Skincare & Spray Tan",
     description: "Results-driven facials, peels, and a sun-kissed glow — your skin will thank you.",
     image: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80",
-    testimonial: null,
   },
   {
     icon: Eye,
@@ -39,7 +36,6 @@ const services = [
     title: "Lashes",
     description: "Subtle enhancement or full drama — lash extensions and lifts tailored to your eye shape.",
     image: lashesHero,
-    testimonial: null,
   },
   {
     icon: Heart,
@@ -47,7 +43,6 @@ const services = [
     title: "Massage",
     description: "Deep tissue, Swedish, therapeutic, and relaxation — leave feeling reset and completely renewed.",
     image: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=800&q=80",
-    testimonial: null,
   },
 ];
 
@@ -121,11 +116,9 @@ export const ServicesSection = () => {
         <p className="font-body text-muted-foreground text-sm leading-relaxed mb-3">
           {service.description}
         </p>
-        {service.testimonial && (
-          <p className="font-body text-[11px] text-cream/50 italic leading-relaxed mb-3">
-            "{service.testimonial.text}" — <span className="text-gold/50 not-italic">{service.testimonial.author}</span>
-          </p>
-        )}
+        <p className="font-body text-[11px] text-gold/60 leading-relaxed mb-3">
+          Loved by 315+ guests · 4.7★ on Google
+        </p>
         <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
           <button
             onClick={(e) => handleStartLuna(service.id as ServiceCategoryId, e)}
