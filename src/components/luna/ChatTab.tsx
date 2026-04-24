@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Send, Loader2, Phone, Calendar, ChevronRight, RotateCcw, ArrowDown, X, MessageSquare } from "lucide-react";
+import { Send, Loader2, Phone, Calendar, ChevronRight, RotateCcw, ArrowDown, X, MessageSquare, Link2 } from "lucide-react";
 import { m, AnimatePresence } from "framer-motion";
 import { saveLead } from "@/lib/saveSession";
 import { getConversationId, startSession, clearConversation } from "@/lib/sessionManager";
@@ -8,6 +8,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useLuna } from "@/contexts/LunaContext";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 
 import type { ChatMessage, ChatAction } from "./chat/types";
 import {
@@ -83,12 +84,44 @@ export const ChatTab = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [firstUnreadId, setFirstUnreadId] = useState<string | null>(null);
   const [dividerFading, setDividerFading] = useState(false);
+  const [activeThreadOrigin, setActiveThreadOrigin] = useState<"current-tab" | "other-tab">("current-tab");
+  const [crossTabThreadAvailable, setCrossTabThreadAvailable] = useState<string | null>(null);
   const dividerFadeTimerRef = useRef<number | null>(null);
   const lastSeenAssistantIdRef = useRef<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const contextFingerprintRef = useRef<string>("");
+
+  const adoptCrossTabThread = useCallback((threadId: string, options?: { silent?: boolean }) => {
+    try {
+      sessionStorage.setItem("hush_conversation_id", threadId);
+    } catch {
+      /* ignore */
+    }
+
+    setVisitThreadId(threadId);
+    setCrossTabThreadAvailable(null);
+    setActiveThreadOrigin("other-tab");
+
+    const persisted = loadPersistedChat();
+    if (persisted?.visitThreadId === threadId && persisted.messages.length > 0) {
+      setMessages(persisted.messages);
+      setSuccessfulExchangeCount(persisted.successfulExchangeCount || 0);
+      setLeadCaptured(persisted.leadCaptured || false);
+      setLeadDismissed(persisted.leadDismissed || false);
+      setShowLeadForm(false);
+      const lastAssistant = [...persisted.messages].reverse().find((m) => m.role === "assistant");
+      setQuickReplies(getQuickReplies(conciergeContext, lastAssistant?.content || ""));
+    }
+
+    if (!options?.silent) {
+      toast.message("Jumped into your other-tab Luna chat", {
+        description: "You’re now connected to the conversation that was active elsewhere.",
+        duration: 2800,
+      });
+    }
+  }, [conciergeContext]);
 
   // ── Streaming hook ───────────────────────────────────────────────────────
   const { isStreaming, streamChat, abort } = useChatStreaming({
@@ -130,6 +163,8 @@ export const ChatTab = () => {
     setContextPills(getContextPills(ctx));
     setSmartChips(getSmartChips(ctx));
     setQuickReplies(getQuickReplies(ctx, greeting));
+    setActiveThreadOrigin("current-tab");
+    setCrossTabThreadAvailable(null);
 
     startSession(ctx, "chat").then((result) => {
       setVisitThreadId(result?.conversation_id ?? null);
@@ -158,6 +193,8 @@ export const ChatTab = () => {
     setContextPills(getContextPills(ctx));
     setSmartChips(getSmartChips(ctx));
     setQuickReplies(getQuickReplies(ctx, greeting));
+    setActiveThreadOrigin("current-tab");
+    setCrossTabThreadAvailable(null);
     clearPersistedChat();
 
     // Rotate the server-side conversation_id so the next turn lands fresh
@@ -178,18 +215,38 @@ export const ChatTab = () => {
   useEffect(() => {
     const handleStorage = (event: StorageEvent) => {
       if (event.key !== "hush_luna_visit_thread_id") return;
-      if (event.newValue) {
+      const nextThreadId = event.newValue;
+      const currentThreadId = getConversationId();
+
+      if (nextThreadId) {
         try {
-          sessionStorage.setItem("hush_conversation_id", event.newValue);
+          sessionStorage.setItem("hush_conversation_id", nextThreadId);
         } catch {
           /* ignore */
         }
+
+        if (!currentThreadId) {
+          adoptCrossTabThread(nextThreadId, { silent: true });
+          return;
+        }
+
+        if (nextThreadId !== currentThreadId) {
+          setCrossTabThreadAvailable(nextThreadId);
+          setActiveThreadOrigin("current-tab");
+          return;
+        }
+
+        setCrossTabThreadAvailable(null);
+        setActiveThreadOrigin("other-tab");
+      } else {
+        setCrossTabThreadAvailable(null);
+        setActiveThreadOrigin("current-tab");
       }
     };
 
     window.addEventListener("storage", handleStorage);
     return () => window.removeEventListener("storage", handleStorage);
-  }, []);
+  }, [adoptCrossTabThread]);
 
   // Build contextual greeting + chips on first render AND when context changes
   useEffect(() => {
@@ -250,18 +307,18 @@ export const ChatTab = () => {
     if (!getConversationId()) {
       const crossTabVisitThreadId = getVisitThreadId();
       if (crossTabVisitThreadId) {
-        try {
-          sessionStorage.setItem("hush_conversation_id", crossTabVisitThreadId);
-        } catch {
-          /* ignore */
-        }
+        adoptCrossTabThread(crossTabVisitThreadId, { silent: true });
       } else {
         startSession(ctx, "chat");
+        setActiveThreadOrigin("current-tab");
+        setCrossTabThreadAvailable(null);
       }
     } else {
       setVisitThreadId(getConversationId());
+      setActiveThreadOrigin("current-tab");
+      setCrossTabThreadAvailable(null);
     }
-  }, [initialized, conciergeContext]);
+  }, [initialized, conciergeContext, adoptCrossTabThread]);
 
   // Consume a pending prompt seeded by other tabs
   const handleSendRef = useRef<((text?: string) => void) | null>(null);
@@ -514,6 +571,34 @@ export const ChatTab = () => {
 
   return (
     <div className="flex flex-col h-full">
+      {(activeThreadOrigin === "other-tab" || crossTabThreadAvailable) && (
+        <div className="px-3 pt-2">
+          <div className="flex items-center justify-between gap-2 rounded-lg border border-border bg-card/70 px-3 py-2">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="gap-1 rounded-full border-primary/20 bg-primary/5 px-2 py-0.5 text-[10px] font-body font-medium text-primary">
+                  <Link2 className="h-3 w-3" />
+                  Cross-tab
+                </Badge>
+                <p className="text-[11px] font-body text-foreground/90 truncate">
+                  {crossTabThreadAvailable
+                    ? "A Luna conversation is active in another tab."
+                    : "You’re connected to a Luna conversation started in another tab."}
+                </p>
+              </div>
+            </div>
+            {crossTabThreadAvailable ? (
+              <button
+                onClick={() => adoptCrossTabThread(crossTabThreadAvailable)}
+                className="flex-shrink-0 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[10px] font-body font-medium text-primary transition-colors hover:bg-primary/15"
+              >
+                Jump in
+              </button>
+            ) : null}
+          </div>
+        </div>
+      )}
+
       {/* Context Bar + New Conversation */}
       <div className="px-3 py-2 border-b border-border bg-background/30 flex items-center justify-between gap-2">
         {contextPills.length > 0 ? (
