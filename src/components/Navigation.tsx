@@ -17,6 +17,25 @@ export const Navigation = () => {
   const observerRef = useRef<IntersectionObserver | null>(null);
   const startLuna = useStartLuna();
 
+  // Smooth-scroll + re-trigger :target reveal animation on nav clicks
+  const handleAnchorJump = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (!href.startsWith("#")) return;
+    const id = href.slice(1);
+    const el = document.getElementById(id);
+    if (!el) return;
+    e.preventDefault();
+    // Force re-play of CSS :target animation even if hash is unchanged
+    if (window.location.hash === href) {
+      history.replaceState(null, "", " ");
+      requestAnimationFrame(() => {
+        history.replaceState(null, "", href);
+      });
+    } else {
+      history.replaceState(null, "", href);
+    }
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
@@ -94,6 +113,7 @@ export const Navigation = () => {
             <a
               key={link.label}
               href={link.href}
+              onClick={(e) => handleAnchorJump(e, link.href)}
               className={`font-body text-sm tracking-wide transition-colors ${
                 activeSection === link.href
                   ? "text-gold"
@@ -142,7 +162,7 @@ export const Navigation = () => {
               <a
                 key={link.label}
                 href={link.href}
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={(e) => { handleAnchorJump(e, link.href); setIsMobileMenuOpen(false); }}
                 tabIndex={isMobileMenuOpen ? 0 : -1}
                 className={`font-body text-lg transition-colors ${
                   activeSection === link.href ? "text-gold" : "text-cream/70 hover:text-gold"

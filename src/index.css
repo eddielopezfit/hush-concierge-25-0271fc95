@@ -326,6 +326,57 @@ html {
     }
   }
 
+  /* Section anchor reveal — re-plays slide-in + soft gold halo on nav jumps */
+  section[id]:target > *,
+  section[id]:target {
+    animation: sectionReveal 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  section[id]:target {
+    position: relative;
+  }
+
+  section[id]:target::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(
+      ellipse at top,
+      hsl(38 50% 55% / 0.12),
+      transparent 60%
+    );
+    animation: sectionHalo 1.4s ease-out both;
+    z-index: 0;
+  }
+
+  @keyframes sectionReveal {
+    0% {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes sectionHalo {
+    0% { opacity: 0; }
+    30% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    section[id]:target,
+    section[id]:target > * {
+      animation: none !important;
+    }
+    section[id]:target::before {
+      display: none;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .btn-luna,
     .btn-gold,
