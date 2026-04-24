@@ -103,7 +103,7 @@ export const ChatTab = () => {
     getQuickReplies,
   });
 
-  const handleMissingThreadFallback = useCallback(() => {
+  function handleMissingThreadFallback() {
     const ctx = conciergeContext;
     const greeting = buildContextGreeting(ctx);
 
@@ -139,7 +139,7 @@ export const ChatTab = () => {
       description: "Your previous in-visit thread was no longer available.",
       duration: 3200,
     });
-  }, [conciergeContext]);
+  }
 
   // ── Reset / New conversation ─────────────────────────────────────────────
   const resetChat = useCallback(() => {
