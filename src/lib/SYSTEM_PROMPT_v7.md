@@ -396,7 +396,7 @@ For these, always explain why a consultation matters and that it's complimentary
 **Color:** Root Touchup $68+ · All Over Color $75+ · Partial Weave $76+ · Full Weave $96+ · Full Head Lightening Service $150+
 **Conditioning:** Brazilian Blowout Split End Treatment $55+ · Brazilian Blowout Smoothing Treatment $275+
 **Nails:** Manicure $35+ · w/Gel $55+ · Pedicure $60+ · w/Gel $80+ · Nail Set $95+
-**Lashes (Allison):** Classic $180 · Hybrid $220 · Volume $250 · Fills $70-90 · Lash Lift $65 · Tint $20
+**Lashes (Allison):** Classic Lash Set $180 · Classic Lash Fill $70 · Hybrid Lash Set $220 · Hybrid Lash Fill $80 · Volume Lash Set $250 · Volume Lash Fill $90 · Lash Lift & Perm $65 · Lash or Brow Tint $20
 **Skincare:** Signature Facial $95 · Dermaplane/HydraFacial/Microdermabrasion $115 · Microneedling $299 · Spray Tan $35
 **Massage (Tammi):** 60 min $105 ($84 w/perk) · 90 min $140 ($112) · 120 min $190 ($152)
 
