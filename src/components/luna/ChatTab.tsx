@@ -25,6 +25,7 @@ import {
   clearPersistedChat,
   getVisitThreadId,
   setVisitThreadId,
+  clearVisitThreadId,
 } from "./chat/useChatPersistence";
 import { useChatStreaming } from "./chat/useChatStreaming";
 import { LeadCaptureForm } from "./chat/LeadCaptureForm";
@@ -89,6 +90,45 @@ export const ChatTab = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const contextFingerprintRef = useRef<string>("");
 
+  const handleMissingThreadFallback = useCallback(() => {
+    const ctx = conciergeContext;
+    const greeting = buildContextGreeting(ctx);
+
+    abort();
+    clearPersistedChat();
+    clearVisitThreadId();
+    clearConversation();
+
+    setMessages([
+      {
+        id: `thread-reset-${Date.now()}`,
+        role: "assistant",
+        content: "Your last conversation wasn't available anymore, so I started a fresh one and kept your current plan context ready.",
+      },
+      { id: "greeting", role: "assistant", content: greeting },
+    ]);
+    setInput("");
+    setUserMessageCount(0);
+    setSuccessfulExchangeCount(0);
+    setLeadCaptured(false);
+    setShowLeadForm(false);
+    setLeadDismissed(false);
+    setLeadName("");
+    setLeadPhone("");
+    setContextPills(getContextPills(ctx));
+    setSmartChips(getSmartChips(ctx));
+    setQuickReplies(getQuickReplies(ctx, greeting));
+
+    startSession(ctx, "chat").then((result) => {
+      setVisitThreadId(result?.conversation_id ?? null);
+    });
+
+    toast.message("Started a fresh Luna conversation", {
+      description: "Your previous in-visit thread was no longer available.",
+      duration: 3200,
+    });
+  }, [conciergeContext, abort]);
+
   // ── Streaming hook ───────────────────────────────────────────────────────
   const { isStreaming, streamChat, abort } = useChatStreaming({
     setMessages,
@@ -97,6 +137,7 @@ export const ChatTab = () => {
     onInlineBookingDetected: () => {
       if (!leadCaptured && !leadDismissed) setShowLeadForm(true);
     },
+    onMissingThread: handleMissingThreadFallback,
     conciergeContext,
     getQuickReplies,
   });
