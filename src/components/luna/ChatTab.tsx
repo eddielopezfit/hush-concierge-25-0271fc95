@@ -8,6 +8,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useLuna } from "@/contexts/LunaContext";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 
 import type { ChatMessage, ChatAction } from "./chat/types";
 import {
@@ -314,7 +315,7 @@ export const ChatTab = () => {
       }
     } else {
       setVisitThreadId(getConversationId());
-      setActiveThreadOrigin(getConversationId() === getVisitThreadId() ? "other-tab" : "current-tab");
+      setActiveThreadOrigin("current-tab");
       setCrossTabThreadAvailable(null);
     }
   }, [initialized, conciergeContext, adoptCrossTabThread]);
