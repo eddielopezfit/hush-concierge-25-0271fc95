@@ -23,7 +23,7 @@ export function savePersistedChat(data: PersistedChat): void {
   try {
     localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(data));
     if (data.visitThreadId) {
-      sessionStorage.setItem(VISIT_THREAD_KEY, data.visitThreadId);
+      localStorage.setItem(VISIT_THREAD_KEY, data.visitThreadId);
     }
   } catch {
     /* ignore */
