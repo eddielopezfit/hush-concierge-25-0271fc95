@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Send, Loader2, Phone, Calendar, ChevronRight, RotateCcw, ArrowDown, X, MessageSquare } from "lucide-react";
+import { Send, Loader2, Phone, Calendar, ChevronRight, RotateCcw, ArrowDown, X, MessageSquare, Link2 } from "lucide-react";
 import { m, AnimatePresence } from "framer-motion";
 import { saveLead } from "@/lib/saveSession";
 import { getConversationId, startSession, clearConversation } from "@/lib/sessionManager";
@@ -83,12 +83,44 @@ export const ChatTab = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [firstUnreadId, setFirstUnreadId] = useState<string | null>(null);
   const [dividerFading, setDividerFading] = useState(false);
+  const [activeThreadOrigin, setActiveThreadOrigin] = useState<"current-tab" | "other-tab">("current-tab");
+  const [crossTabThreadAvailable, setCrossTabThreadAvailable] = useState<string | null>(null);
   const dividerFadeTimerRef = useRef<number | null>(null);
   const lastSeenAssistantIdRef = useRef<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const contextFingerprintRef = useRef<string>("");
+
+  const adoptCrossTabThread = useCallback((threadId: string, options?: { silent?: boolean }) => {
+    try {
+      sessionStorage.setItem("hush_conversation_id", threadId);
+    } catch {
+      /* ignore */
+    }
+
+    setVisitThreadId(threadId);
+    setCrossTabThreadAvailable(null);
+    setActiveThreadOrigin("other-tab");
+
+    const persisted = loadPersistedChat();
+    if (persisted?.visitThreadId === threadId && persisted.messages.length > 0) {
+      setMessages(persisted.messages);
+      setSuccessfulExchangeCount(persisted.successfulExchangeCount || 0);
+      setLeadCaptured(persisted.leadCaptured || false);
+      setLeadDismissed(persisted.leadDismissed || false);
+      setShowLeadForm(false);
+      const lastAssistant = [...persisted.messages].reverse().find((m) => m.role === "assistant");
+      setQuickReplies(getQuickReplies(conciergeContext, lastAssistant?.content || ""));
+    }
+
+    if (!options?.silent) {
+      toast.message("Jumped into your other-tab Luna chat", {
+        description: "You’re now connected to the conversation that was active elsewhere.",
+        duration: 2800,
+      });
+    }
+  }, [conciergeContext]);
 
   // ── Streaming hook ───────────────────────────────────────────────────────
   const { isStreaming, streamChat, abort } = useChatStreaming({
@@ -130,6 +162,8 @@ export const ChatTab = () => {
     setContextPills(getContextPills(ctx));
     setSmartChips(getSmartChips(ctx));
     setQuickReplies(getQuickReplies(ctx, greeting));
+    setActiveThreadOrigin("current-tab");
+    setCrossTabThreadAvailable(null);
 
     startSession(ctx, "chat").then((result) => {
       setVisitThreadId(result?.conversation_id ?? null);
@@ -158,6 +192,8 @@ export const ChatTab = () => {
     setContextPills(getContextPills(ctx));
     setSmartChips(getSmartChips(ctx));
     setQuickReplies(getQuickReplies(ctx, greeting));
+    setActiveThreadOrigin("current-tab");
+    setCrossTabThreadAvailable(null);
     clearPersistedChat();
 
     // Rotate the server-side conversation_id so the next turn lands fresh
