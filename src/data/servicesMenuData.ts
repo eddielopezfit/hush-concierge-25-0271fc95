@@ -91,8 +91,8 @@ export const servicesMenuData: ServiceCategory[] = [
           { name: "Full Weave", price: "$96+" },
           { name: "Partial Weave", price: "$76+" },
           { name: "Back to Back Foils", price: "$150+" },
-          { name: "Balayage", price: "$96+ (final price after consultation)" },
-          { name: "Foilayage", price: "$96+ (final price after consultation)" },
+          { name: "Balayage", price: "Based on consultation" },
+          { name: "Foilayage", price: "Based on consultation" },
         ],
       },
       {
