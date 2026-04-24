@@ -113,11 +113,35 @@ html {
     border: none;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 0 25px hsl(38 50% 55% / 0.25);
+    overflow: hidden;
+    isolation: isolate;
+    animation: ctaSlideIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both,
+               ctaGlowPulse 3.2s ease-in-out 0.7s infinite;
+  }
+
+  .btn-luna::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      120deg,
+      transparent 20%,
+      hsl(38 80% 80% / 0.35) 50%,
+      transparent 80%
+    );
+    transform: translateX(-120%);
+    transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+    pointer-events: none;
+    z-index: -1;
   }
 
   .btn-luna:hover {
     box-shadow: 0 0 40px hsl(38 50% 55% / 0.4);
     transform: translateY(-2px);
+  }
+
+  .btn-luna:hover::before {
+    transform: translateX(120%);
   }
 
   .btn-gold {
@@ -127,11 +151,35 @@ html {
     border: none;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 0 18px hsl(38 50% 55% / 0.2);
+    overflow: hidden;
+    isolation: isolate;
+    animation: ctaSlideIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both,
+               ctaGlowPulse 3.2s ease-in-out 0.7s infinite;
+  }
+
+  .btn-gold::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      120deg,
+      transparent 20%,
+      hsl(38 80% 80% / 0.3) 50%,
+      transparent 80%
+    );
+    transform: translateX(-120%);
+    transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+    pointer-events: none;
+    z-index: -1;
   }
 
   .btn-gold:hover {
     box-shadow: 0 0 35px hsl(38 50% 55% / 0.35);
     transform: translateY(-1px);
+  }
+
+  .btn-gold:hover::before {
+    transform: translateX(120%);
   }
 
   .btn-gold:focus-visible {
@@ -145,11 +193,13 @@ html {
     color: hsl(38 50% 55%);
     border: 1px solid hsl(38 50% 55% / 0.4);
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: ctaSlideIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 
   .btn-outline-gold:hover {
     background: hsl(38 50% 55% / 0.08);
     border-color: hsl(38 50% 55% / 0.7);
+    box-shadow: 0 0 24px hsl(38 50% 55% / 0.18);
   }
 
   .btn-outline-gold:focus-visible {
@@ -219,6 +269,39 @@ html {
     }
     50% {
       box-shadow: 0 0 35px hsl(38 50% 55% / 0.4);
+    }
+  }
+
+  /* CTA entrance + ambient glow */
+  @keyframes ctaSlideIn {
+    0% {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes ctaGlowPulse {
+    0%, 100% {
+      box-shadow: 0 0 18px hsl(38 50% 55% / 0.22);
+    }
+    50% {
+      box-shadow: 0 0 32px hsl(38 50% 55% / 0.42);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .btn-luna,
+    .btn-gold,
+    .btn-outline-gold {
+      animation: none !important;
+    }
+    .btn-luna::before,
+    .btn-gold::before {
+      display: none;
     }
   }
 
