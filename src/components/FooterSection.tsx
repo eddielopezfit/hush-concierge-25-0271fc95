@@ -1,9 +1,11 @@
 import { m } from "framer-motion";
-import { Phone, MapPin, Clock, Instagram, Facebook, Calendar } from "lucide-react";
+import { Phone, MapPin, Clock, Instagram, Facebook, Calendar, MessageCircle } from "lucide-react";
 import { useState } from "react";
+import { useStartLuna } from "@/hooks/useStartLuna";
 
 export const FooterSection = () => {
   const [showPrivacy, setShowPrivacy] = useState(false);
+  const startLuna = useStartLuna();
 
   const handleBookClick = () => {
     const el = document.getElementById("callback");
@@ -21,15 +23,24 @@ export const FooterSection = () => {
           <p className="font-body text-muted-foreground text-sm md:text-base mb-6 max-w-xl mx-auto">
             Request a callback and our front desk will help you find the perfect time and artist.
           </p>
-          <m.button
-            onClick={handleBookClick}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="btn-gold py-3 px-8 inline-flex items-center gap-2 text-sm"
-          >
-            <Calendar className="w-4 h-4" />
-            Reserve My Visit
-          </m.button>
+          <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <m.button
+              onClick={handleBookClick}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="btn-gold py-3 px-8 inline-flex items-center gap-2 text-sm"
+            >
+              <Calendar className="w-4 h-4" />
+              Reserve My Visit
+            </m.button>
+            <button
+              onClick={startLuna}
+              className="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-5 py-3 font-body text-sm text-primary transition-colors hover:bg-primary/10"
+            >
+              <MessageCircle className="w-4 h-4" />
+              Resume my plan
+            </button>
+          </div>
         </div>
       </div>
 
