@@ -650,7 +650,7 @@ export const ChatTab = () => {
           <div key={msg.id}>
             {firstUnreadId === msg.id && (
               <div
-                className={`flex items-center gap-2 my-3 transition-opacity duration-[600ms] ease-out ${
+                className={`flex items-center gap-2 my-3 transition-opacity duration-500 ease-out ${
                   dividerFading ? "opacity-0" : "opacity-100"
                 }`}
                 aria-label="New messages start here"
