@@ -23,7 +23,7 @@ export function savePersistedChat(data: PersistedChat): void {
   try {
     localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(data));
     if (data.visitThreadId) {
-      sessionStorage.setItem(VISIT_THREAD_KEY, data.visitThreadId);
+      localStorage.setItem(VISIT_THREAD_KEY, data.visitThreadId);
     }
   } catch {
     /* ignore */
@@ -32,7 +32,7 @@ export function savePersistedChat(data: PersistedChat): void {
 
 export function getVisitThreadId(): string | null {
   try {
-    return sessionStorage.getItem(VISIT_THREAD_KEY);
+    return localStorage.getItem(VISIT_THREAD_KEY);
   } catch {
     return null;
   }
@@ -40,8 +40,8 @@ export function getVisitThreadId(): string | null {
 
 export function setVisitThreadId(threadId: string | null | undefined): void {
   try {
-    if (threadId) sessionStorage.setItem(VISIT_THREAD_KEY, threadId);
-    else sessionStorage.removeItem(VISIT_THREAD_KEY);
+    if (threadId) localStorage.setItem(VISIT_THREAD_KEY, threadId);
+    else localStorage.removeItem(VISIT_THREAD_KEY);
   } catch {
     /* ignore */
   }
@@ -49,7 +49,7 @@ export function setVisitThreadId(threadId: string | null | undefined): void {
 
 export function clearVisitThreadId(): void {
   try {
-    sessionStorage.removeItem(VISIT_THREAD_KEY);
+    localStorage.removeItem(VISIT_THREAD_KEY);
   } catch {
     /* ignore */
   }
@@ -58,7 +58,7 @@ export function clearVisitThreadId(): void {
 export function clearPersistedChat(): void {
   try {
     localStorage.removeItem(CHAT_STORAGE_KEY);
-    sessionStorage.removeItem(VISIT_THREAD_KEY);
+    localStorage.removeItem(VISIT_THREAD_KEY);
   } catch {
     /* ignore */
   }

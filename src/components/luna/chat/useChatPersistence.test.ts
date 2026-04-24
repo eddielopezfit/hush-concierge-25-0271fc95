@@ -42,7 +42,7 @@ describe("useChatPersistence", () => {
       savePersistedChat(data);
       const restored = loadPersistedChat();
       expect(restored).toEqual(data);
-      expect(sessionStorage.getItem(VISIT_KEY)).toBe("thread-123");
+      expect(localStorage.getItem(VISIT_KEY)).toBe("thread-123");
     });
 
     it("returns null when nothing is stored", () => {
@@ -96,7 +96,7 @@ describe("useChatPersistence", () => {
       expect(localStorage.getItem(KEY)).not.toBeNull();
       clearPersistedChat();
       expect(localStorage.getItem(KEY)).toBeNull();
-      expect(sessionStorage.getItem(VISIT_KEY)).toBeNull();
+      expect(localStorage.getItem(VISIT_KEY)).toBeNull();
       expect(loadPersistedChat()).toBeNull();
     });
 
