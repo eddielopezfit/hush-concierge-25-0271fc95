@@ -90,6 +90,19 @@ export const ChatTab = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const contextFingerprintRef = useRef<string>("");
 
+  // ── Streaming hook ───────────────────────────────────────────────────────
+  const { isStreaming, streamChat, abort } = useChatStreaming({
+    setMessages,
+    setQuickReplies,
+    onExchangeComplete: () => setSuccessfulExchangeCount((p) => p + 1),
+    onInlineBookingDetected: () => {
+      if (!leadCaptured && !leadDismissed) setShowLeadForm(true);
+    },
+    onMissingThread: handleMissingThreadFallback,
+    conciergeContext,
+    getQuickReplies,
+  });
+
   const handleMissingThreadFallback = useCallback(() => {
     const ctx = conciergeContext;
     const greeting = buildContextGreeting(ctx);
@@ -128,19 +141,6 @@ export const ChatTab = () => {
       duration: 3200,
     });
   }, [conciergeContext, abort]);
-
-  // ── Streaming hook ───────────────────────────────────────────────────────
-  const { isStreaming, streamChat, abort } = useChatStreaming({
-    setMessages,
-    setQuickReplies,
-    onExchangeComplete: () => setSuccessfulExchangeCount((p) => p + 1),
-    onInlineBookingDetected: () => {
-      if (!leadCaptured && !leadDismissed) setShowLeadForm(true);
-    },
-    onMissingThread: handleMissingThreadFallback,
-    conciergeContext,
-    getQuickReplies,
-  });
 
   // ── Reset / New conversation ─────────────────────────────────────────────
   const resetChat = useCallback(() => {
