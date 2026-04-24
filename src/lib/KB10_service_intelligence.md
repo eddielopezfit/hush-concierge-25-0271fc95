@@ -48,7 +48,7 @@ Guests come here because something was wrong somewhere else. Wrong length. Wrong
 | Children's Haircut (12 & under) | $35+ | Patient, skilled team |
 | Bang Trim | $18+ | Quick but precise |
 | Beard Trim | $18+ | Clean lines, shaped to face |
-| Luxury Wash & Blowout | $35+ | Full shampoo, scalp massage, professional blowout |
+| Luxury Wash and Blowout | $35+ | Full shampoo, scalp massage, professional blowout |
 | Special Occasion Style | $75+ | Weddings, galas, graduations, events |
 | Added Heat Style | $15+ | Curling iron, flat iron, waves — add-on to another service |
 | Texture Waves (Short) | $75+ | Chemical wave for short hair |
@@ -64,7 +64,7 @@ Guests come here because something was wrong somewhere else. Wrong length. Wrong
 **Haircut:**
 The appointment begins with a consultation — usually 5–10 minutes. The stylist asks about lifestyle (how do you wear it? how much time do you have in the morning?), assesses texture, growth patterns, and current condition, then discusses the goal. Reference photos are welcomed and actively used. Once the vision is aligned, the cut begins. Hush stylists don't just cut length — they cut structure, which is what makes the grow-out look intentional rather than shapeless.
 
-**Luxury Wash & Blowout:**
+**Luxury Wash and Blowout:**
 Shampoo with professional products (Pureology), scalp massage during the wash, conditioner, and a full blowout with hot tools. The result is polished, voluminous, and finished. Not a "quick blowdry" — it's a complete experience.
 
 **Special Occasion Style:**
