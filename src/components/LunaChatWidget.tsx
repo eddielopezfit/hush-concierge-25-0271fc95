@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { m, AnimatePresence } from "framer-motion";
-import { MessageCircle, X, Minus } from "lucide-react";
+import { MessageCircle, X, Minus, HelpCircle } from "lucide-react";
 import { FindMyLookTab } from "./luna/FindMyLookTab";
 import { ExploreTab } from "./luna/ExploreTab";
 import { ArtistsTab } from "./luna/ArtistsTab";
 import { MyPlanTab } from "./luna/MyPlanTab";
 import { ChatTab } from "./luna/ChatTab";
+import { LunaFaqOverlay } from "./luna/LunaFaqOverlay";
 import { LunaTabNav, type LunaTabId } from "./luna/LunaTabNav";
 import { useLuna } from "@/contexts/LunaContext";
 import { rememberLastGuide, type LunaGuideId } from "@/hooks/useStartLuna";
@@ -37,6 +38,7 @@ export const LunaChatWidget = () => {
   const [isFirstOpen, setIsFirstOpen] = useState(true);
   const [nudge, setNudge] = useState<DwellNudge | InactivityNudge | null>(null);
   const [returnCue, setReturnCue] = useState<string | null>(null);
+  const [showFaqOverlay, setShowFaqOverlay] = useState(false);
   const { chatWidgetRequested, requestedTab, clearChatWidgetRequest } = useLuna();
   const chimeRef = useRef<HTMLAudioElement | null>(null);
   const chimeBuilt = useRef(false);
@@ -127,6 +129,10 @@ export const LunaChatWidget = () => {
   }, []);
 
   const handleClose = () => {
+    if (showFaqOverlay) {
+      setShowFaqOverlay(false);
+      return;
+    }
     if (hasUnsavedChat() && !showExitCapture) {
       setShowExitCapture(true);
       return;
@@ -295,20 +301,30 @@ export const LunaChatWidget = () => {
                   <span className="font-body text-[10px] text-muted-foreground ml-1.5">at Hush Salon & Day Spa</span>
                 </m.div>
               </div>
-              <button
-                onClick={handleClose}
-                className="w-7 h-7 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all md:block hidden"
-                aria-label="Minimize"
-              >
-                <Minus className="w-4 h-4" />
-              </button>
-              <button
-                onClick={handleClose}
-                className="w-7 h-7 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all md:hidden"
-                aria-label="Close"
-              >
-                <X className="w-4 h-4" />
-              </button>
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => setShowFaqOverlay(true)}
+                  className="inline-flex h-8 items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-2.5 font-body text-[11px] text-muted-foreground transition-colors hover:border-primary/35 hover:text-foreground"
+                  aria-label="Open quick answers"
+                >
+                  <HelpCircle className="h-3.5 w-3.5" />
+                  <span>FAQ</span>
+                </button>
+                <button
+                  onClick={handleClose}
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all md:block hidden"
+                  aria-label="Minimize"
+                >
+                  <Minus className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={handleClose}
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all md:hidden"
+                  aria-label="Close"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             </m.div>
 
             <AnimatePresence>
@@ -344,6 +360,8 @@ export const LunaChatWidget = () => {
                 </m.div>
               </AnimatePresence>
             </div>
+
+            <LunaFaqOverlay open={showFaqOverlay} onClose={() => setShowFaqOverlay(false)} />
 
             {/* Exit-intent capture overlay — fires when closing mid-chat */}
             <AnimatePresence>
