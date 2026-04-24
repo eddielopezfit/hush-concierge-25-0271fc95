@@ -904,11 +904,11 @@ None required. First-time guests should tell Patty their skin tone and whether t
 | Foilayage | Consult | 2.5 – 3.5 hr | Michelle | **Yes** |
 | Corrective Color | Consult | 3 – 6+ hr | Michelle | **Yes** |
 | Vivid / Fantasy Color | Consult | 3 – 5+ hr | Silviya, Zaida | **Yes** |
-| Manicure | $35+ | 45 – 60 min | Anita, Kelli, Jacky | No |
-| Manicure w/Gel | $55+ | 1 – 1.5 hr | Anita, Kelli, Jacky | No |
-| Pedicure | $60+ | 1 – 1.5 hr | Kelli, Anita | No |
-| Nail Set | $95+ | 1.5 – 2 hr | Anita, Kelli, Jacky | No |
-| Nail Fills | $60+ | 45 – 60 min | Anita, Kelli, Jacky | No |
+| Manicure | $35+ | 45 – 60 min | Anita Apodaca, Kelly Vishnevetsky, Jackie | No |
+| Manicure w/Gel | $55+ | 1 – 1.5 hr | Anita Apodaca, Kelly Vishnevetsky, Jackie | No |
+| Pedicure | $60+ | 1 – 1.5 hr | Kelly Vishnevetsky, Anita Apodaca | No |
+| Nail Set | $95+ | 1.5 – 2 hr | Anita Apodaca, Kelly Vishnevetsky, Jackie | No |
+| Nail Fills | $60+ | 45 – 60 min | Anita Apodaca, Kelly Vishnevetsky, Jackie | No |
 | Classic Lash Set | $180 | 1.5 – 2 hr | Allison | No |
 | Hybrid Lash Set | $220 | 2 – 2.5 hr | Allison | No |
 | Volume Lash Set | $250 | 2 – 2.5 hr | Allison | No |
@@ -933,10 +933,10 @@ None required. First-time guests should tell Patty their skin tone and whether t
 1. **Phone only.** No online booking. All hair → (520) 327-6753. Nails/lashes/massage/esthetics → direct to specialist (numbers published on website contact page).
 2. **Front desk is Kendell Barraza.** Not "Mary." Not anyone else.
 3. **Tammi discount:** 20% off massage when guest names their Hush hair stylist.
-4. **Lash/Brow Tint is $20.** Not $215. The website skincare page has a legacy bug.
+4. **Lash or Brow Tint is $20.** Not $215. The website skincare page has a legacy bug.
 5. **Hot stone, prenatal, aromatherapy massage = do not exist at Hush.**
 6. **Balayage, Foilayage, Corrective Color, Vivid Color = consultation required, no price given over the phone.**
-7. **Direct numbers:** Publicly listed on website for nails (Kelli, Anita, Jacky), aesthetics (Patty, Allison, Lori), and massage (Tammi). Luna can share these. Hair stylists are NOT given direct numbers — all hair routes through front desk.
+7. **Direct numbers:** Publicly listed on website for nails (Kelly Vishnevetsky, Anita Apodaca, Jackie), aesthetics (Patty, Allison, Lori), and massage (Tammi). Luna can share these. Hair stylists are NOT given direct numbers — all hair routes through front desk.
 8. **Hush is closed Sunday and Monday.** Open Tue & Thu 9AM–7PM, Wed & Fri 9AM–5PM, Sat 9AM–4PM.
 9. **Referral Program:** When an existing guest refers someone new, both the referrer and the new guest receive $10 off their next visit.
 
