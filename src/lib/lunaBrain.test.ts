@@ -103,6 +103,20 @@ describe("lunaBrain.generateRecommendation", () => {
       );
       expect(rec.recommendedService).toBe("Luxury Wash and Blowout");
     });
+
+    it("uses exact hair service pricing language for Balayage and Foilayage", () => {
+      const balayageRec = generateRecommendation(
+        ctx({ categories: ["hair"], goal: "transform", item: "Balayage" })
+      );
+      const foilayageRec = generateRecommendation(
+        ctx({ categories: ["hair"], goal: "transform", item: "Foilayage" })
+      );
+
+      expect(balayageRec.recommendedService).toBe("Balayage");
+      expect(balayageRec.priceRange).toBe("Based on consultation");
+      expect(foilayageRec.recommendedService).toBe("Foilayage");
+      expect(foilayageRec.priceRange).toBe("Based on consultation");
+    });
   });
 
   describe("primary_category resolution", () => {
