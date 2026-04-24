@@ -14,7 +14,7 @@ import { buildChimeAudio } from "@/lib/lunaChime";
 import { useDwellNudge, type DwellNudge } from "@/hooks/luna/useDwellNudge";
 import { useInactivityNudge, type InactivityNudge } from "@/hooks/luna/useInactivityNudge";
 import { saveLead } from "@/lib/saveSession";
-import { loadPersistedChat } from "./luna/chat/useChatPersistence";
+import { getVisitThreadId, loadPersistedChat } from "./luna/chat/useChatPersistence";
 import { toast } from "sonner";
 
 const tabVariants = {
@@ -38,6 +38,7 @@ export const LunaChatWidget = () => {
   const [isFirstOpen, setIsFirstOpen] = useState(true);
   const [nudge, setNudge] = useState<DwellNudge | InactivityNudge | null>(null);
   const [returnCue, setReturnCue] = useState<string | null>(null);
+  const [resumeCue, setResumeCue] = useState<string | null>(null);
   const [showFaqOverlay, setShowFaqOverlay] = useState(false);
   const { chatWidgetRequested, requestedTab, clearChatWidgetRequest } = useLuna();
   const chimeRef = useRef<HTMLAudioElement | null>(null);
@@ -58,8 +59,14 @@ export const LunaChatWidget = () => {
       const next = (requestedTab && (valid as string[]).includes(requestedTab))
         ? (requestedTab as LunaTabId)
         : "chat";
+      const persisted = loadPersistedChat();
+      const visitThreadId = getVisitThreadId();
+      const isSameVisitResume = Boolean(
+        requestedTab && persisted?.messages?.length && visitThreadId && persisted.visitThreadId === visitThreadId,
+      );
       setActiveTab(next);
       setReturnCue(requestedTab ? `Welcome back — Last: ${guideLabels[next]}` : null);
+      setResumeCue(isSameVisitResume ? "Resuming your last conversation" : null);
       clearChatWidgetRequest();
     }
   }, [chatWidgetRequested, requestedTab, clearChatWidgetRequest]);
@@ -69,6 +76,12 @@ export const LunaChatWidget = () => {
     const timer = window.setTimeout(() => setReturnCue(null), 3200);
     return () => window.clearTimeout(timer);
   }, [returnCue]);
+
+  useEffect(() => {
+    if (!resumeCue) return;
+    const timer = window.setTimeout(() => setResumeCue(null), 3200);
+    return () => window.clearTimeout(timer);
+  }, [resumeCue]);
 
   // Persist the last visited guide whenever the user changes tabs while open.
   useEffect(() => {
@@ -328,7 +341,7 @@ export const LunaChatWidget = () => {
             </m.div>
 
             <AnimatePresence>
-              {returnCue && (
+              {(returnCue || resumeCue) && (
                 <m.div
                   initial={{ opacity: 0, y: -6 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -336,7 +349,8 @@ export const LunaChatWidget = () => {
                   transition={{ duration: 0.22, ease: "easeOut" }}
                   className="border-b border-primary/15 bg-primary/5 px-4 py-2"
                 >
-                  <p className="font-body text-xs text-muted-foreground">{returnCue}</p>
+                  {returnCue && <p className="font-body text-xs text-muted-foreground">{returnCue}</p>}
+                  {resumeCue && <p className="font-body text-[11px] text-primary/80 mt-0.5">{resumeCue}</p>}
                 </m.div>
               )}
             </AnimatePresence>
