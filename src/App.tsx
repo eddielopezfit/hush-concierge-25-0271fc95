@@ -47,6 +47,7 @@ const App = () => (
             <MotionProvider>
               <Routes>
                 <Route path="/" element={<Index />} />
+                <Route path="/index" element={<Navigate to="/" replace />} />
                 <Route path="/services" element={<Navigate to="/#services" replace />} />
                 <Route path="/team" element={<Navigate to="/#artists" replace />} />
                 <Route path="/about" element={<Navigate to="/#about" replace />} />
