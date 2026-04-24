@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { m } from "framer-motion";
-import { Scissors, Sparkles, Heart, Eye, Hand } from "lucide-react";
+import { Scissors, Sparkles, Heart, Eye, Hand, MessageCircle } from "lucide-react";
 import { ServiceMenuModal } from "./ServiceMenuModal";
 import { getCategoryById } from "@/data/servicesMenuData";
+import { useLuna } from "@/contexts/LunaContext";
+import type { ServiceCategoryId } from "@/types/concierge";
 import hairHero from "@/assets/hair-hero.jpg";
 import lashesHero from "@/assets/lashes-hero.jpg";
 
@@ -62,6 +64,7 @@ const cardVariants = {
 export const ServicesSection = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isMenuModalOpen, setIsMenuModalOpen] = useState(false);
+  const { mergeConcierge, openChatWidget } = useLuna();
 
 
   const handleViewMenu = (serviceId: string, e?: React.MouseEvent) => {
@@ -72,6 +75,17 @@ export const ServicesSection = () => {
 
   const handleCardClick = (serviceId: string) => {
     handleViewMenu(serviceId);
+  };
+
+  const handleStartLuna = (serviceId: ServiceCategoryId, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    mergeConcierge({
+      source: "Services Section",
+      categories: [serviceId],
+      primary_category: serviceId,
+      category: serviceId,
+    });
+    openChatWidget("explore");
   };
 
   const getPricePreview = (serviceId: string): string => {
@@ -112,12 +126,21 @@ export const ServicesSection = () => {
             "{service.testimonial.text}" — <span className="text-gold/50 not-italic">{service.testimonial.author}</span>
           </p>
         )}
-        <button
-          onClick={(e) => handleViewMenu(service.id, e)}
-          className="mt-1 font-body text-sm text-muted-foreground hover:text-gold transition-colors underline underline-offset-4 w-full text-center block"
-        >
-          View full menu & pricing
-        </button>
+        <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <button
+            onClick={(e) => handleStartLuna(service.id as ServiceCategoryId, e)}
+            className="inline-flex min-h-[42px] items-center justify-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-4 py-2 text-center font-body text-sm text-primary transition-colors hover:bg-primary/10"
+          >
+            <MessageCircle className="h-4 w-4" />
+            Let Luna guide you
+          </button>
+          <button
+            onClick={(e) => handleViewMenu(service.id, e)}
+            className="min-h-[42px] font-body text-sm text-muted-foreground hover:text-gold transition-colors underline underline-offset-4 w-full text-center block"
+          >
+            View full menu & pricing
+          </button>
+        </div>
       </div>
     </m.div>
   );
