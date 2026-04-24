@@ -47,28 +47,28 @@ const goalServiceMap: Record<string, Record<ServiceCategoryId, string>> = {
     nails: "Manicure",
     lashes: "Lash Lift & Perm",
     skincare: "Signature Facial",
-    massage: "60 min Massage",
+    massage: "60 min",
   },
   relax: {
     hair: "Conditioning Treatment",
     nails: "Pedicure",
     lashes: "Classic Lash Set",
     skincare: "Signature Facial",
-    massage: "90 min Massage",
+    massage: "90 min",
   },
   transform: {
     hair: "Expert Color",
     nails: "Nail Set w/Gel",
     lashes: "Volume Lash Set",
     skincare: "Microneedling",
-    massage: "120 min Massage",
+    massage: "120 min",
   },
   event: {
     hair: "Special Occasion Style",
     nails: "Manicure w/Gel",
     lashes: "Hybrid Lash Set",
     skincare: "Dermaplane / Hydrafacial / Microdermabrasion Facials",
-    massage: "60 min Massage",
+    massage: "60 min",
   },
 };
 
@@ -176,10 +176,10 @@ export function generateRecommendation(context: ConciergeContext | null | undefi
 
   // Subtype overrides goal-based suggestion with specific service
   const subtypeServiceOverride: Record<string, string> = {
-    cut: "Precision Haircut", color: "Expert Color", both: "Precision Haircut + Expert Color",
+    cut: "Women's", color: "Expert Color", both: "Women's + Expert Color",
     manicure: "Manicure", pedicure: "Pedicure", full_set: "Nail Set", nail_art: "Nail Set w/Gel",
     fill: "Classic Lash Fill", lift: "Lash Lift & Perm",
-    relaxation: "90 min Massage", deep_tissue: "90 min Massage", pain_relief: "90 min Massage",
+    relaxation: "90 min", deep_tissue: "90 min", pain_relief: "90 min",
     facial: "Signature Facial", acne: "Microneedling",
     glow: "Dermaplane / Hydrafacial / Microdermabrasion Facials",
   };
