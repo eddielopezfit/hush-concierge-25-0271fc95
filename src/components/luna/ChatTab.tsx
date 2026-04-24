@@ -129,6 +129,12 @@ export const ChatTab = () => {
     });
   }, [conciergeContext, abort]);
 
+  useEffect(() => {
+    const handleStartFresh = () => resetChat();
+    window.addEventListener("luna-start-fresh", handleStartFresh);
+    return () => window.removeEventListener("luna-start-fresh", handleStartFresh);
+  }, [resetChat]);
+
   // Build contextual greeting + chips on first render AND when context changes
   useEffect(() => {
     const ctx = conciergeContext;
