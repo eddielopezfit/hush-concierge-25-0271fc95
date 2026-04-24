@@ -571,6 +571,34 @@ export const ChatTab = () => {
 
   return (
     <div className="flex flex-col h-full">
+      {(activeThreadOrigin === "other-tab" || crossTabThreadAvailable) && (
+        <div className="px-3 pt-2">
+          <div className="flex items-center justify-between gap-2 rounded-lg border border-border bg-card/70 px-3 py-2">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="gap-1 rounded-full border-primary/20 bg-primary/5 px-2 py-0.5 text-[10px] font-body font-medium text-primary">
+                  <Link2 className="h-3 w-3" />
+                  Cross-tab
+                </Badge>
+                <p className="text-[11px] font-body text-foreground/90 truncate">
+                  {crossTabThreadAvailable
+                    ? "A Luna conversation is active in another tab."
+                    : "You’re connected to a Luna conversation started in another tab."}
+                </p>
+              </div>
+            </div>
+            {crossTabThreadAvailable ? (
+              <button
+                onClick={() => adoptCrossTabThread(crossTabThreadAvailable)}
+                className="flex-shrink-0 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[10px] font-body font-medium text-primary transition-colors hover:bg-primary/15"
+              >
+                Jump in
+              </button>
+            ) : null}
+          </div>
+        </div>
+      )}
+
       {/* Context Bar + New Conversation */}
       <div className="px-3 py-2 border-b border-border bg-background/30 flex items-center justify-between gap-2">
         {contextPills.length > 0 ? (
