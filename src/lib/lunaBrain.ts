@@ -94,6 +94,16 @@ function getPriceRange(categoryId: ServiceCategoryId, serviceName: string): stri
   }
 }
 
+function getExactMenuItem(categoryId: ServiceCategoryId, itemName: string | null | undefined) {
+  const exactItem = typeof itemName === "string" ? itemName.trim().toLowerCase() : "";
+  if (!exactItem) return null;
+
+  const category = servicesMenuData.find((c) => c.id === categoryId);
+  return category?.groups
+    .flatMap((group) => group.items)
+    .find((item) => item.name.toLowerCase() === exactItem) ?? null;
+}
+
 /**
  * Safely resolve the primary category from context.
  * Prioritizes explicit primary_category, then falls back to categories[0].
@@ -135,22 +145,11 @@ export function generateRecommendation(context: ConciergeContext | null | undefi
   const normalizedGoal = normalizeGoal(context.goal) ?? "refresh";
   const normalizedTiming = normalizeTiming(context.timing);
   const urgency = getUrgency(normalizedTiming);
+  const exactMenuItem = getExactMenuItem(primaryCategory, context.item);
 
   // Get recommended service based on goal + category
   const serviceMap = goalServiceMap[normalizedGoal] || goalServiceMap.refresh;
   let recommendedService = serviceMap[primaryCategory] || serviceMap.hair;
-
-  const exactItem = typeof context.item === "string" ? context.item.trim() : "";
-  if (exactItem && primaryCategory === "hair") {
-    const hairCategory = servicesMenuData.find(c => c.id === "hair");
-    const matchedItem = hairCategory?.groups
-      .flatMap(group => group.items)
-      .find(item => item.name.toLowerCase() === exactItem.toLowerCase());
-
-    if (matchedItem) {
-      recommendedService = matchedItem.name;
-    }
-  }
 
   // Subtype overrides goal-based suggestion with specific service
   const subtypeServiceOverride: Record<string, string> = {
@@ -162,14 +161,18 @@ export function generateRecommendation(context: ConciergeContext | null | undefi
     glow: "Dermaplane / Hydrafacial / Microdermabrasion Facials",
   };
   const subtype = context.service_subtype;
-  if (subtype && subtype !== "unsure" && subtypeServiceOverride[subtype]) {
+  if (!exactMenuItem && subtype && subtype !== "unsure" && subtypeServiceOverride[subtype]) {
     recommendedService = subtypeServiceOverride[subtype];
+  }
+
+  if (exactMenuItem) {
+    recommendedService = exactMenuItem.name;
   }
 
   // Do not recommend specific artists — the team feels it's biased
   const recommendedArtist = null;
 
-  const priceRange = getPriceRange(primaryCategory, recommendedService);
+  const priceRange = exactMenuItem?.price || context.price || getPriceRange(primaryCategory, recommendedService);
 
   const categoryCount = Array.isArray(context.categories) ? context.categories.length : 0;
   const nextStep = getNextStep(urgency, categoryCount > 1);

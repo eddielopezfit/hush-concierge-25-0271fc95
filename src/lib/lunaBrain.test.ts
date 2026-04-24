@@ -117,6 +117,24 @@ describe("lunaBrain.generateRecommendation", () => {
       expect(foilayageRec.recommendedService).toBe("Foilayage");
       expect(foilayageRec.priceRange).toBe("Based on consultation");
     });
+
+    it("mirrors exact website service copy across all categories when item context exists", () => {
+      expect(
+        generateRecommendation(ctx({ categories: ["nails"], item: "Manicure w/Gel" }))
+      ).toMatchObject({ recommendedService: "Manicure w/Gel", priceRange: "$55+" });
+
+      expect(
+        generateRecommendation(ctx({ categories: ["lashes"], item: "Hybrid Lash Set" }))
+      ).toMatchObject({ recommendedService: "Hybrid Lash Set", priceRange: "from $220" });
+
+      expect(
+        generateRecommendation(ctx({ categories: ["skincare"], item: "Microneedling" }))
+      ).toMatchObject({ recommendedService: "Microneedling", priceRange: "from $299" });
+
+      expect(
+        generateRecommendation(ctx({ categories: ["massage"], item: "90 min" }))
+      ).toMatchObject({ recommendedService: "90 min", priceRange: "from $140" });
+    });
   });
 
   describe("primary_category resolution", () => {
