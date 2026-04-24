@@ -183,7 +183,7 @@ describe("lunaBrain.generateChatResponse — neutral-guidance fallbacks", () => 
     expect(reply).toMatch(/front desk/i);
     expect(reply).toMatch(/\(520\) 327-6753/);
     // Should not name specific stylists
-    expect(reply).not.toMatch(/\b(Sheri|Danielle|Kathy|Allison|Kendell|Kelli|Anita|Jacky|Tammi)\b/);
+      expect(reply).not.toMatch(/\b(Sheri|Danielle|Kathy|Allison|Kendell|Kelly|Jackie|Anita|Tammi)\b/);
   });
 
   it("never recommends an artist for multi-provider hair questions", () => {
