@@ -1,5 +1,6 @@
 import { ArrowDown, Sparkles, MessageSquare } from "lucide-react";
 import { useLuna } from "@/contexts/LunaContext";
+import { useStartLuna } from "@/hooks/useStartLuna";
 
 /**
  * Hero — pure CSS animations (no framer-motion) so the eager bundle stays small.
@@ -7,6 +8,7 @@ import { useLuna } from "@/contexts/LunaContext";
  */
 export const HeroSection = () => {
   const { openChatWidget } = useLuna();
+  const startLuna = useStartLuna();
 
   const handleDiscoverClick = () => {
     document.getElementById("experience-finder")?.scrollIntoView({ behavior: "smooth" });
@@ -99,6 +101,16 @@ export const HeroSection = () => {
             <MessageSquare className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100 transition-opacity" />
             <span className="border-b border-transparent group-hover:border-gold/40 transition-colors">
               or talk to our AI concierge
+            </span>
+          </button>
+
+          <button
+            onClick={startLuna}
+            className="group inline-flex items-center gap-2 text-cream/60 hover:text-gold font-body text-sm transition-colors duration-200"
+          >
+            <MessageSquare className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100 transition-opacity" />
+            <span className="border-b border-transparent group-hover:border-gold/40 transition-colors">
+              Resume my plan
             </span>
           </button>
         </div>
