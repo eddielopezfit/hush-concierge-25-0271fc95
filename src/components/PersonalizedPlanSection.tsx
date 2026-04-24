@@ -1,5 +1,5 @@
 import { m } from "framer-motion";
-import { Clock, Layers, ChevronRight, Sparkles, CalendarClock, Plus, Zap, RefreshCw, Heart, Star } from "lucide-react";
+import { Clock, Layers, ChevronRight, Sparkles, CalendarClock, Plus, Zap, RefreshCw, Heart, Star, MessageCircle } from "lucide-react";
 import { useLuna } from "@/contexts/LunaContext";
 import { categoryLabels, goalLabels, timingLabels } from "@/lib/conciergeLabels";
 
@@ -38,7 +38,7 @@ const PlanSkeleton = () => (
 );
 
 export const PersonalizedPlanSection = () => {
-  const { conciergeContext } = useLuna();
+  const { conciergeContext, openChatWidget } = useLuna();
   const [isLoading, setIsLoading] = useState(true);
 
   const categories = conciergeContext?.categories || [];
@@ -70,6 +70,10 @@ export const PersonalizedPlanSection = () => {
   const handleScrollToBooking = () => {
     const el = document.getElementById("callback");
     if (el) el.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleOpenPlanInLuna = () => {
+    openChatWidget("plan");
   };
 
   return (
@@ -252,7 +256,15 @@ export const PersonalizedPlanSection = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.6 }}
+                className="grid gap-2 sm:grid-cols-2"
               >
+                <button
+                  onClick={handleOpenPlanInLuna}
+                  className="flex min-h-[48px] items-center justify-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-6 py-3 font-body text-sm text-primary transition-colors hover:bg-primary/10"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  Review with Luna
+                </button>
                 <button
                   onClick={handleScrollToBooking}
                   className="btn-gold py-3 px-8 text-sm w-full flex items-center justify-center gap-2"
