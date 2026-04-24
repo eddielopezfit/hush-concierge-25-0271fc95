@@ -13,6 +13,7 @@ export interface StreamChatCallbacks {
   setQuickReplies: (replies: string[]) => void;
   onExchangeComplete: () => void;
   onInlineBookingDetected: () => void;
+  onMissingThread: () => void;
   conciergeContext: ConciergeContext | null;
   getQuickReplies: (ctx: ConciergeContext | null, msg: string) => string[];
 }
@@ -55,6 +56,20 @@ export function useChatStreaming(cbs: StreamChatCallbacks) {
         });
 
         if (!resp.ok || !resp.body) {
+          if (resp.status === 409) {
+            let errorCode: string | undefined;
+            try {
+              const data = await resp.json();
+              errorCode = data?.code;
+            } catch {
+              /* ignore */
+            }
+            if (errorCode === "THREAD_NOT_FOUND") {
+              cbs.onMissingThread();
+              setIsStreaming(false);
+              return;
+            }
+          }
           if (resp.status === 429) {
             const errorContent = "I'm getting a lot of questions right now — give me just a moment and try again!";
             cbs.setMessages((prev) => [
