@@ -61,22 +61,22 @@ export const HeroSection = () => {
       {/* Content */}
       <div className="relative z-10 text-center px-4 max-w-4xl mx-auto pt-20 md:pt-0">
         <h1
-          className="font-display text-5xl md:text-7xl lg:text-8xl font-bold text-cream mb-4 opacity-0 animate-fade-up"
-          style={{ animationDelay: "0.2s" }}
+          className="font-display text-5xl md:text-7xl lg:text-8xl font-bold text-cream mb-4 opacity-0 animate-fade-up hero-text-glow"
+          style={{ animationDelay: "0.15s" }}
         >
           Welcome to <span className="text-gold-gradient">Hush</span>
         </h1>
 
         <p
-          className="font-display text-xl md:text-2xl text-cream/70 italic mb-3 opacity-0 animate-fade-up-sm"
-          style={{ animationDelay: "0.35s" }}
+          className="font-display text-xl md:text-2xl text-cream/70 italic mb-3 opacity-0 animate-fade-up-sm hero-text-glow-soft"
+          style={{ animationDelay: "0.3s" }}
         >
           Where Tucson Comes to Feel Legendary
         </p>
 
         <p
-          className="font-body text-sm md:text-base text-cream/50 mb-10 tracking-wide opacity-0 animate-fade-only"
-          style={{ animationDelay: "0.5s" }}
+          className="font-body text-sm md:text-base text-cream/50 mb-10 tracking-wide opacity-0 animate-fade-up-sm hero-text-glow-soft"
+          style={{ animationDelay: "0.45s" }}
         >
           Five departments · Three founders still behind the chair · 24 years of transformations
         </p>
