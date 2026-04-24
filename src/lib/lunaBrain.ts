@@ -230,7 +230,7 @@ export function generateChatResponse(message: string, context: ConciergeContext 
       const rec = generateRecommendation(context);
 
       if (lower.includes("recommend") || lower.includes("suggest") || lower.includes("what should")) {
-        let response = `Based on your selections, I'd suggest exploring **${rec.recommendedService}**`;
+        let response = `Based on your selections, I'd start with **${rec.recommendedService}**`;
         if (rec.priceRange) response += ` (${rec.priceRange})`;
         if (rec.whatToExpect) {
           response += `\n\n**What to expect:** ${rec.whatToExpect.replace(/^What to expect:\s*/i, "")}`;
@@ -264,7 +264,7 @@ export function generateChatResponse(message: string, context: ConciergeContext 
     }
 
     if (lower.includes("hour") || lower.includes("open") || lower.includes("when")) {
-      return "We're open Tuesday through Saturday starting at 9 AM. Closed Sundays and Mondays. Would you like to schedule a visit?";
+      return "We're open Tuesday and Thursday from 9 AM to 7 PM, Wednesday and Friday from 9 AM to 5 PM, and Saturday from 9 AM to 4 PM. We're closed Sunday and Monday. Want me to help you plan the right day?";
     }
 
     if (lower.includes("where") || lower.includes("address") || lower.includes("location") || lower.includes("direction")) {

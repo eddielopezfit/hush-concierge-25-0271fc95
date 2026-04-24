@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { m } from "framer-motion";
 
 interface LeadCaptureFormProps {
@@ -13,22 +14,19 @@ interface LeadCaptureFormProps {
  * Inline lead capture form rendered below the chat after a successful exchange
  * threshold or a high-intent user message.
  */
-export function LeadCaptureForm({
-  name,
-  phone,
-  onNameChange,
-  onPhoneChange,
-  onSubmit,
-  onDismiss,
-}: LeadCaptureFormProps) {
+export const LeadCaptureForm = forwardRef<HTMLDivElement, LeadCaptureFormProps>(function LeadCaptureForm(
+  { name, phone, onNameChange, onPhoneChange, onSubmit, onDismiss },
+  ref,
+) {
   return (
     <m.div
+      ref={ref}
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
-      className="ml-4 p-3 rounded-xl border border-primary/20 bg-card/50 space-y-2"
+      className="ml-4 space-y-2 rounded-xl border border-primary/20 bg-card/50 p-3"
     >
-      <p className="text-xs text-muted-foreground font-body">
+      <p className="font-body text-xs text-muted-foreground">
         Love chatting with you — want me to have Kendell or the team follow up personally?
       </p>
       <input
@@ -36,30 +34,30 @@ export function LeadCaptureForm({
         value={name}
         onChange={(e) => onNameChange(e.target.value)}
         placeholder="Your name"
-        className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:outline-none"
+        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:outline-none"
       />
       <input
         type="tel"
         value={phone}
         onChange={(e) => onPhoneChange(e.target.value)}
         placeholder="(520) 000-0000"
-        className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:outline-none"
+        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:outline-none"
       />
       <div className="flex gap-2">
         <button
           onClick={onSubmit}
           disabled={!name.trim() || !phone.trim()}
-          className="flex-1 bg-primary text-primary-foreground text-sm font-body py-2 rounded-lg disabled:opacity-40 transition-opacity"
+          className="flex-1 rounded-lg bg-primary py-2 font-body text-sm text-primary-foreground transition-opacity disabled:opacity-40"
         >
           Submit
         </button>
         <button
           onClick={onDismiss}
-          className="px-3 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          className="px-3 text-xs text-muted-foreground transition-colors hover:text-foreground"
         >
           Not now
         </button>
       </div>
     </m.div>
   );
-}
+});

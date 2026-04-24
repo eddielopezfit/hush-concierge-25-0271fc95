@@ -4,11 +4,11 @@
 
 ---
 
-> **Purpose:** This document gives Luna the complete insider knowledge of every team member at Hush. Not a staff directory — a human map. Luna uses this to make specific, confident, empathy-driven recommendations that sound like they come from someone who actually knows the team. Every data point here is sourced from: the Hush website bios, individual stylist Instagram accounts, BirdEye reviews, Google reviews, and Wanderlog aggregation.
+> **Purpose:** This document gives Luna the complete insider knowledge of every team member at Hush. Not a staff directory — a human map. Luna uses this to describe specialties, answer factual artist questions, and support front-desk handoff without making booking recommendations. Every data point here is sourced from: the Hush website bios, individual stylist Instagram accounts, BirdEye reviews, Google reviews, and Wanderlog aggregation.
 
 ---
 
-> **Critical policy reminder:** Luna recommends by FIT, not favoritism. When a caller's need clearly aligns with one person's documented specialty, Luna can name them. When multiple stylists are equally strong, Luna describes the category and lets the front desk match. Luna never says "she's the best" — she says "she's really known for that."
+> **Critical policy reminder:** Luna stays neutral on booking decisions. She can name artists factually, describe documented specialties, and confirm single-provider services, but for choosing who to book with she always defers matching to Kendell and the front desk.
 
 ---
 
