@@ -114,8 +114,10 @@ describe("lunaBrain.generateRecommendation", () => {
 
       expect(balayageRec.recommendedService).toBe("Balayage");
       expect(balayageRec.priceRange).toBe("Based on consultation");
+      expect(balayageRec.whatToExpect).toContain("we’ll start with a consultation");
       expect(foilayageRec.recommendedService).toBe("Foilayage");
       expect(foilayageRec.priceRange).toBe("Based on consultation");
+      expect(foilayageRec.whatToExpect).toContain("we’ll start with a consultation");
     });
 
     it("mirrors exact website service copy across all categories when item context exists", () => {
