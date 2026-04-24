@@ -348,19 +348,9 @@ html {
     }
   }
 
-  @keyframes sectionHalo {
-    0% { opacity: 0; }
-    30% { opacity: 1; }
-    100% { opacity: 0; }
-  }
-
   @media (prefers-reduced-motion: reduce) {
-    section[id]:target,
-    section[id]:target > * {
+    section[id]:target {
       animation: none !important;
-    }
-    section[id]:target::before {
-      display: none;
     }
   }
 
