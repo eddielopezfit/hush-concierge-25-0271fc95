@@ -138,25 +138,37 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
                     </AccordionTrigger>
                     <AccordionContent className="px-4 pb-4">
                       <div className="space-y-0">
-                        {group.items.map((item, idx) => (
-                          <div
-                            key={`${item.name}-${idx}`}
-                            className="flex justify-between items-center py-3 min-h-[48px] border-b border-secondary/50 last:border-0"
-                          >
-                            <span className="font-body text-cream/90 text-sm md:text-base pr-4">
-                              {item.name}
-                            </span>
-                            <span
-                              className={`font-body text-sm md:text-base whitespace-nowrap ${
-                                item.price.includes("consultation") || item.price === "Available"
-                                  ? "text-muted-foreground italic"
-                                  : "text-gold font-medium"
-                              }`}
+                        {group.items.map((item, idx) => {
+                          const isConsultationPrice = item.price.toLowerCase().includes("consultation");
+                          const showConsultationNote = resolvedCategory.id === "hair" && isConsultationPrice;
+
+                          return (
+                            <div
+                              key={`${item.name}-${idx}`}
+                              className="flex justify-between items-start py-3 min-h-[48px] border-b border-secondary/50 last:border-0"
                             >
-                              {item.price}
-                            </span>
-                          </div>
-                        ))}
+                              <div className="pr-4">
+                                <span className="font-body text-cream/90 text-sm md:text-base block">
+                                  {item.name}
+                                </span>
+                                {showConsultationNote && (
+                                  <span className="mt-1 block text-[11px] font-body text-muted-foreground/80">
+                                    Price based on consultation
+                                  </span>
+                                )}
+                              </div>
+                              <span
+                                className={`font-body text-sm md:text-base whitespace-nowrap ${
+                                  isConsultationPrice || item.price === "Available"
+                                    ? "text-muted-foreground italic"
+                                    : "text-gold font-medium"
+                                }`}
+                              >
+                                {item.price}
+                              </span>
+                            </div>
+                          );
+                        })}
                       </div>
                     </AccordionContent>
                   </AccordionItem>
