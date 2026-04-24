@@ -121,8 +121,8 @@ describe("lunaBrain.generateRecommendation", () => {
     });
 
     it("adds what-to-expect guidance for other hair and color services", () => {
-      const expertColorRec = generateRecommendation(
-        ctx({ categories: ["hair"], item: "Expert Color" })
+      const allOverColorRec = generateRecommendation(
+        ctx({ categories: ["hair"], item: "All Over Color" })
       );
       const fullWeaveRec = generateRecommendation(
         ctx({ categories: ["hair"], item: "Full Weave" })
@@ -131,7 +131,7 @@ describe("lunaBrain.generateRecommendation", () => {
         ctx({ categories: ["hair"], item: "Corrective Color" })
       );
 
-      expect(expertColorRec.whatToExpect).toContain("consultation");
+      expect(allOverColorRec.whatToExpect).toContain("consultation");
       expect(fullWeaveRec.whatToExpect).toContain("consultation");
       expect(correctiveRec.whatToExpect).toContain("consultation");
       expect(correctiveRec.priceRange).toBe("Based on consultation");
