@@ -27,7 +27,8 @@ export const StepInsideSection = () => {
             aria-hidden="true"
             className="absolute inset-0 w-full h-full object-cover object-center"
           >
-            <source src={MOBILE_SRC} type="video/mp4" media="(max-width: 767px)" />
+            <source src={MOBILE_SRC} media="(max-width: 767px)" type="video/mp4" />
+            <source src={DESKTOP_SRC} media="(min-width: 768px)" type="video/mp4" />
             <source src={DESKTOP_SRC} type="video/mp4" />
           </video>
         </div>
