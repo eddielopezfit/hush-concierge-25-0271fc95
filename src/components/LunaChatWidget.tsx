@@ -22,12 +22,21 @@ const tabVariants = {
   exit: { opacity: 0, y: -8 },
 };
 
+const guideLabels: Record<LunaTabId, string> = {
+  find: "Your Look",
+  explore: "Explore",
+  artists: "Artists",
+  plan: "First Visit",
+  chat: "Chat",
+};
+
 export const LunaChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showBadge, setShowBadge] = useState(false);
   const [activeTab, setActiveTab] = useState<LunaTabId>("find");
   const [isFirstOpen, setIsFirstOpen] = useState(true);
   const [nudge, setNudge] = useState<DwellNudge | InactivityNudge | null>(null);
+  const [returnCue, setReturnCue] = useState<string | null>(null);
   const { chatWidgetRequested, requestedTab, clearChatWidgetRequest } = useLuna();
   const chimeRef = useRef<HTMLAudioElement | null>(null);
   const chimeBuilt = useRef(false);
@@ -48,9 +57,16 @@ export const LunaChatWidget = () => {
         ? (requestedTab as LunaTabId)
         : "chat";
       setActiveTab(next);
+      setReturnCue(requestedTab ? `Welcome back — Last: ${guideLabels[next]}` : null);
       clearChatWidgetRequest();
     }
   }, [chatWidgetRequested, requestedTab, clearChatWidgetRequest]);
+
+  useEffect(() => {
+    if (!returnCue) return;
+    const timer = window.setTimeout(() => setReturnCue(null), 3200);
+    return () => window.clearTimeout(timer);
+  }, [returnCue]);
 
   // Persist the last visited guide whenever the user changes tabs while open.
   useEffect(() => {
@@ -294,6 +310,20 @@ export const LunaChatWidget = () => {
                 <X className="w-4 h-4" />
               </button>
             </m.div>
+
+            <AnimatePresence>
+              {returnCue && (
+                <m.div
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.22, ease: "easeOut" }}
+                  className="border-b border-primary/15 bg-primary/5 px-4 py-2"
+                >
+                  <p className="font-body text-xs text-muted-foreground">{returnCue}</p>
+                </m.div>
+              )}
+            </AnimatePresence>
 
             {/* Tab Navigation */}
             <LunaTabNav activeTab={activeTab} onTabChange={setActiveTab} />
