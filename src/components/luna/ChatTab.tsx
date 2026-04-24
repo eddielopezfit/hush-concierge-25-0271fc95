@@ -107,7 +107,6 @@ export const ChatTab = () => {
     const ctx = conciergeContext;
     const greeting = buildContextGreeting(ctx);
 
-    abort();
     clearPersistedChat();
     clearVisitThreadId();
     clearConversation();
@@ -140,7 +139,7 @@ export const ChatTab = () => {
       description: "Your previous in-visit thread was no longer available.",
       duration: 3200,
     });
-  }, [conciergeContext, abort]);
+  }, [conciergeContext]);
 
   // ── Reset / New conversation ─────────────────────────────────────────────
   const resetChat = useCallback(() => {
