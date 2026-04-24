@@ -48,7 +48,7 @@ Guests come here because something was wrong somewhere else. Wrong length. Wrong
 | Children's Haircut (12 & under) | $35+ | Patient, skilled team |
 | Bang Trim | $18+ | Quick but precise |
 | Beard Trim | $18+ | Clean lines, shaped to face |
-| Luxury Wash & Blowout | $35+ | Full shampoo, scalp massage, professional blowout |
+| Luxury Wash and Blowout | $35+ | Full shampoo, scalp massage, professional blowout |
 | Special Occasion Style | $75+ | Weddings, galas, graduations, events |
 | Added Heat Style | $15+ | Curling iron, flat iron, waves — add-on to another service |
 | Texture Waves (Short) | $75+ | Chemical wave for short hair |
@@ -64,7 +64,7 @@ Guests come here because something was wrong somewhere else. Wrong length. Wrong
 **Haircut:**
 The appointment begins with a consultation — usually 5–10 minutes. The stylist asks about lifestyle (how do you wear it? how much time do you have in the morning?), assesses texture, growth patterns, and current condition, then discusses the goal. Reference photos are welcomed and actively used. Once the vision is aligned, the cut begins. Hush stylists don't just cut length — they cut structure, which is what makes the grow-out look intentional rather than shapeless.
 
-**Luxury Wash & Blowout:**
+**Luxury Wash and Blowout:**
 Shampoo with professional products (Pureology), scalp massage during the wash, conditioner, and a full blowout with hot tools. The result is polished, voluminous, and finished. Not a "quick blowdry" — it's a complete experience.
 
 **Special Occasion Style:**
@@ -82,10 +82,10 @@ Applied to clean, dry hair in sections. The liquid keratin formula is worked thr
 | Women's Haircut | 45 min – 1.5 hrs |
 | Men's Haircut | 30 – 45 min |
 | Bang/Beard Trim | 15 – 20 min |
-| Luxury Wash & Blowout | 45 min – 1 hr |
+| Luxury Wash and Blowout | 45 min – 1 hr |
 | Special Occasion Style | 1 – 1.5 hrs |
 | Texture Waves | 2 – 3 hrs |
-| Brazilian Blowout Smoothing | 2 – 3 hrs |
+| Brazilian Blowout Smoothing Treatment | 2 – 3 hrs |
 | Conditioning Treatment (add-on) | 15 – 20 min added to existing service |
 
 ---
@@ -189,7 +189,7 @@ Color is where the Hush artistry really shows. The team has produced every kind 
 | Color Refresher | $30+ | No |
 | Toner / Root Smudge | $55+ | No |
 | On Scalp Lightener Retouch (≤5 wks) | $90+ | No |
-| Full Head Lightening | $150+ | No |
+| Full Head Lightening Service | $150+ | No |
 | Full Weave (Foil Highlights) | $96+ | No |
 | Partial Weave | $76+ | No |
 | Back to Back Foils | $150+ | No |
@@ -329,7 +329,7 @@ Color is where the Hush artistry really shows. The team has produced every kind 
 
 ## 1. Service Overview
 
-Hush nails are done by a dedicated nail team — Anita Apodaca, Kelli, and Jacky — who each bring their own specialty. Anita is the nail artist, known for creative designs and nail art. Kelli is the go-to for pedicures and extensions. Jacky does trendy, statement nails. All three accept direct booking via their personal lines (listed on the website contact page). The nail department is full-service: classic manicures to full extension sets, simple polish changes to dramatic nail art.
+Hush nails are done by a dedicated nail team — Anita Apodaca, Kelly Vishnevetsky, and Jackie — who each bring their own specialty. Anita is the nail artist, known for creative designs and nail art. Kelly Vishnevetsky is the go-to for pedicures and extensions. Jackie does trendy, statement nails. All three accept direct booking via their personal lines (listed on the website contact page). The nail department is full-service: classic manicures to full extension sets, simple polish changes to dramatic nail art.
 
 ---
 
@@ -432,7 +432,7 @@ Luna channels this: "The nail team here is really well-reviewed. People come in 
 ## 10. Luna Explanation Model
 
 **When someone asks about nails at Hush:**
-> "So the nail team here — Anita, Kelli, and Jacky — each have their own specialty. Anita is the nail artist, she does creative designs and art. Kelli is the pedicure and extension specialist. Jacky does the trendy, statement stuff. All three take direct bookings — their numbers are on the website — so once you know who you want or what you want done, you can reach them directly. What are you thinking for your nails?"
+> "So the nail team here — Anita, Kelly Vishnevetsky, and Jackie — each have their own specialty. Anita is the nail artist, she does creative designs and art. Kelly Vishnevetsky is the pedicure and extension specialist. Jackie does the trendy, statement stuff. All three take direct bookings — their numbers are on the website — so once you know who you want or what you want done, you can reach them directly. What are you thinking for your nails?"
 
 **When someone asks about gel vs. regular:**
 > "Here's the thing — gel is chip-resistant and lasts two to three weeks. Regular polish you can change at home but it chips sooner. If you're someone who's hard on your hands or you just want the look to hold, gel is the smart choice. It's a bit more, but you don't have to think about it for weeks."
@@ -464,7 +464,7 @@ Allison Griessel is Hush's lash specialist — and she is the only one. Every la
 | Lash Lift & Perm | $65 |
 | Lash / Brow Tint | $20 |
 
-**Critical price note:** The salon website may display $215 for Lash/Brow Tinting on the skincare page. This is a legacy bug. The correct price is $20.
+**Critical price note:** The salon website may display $215 for Lash or Brow Tint on the skincare page. This is a legacy bug. The correct price is $20.
 
 ---
 
@@ -904,11 +904,11 @@ None required. First-time guests should tell Patty their skin tone and whether t
 | Foilayage | Consult | 2.5 – 3.5 hr | Michelle | **Yes** |
 | Corrective Color | Consult | 3 – 6+ hr | Michelle | **Yes** |
 | Vivid / Fantasy Color | Consult | 3 – 5+ hr | Silviya, Zaida | **Yes** |
-| Manicure | $35+ | 45 – 60 min | Anita, Kelli, Jacky | No |
-| Manicure w/Gel | $55+ | 1 – 1.5 hr | Anita, Kelli, Jacky | No |
-| Pedicure | $60+ | 1 – 1.5 hr | Kelli, Anita | No |
-| Nail Set | $95+ | 1.5 – 2 hr | Anita, Kelli, Jacky | No |
-| Nail Fills | $60+ | 45 – 60 min | Anita, Kelli, Jacky | No |
+| Manicure | $35+ | 45 – 60 min | Anita Apodaca, Kelly Vishnevetsky, Jackie | No |
+| Manicure w/Gel | $55+ | 1 – 1.5 hr | Anita Apodaca, Kelly Vishnevetsky, Jackie | No |
+| Pedicure | $60+ | 1 – 1.5 hr | Kelly Vishnevetsky, Anita Apodaca | No |
+| Nail Set | $95+ | 1.5 – 2 hr | Anita Apodaca, Kelly Vishnevetsky, Jackie | No |
+| Nail Fills | $60+ | 45 – 60 min | Anita Apodaca, Kelly Vishnevetsky, Jackie | No |
 | Classic Lash Set | $180 | 1.5 – 2 hr | Allison | No |
 | Hybrid Lash Set | $220 | 2 – 2.5 hr | Allison | No |
 | Volume Lash Set | $250 | 2 – 2.5 hr | Allison | No |
@@ -933,10 +933,10 @@ None required. First-time guests should tell Patty their skin tone and whether t
 1. **Phone only.** No online booking. All hair → (520) 327-6753. Nails/lashes/massage/esthetics → direct to specialist (numbers published on website contact page).
 2. **Front desk is Kendell Barraza.** Not "Mary." Not anyone else.
 3. **Tammi discount:** 20% off massage when guest names their Hush hair stylist.
-4. **Lash/Brow Tint is $20.** Not $215. The website skincare page has a legacy bug.
+4. **Lash or Brow Tint is $20.** Not $215. The website skincare page has a legacy bug.
 5. **Hot stone, prenatal, aromatherapy massage = do not exist at Hush.**
 6. **Balayage, Foilayage, Corrective Color, Vivid Color = consultation required, no price given over the phone.**
-7. **Direct numbers:** Publicly listed on website for nails (Kelli, Anita, Jacky), aesthetics (Patty, Allison, Lori), and massage (Tammi). Luna can share these. Hair stylists are NOT given direct numbers — all hair routes through front desk.
+7. **Direct numbers:** Publicly listed on website for nails (Kelly Vishnevetsky, Anita Apodaca, Jackie), aesthetics (Patty, Allison, Lori), and massage (Tammi). Luna can share these. Hair stylists are NOT given direct numbers — all hair routes through front desk.
 8. **Hush is closed Sunday and Monday.** Open Tue & Thu 9AM–7PM, Wed & Fri 9AM–5PM, Sat 9AM–4PM.
 9. **Referral Program:** When an existing guest refers someone new, both the referrer and the new guest receive $10 off their next visit.
 

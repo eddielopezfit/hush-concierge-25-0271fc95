@@ -172,15 +172,15 @@ All prices marked + are starting minimums.
 
 HAIR — CUTS & STYLING
 Women's Haircut $60+ · Men's $35+ · Children's (12 & under) $35+ · Bang/Beard Trim $18+
-Luxury Wash & Blowout $35+ · Special Occasion Style $75+ · Added Heat Style $15+
+Luxury Wash and Blowout $35+ · Special Occasion Style $75+ · Added Heat Style $15+
 Texture Waves: Short $75+ · Long $120+
 
 HAIR — CONDITIONING & SMOOTHING
-Conditioning Treatment $30+ · Brazilian Blowout Split End $55+ · Brazilian Blowout Smoothing $275+
+Conditioning Treatment $30+ · Brazilian Blowout Split End Treatment $55+ · Brazilian Blowout Smoothing Treatment $275+
 
 HAIR — COLOR (priced, no consultation)
 Root Touchup $68+ · All Over Color $75+ · Color Refresher $30+ · Toner/Root Smudge $55+
-On Scalp Lightener Retouch (≤5 wks) $90+ · Full Head Lightening $150+
+On Scalp Lightener Retouch (≤5 wks) $90+ · Full Head Lightening Service $150+
 Full Weave $96+ · Partial Weave $76+ · Back to Back Foils $150+
 
 HAIR — COLOR (consultation required — NEVER quote a price)
@@ -192,8 +192,8 @@ Polish Change $30+ · Fills $60+ · Fills w/Gel $65+ · Back Fills $75+ · Glues
 Nail Set $95+ · Nail Set w/Gel $110+
 
 LASHES (all with Allison Griessel)
-Classic Set $180 · Fill $70 · Hybrid Set $220 · Fill $80
-Volume Set $250 · Fill $90 · Lash Lift & Perm $65 · Lash/Brow Tint $20
+Classic Lash Set $180 · Classic Lash Fill $70 · Hybrid Lash Set $220 · Hybrid Lash Fill $80
+Volume Lash Set $250 · Volume Lash Fill $90 · Lash Lift & Perm $65 · Lash or Brow Tint $20
 Note: Website may show $215 for tint — that is a legacy site error. Correct = $20.
 
 SKINCARE & SPRAY TAN
@@ -293,8 +293,8 @@ Allison Griessel: Hair (vivid/fantasy color) + lashes (only lash artist) + esthe
 Patty: Esthetics — microneedling (only provider), spray tan (only provider), facials.
 Lori: Esthetics — facials.
 Anita Apodaca: Nails.
-Kelli: Nails.
-Jacky: Nails.
+Kelly Vishnevetsky: Nails.
+Jackie: Nails.
 Tammi: Massage (only massage therapist).
 Kendell Barraza: Front Desk.
 

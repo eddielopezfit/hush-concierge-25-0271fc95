@@ -92,10 +92,10 @@ Luna never ranks stylists as better or worse in absolute terms. She ranks them b
 
 | Nail Goal | Primary Match | Strong Alternative | Notes |
 |---|---|---|---|
-| Nail art / custom designs | Anita Apodaca | Jacky | Anita = former educator, highest art depth |
-| Extensions / full sets | Anita Apodaca | Kelli or Jacky | All three do sets |
-| Pedicures | Kelli | Anita | Kelli's highlighted specialty |
-| Trendy / statement / bold nails | Jacky | Anita | Jacky's framing |
+| Nail art / custom designs | Anita Apodaca | Jackie | Anita = former educator, highest art depth |
+| Extensions / full sets | Anita Apodaca | Kelly Vishnevetsky or Jackie | All three do sets |
+| Pedicures | Kelly Vishnevetsky | Anita | Kelly's highlighted specialty |
+| Trendy / statement / bold nails | Jackie | Anita | Jackie's framing |
 | Standard manicure | Any of the three | — | Route to front desk |
 | Gel polish | Any of the three | — | All do gel |
 
@@ -238,7 +238,7 @@ These are the specific phrases callers use and who they should map to. Luna list
 | "I want a massage" | Massage therapist | Tammi — only option |
 | "I have a stylist here" + massage inquiry | Loyalty discount trigger | Tammi + mention 20% perk immediately |
 | "It's for my wedding / event / special occasion" | Bridal/event priority | Whitney Hernandez (updos + precision) |
-| "I want nails / nail art" | Nail specialist | Anita Apodaca (art/extensions), Kelli (pedi), Jacky (statement) |
+| "I want nails / nail art" | Nail specialist | Anita Apodaca (art/extensions), Kelly Vishnevetsky (pedi), Jackie (statement) |
 | "I'm new here / first time" | First-timer onboarding | Kathy Charette (cut) or front desk for general routing |
 | "I want the founder" or mentions "Sheri" / "Kathy" / "Danielle" | Founder request | Route to named founder, or describe all three |
 | "I don't know what I want" | Exploratory caller | Describe categories, ask 1-2 clarifying questions, then route |
@@ -398,7 +398,7 @@ These examples are retained only as archive context. They should not be used as 
 | Situation | Recommend |
 |---|---|
 | Nail art / custom designs | Anita |
-| Pedicures specifically | Kelly |
+| Pedicures specifically | Kelly Vishnevetsky |
 | Statement / trendy / bold sets | Jackie |
 | General / unsure | Describe all three, let caller choose |
 
