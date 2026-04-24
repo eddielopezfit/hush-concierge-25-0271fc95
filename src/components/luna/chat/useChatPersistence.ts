@@ -47,6 +47,14 @@ export function setVisitThreadId(threadId: string | null | undefined): void {
   }
 }
 
+export function clearVisitThreadId(): void {
+  try {
+    sessionStorage.removeItem(VISIT_THREAD_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
 export function clearPersistedChat(): void {
   try {
     localStorage.removeItem(CHAT_STORAGE_KEY);
