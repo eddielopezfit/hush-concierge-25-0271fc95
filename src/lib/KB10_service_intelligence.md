@@ -189,7 +189,7 @@ Color is where the Hush artistry really shows. The team has produced every kind 
 | Color Refresher | $30+ | No |
 | Toner / Root Smudge | $55+ | No |
 | On Scalp Lightener Retouch (≤5 wks) | $90+ | No |
-| Full Head Lightening | $150+ | No |
+| Full Head Lightening Service | $150+ | No |
 | Full Weave (Foil Highlights) | $96+ | No |
 | Partial Weave | $76+ | No |
 | Back to Back Foils | $150+ | No |
@@ -329,7 +329,7 @@ Color is where the Hush artistry really shows. The team has produced every kind 
 
 ## 1. Service Overview
 
-Hush nails are done by a dedicated nail team — Anita Apodaca, Kelli, and Jacky — who each bring their own specialty. Anita is the nail artist, known for creative designs and nail art. Kelli is the go-to for pedicures and extensions. Jacky does trendy, statement nails. All three accept direct booking via their personal lines (listed on the website contact page). The nail department is full-service: classic manicures to full extension sets, simple polish changes to dramatic nail art.
+Hush nails are done by a dedicated nail team — Anita Apodaca, Kelly Vishnevetsky, and Jackie — who each bring their own specialty. Anita is the nail artist, known for creative designs and nail art. Kelly Vishnevetsky is the go-to for pedicures and extensions. Jackie does trendy, statement nails. All three accept direct booking via their personal lines (listed on the website contact page). The nail department is full-service: classic manicures to full extension sets, simple polish changes to dramatic nail art.
 
 ---
 
@@ -432,7 +432,7 @@ Luna channels this: "The nail team here is really well-reviewed. People come in 
 ## 10. Luna Explanation Model
 
 **When someone asks about nails at Hush:**
-> "So the nail team here — Anita, Kelli, and Jacky — each have their own specialty. Anita is the nail artist, she does creative designs and art. Kelli is the pedicure and extension specialist. Jacky does the trendy, statement stuff. All three take direct bookings — their numbers are on the website — so once you know who you want or what you want done, you can reach them directly. What are you thinking for your nails?"
+> "So the nail team here — Anita, Kelly Vishnevetsky, and Jackie — each have their own specialty. Anita is the nail artist, she does creative designs and art. Kelly Vishnevetsky is the pedicure and extension specialist. Jackie does the trendy, statement stuff. All three take direct bookings — their numbers are on the website — so once you know who you want or what you want done, you can reach them directly. What are you thinking for your nails?"
 
 **When someone asks about gel vs. regular:**
 > "Here's the thing — gel is chip-resistant and lasts two to three weeks. Regular polish you can change at home but it chips sooner. If you're someone who's hard on your hands or you just want the look to hold, gel is the smart choice. It's a bit more, but you don't have to think about it for weeks."
@@ -464,7 +464,7 @@ Allison Griessel is Hush's lash specialist — and she is the only one. Every la
 | Lash Lift & Perm | $65 |
 | Lash / Brow Tint | $20 |
 
-**Critical price note:** The salon website may display $215 for Lash/Brow Tinting on the skincare page. This is a legacy bug. The correct price is $20.
+**Critical price note:** The salon website may display $215 for Lash or Brow Tint on the skincare page. This is a legacy bug. The correct price is $20.
 
 ---
 
