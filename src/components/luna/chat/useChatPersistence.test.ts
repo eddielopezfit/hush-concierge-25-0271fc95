@@ -5,6 +5,7 @@ import {
   clearPersistedChat,
   getVisitThreadId,
   setVisitThreadId,
+  clearVisitThreadId,
 } from "./useChatPersistence";
 import type { PersistedChat } from "./types";
 
@@ -108,7 +109,7 @@ describe("useChatPersistence", () => {
       expect(getVisitThreadId()).toBeNull();
       setVisitThreadId("thread-789");
       expect(getVisitThreadId()).toBe("thread-789");
-      setVisitThreadId(null);
+      clearVisitThreadId();
       expect(getVisitThreadId()).toBeNull();
     });
   });
