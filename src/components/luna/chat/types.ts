@@ -17,6 +17,7 @@ export interface ChatMessage {
 export interface PersistedChat {
   messages: ChatMessage[];
   fingerprint: string;
+  visitThreadId?: string;
   successfulExchangeCount: number;
   leadCaptured: boolean;
   leadDismissed: boolean;
