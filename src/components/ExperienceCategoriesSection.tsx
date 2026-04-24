@@ -1,6 +1,6 @@
 import { m, AnimatePresence } from "framer-motion";
 import { useState } from "react";
-import { Scissors, Sparkles, Eye, Droplets, Heart, ChevronRight } from "lucide-react";
+import { Scissors, Sparkles, Eye, Droplets, Heart, ChevronRight, MessageCircle } from "lucide-react";
 import { useLuna } from "@/contexts/LunaContext";
 import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
 
@@ -21,7 +21,7 @@ const categories: Category[] = [
 
 export const ExperienceCategoriesSection = () => {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
-  const { openModal } = useLuna();
+  const { openModal, mergeConcierge, openChatWidget } = useLuna();
 
   const handleCategoryClick = (categoryId: string) => {
     setActiveCategory(activeCategory === categoryId ? null : categoryId);
@@ -35,6 +35,17 @@ export const ExperienceCategoriesSection = () => {
       timing: null,
     };
     openModal(lunaContext);
+  };
+
+  const handleLaunchGuide = (category: Category, event: React.MouseEvent) => {
+    event.stopPropagation();
+    mergeConcierge({
+      source: "Choose Your Experience",
+      categories: [category.id],
+      primary_category: category.id,
+      category: category.id,
+    });
+    openChatWidget("explore");
   };
 
   return (
@@ -76,15 +87,25 @@ export const ExperienceCategoriesSection = () => {
                       : "bg-background border-border hover:border-gold/30 hover:bg-gold/5"
                   }`}
                 >
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-4 min-w-0">
                     <div className={`w-12 h-12 rounded-lg flex items-center justify-center transition-colors duration-300 ${
                       isActive ? "bg-gold/20" : "bg-charcoal"
                     }`}>
                       <Icon className={`w-6 h-6 transition-colors duration-300 ${isActive ? "text-gold" : "text-muted-foreground"}`} />
                     </div>
-                    <span className={`font-display text-xl md:text-2xl transition-colors duration-300 ${isActive ? "text-gold" : "text-cream"}`}>
-                      {category.name}
-                    </span>
+                    <div className="min-w-0 text-left">
+                      <span className={`block font-display text-xl md:text-2xl transition-colors duration-300 ${isActive ? "text-gold" : "text-cream"}`}>
+                        {category.name}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={(event) => handleLaunchGuide(category, event)}
+                        className="mt-2 inline-flex min-h-[34px] items-center gap-1.5 rounded-full border border-primary/30 bg-primary/5 px-3 py-1 text-xs font-body text-primary transition-colors hover:bg-primary/10"
+                      >
+                        <MessageCircle className="h-3.5 w-3.5" />
+                        Ask Luna now
+                      </button>
+                    </div>
                   </div>
                   <ChevronRight className={`w-5 h-5 text-muted-foreground transition-transform duration-300 ${isActive ? "rotate-90 text-gold" : ""}`} />
                 </button>
