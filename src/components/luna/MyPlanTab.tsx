@@ -168,6 +168,12 @@ export const MyPlanTab = ({ onSwitchTab }: MyPlanTabProps) => {
               </div>
             </div>
             <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+            {recommendation.whatToExpect && (
+              <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
+                <p className="text-[10px] font-body uppercase tracking-wider text-muted-foreground">What to expect</p>
+                <p className="mt-1 text-xs font-body leading-relaxed text-foreground/80">{recommendation.whatToExpect.replace(/^What to expect:\s*/i, "")}</p>
+              </div>
+            )}
             <div className={`flex items-center gap-2.5 px-3 py-2 rounded-lg border ${urgency.bgColor}`}>
               <UrgencyIcon className={`w-4 h-4 shrink-0 ${urgency.color}`} />
               <div>
