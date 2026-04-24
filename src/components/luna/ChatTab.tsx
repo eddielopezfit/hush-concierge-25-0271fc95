@@ -214,18 +214,38 @@ export const ChatTab = () => {
   useEffect(() => {
     const handleStorage = (event: StorageEvent) => {
       if (event.key !== "hush_luna_visit_thread_id") return;
-      if (event.newValue) {
+      const nextThreadId = event.newValue;
+      const currentThreadId = getConversationId();
+
+      if (nextThreadId) {
         try {
-          sessionStorage.setItem("hush_conversation_id", event.newValue);
+          sessionStorage.setItem("hush_conversation_id", nextThreadId);
         } catch {
           /* ignore */
         }
+
+        if (!currentThreadId) {
+          adoptCrossTabThread(nextThreadId, { silent: true });
+          return;
+        }
+
+        if (nextThreadId !== currentThreadId) {
+          setCrossTabThreadAvailable(nextThreadId);
+          setActiveThreadOrigin("current-tab");
+          return;
+        }
+
+        setCrossTabThreadAvailable(null);
+        setActiveThreadOrigin("other-tab");
+      } else {
+        setCrossTabThreadAvailable(null);
+        setActiveThreadOrigin("current-tab");
       }
     };
 
     window.addEventListener("storage", handleStorage);
     return () => window.removeEventListener("storage", handleStorage);
-  }, []);
+  }, [adoptCrossTabThread]);
 
   // Build contextual greeting + chips on first render AND when context changes
   useEffect(() => {
@@ -286,18 +306,18 @@ export const ChatTab = () => {
     if (!getConversationId()) {
       const crossTabVisitThreadId = getVisitThreadId();
       if (crossTabVisitThreadId) {
-        try {
-          sessionStorage.setItem("hush_conversation_id", crossTabVisitThreadId);
-        } catch {
-          /* ignore */
-        }
+        adoptCrossTabThread(crossTabVisitThreadId, { silent: true });
       } else {
         startSession(ctx, "chat");
+        setActiveThreadOrigin("current-tab");
+        setCrossTabThreadAvailable(null);
       }
     } else {
       setVisitThreadId(getConversationId());
+      setActiveThreadOrigin(getConversationId() === getVisitThreadId() ? "other-tab" : "current-tab");
+      setCrossTabThreadAvailable(null);
     }
-  }, [initialized, conciergeContext]);
+  }, [initialized, conciergeContext, adoptCrossTabThread]);
 
   // Consume a pending prompt seeded by other tabs
   const handleSendRef = useRef<((text?: string) => void) | null>(null);
