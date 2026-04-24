@@ -175,6 +175,22 @@ export const ChatTab = () => {
     return () => window.removeEventListener("luna-start-fresh", handleStartFresh);
   }, [resetChat]);
 
+  useEffect(() => {
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key !== "hush_luna_visit_thread_id") return;
+      if (event.newValue) {
+        try {
+          sessionStorage.setItem("hush_conversation_id", event.newValue);
+        } catch {
+          /* ignore */
+        }
+      }
+    };
+
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
+
   // Build contextual greeting + chips on first render AND when context changes
   useEffect(() => {
     const ctx = conciergeContext;
@@ -232,7 +248,16 @@ export const ChatTab = () => {
     setInitialized(true);
 
     if (!getConversationId()) {
-      startSession(ctx, "chat");
+      const crossTabVisitThreadId = getVisitThreadId();
+      if (crossTabVisitThreadId) {
+        try {
+          sessionStorage.setItem("hush_conversation_id", crossTabVisitThreadId);
+        } catch {
+          /* ignore */
+        }
+      } else {
+        startSession(ctx, "chat");
+      }
     } else {
       setVisitThreadId(getConversationId());
     }
