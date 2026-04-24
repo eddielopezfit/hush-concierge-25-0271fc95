@@ -80,9 +80,9 @@ describe("lunaBrain.generateRecommendation", () => {
       expect(rec.recommendedService).toBe("Expert Color");
     });
 
-    it("relax + massage => 90 min Massage", () => {
+    it("relax + massage => 90 min", () => {
       const rec = generateRecommendation(ctx({ goal: "relax", categories: ["massage"] }));
-      expect(rec.recommendedService).toBe("90 min Massage");
+      expect(rec.recommendedService).toBe("90 min");
     });
 
     it("event + lashes => Hybrid Lash Set", () => {
@@ -144,15 +144,15 @@ describe("lunaBrain.generateRecommendation", () => {
 
       expect(
         generateRecommendation(ctx({ categories: ["lashes"], item: "Hybrid Lash Set" }))
-      ).toMatchObject({ recommendedService: "Hybrid Lash Set", priceRange: "from $220" });
+      ).toMatchObject({ recommendedService: "Hybrid Lash Set", priceRange: "$220" });
 
       expect(
         generateRecommendation(ctx({ categories: ["skincare"], item: "Microneedling" }))
-      ).toMatchObject({ recommendedService: "Microneedling", priceRange: "from $299" });
+      ).toMatchObject({ recommendedService: "Microneedling", priceRange: "$299" });
 
       expect(
         generateRecommendation(ctx({ categories: ["massage"], item: "90 min" }))
-      ).toMatchObject({ recommendedService: "90 min", priceRange: "from $140" });
+      ).toMatchObject({ recommendedService: "90 min", priceRange: "$140" });
     });
   });
 
