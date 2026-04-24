@@ -120,6 +120,23 @@ describe("lunaBrain.generateRecommendation", () => {
       expect(foilayageRec.whatToExpect).toContain("we’ll start with a consultation");
     });
 
+    it("adds what-to-expect guidance for other hair and color services", () => {
+      const allOverColorRec = generateRecommendation(
+        ctx({ categories: ["hair"], item: "All Over Color" })
+      );
+      const fullWeaveRec = generateRecommendation(
+        ctx({ categories: ["hair"], item: "Full Weave" })
+      );
+      const correctiveRec = generateRecommendation(
+        ctx({ categories: ["hair"], item: "Corrective Color" })
+      );
+
+      expect(allOverColorRec.whatToExpect).toContain("consultation");
+      expect(fullWeaveRec.whatToExpect).toContain("consultation");
+      expect(correctiveRec.whatToExpect).toContain("consultation");
+      expect(correctiveRec.priceRange).toBe("Based on consultation");
+    });
+
     it("mirrors exact website service copy across all categories when item context exists", () => {
       expect(
         generateRecommendation(ctx({ categories: ["nails"], item: "Manicure w/Gel" }))

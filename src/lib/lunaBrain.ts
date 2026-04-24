@@ -17,8 +17,24 @@ export interface LunaRecommendation {
 }
 
 const serviceExpectationMap: Record<string, string> = {
+  "luxury wash and blowout": "What to expect: we’ll talk through the finish you want, then come in with clean, dry hair or plan for a fresh wash so your stylist can shape the smoothest blowout.",
+  "special occasion style": "What to expect: we’ll start with a quick consultation, then bring inspiration photos and arrive with clean, dry hair so your stylist can plan the shape, hold, and timing.",
+  "conditioning treatment": "What to expect: we’ll take a quick look at your hair goals first, then let your stylist tailor the treatment to your texture, dryness, and finish.",
+  "expert color": "What to expect: we’ll start with a consultation, then bring inspiration photos and arrive with clean, dry hair so your stylist can confirm tone, placement, and timing.",
+  "root touchup": "What to expect: we’ll start with a quick consultation, then your stylist will confirm your formula, regrowth, and timing before color begins.",
+  "all over color": "What to expect: we’ll start with a quick consultation, then bring inspiration photos and arrive with clean, dry hair so your stylist can confirm depth, tone, and timing.",
+  "color refresher": "What to expect: we’ll start with a quick consultation, then your stylist will fine-tune tone and shine to refresh what you already love.",
+  "toner/root smudge": "What to expect: we’ll start with a quick consultation, then your stylist will confirm the blend, tone, and timing needed for the softest finish.",
+  "retouch (5 weeks or less regrowth)": "What to expect: we’ll start with a quick consultation, then your stylist will check regrowth and timing so the lightening stays even and healthy.",
+  "full head lightening service": "What to expect: we’ll start with a consultation, then bring inspiration photos and arrive with clean, dry hair so your stylist can map brightness, upkeep, and timing.",
+  "full weave": "What to expect: we’ll start with a consultation, then bring inspiration photos and arrive with clean, dry hair so your stylist can confirm placement, brightness, and timing.",
+  "partial weave": "What to expect: we’ll start with a consultation, then bring inspiration photos and arrive with clean, dry hair so your stylist can focus brightness exactly where it matters most.",
+  "back to back foils": "What to expect: we’ll start with a consultation, then bring inspiration photos and arrive with clean, dry hair so your stylist can plan maximum brightness and timing.",
   balayage: "What to expect: we’ll start with a consultation, then bring a few inspiration photos and arrive with clean, dry hair so your stylist can map the right brightness and timing.",
   foilayage: "What to expect: we’ll start with a consultation, then bring a few inspiration photos and arrive with clean, dry hair so your stylist can plan the brighter foil placement and timing.",
+  "corrective color": "What to expect: we’ll start with a consultation, then bring inspiration photos and a quick color history so your stylist can map the safest correction plan and timing.",
+  "block color": "What to expect: we’ll start with a consultation, then bring inspiration photos and arrive with clean, dry hair so your stylist can plan placement, saturation, and timing.",
+  "fantasy color": "What to expect: we’ll start with a consultation, then bring inspiration photos and be ready to talk maintenance, pre-lightening, and timing for the most vivid result.",
 };
 
 // Artist recommendations removed — Luna no longer recommends specific stylists
