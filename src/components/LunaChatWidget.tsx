@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { m, AnimatePresence } from "framer-motion";
-import { MessageCircle, X, Minus, HelpCircle } from "lucide-react";
+import { MessageCircle, X, Minus, HelpCircle, RotateCcw } from "lucide-react";
 import { FindMyLookTab } from "./luna/FindMyLookTab";
 import { ExploreTab } from "./luna/ExploreTab";
 import { ArtistsTab } from "./luna/ArtistsTab";
@@ -122,6 +122,13 @@ export const LunaChatWidget = () => {
       buildChime();
       chimeRef.current?.play().catch(() => {});
     }
+  };
+
+  const handleStartFresh = () => {
+    setActiveTab("chat");
+    setReturnCue(null);
+    setResumeCue(null);
+    window.dispatchEvent(new CustomEvent("luna-start-fresh"));
   };
 
   const [showExitCapture, setShowExitCapture] = useState(false);
@@ -350,7 +357,18 @@ export const LunaChatWidget = () => {
                   className="border-b border-primary/15 bg-primary/5 px-4 py-2"
                 >
                   {returnCue && <p className="font-body text-xs text-muted-foreground">{returnCue}</p>}
-                  {resumeCue && <p className="font-body text-[11px] text-primary/80 mt-0.5">{resumeCue}</p>}
+                  {resumeCue && (
+                    <div className="mt-0.5 flex items-center justify-between gap-3">
+                      <p className="font-body text-[11px] text-primary/80">{resumeCue}</p>
+                      <button
+                        onClick={handleStartFresh}
+                        className="inline-flex items-center gap-1 text-[11px] font-body text-primary transition-colors hover:text-primary/80"
+                      >
+                        <RotateCcw className="h-3 w-3" />
+                        Start fresh
+                      </button>
+                    </div>
+                  )}
                 </m.div>
               )}
             </AnimatePresence>
