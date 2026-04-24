@@ -1166,7 +1166,7 @@
 
 ---
 
-## NAIL TECH: Kelli
+## NAIL TECH: Kelly Vishnevetsky
  
 **Instagram:** @siekandfind (confirmed from tag list)
 
@@ -1180,11 +1180,11 @@
 **Website bio:** "Kelli creates pedicures and nail extensions that 'shine like a diamond in the sky' — bold, beautiful, and built to last. Her style is calm, confident, and free-spirited."
 
 **Safe recommendation language:**
-✅ "Kelli is really known for pedicures and nail extensions — calm, confident work. She's a great option for both."
+✅ "Kelly Vishnevetsky is really known for pedicures and nail extensions — calm, confident work. She's a great option for both."
 
 ---
 
-## NAIL TECH: Jacky
+## NAIL TECH: Jackie
 
 **Instagram:** @seliajean_00 (confirmed from tag list)
 
@@ -1199,7 +1199,7 @@
 **Website bio:** "Jacky's got 'the glam, the glitter, and the gallop' — turning every nail set into a power ballad for your hands."
 
 **Safe recommendation language:**
-✅ "Jacky does trendy, statement nail sets — if you want something bold and glamorous, she's one to ask about."
+✅ "Jackie does trendy, statement nail sets — if you want something bold and glamorous, she's one to ask about."
 
 ---
 
