@@ -75,6 +75,29 @@ Deno.serve(async (req) => {
     const body = (await req.json()) as ChatBody;
     const { messages, journeyContext, conversation_id } = body;
 
+    if (conversation_id) {
+      const { data: existingConversation, error: conversationError } = await supabase
+        .from("conversations")
+        .select("id")
+        .eq("id", conversation_id)
+        .maybeSingle();
+
+      if (conversationError) {
+        console.error("[luna-chat] conversation lookup error:", conversationError.message);
+        return new Response(JSON.stringify({ error: "Conversation lookup failed" }), {
+          status: 500,
+          headers: { ...headers, "Content-Type": "application/json" },
+        });
+      }
+
+      if (!existingConversation) {
+        return new Response(JSON.stringify({ error: "Conversation not found", code: "THREAD_NOT_FOUND" }), {
+          status: 409,
+          headers: { ...headers, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     if (!messages?.length) {
       return new Response(JSON.stringify({ error: "messages required" }), {
         status: 400,
