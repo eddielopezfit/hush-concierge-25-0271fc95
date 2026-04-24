@@ -13,7 +13,13 @@ export interface LunaRecommendation {
   urgency: "low" | "medium" | "high";
   nextStep: string;
   priceRange: string | null;
+  whatToExpect: string | null;
 }
+
+const serviceExpectationMap: Record<string, string> = {
+  balayage: "What to expect: we’ll start with a consultation, then bring a few inspiration photos and arrive with clean, dry hair so your stylist can map the right brightness and timing.",
+  foilayage: "What to expect: we’ll start with a consultation, then bring a few inspiration photos and arrive with clean, dry hair so your stylist can plan the brighter foil placement and timing.",
+};
 
 // Artist recommendations removed — Luna no longer recommends specific stylists
 // Single-provider services are handled factually in the system prompt
@@ -138,6 +144,7 @@ export function generateRecommendation(context: ConciergeContext | null | undefi
       urgency: "medium",
       nextStep: "Browse our menu at your pace. Luna is here whenever you'd like personalized recommendations.",
       priceRange: null,
+      whatToExpect: null,
     };
   }
 
@@ -173,6 +180,7 @@ export function generateRecommendation(context: ConciergeContext | null | undefi
   const recommendedArtist = null;
 
   const priceRange = exactMenuItem?.price || context.price || getPriceRange(primaryCategory, recommendedService);
+  const whatToExpect = serviceExpectationMap[recommendedService.toLowerCase()] ?? null;
 
   const categoryCount = Array.isArray(context.categories) ? context.categories.length : 0;
   const nextStep = getNextStep(urgency, categoryCount > 1);
@@ -183,6 +191,7 @@ export function generateRecommendation(context: ConciergeContext | null | undefi
     urgency,
     nextStep,
     priceRange,
+    whatToExpect,
   };
 }
 
@@ -207,6 +216,7 @@ export function generateChatResponse(message: string, context: ConciergeContext 
       if (lower.includes("recommend") || lower.includes("suggest") || lower.includes("what should")) {
         const parts = [`Based on your selections, I'd suggest exploring **${rec.recommendedService}**`];
         if (rec.priceRange) parts.push(`(${rec.priceRange})`);
+        if (rec.whatToExpect) parts.push(`. ${rec.whatToExpect}`);
         parts.push(`. ${rec.nextStep}`);
         return parts.join(" ");
       }
