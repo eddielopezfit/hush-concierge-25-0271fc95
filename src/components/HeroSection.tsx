@@ -21,6 +21,8 @@ export const HeroSection = () => {
         if (v && v.paused) v.play().catch(() => {});
       });
     };
+    // Force load in case the browser deferred fetching
+    [desktopVideoRef.current, mobileVideoRef.current].forEach((v) => v?.load());
     tryPlay();
     const events = ["pointerdown", "touchstart", "keydown", "scroll"] as const;
     events.forEach((e) => window.addEventListener(e, tryPlay, { once: true, passive: true }));
@@ -46,13 +48,10 @@ export const HeroSection = () => {
             preload="auto"
             poster="https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Hero_v2_Desktop_Poster.jpg"
             aria-hidden="true"
+            src="https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Hero_v2_Desktop.mp4"
+            onCanPlay={(e) => { e.currentTarget.play().catch(() => {}); }}
             className="hidden md:block absolute inset-0 w-full h-full object-cover object-center"
-          >
-            <source
-              src="https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Hero_v2_Desktop.mp4"
-              type="video/mp4"
-            />
-          </video>
+          />
 
           {/* Mobile — portrait master, top-anchored so faces never crop */}
           <video
@@ -64,13 +63,10 @@ export const HeroSection = () => {
             preload="metadata"
             poster="https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Hero_v2_Mobile_Poster.jpg"
             aria-hidden="true"
+            src="https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Hero_v2_Mobile.mp4"
+            onCanPlay={(e) => { e.currentTarget.play().catch(() => {}); }}
             className="md:hidden absolute inset-0 w-full h-full object-cover [object-position:center_top]"
-          >
-            <source
-              src="https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Hero_v2_Mobile.mp4"
-              type="video/mp4"
-            />
-          </video>
+          />
         </div>
 
         {/* Gradient overlay */}

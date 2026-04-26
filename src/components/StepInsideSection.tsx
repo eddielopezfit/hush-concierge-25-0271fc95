@@ -1,5 +1,5 @@
 import { ArrowDown } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const DESKTOP_POSTER = "https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Step_Inside_Poster_v3.webp";
 const DESKTOP_SRC = "https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Step_Inside_Desktop_v2.mp4";
@@ -11,17 +11,34 @@ const MOBILE_SRC = "https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/p
  */
 export const StepInsideSection = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [src, setSrc] = useState<string>(() =>
+    typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches
+      ? MOBILE_SRC
+      : DESKTOP_SRC
+  );
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const update = () => setSrc(mq.matches ? MOBILE_SRC : DESKTOP_SRC);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
 
   useEffect(() => {
     const tryPlay = () => {
       const v = videoRef.current;
       if (v && v.paused) v.play().catch(() => {});
     };
+    // Force the element to (re)load the new src and attempt play
+    if (videoRef.current) {
+      videoRef.current.load();
+    }
     tryPlay();
     const events = ["pointerdown", "touchstart", "keydown", "scroll"] as const;
     events.forEach((e) => window.addEventListener(e, tryPlay, { once: true, passive: true }));
     return () => events.forEach((e) => window.removeEventListener(e, tryPlay));
-  }, []);
+  }, [src]);
 
   return (
     <section
@@ -33,6 +50,8 @@ export const StepInsideSection = () => {
         <div className="absolute inset-0 origin-top will-change-transform animate-ken-burns">
           <video
             ref={videoRef}
+            key={src}
+            src={src}
             autoPlay
             loop
             muted
@@ -40,12 +59,9 @@ export const StepInsideSection = () => {
             preload="metadata"
             poster={DESKTOP_POSTER}
             aria-hidden="true"
+            onCanPlay={(e) => { e.currentTarget.play().catch(() => {}); }}
             className="absolute inset-0 w-full h-full object-cover object-center"
-          >
-            <source src={MOBILE_SRC} media="(max-width: 767px)" type="video/mp4" />
-            <source src={DESKTOP_SRC} media="(min-width: 768px)" type="video/mp4" />
-            <source src={DESKTOP_SRC} type="video/mp4" />
-          </video>
+          />
         </div>
 
         {/* Cinematic overlay — left-side scrim for headline readability */}
