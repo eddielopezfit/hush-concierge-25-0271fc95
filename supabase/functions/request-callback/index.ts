@@ -129,10 +129,10 @@ function buildConfirmation(body: RequestCallbackBody, priority: Priority): strin
       : "soon";
 
   if (body.consultation_required) {
-    return `${nameGreet}you're all set. Kendell will call you back ${timingCommitment} to set up your consultation for ${service}. They'll walk you through everything. Have a great day.`;
+    return `${nameGreet}you're all set. Kendell will call you back ${timingCommitment} to discuss ${service} and set up the right time. Looking forward to seeing you at Hush — have a great day.`;
   }
 
-  return `${nameGreet}you're all set. The team will call you back ${timingCommitment} about ${service}. Looking forward to seeing you at Hush — have a great day.`;
+  return `${nameGreet}you're all set. Kendell will call you back ${timingCommitment} to discuss ${service} and set up the right time. Looking forward to seeing you at Hush — have a great day.`;
 }
 
 // ── Main Handler ──────────────────────────────────────────────────────────────
