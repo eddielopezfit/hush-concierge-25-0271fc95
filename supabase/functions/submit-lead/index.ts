@@ -1,11 +1,29 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { sendGuestSms } from "../_shared/twilio-sms.ts";
+import { getNextOpenWindow } from "../_shared/booking-rules.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
+
+/**
+ * Build the guest-facing SMS body. Kept short (<160 chars) and TCPA-friendly.
+ */
+function buildGuestSmsBody(params: {
+  name: string | null;
+  type: "callback" | "lead";
+  nextOpenWindow: string;
+}): string {
+  const firstName = params.name?.trim().split(/\s+/)[0];
+  const greet = firstName ? `Hi ${firstName} — ` : "Hi — ";
+  if (params.type === "callback") {
+    return `${greet}Hush Salon got your callback request. Kendell will reach out ${params.nextOpenWindow}. Reply STOP to opt out.`;
+  }
+  return `${greet}thanks for reaching out to Hush Salon. The team will follow up ${params.nextOpenWindow}. Reply STOP to opt out.`;
+}
 
 /**
  * Fire-and-forget welcome sequence: an immediate luxury welcome plus a
