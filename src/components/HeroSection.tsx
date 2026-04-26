@@ -1,5 +1,5 @@
 import { ArrowDown, Sparkles, MessageSquare } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLuna } from "@/contexts/LunaContext";
 import { useStartLuna } from "@/hooks/useStartLuna";
 
@@ -10,24 +10,41 @@ import { useStartLuna } from "@/hooks/useStartLuna";
 export const HeroSection = () => {
   const { openChatWidget } = useLuna();
   const startLuna = useStartLuna();
-  const desktopVideoRef = useRef<HTMLVideoElement>(null);
-  const mobileVideoRef = useRef<HTMLVideoElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  // Pick ONE viewport-appropriate video so we never download both masters
+  // and compete with first paint. SSR-safe default = desktop.
+  const [isMobile, setIsMobile] = useState<boolean>(() =>
+    typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches
+  );
 
-  // Force-start videos: retry on mount and on first user interaction
-  // (covers iframe autoplay restrictions in Lovable preview & strict browsers)
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
+  // Force-start the active hero video and retry on first user interaction
+  // (covers iframe autoplay restrictions in strict browsers).
   useEffect(() => {
     const tryPlay = () => {
-      [desktopVideoRef.current, mobileVideoRef.current].forEach((v) => {
-        if (v && v.paused) v.play().catch(() => {});
-      });
+      const v = videoRef.current;
+      if (v && v.paused) v.play().catch(() => {});
     };
-    // Force load in case the browser deferred fetching
-    [desktopVideoRef.current, mobileVideoRef.current].forEach((v) => v?.load());
+    videoRef.current?.load();
     tryPlay();
     const events = ["pointerdown", "touchstart", "keydown", "scroll"] as const;
     events.forEach((e) => window.addEventListener(e, tryPlay, { once: true, passive: true }));
     return () => events.forEach((e) => window.removeEventListener(e, tryPlay));
-  }, []);
+  }, [isMobile]);
+
+  const videoSrc = isMobile
+    ? "/videos/Hush_Hero_v2_Mobile.mp4"
+    : "/videos/Hush_Hero_v2_Desktop.mp4";
+  const videoPoster = isMobile
+    ? "https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Hero_v2_Mobile_Poster.jpg"
+    : "https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Hero_v2_Desktop_Poster.jpg";
 
   const handleDiscoverClick = () => {
     document.getElementById("experience-finder")?.scrollIntoView({ behavior: "smooth" });
@@ -38,34 +55,23 @@ export const HeroSection = () => {
       {/* Background Video — Ken Burns slow zoom via CSS */}
       <div className="absolute inset-0 z-0 overflow-hidden bg-background">
         <div className="absolute inset-0 overflow-hidden animate-ken-burns will-change-transform [transform-origin:center_center]">
-          {/* Desktop / tablet */}
           <video
-            ref={desktopVideoRef}
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="auto"
-            poster="https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Hero_v2_Desktop_Poster.jpg"
-            aria-hidden="true"
-            src="/videos/Hush_Hero_v2_Desktop.mp4"
-            onCanPlay={(e) => { e.currentTarget.play().catch(() => {}); }}
-            className="hidden md:block absolute inset-0 w-full h-full object-cover object-center"
-          />
-
-          {/* Mobile — portrait master, top-anchored so faces never crop */}
-          <video
-            ref={mobileVideoRef}
+            ref={videoRef}
+            key={videoSrc}
             autoPlay
             loop
             muted
             playsInline
             preload="metadata"
-            poster="https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Hero_v2_Mobile_Poster.jpg"
+            poster={videoPoster}
             aria-hidden="true"
-            src="/videos/Hush_Hero_v2_Mobile.mp4"
+            src={videoSrc}
             onCanPlay={(e) => { e.currentTarget.play().catch(() => {}); }}
-            className="md:hidden absolute inset-0 w-full h-full object-cover [object-position:center_top]"
+            className={
+              isMobile
+                ? "absolute inset-0 w-full h-full object-cover [object-position:center_top]"
+                : "absolute inset-0 w-full h-full object-cover object-center"
+            }
           />
         </div>
 
@@ -135,15 +141,34 @@ export const HeroSection = () => {
           className="flex justify-center opacity-0 animate-fade-only"
           style={{ animationDelay: "0.8s" }}
         >
-          <span className="font-body text-xs text-cream/40 bg-card/60 border border-border px-3 py-1.5 rounded-full backdrop-blur-sm">
-            {(() => {
-              const day = new Date().getDay();
-              if (day === 0 || day === 1) return "Closed Today";
-              if (day === 6) return "Open Today · 9 AM – 4 PM";
-              if (day === 3 || day === 5) return "Open Today · 9 AM – 5 PM";
-              return "Open Today · 9 AM – 7 PM";
-            })()}
-          </span>
+          {(() => {
+            const day = new Date().getDay();
+            const closed = day === 0 || day === 1;
+            const label = closed
+              ? "Closed Today"
+              : day === 6
+                ? "Open Today · 9 AM – 4 PM"
+                : day === 3 || day === 5
+                  ? "Open Today · 9 AM – 5 PM"
+                  : "Open Today · 9 AM – 7 PM";
+            const expectation = day === 0
+              ? "We open Tuesday at 9 AM — your plan will be waiting for Kendell."
+              : day === 1
+                ? "We open Tuesday at 9 AM — Kendell will reach out first thing."
+                : null;
+            return (
+              <div className="flex flex-col items-center gap-2">
+                <span className="font-body text-xs text-cream/40 bg-card/60 border border-border px-3 py-1.5 rounded-full backdrop-blur-sm">
+                  {label}
+                </span>
+                {expectation && (
+                  <span className="font-body text-[11px] text-cream/45 italic max-w-xs text-center px-2">
+                    {expectation}
+                  </span>
+                )}
+              </div>
+            );
+          })()}
         </div>
       </div>
 
