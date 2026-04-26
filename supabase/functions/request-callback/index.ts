@@ -8,11 +8,13 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
   derivePriority,
   getInternalBookingPath,
+  getNextOpenWindow,
   PRIORITY_EMOJI,
   PRIORITY_LABEL,
   type Priority,
 } from "../_shared/booking-rules.ts";
 import { postMessage, resolveMention } from "../_shared/slack-client.ts";
+import { sendGuestSms } from "../_shared/twilio-sms.ts";
 
 const SUPABASE_URL     = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
