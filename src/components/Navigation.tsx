@@ -24,16 +24,44 @@ export const Navigation = () => {
     const el = document.getElementById(id);
     if (!el) return;
     e.preventDefault();
-    // Force re-play of CSS :target animation even if hash is unchanged
-    if (window.location.hash === href) {
-      history.replaceState(null, "", " ");
-      requestAnimationFrame(() => {
-        history.replaceState(null, "", href);
-      });
-    } else {
-      history.replaceState(null, "", href);
-    }
+    history.replaceState(null, "", href);
     el.scrollIntoView({ behavior: "smooth", block: "start" });
+
+    // Reveal animation fires only after the section is fully in view.
+    // Clear any prior reveal so the animation can re-play on repeat jumps.
+    el.classList.remove("section-revealed");
+    // Force reflow so removing + re-adding the class restarts the animation.
+    void (el as HTMLElement).offsetWidth;
+
+    const reveal = () => {
+      el.classList.add("section-revealed");
+    };
+
+    // Observe until the section's top is at/above the viewport top
+    // (i.e. fully scrolled into place), then trigger the reveal once.
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
+            reveal();
+            observer.disconnect();
+            break;
+          }
+        }
+      },
+      { threshold: [0, 0.6, 1], rootMargin: "-80px 0px 0px 0px" }
+    );
+    observer.observe(el);
+
+    // Safety net: if the browser settles scroll without crossing the
+    // threshold (very tall sections, reduced motion), reveal after a
+    // short delay so the animation never gets stuck unfired.
+    window.setTimeout(() => {
+      if (!el.classList.contains("section-revealed")) {
+        reveal();
+        observer.disconnect();
+      }
+    }, 1200);
   };
 
   useEffect(() => {
