@@ -1,4 +1,5 @@
 import { ArrowDown } from "lucide-react";
+import { useEffect, useRef } from "react";
 
 const DESKTOP_POSTER = "https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Step_Inside_Poster_v3.webp";
 const DESKTOP_SRC = "https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Step_Inside_Desktop_v2.mp4";
@@ -9,6 +10,19 @@ const MOBILE_SRC = "https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/p
  * Pure CSS animations (no framer-motion) — keeps eager bundle small.
  */
 export const StepInsideSection = () => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const tryPlay = () => {
+      const v = videoRef.current;
+      if (v && v.paused) v.play().catch(() => {});
+    };
+    tryPlay();
+    const events = ["pointerdown", "touchstart", "keydown", "scroll"] as const;
+    events.forEach((e) => window.addEventListener(e, tryPlay, { once: true, passive: true }));
+    return () => events.forEach((e) => window.removeEventListener(e, tryPlay));
+  }, []);
+
   return (
     <section
       aria-label="Step inside Hush"
@@ -18,6 +32,7 @@ export const StepInsideSection = () => {
       <div className="absolute inset-0 bg-background overflow-hidden">
         <div className="absolute inset-0 origin-top will-change-transform animate-ken-burns">
           <video
+            ref={videoRef}
             autoPlay
             loop
             muted

@@ -1,4 +1,5 @@
 import { ArrowDown, Sparkles, MessageSquare } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { useLuna } from "@/contexts/LunaContext";
 import { useStartLuna } from "@/hooks/useStartLuna";
 
@@ -9,6 +10,22 @@ import { useStartLuna } from "@/hooks/useStartLuna";
 export const HeroSection = () => {
   const { openChatWidget } = useLuna();
   const startLuna = useStartLuna();
+  const desktopVideoRef = useRef<HTMLVideoElement>(null);
+  const mobileVideoRef = useRef<HTMLVideoElement>(null);
+
+  // Force-start videos: retry on mount and on first user interaction
+  // (covers iframe autoplay restrictions in Lovable preview & strict browsers)
+  useEffect(() => {
+    const tryPlay = () => {
+      [desktopVideoRef.current, mobileVideoRef.current].forEach((v) => {
+        if (v && v.paused) v.play().catch(() => {});
+      });
+    };
+    tryPlay();
+    const events = ["pointerdown", "touchstart", "keydown", "scroll"] as const;
+    events.forEach((e) => window.addEventListener(e, tryPlay, { once: true, passive: true }));
+    return () => events.forEach((e) => window.removeEventListener(e, tryPlay));
+  }, []);
 
   const handleDiscoverClick = () => {
     document.getElementById("experience-finder")?.scrollIntoView({ behavior: "smooth" });
@@ -21,6 +38,7 @@ export const HeroSection = () => {
         <div className="absolute inset-0 overflow-hidden animate-ken-burns will-change-transform [transform-origin:center_center]">
           {/* Desktop / tablet */}
           <video
+            ref={desktopVideoRef}
             autoPlay
             loop
             muted
@@ -38,6 +56,7 @@ export const HeroSection = () => {
 
           {/* Mobile — portrait master, top-anchored so faces never crop */}
           <video
+            ref={mobileVideoRef}
             autoPlay
             loop
             muted
