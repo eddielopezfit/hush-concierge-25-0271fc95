@@ -1,31 +1,39 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 
-type Status = "loading" | "valid" | "already" | "invalid" | "submitting" | "done" | "error";
+type Status =
+  | "validating"
+  | "valid"
+  | "already"
+  | "invalid"
+  | "submitting"
+  | "success"
+  | "error";
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
-
-const Unsubscribe = () => {
+export default function Unsubscribe() {
   const [params] = useSearchParams();
   const token = params.get("token");
-  const [status, setStatus] = useState<Status>("loading");
-  const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState<Status>("validating");
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     if (!token) {
       setStatus("invalid");
       return;
     }
-    const validate = async () => {
-      try {
-        const res = await fetch(
-          `${supabaseUrl}/functions/v1/handle-email-unsubscribe?token=${encodeURIComponent(token)}`,
-          { headers: { apikey: supabaseAnonKey } }
-        );
-        const data = await res.json();
-        if (!res.ok) {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+    const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+    fetch(
+      `${supabaseUrl}/functions/v1/handle-email-unsubscribe?token=${encodeURIComponent(
+        token
+      )}`,
+      { headers: { apikey: anonKey } }
+    )
+      .then(async (r) => {
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) {
           setStatus("invalid");
           return;
         }
@@ -33,126 +41,129 @@ const Unsubscribe = () => {
           setStatus("already");
           return;
         }
-        if (data.valid) {
+        if (data.valid === true) {
           setStatus("valid");
           return;
         }
         setStatus("invalid");
-      } catch (e) {
-        setStatus("invalid");
-      }
-    };
-    validate();
+      })
+      .catch(() => setStatus("invalid"));
   }, [token]);
 
   const handleConfirm = async () => {
     if (!token) return;
     setStatus("submitting");
     try {
-      const { data, error } = await supabase.functions.invoke("handle-email-unsubscribe", {
-        body: { token },
-      });
+      const { data, error } = await supabase.functions.invoke(
+        "handle-email-unsubscribe",
+        { body: { token } }
+      );
       if (error) throw error;
       if (data?.success) {
-        setStatus("done");
+        setStatus("success");
       } else if (data?.reason === "already_unsubscribed") {
         setStatus("already");
       } else {
         setStatus("error");
-        setError("Something went wrong.");
+        setErrorMsg("Something went wrong. Please try again.");
       }
-    } catch (e) {
+    } catch (err) {
       setStatus("error");
-      setError(e instanceof Error ? e.message : "Something went wrong.");
+      setErrorMsg(err instanceof Error ? err.message : "Unknown error");
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <div className="max-w-md w-full text-center space-y-6 py-16">
-        <div className="space-y-2">
-          <h1
-            className="text-4xl tracking-[0.3em] font-bold text-foreground"
-            style={{ fontFamily: "Playfair Display, serif" }}
-          >
-            HUSH
-          </h1>
-          <p className="text-xs tracking-[0.2em] uppercase text-primary">
-            Salon · Spa · Sanctuary
-          </p>
-        </div>
+    <main className="min-h-screen flex items-center justify-center bg-background px-6 py-16">
+      <div className="max-w-md w-full text-center">
+        <h1 className="font-display text-3xl text-primary mb-3 tracking-wide">
+          HUSH
+        </h1>
+        <div className="h-px w-16 bg-primary/40 mx-auto mb-8" />
 
-        {status === "loading" && (
-          <p className="text-muted-foreground">Validating your link…</p>
+        {status === "validating" && (
+          <p className="text-muted-foreground">Checking your link…</p>
         )}
 
         {status === "valid" && (
-          <div className="space-y-6">
-            <h2 className="text-2xl text-foreground" style={{ fontFamily: "Playfair Display, serif" }}>
-              Unsubscribe from emails?
+          <>
+            <h2 className="font-display text-2xl text-foreground mb-3">
+              Step away — quietly.
             </h2>
-            <p className="text-muted-foreground leading-relaxed">
-              We'll stop sending you marketing and notification emails from Hush Salon.
-              You'll still receive essential transactional emails (like booking confirmations).
+            <p className="text-muted-foreground mb-8 leading-relaxed">
+              Click below to unsubscribe from Hush emails. We'll be here if
+              you'd ever like to come back.
             </p>
-            <button
+            <Button
               onClick={handleConfirm}
-              className="px-8 py-3 bg-primary text-primary-foreground rounded-md text-sm tracking-[0.15em] uppercase font-semibold hover:opacity-90 transition-opacity"
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+              size="lg"
             >
               Confirm Unsubscribe
-            </button>
-          </div>
+            </Button>
+          </>
         )}
 
         {status === "submitting" && (
           <p className="text-muted-foreground">Processing…</p>
         )}
 
-        {status === "done" && (
-          <div className="space-y-3">
-            <h2 className="text-2xl text-foreground" style={{ fontFamily: "Playfair Display, serif" }}>
-              You've been unsubscribed.
+        {status === "success" && (
+          <>
+            <h2 className="font-display text-2xl text-foreground mb-3">
+              You're unsubscribed.
             </h2>
-            <p className="text-muted-foreground">
-              Sorry to see you go. You're always welcome back at hush-salon.lovable.app.
+            <p className="text-muted-foreground leading-relaxed">
+              You won't receive further emails from Hush. Thank you for the
+              time we had.
             </p>
-          </div>
+          </>
         )}
 
         {status === "already" && (
-          <div className="space-y-3">
-            <h2 className="text-2xl text-foreground" style={{ fontFamily: "Playfair Display, serif" }}>
-              Already unsubscribed
+          <>
+            <h2 className="font-display text-2xl text-foreground mb-3">
+              Already unsubscribed.
             </h2>
-            <p className="text-muted-foreground">
-              This email address has already been removed from our list.
+            <p className="text-muted-foreground leading-relaxed">
+              This email is no longer on our list. Nothing more to do.
             </p>
-          </div>
+          </>
         )}
 
         {status === "invalid" && (
-          <div className="space-y-3">
-            <h2 className="text-2xl text-foreground" style={{ fontFamily: "Playfair Display, serif" }}>
-              Invalid or expired link
+          <>
+            <h2 className="font-display text-2xl text-foreground mb-3">
+              Link expired or invalid.
             </h2>
-            <p className="text-muted-foreground">
-              This unsubscribe link is no longer valid. If you'd like to stop receiving emails,
-              please call us at <strong>(520) 327-6753</strong>.
+            <p className="text-muted-foreground leading-relaxed">
+              Please use the unsubscribe link from a recent email, or call
+              us at{" "}
+              <a
+                href="tel:+15203276753"
+                className="text-primary hover:underline"
+              >
+                (520) 327-6753
+              </a>
+              .
             </p>
-          </div>
+          </>
         )}
 
         {status === "error" && (
-          <div className="space-y-3">
-            <h2 className="text-2xl text-foreground" style={{ fontFamily: "Playfair Display, serif" }}>
-              Something went wrong
+          <>
+            <h2 className="font-display text-2xl text-foreground mb-3">
+              Something went wrong.
             </h2>
-            <p className="text-muted-foreground">{error || "Please try again."}</p>
-          </div>
+            <p className="text-muted-foreground mb-6 leading-relaxed">
+              {errorMsg ?? "Please try again."}
+            </p>
+            <Button onClick={handleConfirm} variant="outline">
+              Try again
+            </Button>
+          </>
         )}
       </div>
-    </div>
+    </main>
   );
-};
-
-export default Unsubscribe;
+}
