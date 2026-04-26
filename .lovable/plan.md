@@ -1,112 +1,100 @@
-# Hush Audio Overview Prompt v2 — Strategic Advisor Edition
+# Hush NotebookLM Overview Prompts v3 — Video Rewrite + QA Checklist
 
 ## Deliverable
-One file: `/mnt/documents/Hush_NotebookLM_Overview_Prompts_v2.md`
+One new file: `/mnt/documents/Hush_NotebookLM_Overview_Prompts_v3.md`
 
-Contains the rewritten **Audio Overview prompt** (video prompt + outreach script carried forward unchanged from v1 with light tonal updates for consistency).
+Audio v2 prompt carries forward unchanged (it's working). The **Video Overview prompt is fully rewritten** to fix every gap surfaced in the m4p4 analysis, and a one-page **QA checklist** is appended so you can verify each NotebookLM render before sending it to Sheri, Danielle, and Kathy.
 
-## Strategic shift from v1 → v2
+---
 
-| Dimension | v1 | v2 |
-|---|---|---|
-| Length target | 8–10 min | **No cap — clarity over brevity** (18 min is fine) |
-| Tone | Podcast hosts ("gift" framing) | **Senior strategic advisor presenting to a boardroom** — warm, confident, founder-to-founder |
-| Data treatment | Stats stated as fact | **Every number sourced inline** (SimilarWeb March 2026, Google Business Profile, US Census Tucson, etc.) |
-| "What's in it for them" | Feature-led (Luna does X, system does Y) | **Outcome-led** — time, legacy, retention, freedom from the phone |
-| The ask | Hidden / no ask | **Transparent founders-partnership ask** placed near the end |
-| Pronunciation | Generic | **Hard-coded phonetic guide** (KATH-ee, KEN-dell, TAM-ee, hush-salon-dot-lovable-dot-app) |
-| Founder names | Mentioned 1–2x | **Minimum 6x — open every chapter addressing Sheri, Danielle, and Kathy by name** |
+## What v3 fixes (from the video analysis)
 
-## Voice direction (the most important change)
+| Gap in current video render | v3 fix |
+|---|---|
+| Male narrator | Hard-coded `voice: female, warm, mid-range, advisor tone — think trusted consultant, not influencer` directive at top of prompt |
+| No data citations spoken | Mandatory inline source callouts: SimilarWeb (March 2026), Google Business Profile, Hush published menu, US Census Tucson |
+| Missing Founders Pricing / case study ask | New **Chapter 5 script (verbatim)** locking in the partnership ask — not paraphrased, not optional |
+| Cartoon/whiteboard visuals | `style: editorial, minimal, cinematic. No cartoons, no mascots, no hand-drawn icons, no stock illustrations. Use typography, real photography references, and brand color blocks only.` |
+| Pronunciation drift (Cathy/Kendall) | Phonetic guide repeated at top of video prompt: KATH-ee, KEN-dell, TAM-ee, SHARE-ee, dan-YELL |
+| Domain never spoken | Required spoken URL in close: "hush dash salon dot lovable dot app" |
+| Founders not addressed by name on screen | Each chapter title card opens with "Sheri, Danielle, Kathy —" |
 
-The host(s) should sound like **Eddie's senior strategic advisor briefing the Hush founders directly** — not two podcasters discussing a third party. Think: a trusted consultant walking three founders through a system that was built for them, with the data, the reasoning, and the ask laid out clean.
+---
 
-- Address Sheri, Danielle, and Kathy directly throughout ("Sheri, here's what we found…")
-- Speak with the authority of someone who has built this for SMBs before
-- Warm but not salesy — assume the founders are smart, busy, and skeptical
-- Acknowledge what they already do well (315+ Google reviews, 4.7 stars, 24 years) before introducing the gap
+## v3 Video Prompt structure (5 chapters, 4–5 min, no hard cap)
 
-## Required citations (every stat gets a receipt)
+1. **Cold open (30s)** — Black screen, gold serif type. "Sheri, Danielle, Kathy — this is what a digital front desk looks like when it's built only for you." Female narrator enters.
+2. **The gap, with receipts (60s)** — On-screen stat cards cite SimilarWeb March 2026, Google Business Profile. Padlock metaphor visualized as a closed storefront at night.
+3. **What we built (90s)** — Five pillars as title cards in Playfair Display on charcoal. Luna explained in 30s using the sommelier metaphor. Triple-Net Lead Capture shown as a 3-node diagram (SMS / Email / Slack).
+4. **What's in it for you (60s)** — Outcomes ladder, not feature list. Four cards: more time at the chair, first-time guests who already feel the brand, reputation matching presence, system that works the 50% you're closed.
+5. **The ask (60s) — VERBATIM SCRIPT LOCKED** — Founders Pricing + 12 months unlimited edits, in exchange for case study rights. Frame as legacy partnership. Close with spoken domain and direct invitation to a 30-min walkthrough.
 
-The prompt must instruct the hosts to source every claim out loud:
+## Locked Chapter 5 narration (in the prompt as a `must_say` block)
 
-- **1,000 monthly visits / 1.05 pages per visit** → "according to SimilarWeb traffic estimates pulled in March 2026"
-- **315+ Google reviews / 4.7 stars** → "verified on Hush's Google Business Profile"
-- **$130 average ticket** → "based on Hush's published service menu and industry benchmarks for full-service salons in the Tucson market"
-- **Closed roughly 50% of the week** → "Hush's published hours: closed Sundays and Mondays, plus early closes Wed/Fri/Sat"
-- **24-year reputation** → "founded in 2002, verified via Hush's About page and Pureology Pure 100 Club tenure"
-- **$9,360/year revenue lift** → "1,000 visits × 2% capture rate × 30% close rate × $130 ticket = $9,360 in year-one new revenue, conservative model"
-- **~$46k enterprise value** → "$9,360 annual lift × 5x revenue multiple, standard SMB valuation benchmark"
+> "Sheri, Danielle, Kathy — here's the honest exchange. This system is built. It's yours at founders pricing, with twelve months of unlimited edits, well below what a build of this depth normally runs. In return, I'd ask permission to tell your story — how a twenty-four-year Tucson salon closed the digital gap — as a case study other founders can learn from. Your legacy, told honestly, becomes the proof other small business owners need to invest in their own digital front door. The system exists either way. You decide if it goes live for you. Visit hush dash salon dot lovable dot app, or reply to this message, and we'll set thirty minutes."
 
-## New chapter structure (10 chapters, ~18 min)
+## Brand visual constraints (in prompt)
 
-1. **Open with respect** (90s) — Address founders by name. Acknowledge 24 years, 315+ reviews, 4.7 stars. Frame: "You've already won the hardest part — the chair work, the relationships, the reputation. What we're here to talk about is the one room you haven't had time to furnish: the digital front door."
-2. **The diagnostic** (3 min) — SimilarWeb data, sourced. The padlock metaphor moved here. The "closed half the week" stat lands here, not at minute 16.
-3. **Who Eddie is and why this exists** (90s) — Systems designer/architect for SMBs, friend of Mark Crawford from the poker room. Eddie mentioned to Mark he wanted to build something for Hush. This is not a cold pitch — this is a finished system, built on spec, with no obligation.
-4. **What we built — the five pillars** (4 min) — Experience Finder, Luna, real-time business logic, triple-net lead capture (SMS/email/Slack), trust infrastructure. Each pillar tied to a founder outcome, not a feature.
-5. **Luna in 90 seconds** (90s, hard cap) — Sommelier analogy. Neutral guidance. Service denial logic (no hot stone, no prenatal, no LED). Why she'll never embarrass the brand.
-6. **What's actually in it for you** (3 min) — The outcomes ladder:
-   - More time behind the chair, less time on the phone
-   - First-time guests who feel the brand before they walk in
-   - Your reputation finally matching your digital presence
-   - A system that works the 50% of hours you're closed
-   - Legacy preservation — Rockstars, Groupies Only, Pure 100 Club all carried forward
-7. **The ROI math, transparently** (2 min) — Walk the formula slowly. Acknowledge it's conservative. Note that capture rates above 2% are common with concierge-style flows.
-8. **What this isn't** (90s) — Not Vagaro. Not a chatbot. Not generic AI. Not a SaaS contract. Built specifically for Hush and only Hush.
-9. **The ask, transparently** (2 min) — **NEW.** The honest exchange:
-   - Founders pricing (well below market for a build of this depth)
-   - Unlimited edits for a defined window (12 months)
-   - In return: permission to tell the Hush story as a case study — how a 24-year Tucson salon closed the digital gap and what other SMB founders can learn from it
-   - Frame it as legacy, not transaction: "Your story, told honestly, becomes the proof other founders need to invest in their own digital front door."
-10. **Close** (90s) — Direct address to Sheri, Danielle, Kathy. Invite them to a 30-minute walkthrough. No pressure. The system exists either way — they decide if it goes live for them.
+- Palette: charcoal `#0d0d0d`, cream `#f5f3ee`, gold `#d8b063`
+- Type: Playfair Display (display), DM Sans (body)
+- Photography: real salon imagery references only — no AI illustration, no whiteboard
+- Motion: slow fades, no kinetic typography, no animated mascots
+- Lower-thirds: founders' names + roles when first mentioned
 
-## Pronunciation guide (hard-coded into the prompt)
+## Pronunciation guide (repeated from audio v2)
 
-- Kathy → **KATH-ee** (not Cathy)
-- Kendell → **KEN-dell** (not Kendall)
-- Tammi → **TAM-ee**
-- Sheri → **SHARE-ee**
-- Danielle → **dan-YELL**
-- Allison → **AL-ih-son**
-- Domain → **"hush dash salon dot lovable dot app"** (spell it phonetically)
-- Pureology → **pyur-AH-loh-jee**
+KATH-ee · KEN-dell · TAM-ee · SHARE-ee · dan-YELL · AL-ih-son · pyur-AH-loh-jee · "hush dash salon dot lovable dot app"
 
-## Guardrails for the hosts
+## Guardrails (in prompt)
 
-- Never use the word "chatbot"
+- Never use "chatbot"
 - Never compare Hush to other Tucson salons by name
-- Never imply the founders are behind on technology — frame the gap as opportunity, not failure
-- Never overclaim — Luna is good, not magic; the ROI is conservative, not guaranteed
-- Always cite sources out loud the first time a stat appears
-- Always address founders by name when opening a new chapter
+- Never imply the founders are behind on technology
+- Always cite the source the first time a stat appears
+- Female narrator throughout — no male voice, no dual-host format
 
-## Voice & video prompts (carried forward)
+---
 
-- Video Overview prompt: light edits to match advisor tone, same 5-chapter structure, same brand palette (charcoal/cream/gold, Playfair/DM Sans)
-- Outreach text scripts: updated to reference "founders pricing + case study partnership" framing instead of pure gift framing
+## QA checklist (appended to the file)
 
-## Faithfulness to brand memory
+A one-page checklist you run against every NotebookLM render before sending. Pass = ship; any fail = regenerate.
+
+**Audio overview**
+- [ ] Female or matched-tone narration (per your preference)
+- [ ] Names pronounced KATH-ee, KEN-dell, TAM-ee
+- [ ] Domain spoken as "hush dash salon dot lovable dot app"
+- [ ] SimilarWeb March 2026 cited for traffic stat
+- [ ] Google Business Profile cited for reviews/rating
+- [ ] ROI formula walked through end-to-end ($9,360/yr, ~$46k EV)
+- [ ] Founders addressed by name minimum 6 times
+- [ ] Founders Pricing + case study ask present near close
+- [ ] No use of "chatbot"
+- [ ] No comparison to other Tucson salons by name
+
+**Video overview**
+- [ ] Female narrator
+- [ ] Editorial visuals — no cartoons, mascots, or whiteboard
+- [ ] Brand palette (charcoal/cream/gold) visible in title cards
+- [ ] Playfair Display + DM Sans typography
+- [ ] All 7 audio QA items above also pass
+- [ ] Chapter 5 ask matches the locked verbatim script
+- [ ] Final frame shows spoken + written domain
+
+---
+
+## Out of scope
+
+- Audio v2 prompt is unchanged (working as intended)
+- Encyclopedia source doc unchanged
+- No code changes to the live site
+- No NotebookLM upload — that remains your manual step
+
+## Faithfulness to memory
 
 - Luna chat-only, no voice
 - Neutral guidance policy honored
-- Front desk: Kendell at (520) 327-6753
+- Front desk Kendell at (520) 327-6753
 - Service denials: hot stone, prenatal, LED
 - Hours: Tue/Thu 9–7, Wed/Fri 9–5, Sat 9–4, Closed Sun/Mon
 - Founders: Sheri Turner, Danielle Cole, Kathy
 - Brand equity preserved: Rockstars, Groupies Only, Pure 100 Club
-
-## QA checklist
-
-- Every numerical claim has an inline source citation
-- Founders addressed by name minimum 6 times
-- Pronunciation guide present and explicit
-- Case study ask present, framed as partnership not transaction
-- Outcomes ladder clearly separated from feature list
-- No 8-minute time cap; 18 min target acknowledged
-- Hosts directed to speak AS advisor, not ABOUT Hush
-
-## Out of scope
-
-- No code changes to the live site
-- No regeneration of the encyclopedia source doc (v1 stands)
-- No actual NotebookLM upload — that's your manual step
