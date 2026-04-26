@@ -75,8 +75,10 @@ export const HeroSection = () => {
           />
         </div>
 
-        {/* Gradient overlay */}
+        {/* Gradient overlays — vertical for legibility + horizontal vignette
+            to soften the desktop video's narrower framing on widescreen. */}
         <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/30 to-background/90" />
+        <div className="absolute inset-0 hidden md:block bg-gradient-to-r from-background/70 via-transparent to-background/70" />
       </div>
 
       {/* Content */}
@@ -102,16 +104,18 @@ export const HeroSection = () => {
           Five departments · Three founders still behind the chair · 24 years of transformations
         </p>
 
-        {/* CTAs — single dominant primary, secondary as ghost link */}
+        {/* CTAs — single dominant primary, secondary as ghost links.
+            Visible on every viewport so mobile users have an in-hero
+            entry point (not just the bottom sticky bar). */}
         <div
-          className="hidden sm:flex flex-col items-center justify-center gap-3 mb-8 px-4 opacity-0 animate-fade-up-sm"
+          className="flex flex-col items-center justify-center gap-3 mb-8 px-4 opacity-0 animate-fade-up-sm"
           style={{ animationDelay: "0.6s" }}
         >
           <button
             onClick={handleDiscoverClick}
-            className="btn-gold py-4 px-10 flex items-center gap-3 transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]"
+            className="btn-gold py-3.5 px-8 sm:py-4 sm:px-10 text-sm sm:text-base flex items-center gap-2.5 sm:gap-3 transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]"
           >
-            <Sparkles className="w-5 h-5" />
+            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
             Find Your Experience
           </button>
 

@@ -118,8 +118,10 @@ export default {
           to: { opacity: "1", transform: "translateY(0)" },
         },
         "ken-burns": {
-          from: { transform: "scale(1)" },
-          to: { transform: "scale(1.08)" },
+          // Always slightly over-cover the container so widescreen viewports
+          // never reveal the video's intrinsic aspect-ratio gaps as side bars.
+          from: { transform: "scale(1.05)" },
+          to: { transform: "scale(1.12)" },
         },
         "scroll-bob": {
           "0%, 100%": { transform: "translateY(0)" },
