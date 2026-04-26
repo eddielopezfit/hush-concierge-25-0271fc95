@@ -7,7 +7,44 @@
     <meta name="description" content="Experience luxury beauty services at Hush Salon &amp; Day Spa in Tucson, Arizona. Meet Luna, your AI concierge, for personalized hair, skincare, nails, lashes, and massage services. Serving Tucson since 2002.">
     <meta name="author" content="Hush Salon & Day Spa" />
     <meta name="theme-color" content="#0d0d0d" />
-    <style>html,body{background:#0d0d0d;color:#f5f3ee;margin:0;}</style>
+    <style>
+      html,body{background:#0d0d0d;color:#f5f3ee;margin:0;}
+      /* Branded cold-load shell — visible instantly without JS so guests
+         never see a blank black screen while the React bundle parses. */
+      #hush-shell{
+        position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+        background:#0d0d0d;color:#f5f3ee;z-index:9999;
+        font-family:'Playfair Display', Georgia, 'Times New Roman', serif;
+        transition:opacity .6s ease;opacity:1;
+      }
+      #hush-shell .hush-mark{
+        font-size:64px;line-height:1;letter-spacing:-0.02em;font-weight:600;
+        background:linear-gradient(135deg,#d8b063,#a87f3a);
+        -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;
+        margin-bottom:14px;
+      }
+      #hush-shell .hush-name{
+        font-family:'DM Sans', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:rgba(245,243,238,.55);
+        margin-bottom:28px;
+      }
+      #hush-shell .hush-msg{
+        font-family:'DM Sans', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        font-size:13px;color:rgba(245,243,238,.45);letter-spacing:.04em;
+      }
+      #hush-shell .hush-bar{
+        margin-top:22px;width:120px;height:1px;background:rgba(216,176,99,.18);overflow:hidden;border-radius:1px;
+      }
+      #hush-shell .hush-bar::after{
+        content:"";display:block;width:40%;height:100%;
+        background:linear-gradient(90deg,transparent,#d8b063,transparent);
+        animation:hushSlide 1.4s ease-in-out infinite;
+      }
+      @keyframes hushSlide{
+        0%{transform:translateX(-120%);}100%{transform:translateX(360%);}
+      }
+      #hush-shell.is-hidden{opacity:0;pointer-events:none;}
+    </style>
 
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/6d83ae56-c06c-4b0a-b1fb-78571fd06405/id-preview-fa9c9ab9--4ab9a1e8-a88c-49d1-b263-ee40e2526e05.lovable.app-1773974342574.png">
@@ -74,6 +111,12 @@
 
   <body style="background:#0d0d0d">
     <div id="root"></div>
+    <div id="hush-shell" aria-hidden="true">
+      <div class="hush-mark">Hush</div>
+      <div class="hush-name">Salon &amp; Day Spa · Tucson</div>
+      <div class="hush-msg">Preparing your Hush experience…</div>
+      <div class="hush-bar"></div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

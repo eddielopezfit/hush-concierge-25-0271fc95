@@ -151,8 +151,8 @@ export const FooterSection = () => {
           aria-modal="true"
           aria-labelledby="privacy-title"
         >
-          <div 
-            className="relative w-full max-w-lg p-8 rounded-xl border border-gold/25 bg-card"
+          <div
+            className="relative w-full max-w-2xl max-h-[85vh] overflow-y-auto p-8 rounded-xl border border-gold/25 bg-card"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -162,15 +162,83 @@ export const FooterSection = () => {
             >
               ×
             </button>
-            <h3 id="privacy-title" className="font-display text-2xl text-gold-gradient mb-4">Privacy Policy</h3>
-            <p className="font-body text-cream/70 text-sm leading-relaxed">
-              Hush Salon & Day Spa respects your privacy. Information submitted through our website 
-              is used solely to contact you regarding salon services and appointments. We do not sell 
-              or share your personal information with third parties. For TCPA compliance, by submitting 
-              your phone number you consent to be contacted by our team. Contact us at{" "}
-              <a href="tel:+15203276753" className="text-gold hover:underline">(520) 327-6753</a>{" "}
-              with any privacy questions.
-            </p>
+            <h3 id="privacy-title" className="font-display text-2xl text-gold-gradient mb-1">Privacy Policy</h3>
+            <p className="font-body text-xs text-muted-foreground mb-6">Effective April 1, 2026</p>
+            <div className="space-y-5 font-body text-cream/75 text-sm leading-relaxed">
+              <section>
+                <h4 className="font-display text-base text-cream mb-1.5">Who we are</h4>
+                <p>
+                  Hush Salon &amp; Day Spa, located at 4635 E Fort Lowell Rd, Tucson, AZ 85712, operates this
+                  website. Questions about this policy can be sent to{" "}
+                  <a href="tel:+15203276753" className="text-gold hover:underline">(520) 327-6753</a> or{" "}
+                  <a href="mailto:hello@hushsalonandspa.com" className="text-gold hover:underline">hello@hushsalonandspa.com</a>.
+                </p>
+              </section>
+              <section>
+                <h4 className="font-display text-base text-cream mb-1.5">Information we collect</h4>
+                <p>
+                  When you submit a callback request or chat with our concierge, we collect only what you give us:
+                  your name, phone number, email (optional), the services you’re interested in, your preferred timing,
+                  and any message you include. We also collect basic, non-identifying analytics about how the site is used
+                  (page views, device type) so we can improve the experience.
+                </p>
+              </section>
+              <section>
+                <h4 className="font-display text-base text-cream mb-1.5">How we use your information</h4>
+                <p>
+                  We use the information you provide solely to respond to your inquiry, schedule appointments, match you
+                  with the right artist, and follow up about your visit. We do not use your information for advertising,
+                  and we do not sell or rent it to anyone.
+                </p>
+              </section>
+              <section>
+                <h4 className="font-display text-base text-cream mb-1.5">Phone &amp; text messages (TCPA)</h4>
+                <p>
+                  By submitting your phone number, you consent to be contacted by Hush Salon &amp; Day Spa by phone or
+                  text message regarding your inquiry, appointments, and service follow-ups. Message and data rates may
+                  apply. Reply STOP at any time to opt out of text messages, or call us to be removed from contact.
+                </p>
+              </section>
+              <section>
+                <h4 className="font-display text-base text-cream mb-1.5">Service providers</h4>
+                <p>
+                  We rely on a small number of trusted service providers to run the site (hosting, secure database
+                  storage, and our internal team-notification tool). These providers process information only on our
+                  behalf and only to deliver the service you requested.
+                </p>
+              </section>
+              <section>
+                <h4 className="font-display text-base text-cream mb-1.5">Cookies &amp; analytics</h4>
+                <p>
+                  This site uses essential cookies and local browser storage to remember your concierge preferences
+                  during your visit and to keep the experience consistent across pages. We do not use third-party
+                  advertising or tracking cookies.
+                </p>
+              </section>
+              <section>
+                <h4 className="font-display text-base text-cream mb-1.5">Data retention</h4>
+                <p>
+                  Callback and inquiry information is retained only as long as needed to serve you and maintain a
+                  reasonable client history. You may request that we delete your information at any time by contacting us.
+                </p>
+              </section>
+              <section>
+                <h4 className="font-display text-base text-cream mb-1.5">Your choices</h4>
+                <p>
+                  You can request a copy of the information we have on file, ask us to correct it, or ask us to delete
+                  it by calling{" "}
+                  <a href="tel:+15203276753" className="text-gold hover:underline">(520) 327-6753</a> or emailing{" "}
+                  <a href="mailto:hello@hushsalonandspa.com" className="text-gold hover:underline">hello@hushsalonandspa.com</a>.
+                </p>
+              </section>
+              <section>
+                <h4 className="font-display text-base text-cream mb-1.5">Updates</h4>
+                <p>
+                  We may update this policy from time to time. The effective date above will always reflect the most
+                  recent version.
+                </p>
+              </section>
+            </div>
           </div>
         </div>
       )}
