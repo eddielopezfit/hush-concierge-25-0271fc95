@@ -188,9 +188,20 @@ export const BookingCallbackSection = () => {
             <p className="font-body text-cream/60 text-sm">
               Drop your info and our front desk will reach out personally.
             </p>
-            <p className="font-body text-xs text-gold/70 italic mt-2">
-              We typically respond within 2 business hours during salon hours.
-            </p>
+            {(() => {
+              const day = new Date().getDay();
+              const closed = day === 0 || day === 1;
+              const message = closed
+                ? day === 0
+                  ? "We're closed Sunday & Monday — Kendell will reach out Tuesday morning when we open at 9 AM."
+                  : "We're closed today — Kendell will reach out Tuesday morning when we open at 9 AM."
+                : "We typically respond within 2 business hours during salon hours.";
+              return (
+                <p className="font-body text-xs text-gold/70 italic mt-2 max-w-md mx-auto">
+                  {message}
+                </p>
+              );
+            })()}
           </div>
 
           {conciergeContext?.preferredArtist && !isSubmitted && (
