@@ -1,5 +1,6 @@
-import { forwardRef } from "react";
+import { forwardRef, useState } from "react";
 import { m } from "framer-motion";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface LeadCaptureFormProps {
   name: string;
@@ -18,6 +19,7 @@ export const LeadCaptureForm = forwardRef<HTMLDivElement, LeadCaptureFormProps>(
   { name, phone, onNameChange, onPhoneChange, onSubmit, onDismiss },
   ref,
 ) {
+  const [consent, setConsent] = useState(false);
   return (
     <m.div
       ref={ref}
@@ -43,10 +45,20 @@ export const LeadCaptureForm = forwardRef<HTMLDivElement, LeadCaptureFormProps>(
         placeholder="(520) 000-0000"
         className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:outline-none"
       />
+      <label className="flex items-start gap-2 cursor-pointer group pt-1">
+        <Checkbox
+          checked={consent}
+          onCheckedChange={(c) => setConsent(c === true)}
+          className="mt-0.5 border-primary/40 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground data-[state=checked]:border-primary"
+        />
+        <span className="text-[11px] text-muted-foreground leading-snug group-hover:text-foreground/80 transition-colors">
+          I agree to receive calls, texts, and emails from Hush. Msg &amp; data rates may apply. Reply STOP to opt out.
+        </span>
+      </label>
       <div className="flex gap-2">
         <button
           onClick={onSubmit}
-          disabled={!name.trim() || !phone.trim()}
+          disabled={!name.trim() || !phone.trim() || !consent}
           className="flex-1 rounded-lg bg-primary py-2 font-body text-sm text-primary-foreground transition-opacity disabled:opacity-40"
         >
           Submit
