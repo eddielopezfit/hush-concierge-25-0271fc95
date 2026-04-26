@@ -76,9 +76,10 @@ export const HeroSection = () => {
         </div>
 
         {/* Gradient overlays — vertical for legibility + horizontal vignette
-            to soften the desktop video's narrower framing on widescreen. */}
+            to soften the desktop video's narrower framing on widescreen.
+            Vignette kept very subtle (/25) so it never reads as black bars. */}
         <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/30 to-background/90" />
-        <div className="absolute inset-0 hidden md:block bg-gradient-to-r from-background/70 via-transparent to-background/70" />
+        <div className="absolute inset-0 hidden md:block bg-gradient-to-r from-background/25 via-transparent to-background/25" />
       </div>
 
       {/* Content */}
@@ -156,9 +157,9 @@ export const HeroSection = () => {
                   ? "Open Today · 9 AM – 5 PM"
                   : "Open Today · 9 AM – 7 PM";
             const expectation = day === 0
-              ? "We open Tuesday at 9 AM — your plan will be waiting for Kendell."
+              ? "We open Tuesday at 9 AM — Kendell at our front desk will have your plan ready."
               : day === 1
-                ? "We open Tuesday at 9 AM — Kendell will reach out first thing."
+                ? "We open Tuesday at 9 AM — Kendell at our front desk will reach out first thing."
                 : null;
             return (
               <div className="flex flex-col items-center gap-2">
