@@ -5,6 +5,7 @@ import { useLuna } from "@/contexts/LunaContext";
 import { setGuestFirstName } from "@/lib/conciergeStore";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { saveCallbackRequest } from "@/lib/saveSession";
 import { callbackServiceOptions as serviceOptions, callbackTimingOptions as timingOptions } from "@/data/categoryData";
 
@@ -23,6 +24,7 @@ export const BookingCallbackSection = () => {
     interestedIn: [] as string[],
     timing: "",
     message: "",
+    tcpaConsent: false,
   });
 
   // Prefill from concierge context reactively — only fill empty fields, never overwrite user input
@@ -57,7 +59,8 @@ export const BookingCallbackSection = () => {
   const isPhoneValid = phoneDigits.length >= 10;
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const isEmailValid = formData.email.trim().length === 0 || EMAIL_RE.test(formData.email.trim());
-  const isFormValid = formData.fullName.trim().length > 0 && isPhoneValid && isEmailValid;
+  const isFormValid =
+    formData.fullName.trim().length > 0 && isPhoneValid && isEmailValid && formData.tcpaConsent;
 
 
   const handleInputChange = (field: string, value: string) => {
@@ -360,9 +363,24 @@ export const BookingCallbackSection = () => {
               <div className="flex flex-col items-center gap-4">
                 {!isFormValid && (
                   <p className="font-body text-xs text-muted-foreground">
-                    Name and a valid 10-digit phone number required
+                    Name, a valid 10-digit phone, and consent below required
                   </p>
                 )}
+
+                <label className="flex items-start gap-3 max-w-lg cursor-pointer group">
+                  <Checkbox
+                    checked={formData.tcpaConsent}
+                    onCheckedChange={(checked) => {
+                      setUserTouched(true);
+                      setFormData(prev => ({ ...prev, tcpaConsent: checked === true }));
+                    }}
+                    className="mt-0.5 border-gold/40 data-[state=checked]:bg-gold data-[state=checked]:text-background data-[state=checked]:border-gold"
+                  />
+                  <span className="font-body text-xs text-cream/60 leading-relaxed group-hover:text-cream/75 transition-colors text-left">
+                    I agree to receive calls, texts, and emails from Hush Salon &amp; Day Spa about my inquiry.
+                    Message and data rates may apply. Reply STOP to opt out at any time.
+                  </span>
+                </label>
 
                 <div className="flex flex-col sm:flex-row gap-4 items-center justify-center w-full">
                   <m.button
@@ -393,11 +411,6 @@ export const BookingCallbackSection = () => {
                     Something went wrong. Please try again or call us at (520) 327-6753.
                   </p>
                 )}
-
-                <p className="font-body text-xs text-cream/35 text-center max-w-lg mt-2">
-                  By submitting, you agree to be contacted by Hush Salon & Day Spa.
-                  Standard message rates may apply.
-                </p>
               </div>
             </form>
           ) : (
