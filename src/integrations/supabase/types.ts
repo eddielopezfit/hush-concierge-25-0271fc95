@@ -87,6 +87,7 @@ export type Database = {
           interested_in: string | null
           message: string | null
           phone: string
+          slack_message_ts: string | null
           source: string | null
           status: string | null
           timing: string | null
@@ -100,6 +101,7 @@ export type Database = {
           interested_in?: string | null
           message?: string | null
           phone: string
+          slack_message_ts?: string | null
           source?: string | null
           status?: string | null
           timing?: string | null
@@ -113,6 +115,7 @@ export type Database = {
           interested_in?: string | null
           message?: string | null
           phone?: string
+          slack_message_ts?: string | null
           source?: string | null
           status?: string | null
           timing?: string | null
@@ -289,6 +292,7 @@ export type Database = {
           id: string
           name: string | null
           phone: string | null
+          slack_message_ts: string | null
           timing: string | null
         }
         Insert: {
@@ -299,6 +303,7 @@ export type Database = {
           id?: string
           name?: string | null
           phone?: string | null
+          slack_message_ts?: string | null
           timing?: string | null
         }
         Update: {
@@ -309,6 +314,7 @@ export type Database = {
           id?: string
           name?: string | null
           phone?: string | null
+          slack_message_ts?: string | null
           timing?: string | null
         }
         Relationships: []

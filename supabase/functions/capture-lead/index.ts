@@ -11,17 +11,12 @@ import {
   getInternalBookingPath,
   PRIORITY_EMOJI,
   PRIORITY_LABEL,
-  getUrgencyAction,
   type Priority,
 } from "../_shared/booking-rules.ts";
+import { postMessage, resolveMention } from "../_shared/slack-client.ts";
 
 const SUPABASE_URL     = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const SLACK_WEBHOOK    = Deno.env.get("SLACK_WEBHOOK_URL");
-
-function getSlackWebhook(channel: string): string | null {
-  return Deno.env.get(`SLACK_WEBHOOK_URL_${channel.toUpperCase()}`) || SLACK_WEBHOOK || null;
-}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -65,9 +60,14 @@ function scorePriority(body: CaptureLeadBody): { priority: Priority; intent_scor
 }
 
 // ── Slack Block Kit message ───────────────────────────────────────────────────
-function buildSlackMessage(body: CaptureLeadBody, priority: Priority, intent_score: number, channel: string): object {
+async function buildSlackMessage(body: CaptureLeadBody, priority: Priority, intent_score: number, channel: string): Promise<{ text: string; blocks: unknown[] }> {
   const bookingPathDisplay = getInternalBookingPath(body.service_category);
-  const action = getUrgencyAction(priority, channel);
+  const mention = await resolveMention(channel);
+  const action = priority === "P1"
+    ? `🚨 *Action:* ${mention} — Call within 10 minutes`
+    : priority === "P2"
+    ? `⏰ *Action:* ${mention} — Follow up today`
+    : `📋 *Action:* ${mention} — Add to follow-up queue`;
 
   const flags: string[] = [];
   if (body.consultation_required)      flags.push("⚠️ Consultation required — no price until consult");
@@ -80,6 +80,7 @@ function buildSlackMessage(body: CaptureLeadBody, priority: Priority, intent_sco
     : "Not provided";
 
   return {
+    text: `${PRIORITY_EMOJI[priority]} ${PRIORITY_LABEL[priority]} ${body.callback_requested ? "callback" : "lead"} — ${body.guest_name} · ${body.phone} · ${body.service_name || body.service_category || "general"}`,
     blocks: [
       {
         type: "header",
@@ -232,18 +233,17 @@ Deno.serve(async (req) => {
 
     // ── 3. Slack alert (fire-and-forget) ──────────────────────────────────────
     const channel = resolveSlackChannel(body.service_category ?? null, body.callback_requested ?? false);
-    const channelName = channel === "callbacks" ? "CALLBACKS" : channel.toUpperCase();
-    const webhook = getSlackWebhook(channelName) || getSlackWebhook(channel);
-    const slackMsg = buildSlackMessage(body, priority, intent_score, channel);
-
-    if (webhook) {
-      fetch(webhook, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(slackMsg),
-      }).catch((err) => console.error("[capture-lead] Slack error:", err));
-    } else {
-      console.warn("[capture-lead] No Slack webhook for channel:", channel);
+    const { text, blocks } = await buildSlackMessage(body, priority, intent_score, channel);
+    const slackResult = await postMessage({ channelKey: channel, text, blocks });
+    if (!slackResult.ok) {
+      console.warn("[capture-lead] Slack send failed:", slackResult.error, "via", slackResult.via);
+    } else if (slackResult.ts && body.phone) {
+      // Persist ts so lead-qualify can reply in-thread
+      await db
+        .from("leads")
+        .update({ slack_message_ts: slackResult.ts })
+        .eq("phone", body.phone.trim())
+        .is("slack_message_ts", null);
     }
 
     // ── 4. Return confirmation + close_after flag ─────────────────────────────

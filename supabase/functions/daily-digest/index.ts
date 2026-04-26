@@ -2,6 +2,7 @@
 // Posts to SLACK_WEBHOOK_URL (#hush-leads). Triggered by pg_cron daily at 15:00 UTC (8am AZ).
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { postMessage } from "../_shared/slack-client.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -43,7 +44,6 @@ Deno.serve(async (req) => {
 
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const SLACK_URL = Deno.env.get("SLACK_WEBHOOK_URL");
 
     const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
 
@@ -139,16 +139,10 @@ Deno.serve(async (req) => {
     let slackPosted = false;
     if (dryRun) {
       console.log("dryRun=true — skipping Slack post");
-    } else if (SLACK_URL) {
-      const r = await fetch(SLACK_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: slackText }),
-      });
-      slackPosted = r.ok;
-      if (!r.ok) console.error("Slack post failed:", r.status, await r.text());
     } else {
-      console.warn("SLACK_WEBHOOK_URL not set — skipping post");
+      const r = await postMessage({ channelKey: "leads", text: slackText });
+      slackPosted = r.ok;
+      if (!r.ok) console.error("daily-digest Slack post failed:", r.error, "via", r.via);
     }
 
     return new Response(

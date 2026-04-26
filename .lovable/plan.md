@@ -1,64 +1,47 @@
+# Migrate Slack Ops to Lovable Slack Connector
 
+You connected the official **Hush Salon and Spa** Slack workspace (bot mode). Right now all 5 edge functions still post through raw `SLACK_WEBHOOK_URL_*` incoming webhooks. Migrating to the connector unlocks real `@mention` pings, channel auto-discovery, and threading — the gaps flagged earlier.
 
-## Full System Extraction — Hush Salon Digital Hub
+## What changes
 
-I'll generate a single comprehensive technical + UX + AI architecture document, optimized as a NotebookLM/ChatGPT briefing source. It will let another AI fully understand, analyze, or recreate the system.
+### 1. New shared helper: `supabase/functions/_shared/slack-client.ts`
+- `postMessage({ channel, text, blocks?, thread_ts? })` → calls `https://connector-gateway.lovable.dev/slack/api/chat.postMessage` with `Authorization: Bearer ${LOVABLE_API_KEY}` + `X-Connection-Api-Key: ${SLACK_API_KEY}`.
+- `resolveChannelId(name)` → paginated `conversations.list` lookup, cached in-memory per cold start (maps `hush-leads` → `C0XXXX`).
+- `lookupUserIdByEmail(email)` → `users.lookupByEmail` for true `<@Uxxx>` mentions on P1 alerts.
+- Graceful fallback: if `SLACK_API_KEY` is missing, fall back to the existing `SLACK_WEBHOOK_URL_*` path so nothing breaks mid-rollout.
 
-### Deliverable
+### 2. Update `_shared/booking-rules.ts`
+- Add a `SLACK_CHANNEL_NAMES` map: `callbacks → hush-callbacks`, `leads → hush-leads`, `nails → hush-nails`, `lashes → hush-lashes`, `skin → hush-skin`, `massage → hush-massage`, `hair → hush-hair` (new dedicated channel — closes the hair-fallback gap).
+- Keep `getSlackMention()` but add an env-driven `SLACK_MENTION_EMAIL_<CHANNEL>` lookup so you can paste Kendell's email instead of hunting Slack user IDs. Helper resolves email → user ID once and caches.
 
-- `/mnt/documents/hush-system-extraction.md` — ~10,000 words, all 15 sections, no summarization
-- `/mnt/documents/hush-system-extraction.pdf` — Printable handoff via headless Chromium
+### 3. Migrate the 5 callers to `slack-client.postMessage`
+- `request-callback/index.ts` — P1 callback alerts → `hush-callbacks` with `<@Kendell>` mention.
+- `capture-lead/index.ts` — category-routed lead alerts.
+- `lead-qualify/index.ts` — enriched/scored alerts with priority emoji.
+- `daily-digest/index.ts` — morning digest to `hush-leads`.
+- `health-check/index.ts` — heartbeat ping; also add a "connector reachable" check that hits `/api/v1/verify_credentials`.
 
-### Document structure (every section delivered in full depth)
+### 4. Optimization upgrades enabled by the connector
+- **Real mobile pings**: P1 messages include `<@Uxxx>` (resolved from `KENDELL_SLACK_EMAIL` env var) so Kendell's phone actually buzzes.
+- **Threaded follow-ups**: When `lead-qualify` enriches a lead that `capture-lead` already posted, reply in-thread (store `ts` in the `leads` row → new column `slack_message_ts text`) instead of double-posting.
+- **Hair channel**: stop falling back to `#hush-leads`; route to `#hush-hair`.
+- **Bot identity**: set `username: "Luna Concierge"` and `icon_emoji: ":sparkles:"` on every post for instant visual recognition.
 
-**1. System Overview** — Product class: AI-powered conversion-focused service business hub. Business purpose: replace static legacy site with 24/7 lead-capture engine. User journeys: (a) New guest discovery → Experience Finder → Personalized Plan → callback, (b) Returning client fast-path → direct booking, (c) Browser → Luna chat → lead capture. Differentiation: guided discovery vs. menu browsing, AI concierge vs. contact form, cinematic mobile-first vs. desktop business card.
+### 5. Tests
+- Extend `supabase/functions/_shared/` with a `slack-client.test.ts` covering: channel-name → ID resolution, mention email fallback chain, and webhook fallback when `SLACK_API_KEY` is unset.
 
-**2. Full Site Architecture** — Routes: `/` (Index), `/services` `/team` `/about` `/contact` (all redirect to `/#anchors`), `*` (NotFound). Single-page architecture with anchor-driven navigation. For each route: purpose, components, conversion goal, flow.
+### 6. DB migration
+- Add `slack_message_ts text` to `public.leads` and `public.callbacks` for threading. Nullable, no backfill needed.
 
-**3. Homepage Deep Breakdown** — Section-by-section in 10-section narrative order: Hero (cinematic video, dynamic open/closed badge), Trust Bar (4.7★/315+/Pure 100), Experience Finder (5-step quiz), Step Inside (visual narrative), Personalized Plan reveal, Services accordion menu, Inline Callback CTA, Meet the Rockstars, Testimonials (10 verified), About (founders portrait), Join Hush (Groupies Only + Be a Rockstar), Booking Callback, Footer, Mobile Sticky Bar. Each: UX intent, components, copy strategy, conversion mechanics, dynamic behavior.
+### 7. Env vars to add (I'll prompt you)
+- `KENDELL_SLACK_EMAIL` — for P1 mention resolution.
+- Optional per-category overrides: `SLACK_MENTION_EMAIL_NAILS`, `_LASHES`, etc.
 
-**4. UI/UX System Design** — Warm Premium aesthetic (black/charcoal + gold hsl(38 50% 55%) + deep rose). Playfair Display headings + DM Sans body, WCAG AA. Component system: cards, gold-outlined CTAs, mobile sticky bar, modals, accordions, 5-tab Luna panel. Navigation: smooth scroll + 80px scroll-padding-top, hash-route hydration. Interaction: Zero Dead Ends, "No Continue" copy rule, intent-driven labels. Trust: real photography only, verified reviews, BBB A+, Pureology badge.
+## What stays the same
+- Existing `SLACK_WEBHOOK_URL_*` env vars remain as a safety net — the helper prefers the connector but falls back automatically. You can delete them later.
+- All routing rules, priority scoring, and message copy in `booking-rules.ts` are unchanged.
+- No frontend changes.
 
-**5. Luna AI Concierge — Full Breakdown**
-- **5.1 Persona** — warm/confident "brilliant friend who works at the salon," neutral guidance policy (never ranks stylists for multi-provider services), TCPA disclosure, never says "As an AI...", anti-hallucination hard walls, denies nonexistent services (hot stone, prenatal, LED, online booking)
-- **5.2 Knowledge Base** — `SKILL.md` condensed KB + KB10/11/12 (services, team, recommendation engine), `knowledge_items` Supabase table, `services` + `artists` tables, system prompts v4–v7, deterministic `lunaBrain.ts` fallback
-- **5.3 Conversation Flows** — 4-gate lead capture (3-4 exchanges + specific Q answered + interest + not "just looking"), discovery circuit-breaker after 2 uncertainty signals, escalation to Kendell at (520) 327-6753, price objection handling (validate→reframe→compare→soften)
-- **5.4 Modes/Tabs** — Chat, Find My Look (in-panel quiz), My Plan (revealed plan + booking decision), Artists (full roster, no rankings), Explore (services menu) — purpose, interaction, output for each
-- **5.5 Conversion Logic** — `capture_lead` and `request_callback` tools → Slack channels routed by category (#hush-nails, #hush-lashes, #hush-skin, #hush-massage, #hush-callbacks), inline LeadCaptureForm at booking touchpoints, exit-intent on LunaModal
-
-**6. Experience Finder + Personalization** — 5-step (+0 fork): Step 0 fast-path "I know what I want" / "Help me decide," Step 1 categories (multi-select), Step 2 multi-service priority picker (if >1), Step 3 goal (refresh/relax/transform/event), Step 4 category-specific subtype (cut/color/both for hair, manicure/pedicure/full_set/nail_art for nails, etc.), Step 5 timing (today/week/planning/browsing). `lunaBrain.generateRecommendation()` → `goalServiceMap[goal][category]` with subtype override → urgency from timing → `getPriceRange()` from servicesMenuData → `RevealData` → `ExperienceRevealCard` with cinematic reveal.
-
-**7. Booking + Conversion System** — Three modes via `deriveBookingMode()`: `consultation` (color/extensions/lashes — complimentary, no commitment), `guided_front_desk` (multi-provider services), `direct_or_callback` (single-provider specialists). `BookingDecisionCard` runs inline lead capture with idempotency guard, parallel `saveLead` + `saveCallbackRequest`. Sticky mobile bar: Call / Text / Talk to Luna. Inline CTAs after every major section.
-
-**8. Backend Architecture**
-- **8.1 Database** — 7 tables: `artists`, `services`, `knowledge_items`, `guest_profiles` (visit_count, fingerprint, preferred_categories, intent_score), `conversations` (channel, concierge_context, summary, last_summarized_at), `messages` (role, content, latency_ms, tokens_used), `leads`, `callback_requests`. All RLS service-role-only. No FKs (loose coupling).
-- **8.2 Edge Functions** — `luna-chat` (streaming AI, Lovable AI gateway), `session-start`, `session-summarize` (throttled intelligence loop), `capture-lead`, `request-callback`, `submit-lead`, `lead-qualify` (Slack routing engine), `daily-digest`, `health-check`. Triggers and CORS allowlist for each.
-- **8.3 Lead Handling** — Capture point → dedup window (2m/5m/24h) → Slack webhook by category with priority badges (🔴 HIGH for callbacks/today, 🟡 MEDIUM for week) → Supabase row → optional CRM/SMS hooks (Phase 2)
-
-**9. Data + Intelligence Layer** — Behavioral: `journeyTracker.ts` IntersectionObserver → section dwell, `useDwellNudge` + `useInactivityNudge`. Captured: categories of interest, goal, timing, subtype, preferred artist, fingerprint, visit count, intent score, summarized intent_signals. Marketing use: cohort by category interest, retarget abandoned Experience Finders, identify high-intent unbooked leads.
-
-**10. Mobile Experience** — Persistent `MobileStickyBar` (Call/Text/Luna), portrait-master hero video top-anchored, single-column section layouts, swipe-friendly tabs in Luna panel, 24h ConciergeContext TTL across visits. Conversion advantage: phone-in-hand never has to scroll back.
-
-**11. Differentiation** — vs. traditional salon sites (static menu vs. guided discovery + AI), vs. template builders (custom voice + brand-trained AI vs. generic chatbot plugin), vs. generic chatbots (Hush-specific KB + neutral guidance policy + tool-driven lead capture vs. ChatGPT wrapper).
-
-**12. Live vs. Phase 2**
-- **Live:** Hero + video, Trust Bar, Experience Finder, Personalized Plan reveal, Services Menu, Luna 5-tab panel, Booking Decision Card, lead capture → Slack, returning-client fast path, mobile sticky bar, journey tracker, session summarization
-- **Phase 2 ready:** Calendar embed, SMS confirmations/reminders, email follow-up sequences, CRM sync, daily digest activation, voice concierge (built but disabled per constraint)
-
-**13. System Strengths** — Neutral guidance policy (protects team unity), deterministic fallback brain (works even if AI API fails), anti-hallucination hard walls, real photography only, conversion touchpoints after every section, cinematic luxury aesthetic matching 24-year brand heritage, intelligence-summarization closed loop.
-
-**14. Gaps / Improvements** — No online booking (by constraint — phone only), no calendar sync yet, no SMS automation yet, voice concierge disabled, no member portal (excluded by business model refocus), single-language (English; Spanish callers redirected), no A/B testing harness.
-
-**15. Rebuild Instructions** — Tech stack: React 18 + Vite 5 + TypeScript 5 + Tailwind v3 + Framer Motion (LazyMotion) + React Router + TanStack Query + Supabase (managed Lovable Cloud) + Lovable AI Gateway (google/gemini-2.5-flash for chat). Architecture: SPA with lazy-loaded sections, route-level code splitting, Suspense boundaries, shared `LunaContext` + localStorage persistence (24h TTL), `ConciergeContext` flowing through Experience Finder → Personalized Plan → Luna → Lead Capture. Key dependencies: `react-markdown` + `remark-gfm` (chat rendering), `lucide-react` (icons), `sonner` (toasts), edge-function streaming for chat.
-
-### Source extraction
-
-Pulling from: `src/lib/SKILL.md`, `lunaBrain.ts`, `experienceReveal.ts`, `cadenceEngine.ts`, `upsellEngine.ts`, `journeyTracker.ts`, `conciergeStore.ts`, `sessionManager.ts`, `data/teamData.ts` (17 Rockstars), `data/servicesMenuData.ts`, all 10 edge functions, `LunaContext.tsx`, `ExperienceFinderSection.tsx`, `BookingDecisionCard.tsx`, `ChatTab.tsx`, all luna/* tab components, Supabase schema (7 tables), and 70+ memory files in `mem://`.
-
-### Will not include
-
-- Speculative features not in the codebase
-- Hallucinated metrics (no fake conversion rates, no fake response times)
-- Specific dollar figures for the founders' rate
-- Voice/ElevenLabs as live (disabled per constraint, marked Phase 2)
-
+## Out of scope (ask separately if you want them)
+- Two-way Slack interactions (buttons like "Mark contacted", slash commands) — those require a custom Slack app, not the connector.
+- Slack Socket Mode / event subscriptions for replies back into the CRM.

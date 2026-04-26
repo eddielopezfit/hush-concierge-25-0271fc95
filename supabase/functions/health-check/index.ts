@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { postMessage, verifyConnector } from "../_shared/slack-client.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -102,13 +103,25 @@ Deno.serve(async (req) => {
   const requiredSecrets = [
     "LOVABLE_API_KEY",
     "SUPABASE_SERVICE_ROLE_KEY",
-    "SLACK_WEBHOOK_URL",
   ];
   const missing = requiredSecrets.filter((k) => !Deno.env.get(k));
   checks.secrets = {
     ok: missing.length === 0,
     missing,
   };
+
+  // 4b. Slack connector reachability (preferred over legacy webhook)
+  if (Deno.env.get("SLACK_API_KEY")) {
+    const v = await verifyConnector();
+    checks.slack_connector = v;
+    if (!v.ok && result.status === "ok") result.status = "warning";
+  } else if (Deno.env.get("SLACK_WEBHOOK_URL")) {
+    checks.slack_connector = { ok: false, note: "using legacy webhook fallback" };
+  } else {
+    checks.slack_connector = { ok: false, note: "no Slack route configured" };
+    if (result.status === "ok") result.status = "warning";
+  }
+
   if (missing.length > 0 && result.status === "ok") {
     result.status = "warning";
   }
@@ -118,23 +131,13 @@ Deno.serve(async (req) => {
   // Optional Slack alert when degraded (used by scheduled cron)
   let slackPosted = false;
   if (notify && result.status === "degraded") {
-    const webhook = Deno.env.get("SLACK_WEBHOOK_URL");
-    if (webhook) {
-      try {
-        const text =
-          `🚨 *Hush health-check: DEGRADED*\n` +
-          `Time: ${result.timestamp}\n` +
-          "```" + JSON.stringify(checks, null, 2).slice(0, 2500) + "```";
-        const r = await fetch(webhook, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text }),
-        });
-        slackPosted = r.ok;
-      } catch (e) {
-        console.error("[health-check] Slack post failed:", e);
-      }
-    }
+    const text =
+      `🚨 *Hush health-check: DEGRADED*\n` +
+      `Time: ${result.timestamp}\n` +
+      "```" + JSON.stringify(checks, null, 2).slice(0, 2500) + "```";
+    const r = await postMessage({ channelKey: "leads", text });
+    slackPosted = r.ok;
+    if (!r.ok) console.error("[health-check] Slack post failed:", r.error, "via", r.via);
   }
   result.slack_posted = slackPosted;
 
