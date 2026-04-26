@@ -1,47 +1,38 @@
-# Migrate Slack Ops to Lovable Slack Connector
+# Wire up the test mention email + verify P1 alerts buzz
 
-You connected the official **Hush Salon and Spa** Slack workspace (bot mode). Right now all 5 edge functions still post through raw `SLACK_WEBHOOK_URL_*` incoming webhooks. Migrating to the connector unlocks real `@mention` pings, channel auto-discovery, and threading — the gaps flagged earlier.
+## What you asked for
+Use `leothedogamigo@gmail.com` as the test email (standing in for Kendell) so the connector resolves it to a real Slack user ID and `@mentions` them on P1 callback alerts.
 
-## What changes
+## What I'll do
 
-### 1. New shared helper: `supabase/functions/_shared/slack-client.ts`
-- `postMessage({ channel, text, blocks?, thread_ts? })` → calls `https://connector-gateway.lovable.dev/slack/api/chat.postMessage` with `Authorization: Bearer ${LOVABLE_API_KEY}` + `X-Connection-Api-Key: ${SLACK_API_KEY}`.
-- `resolveChannelId(name)` → paginated `conversations.list` lookup, cached in-memory per cold start (maps `hush-leads` → `C0XXXX`).
-- `lookupUserIdByEmail(email)` → `users.lookupByEmail` for true `<@Uxxx>` mentions on P1 alerts.
-- Graceful fallback: if `SLACK_API_KEY` is missing, fall back to the existing `SLACK_WEBHOOK_URL_*` path so nothing breaks mid-rollout.
+### 1. Add the runtime secret
+Use the secrets tool to add:
+- **`KENDELL_SLACK_EMAIL`** = `leothedogamigo@gmail.com`
 
-### 2. Update `_shared/booking-rules.ts`
-- Add a `SLACK_CHANNEL_NAMES` map: `callbacks → hush-callbacks`, `leads → hush-leads`, `nails → hush-nails`, `lashes → hush-lashes`, `skin → hush-skin`, `massage → hush-massage`, `hair → hush-hair` (new dedicated channel — closes the hair-fallback gap).
-- Keep `getSlackMention()` but add an env-driven `SLACK_MENTION_EMAIL_<CHANNEL>` lookup so you can paste Kendell's email instead of hunting Slack user IDs. Helper resolves email → user ID once and caches.
+This is the env var the new `slack-client.ts` helper already looks up via `resolveMention()` → `users.lookupByEmail` → returns `<@Uxxx>` formatted mention. Already implemented — just needs the value.
 
-### 3. Migrate the 5 callers to `slack-client.postMessage`
-- `request-callback/index.ts` — P1 callback alerts → `hush-callbacks` with `<@Kendell>` mention.
-- `capture-lead/index.ts` — category-routed lead alerts.
-- `lead-qualify/index.ts` — enriched/scored alerts with priority emoji.
-- `daily-digest/index.ts` — morning digest to `hush-leads`.
-- `health-check/index.ts` — heartbeat ping; also add a "connector reachable" check that hits `/api/v1/verify_credentials`.
+### 2. Confirm the email exists in your Slack workspace
+Quick sanity check via the connector gateway (`users.lookupByEmail`) to make sure that email is actually a member of the Hush Salon and Spa workspace. If it's not, the mention silently falls back to plain `@Kendell` text (no push). If it fails, I'll flag it before we go further.
 
-### 4. Optimization upgrades enabled by the connector
-- **Real mobile pings**: P1 messages include `<@Uxxx>` (resolved from `KENDELL_SLACK_EMAIL` env var) so Kendell's phone actually buzzes.
-- **Threaded follow-ups**: When `lead-qualify` enriches a lead that `capture-lead` already posted, reply in-thread (store `ts` in the `leads` row → new column `slack_message_ts text`) instead of double-posting.
-- **Hair channel**: stop falling back to `#hush-leads`; route to `#hush-hair`.
-- **Bot identity**: set `username: "Luna Concierge"` and `icon_emoji: ":sparkles:"` on every post for instant visual recognition.
+### 3. Redeploy the 3 functions that send mentions
+- `request-callback` (P1 callback → `#hush-callbacks` with mention)
+- `lead-qualify` (P1/P2 enriched leads with mention)
+- `capture-lead` (initial alert, no mention but worth refreshing)
 
-### 5. Tests
-- Extend `supabase/functions/_shared/` with a `slack-client.test.ts` covering: channel-name → ID resolution, mention email fallback chain, and webhook fallback when `SLACK_API_KEY` is unset.
+So they pick up the new env var immediately.
 
-### 6. DB migration
-- Add `slack_message_ts text` to `public.leads` and `public.callbacks` for threading. Nullable, no backfill needed.
+### 4. Live smoke test
+Trigger a real callback request via `supabase--curl_edge_functions` → `POST /request-callback` with a test payload (name: "Smoke Test", phone, category: "callbacks"). Then verify in `#hush-callbacks`:
+- Message lands via the connector (not legacy webhook)
+- Includes a real `<@Uxxx>` mention that pings the Leo account on mobile
+- Threading column `slack_message_ts` gets populated in `callback_requests`
 
-### 7. Env vars to add (I'll prompt you)
-- `KENDELL_SLACK_EMAIL` — for P1 mention resolution.
-- Optional per-category overrides: `SLACK_MENTION_EMAIL_NAILS`, `_LASHES`, etc.
+I'll report back what landed and what didn't.
 
 ## What stays the same
-- Existing `SLACK_WEBHOOK_URL_*` env vars remain as a safety net — the helper prefers the connector but falls back automatically. You can delete them later.
-- All routing rules, priority scoring, and message copy in `booking-rules.ts` are unchanged.
-- No frontend changes.
+- All routing logic, priority scoring, channel mapping, message copy — unchanged.
+- When you're ready to swap in Kendell's real email later, it's a one-line secret update.
 
-## Out of scope (ask separately if you want them)
-- Two-way Slack interactions (buttons like "Mark contacted", slash commands) — those require a custom Slack app, not the connector.
-- Slack Socket Mode / event subscriptions for replies back into the CRM.
+## Out of scope
+- Per-category mention overrides (`SLACK_MENTION_EMAIL_NAILS`, etc.) — can layer on later if you want different specialists pinged for their category.
+- Hair channel decision (`#hush-hair` vs `#hush-team`) — separate question, unblocked by this.
