@@ -289,6 +289,9 @@ export const BookingCallbackSection = () => {
                     }`}
                     maxLength={255}
                   />
+                  <p className="font-body text-xs text-cream/45 mt-1">
+                    Add your email and we'll send a summary of your visit plan.
+                  </p>
                   {formData.email.trim().length > 0 && !isEmailValid && (
                     <p className="font-body text-xs text-destructive mt-1">Please enter a valid email address</p>
                   )}
@@ -451,6 +454,11 @@ export const BookingCallbackSection = () => {
                       or text{" "}
                       <a href="sms:+15203276753" className="text-gold hover:underline">(520) 327-6753</a>.
                     </p>
+                    {formData.email.trim() && (
+                      <p className="font-body text-xs text-gold/70 italic max-w-md mx-auto mb-8 -mt-4">
+                        We just sent a summary to {formData.email.trim()}.
+                      </p>
+                    )}
                   </>
                 );
               })()}

@@ -58,9 +58,9 @@ async function sendWelcomeSequence(
     // moments later in the same inbox)
     await db.functions.invoke("send-transactional-email", {
       body: {
-        templateName: "first-visit-guide",
+        templateName: "what-happens-next",
         recipientEmail,
-        idempotencyKey: `first-visit-${leadId}`,
+        idempotencyKey: `what-happens-next-${leadId}`,
         templateData: firstName ? { name: firstName } : {},
       },
     });

@@ -238,33 +238,35 @@ export const BookingDecisionCard = ({
             </m.button>
           )}
 
-          {/* Secondary (Call) + Text + Tertiary (Chat) */}
-          <div className="grid grid-cols-3 gap-2">
-            <m.a
-              href="tel:+15203276753"
-              className={`btn-outline-gold ${compact ? "py-2" : "py-2.5"} text-[11px] font-body flex items-center justify-center gap-1`}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Phone className="w-3.5 h-3.5" />
-              Call
-            </m.a>
-            <m.a
-              href="sms:+15203276753"
-              className={`btn-outline-gold ${compact ? "py-2" : "py-2.5"} text-[11px] font-body flex items-center justify-center gap-1`}
-              whileTap={{ scale: 0.98 }}
-            >
-              <MessageSquare className="w-3.5 h-3.5" />
-              Text us
-            </m.a>
-            <m.button
-              onClick={handleTertiary}
-              className={`btn-outline-gold ${compact ? "py-2" : "py-2.5"} text-[11px] font-body flex items-center justify-center gap-1`}
-              whileTap={{ scale: 0.98 }}
-            >
-              <MessageSquare className="w-3.5 h-3.5" />
-              {config.tertiaryLabel}
-            </m.button>
-          </div>
+          {/* Secondary contact options — demoted to subtle text links so the
+              primary CTA above is the clear, dominant action. */}
+          {!showCapture && (
+            <div className="flex items-center justify-center gap-3 pt-1 text-[11px] font-body text-muted-foreground">
+              <a
+                href="tel:+15203276753"
+                className="inline-flex items-center gap-1 hover:text-primary transition-colors"
+              >
+                <Phone className="w-3 h-3" />
+                Call
+              </a>
+              <span className="text-border">·</span>
+              <a
+                href="sms:+15203276753"
+                className="inline-flex items-center gap-1 hover:text-primary transition-colors"
+              >
+                <MessageSquare className="w-3 h-3" />
+                Text
+              </a>
+              <span className="text-border">·</span>
+              <button
+                onClick={handleTertiary}
+                className="inline-flex items-center gap-1 hover:text-primary transition-colors"
+              >
+                <MessageSquare className="w-3 h-3" />
+                {config.tertiaryLabel}
+              </button>
+            </div>
+          )}
         </div>
       )}
     </m.div>

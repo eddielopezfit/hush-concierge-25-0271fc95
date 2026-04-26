@@ -51,6 +51,12 @@ const WelcomeEmail = ({ name }: WelcomeProps) => (
           our Rockstars are ready.
         </Text>
 
+        <Text style={text}>
+          Our front desk will reach out personally to set up your first visit
+          — no rushed booking, no pressure. Just a real conversation, then a
+          time that works for you.
+        </Text>
+
         <Hr style={hr} />
 
         <Text style={signoff}>With warmth,</Text>
