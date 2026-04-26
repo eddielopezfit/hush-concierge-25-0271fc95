@@ -10,14 +10,12 @@ import {
   getInternalBookingPath,
   PRIORITY_EMOJI,
   PRIORITY_LABEL,
-  getUrgencyAction,
   type Priority,
 } from "../_shared/booking-rules.ts";
+import { postMessage, resolveMention } from "../_shared/slack-client.ts";
 
 const SUPABASE_URL     = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const SLACK_WEBHOOK    = Deno.env.get("SLACK_WEBHOOK_URL");
-const CALLBACKS_HOOK   = Deno.env.get("SLACK_WEBHOOK_URL_CALLBACKS") || SLACK_WEBHOOK;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -53,9 +51,12 @@ function deriveLocalPriority(body: RequestCallbackBody): Priority {
 }
 
 // ── Slack Block Kit ───────────────────────────────────────────────────────────
-function buildSlackMessage(body: RequestCallbackBody, priority: Priority): object {
+async function buildSlackMessage(body: RequestCallbackBody, priority: Priority): Promise<{ text: string; blocks: unknown[] }> {
   const bookingPathDisplay = getInternalBookingPath(body.service_category);
-  const action = getUrgencyAction(priority, "callbacks");
+  const mention = await resolveMention("callbacks");
+  const action = priority === "P1"
+    ? `🚨 *Action:* ${mention} — Call within 10 minutes`
+    : `⏰ *Action:* ${mention} — Follow up today`;
 
   const flags: string[] = ["📞 Guest requested a callback — Luna made the commitment"];
   if (body.consultation_required) flags.push("⚠️ Consultation required — no pricing until consult");
@@ -67,6 +68,7 @@ function buildSlackMessage(body: RequestCallbackBody, priority: Priority): objec
     : "Not provided";
 
   return {
+    text: `${PRIORITY_EMOJI[priority]} ${PRIORITY_LABEL[priority]} callback — ${body.guest_name} · ${body.phone} · ${body.service_name || body.service_category || "general"}`,
     blocks: [
       {
         type: "header",
@@ -228,13 +230,19 @@ Deno.serve(async (req) => {
     }
 
     // ── 3. Slack alert to #hush-callbacks ──────────────────────────────────────
-    const slackMsg = buildSlackMessage(body, priority);
-    if (!alreadyCommitted && CALLBACKS_HOOK) {
-      fetch(CALLBACKS_HOOK, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(slackMsg),
-      }).catch((err) => console.error("[request-callback] Slack error:", err));
+    if (!alreadyCommitted) {
+      const { text, blocks } = await buildSlackMessage(body, priority);
+      const result = await postMessage({ channelKey: "callbacks", text, blocks });
+      if (!result.ok) {
+        console.error("[request-callback] Slack send failed:", result.error, "via", result.via);
+      } else if (result.ts && body.phone) {
+        // Best-effort: stamp the freshly inserted callback row with the ts
+        await db
+          .from("callback_requests")
+          .update({ slack_message_ts: result.ts })
+          .eq("phone", body.phone.trim())
+          .is("slack_message_ts", null);
+      }
     }
 
     // ── 4. Return spoken commitment + close_after ─────────────────────────────
