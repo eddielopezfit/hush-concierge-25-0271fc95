@@ -1,5 +1,11 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { buildChatSystemPrompt } from "../_shared/luna-brain.ts";
+import {
+  isPricingQuery,
+  detectPricingCategories,
+  renderPricingBlock,
+  PRICING_CATEGORIES,
+} from "../_shared/pricing-tables.ts";
 // ── Environment ─────────────────────────────────────────────────────────────
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -139,6 +145,29 @@ If the guest explicitly asks "are you AI?" or "are you real?", you may briefly c
     const BOOKING_INTENT_RE = /\b(book(?:\s+me)?|schedule(?:\s+an?)?\s+(?:appointment|visit)|make\s+an?\s+appointment|reserve\s+(?:a|my)\s+(?:spot|appointment))\b/i;
     const hasBookingIntent = !!(lastUserMessage?.content && BOOKING_INTENT_RE.test(lastUserMessage.content));
 
+    // ── Deterministic pricing-table injection ─────────────────────────────
+    // The LLM has a tendency to trim rows when summarizing menus. To guarantee
+    // every row is shown, we render the canonical table ourselves whenever the
+    // user is asking about pricing for a known category, then instruct the model
+    // (via a one-shot rule) NOT to re-render the same table.
+    let pricingPrefix = "";
+    if (lastUserMessage?.content && isPricingQuery(lastUserMessage.content)) {
+      let cats = detectPricingCategories(lastUserMessage.content);
+      // Generic pricing question with no category → show all categories.
+      if (cats.length === 0) cats = PRICING_CATEGORIES;
+      pricingPrefix = renderPricingBlock(cats);
+
+      const titles = cats.map((c) => c.title).join(", ");
+      systemPrompt =
+        `## ⛔ DETERMINISTIC PRICING TABLE ALREADY DELIVERED ⛔\n` +
+        `The complete, authoritative pricing table for: ${titles} has ALREADY been shown to the guest immediately above your reply. ` +
+        `You MUST NOT re-render the table, restate any row, or list prices again. ` +
+        `Do NOT output a markdown table. Do NOT bullet the services. ` +
+        `Begin your reply with a single short, warm sentence (e.g., "Here's the full ${titles.toLowerCase()} menu — anything you'd like me to break down?") and then offer ONE concrete next step (a recommendation, a question, or a booking nudge). Keep it under 3 sentences.\n\n` +
+        `═══════════════════════════════════════════════════════════════════\n\n` +
+        systemPrompt;
+    }
+
     // Call AI gateway
     const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -206,6 +235,13 @@ If the guest explicitly asks "are you AI?" or "are you real?", you may briefly c
           const sse = `data: ${JSON.stringify({ choices: [{ delta: { content: text } }] })}\n\n`;
           controller.enqueue(encoder.encode(sse));
         };
+
+        // Emit the deterministic pricing table first so the user sees the
+        // complete data before the LLM commentary streams in.
+        if (pricingPrefix) {
+          enqueueContentChunk(pricingPrefix + "\n\n");
+          assistantFullText += pricingPrefix + "\n\n";
+        }
 
         try {
           while (true) {
