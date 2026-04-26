@@ -53,7 +53,7 @@ export const HeroSection = () => {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Video — Ken Burns slow zoom via CSS */}
-      <div className="absolute inset-0 z-0 overflow-hidden bg-background">
+      <div className="absolute inset-0 z-0 overflow-hidden bg-charcoal">
         <div className="absolute inset-0 overflow-hidden animate-ken-burns will-change-transform [transform-origin:center_center]">
           <video
             ref={videoRef}
@@ -70,7 +70,7 @@ export const HeroSection = () => {
             className={
               isMobile
                 ? "absolute inset-0 w-full h-full object-cover [object-position:center_top]"
-                : "absolute inset-0 w-full h-full object-cover object-center"
+                : "absolute inset-0 w-full h-full object-cover object-center scale-110"
             }
           />
         </div>

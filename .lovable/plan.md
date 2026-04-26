@@ -1,79 +1,74 @@
+# Push Hush from 9.1 → 10/10
 
-# Pre-Demo Polish: Confirmation Copy + Conversion UX
-
-Tightens the lead → callback → booking story so every guest touchpoint (SMS, email, success states, recommendation card) consistently sets the expectation that **the front desk reaches out to discuss and book** — never that an appointment is already scheduled. Also ships the highest-leverage UX fixes from the Comet audit.
-
----
-
-## A. Confirmation copy alignment (the model fix)
-
-### A1. Replace `first-visit-guide` email with a "What happens next" lead-nurture email
-Current `first-visit-guide` says *"before you arrive"* and gives parking/cancellation tips — but it fires on lead capture, **before any booking exists**. Confusing for guests who haven't booked yet.
-
-- New template: `supabase/functions/_shared/transactional-email-templates/what-happens-next.tsx`
-  - Sets callback expectation explicitly: *"Kendell will reach out to discuss your goals, match you with the right artist, and find a time that works for you."*
-  - Keeps the warmth and Luna voice
-  - Removes parking/cancellation/early-arrival content (those belong in a true post-booking confirmation we don't have yet)
-- Update `registry.ts` to swap `first-visit-guide` → `what-happens-next`
-- Update `submit-lead/index.ts` to invoke the new template name (and use `what-happens-{leadId}` idempotency key)
-- Redeploy `send-transactional-email` and `submit-lead`
-- Leave the old `first-visit-guide.tsx` file in place but unregistered (could be repurposed later for true post-booking confirmation)
-
-### A2. Tighten welcome email
-Add one sentence after the "Rockstars are ready" paragraph:
-> *"Our front desk will reach out personally to set up your first visit — no rushed booking, no pressure."*
-
-Sets the expectation cleanly while preserving brand warmth.
-
-### A3. Normalize `request-callback` confirmation copy
-Currently splits into "set up your consultation" vs plain "about [service]." Unify both branches to:
-> *"Kendell will call you back [window] to discuss [service] and set up the right time. Looking forward to seeing you at Hush."*
-
-Consistently frames as discussion + booking.
-
-### A4. SMS copy — already correct, no change
-*"Kendell will reach out [window]"* is the right framing. Confirmed nothing implies an appointment is booked.
+Three surgical fixes addressing the exact issues Comet flagged. No new infrastructure, no architectural changes — pure polish on a build that's already production-ready.
 
 ---
 
-## B. Highest-impact Comet audit fixes
+## 1. Eliminate desktop hero "black sidebars" (visual blocker)
 
-### B1. Recommendation card CTA hierarchy (P1 #3 — highest conversion lift)
-In `ExperienceFinderSection` recommendation card, the 4 equal-weight CTAs (REQUEST CONSULTATION / CALL / TEXT US / CHAT WITH LUNA) dilute the primary action.
-- Promote **REQUEST CONSULTATION** to the only full-width gold button.
-- Collapse CALL / TEXT US / CHAT WITH LUNA into a single muted row of icon-style links beneath the primary CTA (or "Other ways to connect ▾" disclosure).
+**Problem:** At 1297px+ widescreens, the desktop hero video doesn't fill the viewport edge-to-edge — it leaves blurred dark bars on left/right that read as letterboxing and undermine the luxury feel. The previous fix softened the gradient overlay, but the root cause is the video's intrinsic aspect ratio being narrower than ultrawide viewports.
 
-### B2. Email field copy upgrade (P1 #1 + #2 combined)
-In `BookingCallbackSection`:
-- Change email field label/help text from "(optional)" to: **"Add your email and we'll send a summary of your visit plan"** — frames as value exchange, not throwaway.
-- Add one-line confirmation in success state when email was provided: *"We just sent a summary to {email}."* So guests know the email arrived.
+**Fix in `src/components/HeroSection.tsx`:**
+- Wrap the desktop `<video>` in a container that uses `scale-110` + `object-cover` with `object-position: center` so the video over-renders by ~10% and crops cleanly at the edges instead of leaving bars.
+- Add a `bg-charcoal` (matching salon brand) base layer behind the video so even during the first paint frame, the edges read as intentional brand color, not "missing video."
+- Keep the existing Ken Burns animation intact.
+- Mobile path is unchanged (`object-position: center top` already works correctly).
 
-### B3. Remove "Planning ahead" pre-selection on Finder Step 3 (P2 #6)
-Currently auto-highlighted before user clicks. Start with no option selected, require explicit choice. Small correctness fix.
-
-### B4. Verify cold-load shell (P0 #1 from audit)
-Audit reported ~4s blank screen on cold load. We have `#hush-shell` in `index.html` — verify it renders the brand wordmark + gold gradient before JS hydrates. If invisible/timing-off, tune CSS so it paints immediately and fades out only once React mounts. (Quick investigation — may already be working; auditor may have hit a throttled connection.)
+**Validation:** Test at 1297px, 1536px, and 1920px viewports — video should fill edge-to-edge with no visible bars.
 
 ---
 
-## C. Explicitly NOT doing (out of scope)
+## 2. Cut perceived cold-load time (~3–4s → <1.5s perceived)
 
-- **"Kendell will call you about your hair"** copy — confirmed correct (Kendell = Front Desk). Audit flag moot.
-- **Site address, hours, trust bar** — verified accurate, no changes.
-- **Luna behavioral compliance** — passed all 3 checks.
-- **Instagram bio hours mismatch** — founder fix outside the codebase.
-- **SEO H1 rewrite, focus rings, hero pause, urgency ticker, A/B tests** — valid but post-demo polish.
-- **Exit-intent on Luna minimize, name-before-phone in Luna lead form** — pre-demo risk too high.
+**Problem:** The `#hush-shell` branded loader is charming but adds a cognitive "waiting" beat before hero paints. We can't make the JS bundle parse faster, but we can make the *transition* feel instantaneous.
+
+**Fix in `index.html`:**
+- Add `<link rel="preload" as="image" href="<desktop hero poster URL>" fetchpriority="high">` so the hero's poster image starts downloading in parallel with the JS bundle (currently it only loads after React mounts and the `<video poster>` attribute is read).
+- Add a matching mobile preload guarded by `media="(max-width: 767px)"` so we never download both posters.
+- Add `<link rel="preconnect" href="https://ltnjxrpicsgujxvfluwz.supabase.co" crossorigin>` to warm the connection to the Supabase storage CDN serving the poster + video.
+- Tighten the shell fade-out: change the inline `transition` from `.6s` to `.35s` so once React mounts, the shell clears faster.
+
+**Fix in `src/main.tsx` (or wherever shell is dismissed):**
+- Verify the shell `is-hidden` class is added on the *first* React paint, not on a delayed effect. If currently behind a `setTimeout` or animation gate, hoist it earlier.
+
+**Validation:** Throttle network to "Fast 3G" in DevTools, hard-reload — should see hero poster within ~1.5s, full video shortly after. The branded shell still appears for users on truly slow connections.
 
 ---
 
-## Test checklist
+## 3. Add explicit TCPA consent checkbox to callback form
 
-1. Submit callback with phone + email → SMS arrives, **welcome** + new **what-happens-next** emails arrive, copy consistently frames "callback to discuss & book."
-2. Submit callback without email → SMS only, no orphaned email error.
-3. Complete Experience Finder → recommendation card shows ONE dominant gold CTA.
-4. Reload during Finder Step 3 → no pre-selection on timing.
-5. Hard-refresh homepage → shell paints immediately, no extended black screen.
+**Problem:** Current form (`BookingCallbackSection.tsx` line 397–400) uses *implied consent* via fine-print under the submit button. This is federally permissible but legally weaker than express written consent — and as Hush scales SMS volume, regulators (CA, TX, FL especially) increasingly expect a checkbox.
+
+**Fix in `src/components/BookingCallbackSection.tsx`:**
+- Add `tcpaConsent: false` to the `formData` state.
+- Add a `<Checkbox>` (already exists at `src/components/ui/checkbox.tsx`) above the submit button with this label:
+  > *"I agree to receive calls, texts, and emails from Hush Salon & Day Spa about my inquiry. Message and data rates may apply. Reply STOP to opt out at any time."*
+- Make the checkbox **required to submit** — extend `isFormValid` to include `formData.tcpaConsent === true`.
+- Style the checkbox in the brand palette: `border-gold/30`, gold check on tick, body font for the label, smaller text (`text-xs text-cream/60`) so it doesn't compete with the primary CTA visually.
+- Remove the now-redundant fine-print paragraph at lines 397–400 (the checkbox label replaces it).
+- Mirror the same checkbox into `src/components/luna/chat/LeadCaptureForm.tsx` for the in-Luna lead capture so consent is uniform across all three entry points (callback form, Luna chat, Experience Finder result handoff).
+
+**Validation:**
+- Submit attempt without checking → button stays disabled, helpful microcopy explains why.
+- Check + submit → flows through normally, consent state can optionally be logged to the lead row in Supabase for compliance audit (low-effort follow-up; not required to ship).
+
+---
+
+## Out of scope (intentional)
+
+- **Productizing as SaaS** — Comet's $25–75K MRR scenario is a real opportunity but a separate strategic decision, not a polish task.
+- **Logging consent timestamp to DB** — Nice-to-have for audit trail; can ship as a follow-up migration once SMS volume justifies it.
+- **Further bundle splitting** — The Suspense + Skeleton boundaries shipped in the previous loop already handle CLS well; chasing another 200ms here has diminishing returns.
+
+---
+
+## Test checklist before declaring 10/10
+
+1. Hard-refresh on 1920px desktop — no black sidebars on hero video.
+2. Hard-refresh on Fast 3G throttle — hero poster paints within ~1.5s.
+3. Submit callback form without checking TCPA → submit button stays disabled.
+4. Check TCPA + submit → SMS + email + Slack still fire correctly.
+5. Submit lead via Luna chat → same TCPA checkbox enforces consent.
 
 ## Scope
-~45 min of focused work. Pure copy + UX. No new infrastructure, no DB migrations, no new edge functions (one template swap + redeploys).
+~30 minutes of focused work. Three files touched: `HeroSection.tsx`, `index.html`, `BookingCallbackSection.tsx` (+ `LeadCaptureForm.tsx` for parity). No DB changes, no edge function redeploys.
