@@ -8,6 +8,7 @@ import { LunaProvider } from "./contexts/LunaContext";
 
 // Route-level code-splitting — keep entry bundle minimal
 const NotFound = lazy(() => import("./pages/NotFound"));
+const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 
 // LazyMotion is loaded on-demand from a child chunk, so framer-motion no longer
 // ships in the eager bundle. The provider is mounted around all lazy children.
@@ -52,6 +53,7 @@ const App = () => (
                 <Route path="/team" element={<Navigate to="/#artists" replace />} />
                 <Route path="/about" element={<Navigate to="/#about" replace />} />
                 <Route path="/contact" element={<Navigate to="/#contact" replace />} />
+                <Route path="/unsubscribe" element={<Unsubscribe />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 {/* New pages should follow the lazy pattern: const Page = lazy(() => import("./pages/Page")) */}
                 <Route path="*" element={<NotFound />} />
