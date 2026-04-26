@@ -20,7 +20,12 @@ const FooterSection = lazy(() => import("@/components/FooterSection").then(m => 
 const MobileStickyBar = lazy(() => import("@/components/MobileStickyBar").then(m => ({ default: m.MobileStickyBar })));
 const LunaModal = lazy(() => import("@/components/LunaModal").then(m => ({ default: m.LunaModal })));
 
-const SectionFallback = () => <div className="min-h-[200px]" aria-hidden="true" />;
+// Reserve realistic vertical space per section to prevent cumulative layout shift
+// as lazy chunks hydrate. Heights are eyeballed to actual rendered section sizes
+// so the page doesn't "jump" as content streams in.
+const Skeleton = ({ h }: { h: string }) => (
+  <div className={`${h} w-full`} aria-hidden="true" style={{ background: "transparent" }} />
+);
 
 const Index = () => {
   const { isModalOpen, context, closeModal } = useLuna();
@@ -64,18 +69,38 @@ const Index = () => {
       <main id="main-content">
         <HeroSection />
         <TrustBar />
-        <Suspense fallback={<SectionFallback />}>
+        <Suspense fallback={<Skeleton h="min-h-[640px]" />}>
           <ExperienceFinderSection />
-          <StepInsideSection />
+        </Suspense>
+        <StepInsideSection />
+        <Suspense fallback={<Skeleton h="min-h-[520px]" />}>
           <PersonalizedPlanSection />
+        </Suspense>
+        <Suspense fallback={<Skeleton h="min-h-[900px]" />}>
           <ServicesSection />
+        </Suspense>
+        <Suspense fallback={<Skeleton h="min-h-[180px]" />}>
           <InlineCallbackCTA />
+        </Suspense>
+        <Suspense fallback={<Skeleton h="min-h-[760px]" />}>
           <ArtistsSection />
+        </Suspense>
+        <Suspense fallback={<Skeleton h="min-h-[680px]" />}>
           <TestimonialsSection />
+        </Suspense>
+        <Suspense fallback={<Skeleton h="min-h-[560px]" />}>
           <AboutSection />
+        </Suspense>
+        <Suspense fallback={<Skeleton h="min-h-[480px]" />}>
           <JoinHushSection />
+        </Suspense>
+        <Suspense fallback={<Skeleton h="min-h-[720px]" />}>
           <BookingCallbackSection />
+        </Suspense>
+        <Suspense fallback={<Skeleton h="min-h-[320px]" />}>
           <FooterSection />
+        </Suspense>
+        <Suspense fallback={null}>
           <MobileStickyBar />
           {isModalOpen && (
             <LunaModal isOpen={isModalOpen} onClose={closeModal} context={context} />
