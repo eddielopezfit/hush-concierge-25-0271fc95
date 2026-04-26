@@ -114,6 +114,55 @@ Deno.serve(async (req) => {
     // Build system prompt from canonical shared brain
     let systemPrompt = buildChatSystemPrompt(journeyContext);
 
+    // ── Live day/time context + closed-day callback rule ────────────────
+    // Inject the actual current day in Tucson (America/Phoenix, no DST) so
+    // Luna can correctly answer "tomorrow" and "today" questions and never
+    // promises a Sunday or Monday callback while the salon is closed.
+    try {
+      const tz = "America/Phoenix";
+      const now = new Date();
+      const dayName = new Intl.DateTimeFormat("en-US", { weekday: "long", timeZone: tz }).format(now);
+      const dateStr = new Intl.DateTimeFormat("en-US", {
+        weekday: "long", month: "long", day: "numeric", year: "numeric", timeZone: tz,
+      }).format(now);
+      // Compute "tomorrow" weekday in Tucson time
+      const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+      const tomorrowName = new Intl.DateTimeFormat("en-US", { weekday: "long", timeZone: tz }).format(tomorrow);
+      const closedDays = new Set(["Sunday", "Monday"]);
+      const isClosedToday = closedDays.has(dayName);
+      const isClosedTomorrow = closedDays.has(tomorrowName);
+
+      const nextOpenDayFrom = (start: Date): string => {
+        for (let i = 0; i < 7; i++) {
+          const d = new Date(start.getTime() + i * 24 * 60 * 60 * 1000);
+          const name = new Intl.DateTimeFormat("en-US", { weekday: "long", timeZone: tz }).format(d);
+          if (!closedDays.has(name)) return name;
+        }
+        return "Tuesday";
+      };
+      const nextOpenAfterToday = isClosedToday ? nextOpenDayFrom(now) : dayName;
+      const nextOpenAfterTomorrow = isClosedTomorrow ? nextOpenDayFrom(tomorrow) : tomorrowName;
+
+      const liveContext =
+        `## ⏰ LIVE DATE & SCHEDULING CONTEXT (Tucson time)\n` +
+        `Today is ${dateStr}. Tomorrow is ${tomorrowName}.\n` +
+        `Salon status today: ${isClosedToday ? "CLOSED" : "OPEN"}.\n` +
+        `Salon status tomorrow: ${isClosedTomorrow ? "CLOSED" : "OPEN"}.\n` +
+        `Next open day from today: ${nextOpenAfterToday}.\n` +
+        `Next open day from tomorrow: ${nextOpenAfterTomorrow}.\n\n` +
+        `## 📞 CALLBACK SCHEDULING RULE — ABSOLUTE\n` +
+        `Hush is closed Sunday and Monday. Kendell at the front desk only returns calls during open hours.\n` +
+        `- If today is closed, you MUST tell the guest the earliest callback is the morning of ${nextOpenAfterToday} at 9 AM. Never imply a same-day callback.\n` +
+        `- If the guest asks about "tomorrow" and tomorrow is closed (Sunday or Monday), you MUST say tomorrow is closed and offer ${nextOpenAfterTomorrow} at 9 AM as the next available day. Never promise a Monday callback.\n` +
+        `- Preferred phrasing: "We're closed ${isClosedTomorrow ? tomorrowName : "Sunday and Monday"} — the earliest Kendell can call you back is ${nextOpenAfterTomorrow} morning at 9 AM."\n` +
+        `- This rule overrides any other scheduling language. Never invent a callback time outside open hours.\n\n` +
+        `═══════════════════════════════════════════════════════════════════\n\n`;
+
+      systemPrompt = liveContext + systemPrompt;
+    } catch (e) {
+      console.warn("[luna-chat] live date injection failed:", (e as Error).message);
+    }
+
     // ── Self-intro guard (PREPENDED so it dominates the prompt) ─────────
     const hasPriorAssistantMessage = messages.some((m) => m.role === "assistant");
     if (hasPriorAssistantMessage) {
