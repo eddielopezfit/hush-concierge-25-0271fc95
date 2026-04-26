@@ -45,7 +45,7 @@ async function sendWelcomeSequence(
 
   try {
     // 1. Immediate welcome
-    await db.functions.invoke("send-transactional-email", {
+    const welcomeRes = await db.functions.invoke("send-transactional-email", {
       body: {
         templateName: "welcome",
         recipientEmail,
@@ -53,10 +53,15 @@ async function sendWelcomeSequence(
         templateData: firstName ? { name: firstName } : {},
       },
     });
+    if (welcomeRes.error) {
+      console.error("[submit-lead] welcome invoke error:", welcomeRes.error);
+    } else {
+      console.log("[submit-lead] welcome invoked OK:", JSON.stringify(welcomeRes.data));
+    }
 
     // 2. Follow-up: prepare for first visit (queued right after — arrives
     // moments later in the same inbox)
-    await db.functions.invoke("send-transactional-email", {
+    const nextRes = await db.functions.invoke("send-transactional-email", {
       body: {
         templateName: "what-happens-next",
         recipientEmail,
@@ -64,6 +69,11 @@ async function sendWelcomeSequence(
         templateData: firstName ? { name: firstName } : {},
       },
     });
+    if (nextRes.error) {
+      console.error("[submit-lead] what-happens-next invoke error:", nextRes.error);
+    } else {
+      console.log("[submit-lead] what-happens-next invoked OK:", JSON.stringify(nextRes.data));
+    }
   } catch (err) {
     console.warn("[submit-lead] welcome sequence failed:", err);
   }
