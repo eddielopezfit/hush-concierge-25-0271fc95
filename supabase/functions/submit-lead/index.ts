@@ -148,6 +148,24 @@ serve(async (req) => {
         });
       }
 
+      // Fire SMS confirmation (non-blocking)
+      const nextOpenWindow = getNextOpenWindow();
+      const smsBody = buildGuestSmsBody({
+        name: full_name,
+        type: "callback",
+        nextOpenWindow,
+      });
+      // @ts-ignore EdgeRuntime is available in Deno Deploy
+      EdgeRuntime.waitUntil(
+        sendGuestSms({
+          to: phone.trim(),
+          body: smsBody,
+          idempotencyKey: `callback-sms-${cbId}`,
+          relatedTable: "callback_requests",
+          relatedId: cbId,
+        }).catch((e) => console.warn("[submit-lead] callback SMS failed:", e))
+      );
+
       return new Response(
         JSON.stringify({ success: true }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -208,6 +226,26 @@ serve(async (req) => {
           name: name,
           leadId,
         });
+      }
+
+      // Fire SMS confirmation if we have a phone (non-blocking)
+      if (hasPhone) {
+        const nextOpenWindow = getNextOpenWindow();
+        const smsBody = buildGuestSmsBody({
+          name,
+          type: "lead",
+          nextOpenWindow,
+        });
+        // @ts-ignore EdgeRuntime is available in Deno Deploy
+        EdgeRuntime.waitUntil(
+          sendGuestSms({
+            to: hasPhone,
+            body: smsBody,
+            idempotencyKey: `lead-sms-${leadId}`,
+            relatedTable: "leads",
+            relatedId: leadId,
+          }).catch((e) => console.warn("[submit-lead] lead SMS failed:", e))
+        );
       }
 
       return new Response(
