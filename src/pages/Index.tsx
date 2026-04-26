@@ -20,7 +20,12 @@ const FooterSection = lazy(() => import("@/components/FooterSection").then(m => 
 const MobileStickyBar = lazy(() => import("@/components/MobileStickyBar").then(m => ({ default: m.MobileStickyBar })));
 const LunaModal = lazy(() => import("@/components/LunaModal").then(m => ({ default: m.LunaModal })));
 
-const SectionFallback = () => <div className="min-h-[200px]" aria-hidden="true" />;
+// Reserve realistic vertical space per section to prevent cumulative layout shift
+// as lazy chunks hydrate. Heights are eyeballed to actual rendered section sizes
+// so the page doesn't "jump" as content streams in.
+const Skeleton = ({ h }: { h: string }) => (
+  <div className={`${h} w-full`} aria-hidden="true" style={{ background: "transparent" }} />
+);
 
 const Index = () => {
   const { isModalOpen, context, closeModal } = useLuna();
