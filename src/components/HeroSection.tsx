@@ -102,16 +102,18 @@ export const HeroSection = () => {
           Five departments · Three founders still behind the chair · 24 years of transformations
         </p>
 
-        {/* CTAs — single dominant primary, secondary as ghost link */}
+        {/* CTAs — single dominant primary, secondary as ghost links.
+            Visible on every viewport so mobile users have an in-hero
+            entry point (not just the bottom sticky bar). */}
         <div
-          className="hidden sm:flex flex-col items-center justify-center gap-3 mb-8 px-4 opacity-0 animate-fade-up-sm"
+          className="flex flex-col items-center justify-center gap-3 mb-8 px-4 opacity-0 animate-fade-up-sm"
           style={{ animationDelay: "0.6s" }}
         >
           <button
             onClick={handleDiscoverClick}
-            className="btn-gold py-4 px-10 flex items-center gap-3 transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]"
+            className="btn-gold py-3.5 px-8 sm:py-4 sm:px-10 text-sm sm:text-base flex items-center gap-2.5 sm:gap-3 transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]"
           >
-            <Sparkles className="w-5 h-5" />
+            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
             Find Your Experience
           </button>
 
