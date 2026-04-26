@@ -48,7 +48,7 @@ export const HeroSection = () => {
             preload="auto"
             poster="https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Hero_v2_Desktop_Poster.jpg"
             aria-hidden="true"
-            src="https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Hero_v2_Desktop.mp4?v=video-mp4"
+            src="/videos/Hush_Hero_v2_Desktop.mp4"
             onCanPlay={(e) => { e.currentTarget.play().catch(() => {}); }}
             className="hidden md:block absolute inset-0 w-full h-full object-cover object-center"
           />
@@ -63,7 +63,7 @@ export const HeroSection = () => {
             preload="metadata"
             poster="https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Hero_v2_Mobile_Poster.jpg"
             aria-hidden="true"
-            src="https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Hero_v2_Mobile.mp4?v=video-mp4"
+            src="/videos/Hush_Hero_v2_Mobile.mp4"
             onCanPlay={(e) => { e.currentTarget.play().catch(() => {}); }}
             className="md:hidden absolute inset-0 w-full h-full object-cover [object-position:center_top]"
           />
