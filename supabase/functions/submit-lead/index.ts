@@ -43,36 +43,51 @@ async function sendWelcomeSequence(
 
   const firstName = name?.trim().split(/\s+/)[0] || undefined;
 
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const sendUrl = `${supabaseUrl}/functions/v1/send-transactional-email`;
+  const authHeaders = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${serviceRoleKey}`,
+    apikey: serviceRoleKey,
+  };
+
   try {
     // 1. Immediate welcome
-    const welcomeRes = await db.functions.invoke("send-transactional-email", {
-      body: {
+    const welcomeRes = await fetch(sendUrl, {
+      method: "POST",
+      headers: authHeaders,
+      body: JSON.stringify({
         templateName: "welcome",
         recipientEmail,
         idempotencyKey: `welcome-${leadId}`,
         templateData: firstName ? { name: firstName } : {},
-      },
+      }),
     });
-    if (welcomeRes.error) {
-      console.error("[submit-lead] welcome invoke error:", welcomeRes.error);
+    if (!welcomeRes.ok) {
+      const txt = await welcomeRes.text();
+      console.error("[submit-lead] welcome failed:", welcomeRes.status, txt);
     } else {
-      console.log("[submit-lead] welcome invoked OK:", JSON.stringify(welcomeRes.data));
+      console.log("[submit-lead] welcome OK");
     }
 
     // 2. Follow-up: prepare for first visit (queued right after — arrives
     // moments later in the same inbox)
-    const nextRes = await db.functions.invoke("send-transactional-email", {
-      body: {
+    const nextRes = await fetch(sendUrl, {
+      method: "POST",
+      headers: authHeaders,
+      body: JSON.stringify({
         templateName: "what-happens-next",
         recipientEmail,
         idempotencyKey: `what-happens-next-${leadId}`,
         templateData: firstName ? { name: firstName } : {},
-      },
+      }),
     });
-    if (nextRes.error) {
-      console.error("[submit-lead] what-happens-next invoke error:", nextRes.error);
+    if (!nextRes.ok) {
+      const txt = await nextRes.text();
+      console.error("[submit-lead] what-happens-next failed:", nextRes.status, txt);
     } else {
-      console.log("[submit-lead] what-happens-next invoked OK:", JSON.stringify(nextRes.data));
+      console.log("[submit-lead] what-happens-next OK");
     }
   } catch (err) {
     console.warn("[submit-lead] welcome sequence failed:", err);
