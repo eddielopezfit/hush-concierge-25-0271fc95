@@ -5,6 +5,7 @@ import { useLuna } from "@/contexts/LunaContext";
 import { setGuestFirstName } from "@/lib/conciergeStore";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { saveCallbackRequest } from "@/lib/saveSession";
 import { callbackServiceOptions as serviceOptions, callbackTimingOptions as timingOptions } from "@/data/categoryData";
 
@@ -23,6 +24,7 @@ export const BookingCallbackSection = () => {
     interestedIn: [] as string[],
     timing: "",
     message: "",
+    tcpaConsent: false,
   });
 
   // Prefill from concierge context reactively — only fill empty fields, never overwrite user input
@@ -57,7 +59,8 @@ export const BookingCallbackSection = () => {
   const isPhoneValid = phoneDigits.length >= 10;
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const isEmailValid = formData.email.trim().length === 0 || EMAIL_RE.test(formData.email.trim());
-  const isFormValid = formData.fullName.trim().length > 0 && isPhoneValid && isEmailValid;
+  const isFormValid =
+    formData.fullName.trim().length > 0 && isPhoneValid && isEmailValid && formData.tcpaConsent;
 
 
   const handleInputChange = (field: string, value: string) => {
