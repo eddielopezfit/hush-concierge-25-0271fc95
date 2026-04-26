@@ -1,100 +1,114 @@
-# Hush NotebookLM Overview Prompts v3 — Video Rewrite + QA Checklist
+# Hush Build DNA — Complete Technical & Strategic Dossier
 
-## Deliverable
-One new file: `/mnt/documents/Hush_NotebookLM_Overview_Prompts_v3.md`
+Generate a single comprehensive document (`Hush_Build_DNA_v1.md` + matching `Hush_Build_DNA_v1.pdf` in `/mnt/documents/`) that captures **every layer** of the Hush build for founder review. This is the "whitepaper" that sits behind the audio + video overviews — the artifact the founders can flip through to verify the substance.
 
-Audio v2 prompt carries forward unchanged (it's working). The **Video Overview prompt is fully rewritten** to fix every gap surfaced in the m4p4 analysis, and a one-page **QA checklist** is appended so you can verify each NotebookLM render before sending it to Sheri, Danielle, and Kathy.
+## Document Structure (12 chapters, ~40–50 pages)
 
----
+### 1. Executive Summary (1 page)
+- What Hush received: full website + AI concierge + lead pipeline
+- 24-year legacy meets 24/7 digital front desk
+- Pricing model: $1,500 build + $297/mo maintenance
+- 90-day exit clause, founders pricing in exchange for case study rights
 
-## What v3 fixes (from the video analysis)
+### 2. The Strategic DNA (2 pages)
+- **The Chair-First narrative** — why the build leads with legacy, not tech
+- **Zero Dead Ends** UX principle — every screen presents a clear next action
+- **Neutral Guidance Policy** — Luna never plays favorites between artists
+- **No Continue copy rule** — intent-driven labels only ("Let Luna Guide You", "See My Plan")
+- **Three engagement modes** — New Client, Returning Client, Browsing Client
 
-| Gap in current video render | v3 fix |
-|---|---|
-| Male narrator | Hard-coded `voice: female, warm, mid-range, advisor tone — think trusted consultant, not influencer` directive at top of prompt |
-| No data citations spoken | Mandatory inline source callouts: SimilarWeb (March 2026), Google Business Profile, Hush published menu, US Census Tucson |
-| Missing Founders Pricing / case study ask | New **Chapter 5 script (verbatim)** locking in the partnership ask — not paraphrased, not optional |
-| Cartoon/whiteboard visuals | `style: editorial, minimal, cinematic. No cartoons, no mascots, no hand-drawn icons, no stock illustrations. Use typography, real photography references, and brand color blocks only.` |
-| Pronunciation drift (Cathy/Kendall) | Phonetic guide repeated at top of video prompt: KATH-ee, KEN-dell, TAM-ee, SHARE-ee, dan-YELL |
-| Domain never spoken | Required spoken URL in close: "hush dash salon dot lovable dot app" |
-| Founders not addressed by name on screen | Each chapter title card opens with "Sheri, Danielle, Kathy —" |
+### 3. Visual Design System (3 pages)
+- **Palette** (charcoal `#0d0d0d`, cream, warm gold `hsl(38 50% 55%)`, deep rose, with full HSL token table)
+- **Typography** — Playfair Display (display) + DM Sans (body), AA contrast verified
+- **Gradients, shadows, glows** — gold-glow, elegant, card shadows
+- **Animation grammar** — fade-up, ken-burns, glow-pulse, framer-motion via LazyMotion
+- **Real photography mandate** — no stock or AI placeholders
+- **Cinematic video backgrounds** — muted autoplay loops with 50% tint + gradient overlay
 
----
+### 4. Information Architecture (2 pages)
+- **10-section homepage narrative flow** in mandated order:
+  1. Hero → 2. TrustBar → 3. ExperienceFinder → 4. StepInside → 5. PersonalizedPlan → 6. Services → 7. Artists → 8. Testimonials → 9. About → 10. JoinHush → BookingCallback → Footer
+- **Routing architecture** — SPA with hash-anchor redirects (`/services` → `/#services`)
+- **Code splitting strategy** — eager hero, lazy below-the-fold, deferred LunaChatWidget
 
-## v3 Video Prompt structure (5 chapters, 4–5 min, no hard cap)
+### 5. Component Map (4 pages)
+Catalog of all 30+ top-level components with purpose, file path, line count, and key props:
+- Marketing surface (Hero, TrustBar, Services, Artists, Testimonials, About, JoinHush)
+- Conversion surface (ExperienceFinder, PersonalizedPlan, BookingCallback, InlineCallbackCTA, MobileStickyBar)
+- Concierge surface (LunaChatWidget, LunaModal, 5 tabs: FindMyLook, Explore, Artists, MyPlan, Chat)
+- Utility (Navigation, Footer, ServiceMenuModal, PriceConfidenceAccordion)
 
-1. **Cold open (30s)** — Black screen, gold serif type. "Sheri, Danielle, Kathy — this is what a digital front desk looks like when it's built only for you." Female narrator enters.
-2. **The gap, with receipts (60s)** — On-screen stat cards cite SimilarWeb March 2026, Google Business Profile. Padlock metaphor visualized as a closed storefront at night.
-3. **What we built (90s)** — Five pillars as title cards in Playfair Display on charcoal. Luna explained in 30s using the sommelier metaphor. Triple-Net Lead Capture shown as a 3-node diagram (SMS / Email / Slack).
-4. **What's in it for you (60s)** — Outcomes ladder, not feature list. Four cards: more time at the chair, first-time guests who already feel the brand, reputation matching presence, system that works the 50% you're closed.
-5. **The ask (60s) — VERBATIM SCRIPT LOCKED** — Founders Pricing + 12 months unlimited edits, in exchange for case study rights. Frame as legacy partnership. Close with spoken domain and direct invitation to a 30-min walkthrough.
+### 6. Luna AI — The Concierge Brain (4 pages)
+- **System prompt evolution** — v4 → v7 (currently active)
+- **luna-brain.ts deterministic logic engine** — when to require consultations, neutral guidance enforcement
+- **Knowledge base** — KB10 (services), KB11 (team), KB12 (recommendation engine)
+- **Chat flow** — persistent quick replies, lead capture after 4th message, exit-intent capture
+- **Proactive nudges** — dwell + inactivity engines with session-scoped tooltips
+- **Token budget & model** — Lovable AI Gateway, Gemini 2.5 Flash default
+- **Cadence & upsell engines** — revenue/retention logic baked into MyPlan tab
 
-## Locked Chapter 5 narration (in the prompt as a `must_say` block)
+### 7. Conversion Funnel (3 pages)
+- **Experience Finder** — multi-step quiz with identity capture, multi-service priority fork, recommendation cards
+- **Booking Decision modes** — consultation / guided_front_desk / direct_or_callback
+- **Inline lead capture** — every callback CTA opens a sub-form, no dead ends
+- **Returning client fast-path** — fingerprint + localStorage skip the quiz
+- **Triple-net lead routing** — Slack (categorized channels with priority badges) + SMS (Twilio) + Email (Resend)
 
-> "Sheri, Danielle, Kathy — here's the honest exchange. This system is built. It's yours at founders pricing, with twelve months of unlimited edits, well below what a build of this depth normally runs. In return, I'd ask permission to tell your story — how a twenty-four-year Tucson salon closed the digital gap — as a case study other founders can learn from. Your legacy, told honestly, becomes the proof other small business owners need to invest in their own digital front door. The system exists either way. You decide if it goes live for you. Visit hush dash salon dot lovable dot app, or reply to this message, and we'll set thirty minutes."
+### 8. Database Schema (3 pages)
+All 13 public tables with columns, RLS posture, and purpose:
+- `leads`, `callback_requests`, `conversations`, `messages`, `guest_profiles`
+- `artists`, `services`, `knowledge_items`
+- `email_send_log`, `email_send_state`, `email_unsubscribe_tokens`, `suppressed_emails`, `sms_send_log`
+- 24-hour TTL on ConciergeContext
+- Lead deduplication windows (2m/5m/24h)
 
-## Brand visual constraints (in prompt)
+### 9. Edge Functions (3 pages)
+All 16 functions with purpose, trigger, and downstream effects:
+- `luna-chat` — streaming chat with brain logic
+- `capture-lead`, `submit-lead`, `lead-qualify` — three-stage lead pipeline
+- `request-callback` — booking callback handler
+- `session-start`, `session-summarize` — intelligence loop
+- `send-transactional-email`, `process-email-queue`, `daily-digest` — email infra
+- `handle-email-suppression`, `handle-email-unsubscribe` — compliance
+- `health-check` — uptime monitoring
 
-- Palette: charcoal `#0d0d0d`, cream `#f5f3ee`, gold `#d8b063`
-- Type: Playfair Display (display), DM Sans (body)
-- Photography: real salon imagery references only — no AI illustration, no whiteboard
-- Motion: slow fades, no kinetic typography, no animated mascots
-- Lower-thirds: founders' names + roles when first mentioned
+### 10. Operational Intelligence (2 pages)
+- **Slack ops routing** — #hush-leads (🔴 HIGH / 🟡 MEDIUM badges), per-category channels
+- **Daily digest** — automated summary of conversations, leads, callbacks
+- **Session intelligence loop** — chat → summarize → guest_profile enrichment
+- **Journey tracker** — IntersectionObserver-based behavioral telemetry
+- **Email infra** — Resend transactional templates (welcome, first-visit-guide, what-happens-next)
 
-## Pronunciation guide (repeated from audio v2)
+### 11. Performance & Compliance (2 pages)
+- Lazy loading + LazyMotion (framer-motion off the eager bundle)
+- Skip-to-content link, AA contrast, focus rings, semantic HTML
+- TCPA compliance + privacy modal in footer
+- External link hardening (`rel="noopener noreferrer"`)
+- CORS allowlist on every edge function
+- No CHECK constraints with non-immutable functions (validation triggers used instead)
 
-KATH-ee · KEN-dell · TAM-ee · SHARE-ee · dan-YELL · AL-ih-son · pyur-AH-loh-jee · "hush dash salon dot lovable dot app"
+### 12. The Pricing & Partnership (2 pages)
+- **Build fee**: $1,500 one-time (contractor analogy)
+- **Maintenance**: $297/mo, itemized into 4 buckets:
+  - Hosting + infrastructure (~$60–80 value)
+  - Luna AI runtime / SMS / email (~$80–120 value)
+  - Maintenance + updates (~$80–100 value)
+  - Pipeline health monitoring (~$40–60 value)
+- **Market comparison table** — vs Wix, local agency, Phoenix boutique, Boulevard SaaS, Intercom Fin
+- **90-day exit clause** — verbatim script
+- **Windex analogy** — verbatim script
+- **Case-study close** — legacy framing
 
-## Guardrails (in prompt)
+## Generation Approach
 
-- Never use "chatbot"
-- Never compare Hush to other Tucson salons by name
-- Never imply the founders are behind on technology
-- Always cite the source the first time a stat appears
-- Female narrator throughout — no male voice, no dual-host format
+1. Use `code--exec` to script-generate the markdown by reading actual source files, schema, and tailwind tokens — so every number/path is verified, not invented.
+2. Build the PDF from the markdown using a Node script with `markdown-pdf` or `puppeteer` rendering against a Hush-branded HTML template (charcoal bg, cream text, gold accents, Playfair headings).
+3. QA: convert each PDF page to PNG via `pdftoppm` and visually inspect — check for clipped text, layout breaks, missing chapters, brand fidelity.
+4. Output both files to `/mnt/documents/` and emit `<lov-artifact>` tags so you can preview/download immediately.
 
----
+## Deliverables
 
-## QA checklist (appended to the file)
+- `/mnt/documents/Hush_Build_DNA_v1.md` — full markdown source (~40–50 pages)
+- `/mnt/documents/Hush_Build_DNA_v1.pdf` — branded PDF render
 
-A one-page checklist you run against every NotebookLM render before sending. Pass = ship; any fail = regenerate.
-
-**Audio overview**
-- [ ] Female or matched-tone narration (per your preference)
-- [ ] Names pronounced KATH-ee, KEN-dell, TAM-ee
-- [ ] Domain spoken as "hush dash salon dot lovable dot app"
-- [ ] SimilarWeb March 2026 cited for traffic stat
-- [ ] Google Business Profile cited for reviews/rating
-- [ ] ROI formula walked through end-to-end ($9,360/yr, ~$46k EV)
-- [ ] Founders addressed by name minimum 6 times
-- [ ] Founders Pricing + case study ask present near close
-- [ ] No use of "chatbot"
-- [ ] No comparison to other Tucson salons by name
-
-**Video overview**
-- [ ] Female narrator
-- [ ] Editorial visuals — no cartoons, mascots, or whiteboard
-- [ ] Brand palette (charcoal/cream/gold) visible in title cards
-- [ ] Playfair Display + DM Sans typography
-- [ ] All 7 audio QA items above also pass
-- [ ] Chapter 5 ask matches the locked verbatim script
-- [ ] Final frame shows spoken + written domain
-
----
-
-## Out of scope
-
-- Audio v2 prompt is unchanged (working as intended)
-- Encyclopedia source doc unchanged
-- No code changes to the live site
-- No NotebookLM upload — that remains your manual step
-
-## Faithfulness to memory
-
-- Luna chat-only, no voice
-- Neutral guidance policy honored
-- Front desk Kendell at (520) 327-6753
-- Service denials: hot stone, prenatal, LED
-- Hours: Tue/Thu 9–7, Wed/Fri 9–5, Sat 9–4, Closed Sun/Mon
-- Founders: Sheri Turner, Danielle Cole, Kathy
-- Brand equity preserved: Rockstars, Groupies Only, Pure 100 Club
+Both presented as artifacts in the chat reply, with a 1-paragraph summary of what's inside and how to use it alongside the audio + video overviews when meeting with the founders.
