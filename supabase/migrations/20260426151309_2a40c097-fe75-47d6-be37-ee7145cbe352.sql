@@ -1,0 +1,1 @@
+drop policy if exists "Public can view site assets" on storage.objects;

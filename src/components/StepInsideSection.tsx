@@ -2,8 +2,8 @@ import { ArrowDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 const DESKTOP_POSTER = "https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Step_Inside_Poster_v3.webp";
-const DESKTOP_SRC = "https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Step_Inside_Desktop_v2.mp4";
-const MOBILE_SRC = "https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Step_Inside_Mobile.mp4";
+const DESKTOP_SRC = "/videos/Hush_Step_Inside_Desktop_v2.mp4";
+const MOBILE_SRC = "/videos/Hush_Step_Inside_Mobile.mp4";
 
 /**
  * Slim cinematic teaser — placed between TrustBar and ExperienceFinder.
