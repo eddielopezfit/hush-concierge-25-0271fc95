@@ -223,3 +223,52 @@ export function getUrgencyAction(priority: Priority, channel?: SlackChannel | st
   if (priority === "P2") return `⏰ *Action:* ${who} — Follow up today`;
   return `📋 *Action:* ${who} — Add to follow-up queue`;
 }
+
+// ── Next Open Window (Tucson-local human strings) ──────────────────────────
+
+/**
+ * Returns a human-readable "when we'll get back to you" string in Tucson
+ * (America/Phoenix, no DST) for use in SMS bodies and email template data.
+ *
+ * Hours of operation:
+ *   - Sun/Mon: closed
+ *   - Tue/Thu: 9–7
+ *   - Wed/Fri: 9–5
+ *   - Sat: 9–4
+ *
+ * Logic:
+ *   - Sun/Mon → "Tuesday morning"
+ *   - During open hours (any open day) → "within the hour"
+ *   - After close on Tue–Fri → "tomorrow morning"
+ *   - Sat after close → "Tuesday morning" (Sun/Mon closed)
+ *   - Before open on an open day → "within the hour" (queued for opening)
+ */
+export function getNextOpenWindow(now: Date = new Date()): string {
+  // Format current Tucson time
+  const fmt = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Phoenix",
+    weekday: "short",
+    hour: "numeric",
+    hour12: false,
+  });
+  const parts = fmt.formatToParts(now);
+  const weekday = parts.find((p) => p.type === "weekday")?.value ?? "";
+  const hour = parseInt(parts.find((p) => p.type === "hour")?.value ?? "0", 10);
+
+  // Sun/Mon: always next-Tuesday
+  if (weekday === "Sun" || weekday === "Mon") return "Tuesday morning";
+
+  // Open windows by day
+  const closeHour =
+    weekday === "Tue" || weekday === "Thu" ? 19 :
+    weekday === "Wed" || weekday === "Fri" ? 17 :
+    weekday === "Sat" ? 16 : 0;
+
+  // Before open (early morning) on an open day → still "within the hour"
+  // (we'll reply when staff arrives)
+  if (hour < closeHour) return "within the hour";
+
+  // After close
+  if (weekday === "Sat") return "Tuesday morning";
+  return "tomorrow morning";
+}

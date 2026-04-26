@@ -1,11 +1,29 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { sendGuestSms } from "../_shared/twilio-sms.ts";
+import { getNextOpenWindow } from "../_shared/booking-rules.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
+
+/**
+ * Build the guest-facing SMS body. Kept short (<160 chars) and TCPA-friendly.
+ */
+function buildGuestSmsBody(params: {
+  name: string | null;
+  type: "callback" | "lead";
+  nextOpenWindow: string;
+}): string {
+  const firstName = params.name?.trim().split(/\s+/)[0];
+  const greet = firstName ? `Hi ${firstName} — ` : "Hi — ";
+  if (params.type === "callback") {
+    return `${greet}Hush Salon got your callback request. Kendell will reach out ${params.nextOpenWindow}. Reply STOP to opt out.`;
+  }
+  return `${greet}thanks for reaching out to Hush Salon. The team will follow up ${params.nextOpenWindow}. Reply STOP to opt out.`;
+}
 
 /**
  * Fire-and-forget welcome sequence: an immediate luxury welcome plus a
@@ -130,6 +148,24 @@ serve(async (req) => {
         });
       }
 
+      // Fire SMS confirmation (non-blocking)
+      const nextOpenWindow = getNextOpenWindow();
+      const smsBody = buildGuestSmsBody({
+        name: full_name,
+        type: "callback",
+        nextOpenWindow,
+      });
+      // @ts-ignore EdgeRuntime is available in Deno Deploy
+      EdgeRuntime.waitUntil(
+        sendGuestSms({
+          to: phone.trim(),
+          body: smsBody,
+          idempotencyKey: `callback-sms-${cbId}`,
+          relatedTable: "callback_requests",
+          relatedId: cbId,
+        }).catch((e) => console.warn("[submit-lead] callback SMS failed:", e))
+      );
+
       return new Response(
         JSON.stringify({ success: true }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -190,6 +226,26 @@ serve(async (req) => {
           name: name,
           leadId,
         });
+      }
+
+      // Fire SMS confirmation if we have a phone (non-blocking)
+      if (hasPhone) {
+        const nextOpenWindow = getNextOpenWindow();
+        const smsBody = buildGuestSmsBody({
+          name,
+          type: "lead",
+          nextOpenWindow,
+        });
+        // @ts-ignore EdgeRuntime is available in Deno Deploy
+        EdgeRuntime.waitUntil(
+          sendGuestSms({
+            to: hasPhone,
+            body: smsBody,
+            idempotencyKey: `lead-sms-${leadId}`,
+            relatedTable: "leads",
+            relatedId: leadId,
+          }).catch((e) => console.warn("[submit-lead] lead SMS failed:", e))
+        );
       }
 
       return new Response(

@@ -8,11 +8,13 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
   derivePriority,
   getInternalBookingPath,
+  getNextOpenWindow,
   PRIORITY_EMOJI,
   PRIORITY_LABEL,
   type Priority,
 } from "../_shared/booking-rules.ts";
 import { postMessage, resolveMention } from "../_shared/slack-client.ts";
+import { sendGuestSms } from "../_shared/twilio-sms.ts";
 
 const SUPABASE_URL     = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -179,8 +181,11 @@ Deno.serve(async (req) => {
     }
 
     // ── 2. Write callback_requests ────────────────────────────────────────────
+    let cbId: string | null = null;
     if (!alreadyCommitted) {
+      const newId = crypto.randomUUID();
       const { error: cbErr } = await db.from("callback_requests").insert({
+        id:               newId,
         full_name:        body.guest_name.trim(),
         phone:            body.phone.trim(),
         email:            body.email?.trim() || null,
@@ -203,6 +208,8 @@ Deno.serve(async (req) => {
       });
       if (cbErr) {
         console.error("[request-callback] callback_requests:", cbErr.message);
+      } else {
+        cbId = newId;
       }
 
       // Also insert into leads for CRM completeness (manual dedup, no upsert)
@@ -242,6 +249,26 @@ Deno.serve(async (req) => {
           .update({ slack_message_ts: result.ts })
           .eq("phone", body.phone.trim())
           .is("slack_message_ts", null);
+      }
+
+      // ── 3b. SMS confirmation to guest (non-blocking) ──────────────────────
+      if (cbId && body.phone) {
+        const firstName = body.guest_name !== "Unknown"
+          ? body.guest_name.trim().split(/\s+/)[0]
+          : null;
+        const nextOpenWindow = getNextOpenWindow();
+        const greet = firstName ? `Hi ${firstName} — ` : "Hi — ";
+        const smsBody = `${greet}Hush Salon got your callback request. Kendell will reach out ${nextOpenWindow}. Reply STOP to opt out.`;
+        // @ts-ignore EdgeRuntime is available in Deno Deploy
+        EdgeRuntime.waitUntil(
+          sendGuestSms({
+            to: body.phone.trim(),
+            body: smsBody,
+            idempotencyKey: `callback-sms-${cbId}`,
+            relatedTable: "callback_requests",
+            relatedId: cbId,
+          }).catch((e) => console.warn("[request-callback] SMS failed:", e))
+        );
       }
     }
 

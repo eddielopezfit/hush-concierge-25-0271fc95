@@ -492,6 +492,45 @@ export type Database = {
         }
         Relationships: []
       }
+      sms_send_log: {
+        Row: {
+          body: string
+          created_at: string
+          error_message: string | null
+          id: string
+          idempotency_key: string
+          phone: string
+          related_id: string | null
+          related_table: string | null
+          status: string
+          twilio_sid: string | null
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          idempotency_key: string
+          phone: string
+          related_id?: string | null
+          related_table?: string | null
+          status: string
+          twilio_sid?: string | null
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          idempotency_key?: string
+          phone?: string
+          related_id?: string | null
+          related_table?: string | null
+          status?: string
+          twilio_sid?: string | null
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string

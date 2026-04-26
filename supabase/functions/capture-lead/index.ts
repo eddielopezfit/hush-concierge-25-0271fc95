@@ -9,11 +9,13 @@ import {
   derivePriority,
   resolveSlackChannel,
   getInternalBookingPath,
+  getNextOpenWindow,
   PRIORITY_EMOJI,
   PRIORITY_LABEL,
   type Priority,
 } from "../_shared/booking-rules.ts";
 import { postMessage, resolveMention } from "../_shared/slack-client.ts";
+import { sendGuestSms } from "../_shared/twilio-sms.ts";
 
 const SUPABASE_URL     = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -176,8 +178,11 @@ Deno.serve(async (req) => {
       .gte("created_at", since24h)
       .limit(1);
 
+    let leadId: string | null = existingLead?.[0]?.id ?? null;
     if (!existingLead?.length) {
+      const newLeadId = crypto.randomUUID();
       const { error: leadErr } = await db.from("leads").insert({
+        id:       newLeadId,
         name:     body.guest_name.trim(),
         phone:    body.phone.trim(),
         email:    body.email?.trim() || null,
@@ -186,9 +191,11 @@ Deno.serve(async (req) => {
         timing:   body.timing || null,
       });
       if (leadErr) console.error("[capture-lead] leads insert:", leadErr.message);
+      else leadId = newLeadId;
     }
 
     // ── 2. Write callback_requests with idempotency guard ─────────────────────
+    let cbId: string | null = null;
     if (body.callback_requested) {
       let shouldInsert = true;
 
@@ -209,7 +216,9 @@ Deno.serve(async (req) => {
       }
 
       if (shouldInsert) {
+        const newCbId = crypto.randomUUID();
         const { error: cbErr } = await db.from("callback_requests").insert({
+          id:               newCbId,
           full_name:        body.guest_name.trim(),
           phone:            body.phone.trim(),
           email:            body.email?.trim() || null,
@@ -227,6 +236,8 @@ Deno.serve(async (req) => {
         });
         if (cbErr) {
           console.error("[capture-lead] callback_requests:", cbErr.message);
+        } else {
+          cbId = newCbId;
         }
       }
     }
@@ -244,6 +255,30 @@ Deno.serve(async (req) => {
         .update({ slack_message_ts: slackResult.ts })
         .eq("phone", body.phone.trim())
         .is("slack_message_ts", null);
+    }
+
+    // ── 3b. SMS confirmation to guest (non-blocking) ──────────────────────────
+    if (body.phone && (cbId || leadId)) {
+      const firstName = body.guest_name !== "Unknown"
+        ? body.guest_name.trim().split(/\s+/)[0]
+        : null;
+      const nextOpenWindow = getNextOpenWindow();
+      const greet = firstName ? `Hi ${firstName} — ` : "Hi — ";
+      const smsBody = body.callback_requested
+        ? `${greet}Hush Salon got your callback request. Kendell will reach out ${nextOpenWindow}. Reply STOP to opt out.`
+        : `${greet}thanks for reaching out to Hush Salon. The team will follow up ${nextOpenWindow}. Reply STOP to opt out.`;
+      const idemId = cbId ?? leadId!;
+      const idemKind = cbId ? "callback" : "lead";
+      // @ts-ignore EdgeRuntime is available in Deno Deploy
+      EdgeRuntime.waitUntil(
+        sendGuestSms({
+          to: body.phone.trim(),
+          body: smsBody,
+          idempotencyKey: `${idemKind}-sms-${idemId}`,
+          relatedTable: cbId ? "callback_requests" : "leads",
+          relatedId: idemId,
+        }).catch((e) => console.warn("[capture-lead] SMS failed:", e))
+      );
     }
 
     // ── 4. Return confirmation + close_after flag ─────────────────────────────
