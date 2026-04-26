@@ -7,6 +7,50 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+/**
+ * Fire-and-forget welcome sequence: an immediate luxury welcome plus a
+ * "Prepare for Your First Visit" guide from Luna. Both go through the
+ * shared transactional email queue, so they're delivered serially within
+ * a few moments of each other — a soft, two-touch sequence rather than a
+ * single bulk send. Failures are swallowed: we never want email issues to
+ * block lead/callback capture.
+ */
+async function sendWelcomeSequence(
+  db: ReturnType<typeof createClient>,
+  params: { email: string; name: string | null; leadId: string }
+) {
+  const { email, name, leadId } = params;
+  const recipientEmail = email.trim().toLowerCase();
+  if (!recipientEmail) return;
+
+  const firstName = name?.trim().split(/\s+/)[0] || undefined;
+
+  try {
+    // 1. Immediate welcome
+    await db.functions.invoke("send-transactional-email", {
+      body: {
+        templateName: "welcome",
+        recipientEmail,
+        idempotencyKey: `welcome-${leadId}`,
+        templateData: firstName ? { name: firstName } : {},
+      },
+    });
+
+    // 2. Follow-up: prepare for first visit (queued right after — arrives
+    // moments later in the same inbox)
+    await db.functions.invoke("send-transactional-email", {
+      body: {
+        templateName: "first-visit-guide",
+        recipientEmail,
+        idempotencyKey: `first-visit-${leadId}`,
+        templateData: firstName ? { name: firstName } : {},
+      },
+    });
+  } catch (err) {
+    console.warn("[submit-lead] welcome sequence failed:", err);
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -47,7 +91,9 @@ serve(async (req) => {
       }
 
       // Insert into callback_requests
+      const cbId = crypto.randomUUID();
       const { error: cbErr } = await db.from("callback_requests").insert({
+        id: cbId,
         full_name: full_name.trim(),
         phone: phone.trim(),
         email: email?.trim() || null,
@@ -73,6 +119,15 @@ serve(async (req) => {
       });
       if (leadErr) {
         console.warn("[submit-lead] leads cross-write failed:", leadErr.message);
+      }
+
+      // Fire welcome sequence if we have an email
+      if (email?.trim()) {
+        await sendWelcomeSequence(db, {
+          email: email.trim(),
+          name: full_name,
+          leadId: cbId,
+        });
       }
 
       return new Response(
@@ -112,7 +167,9 @@ serve(async (req) => {
         }
       }
 
+      const leadId = crypto.randomUUID();
       const { error } = await db.from("leads").insert({
+        id: leadId,
         name: name.trim(),
         phone: hasPhone || null,
         email: hasEmail || null,
@@ -124,6 +181,15 @@ serve(async (req) => {
       if (error) {
         console.error("[submit-lead] leads error:", error.message);
         throw error;
+      }
+
+      // Fire welcome sequence if we have an email
+      if (hasEmail) {
+        await sendWelcomeSequence(db, {
+          email: hasEmail,
+          name: name,
+          leadId,
+        });
       }
 
       return new Response(
