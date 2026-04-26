@@ -171,6 +171,12 @@ export const ArtistsSection = () => {
     // Only run once on mount
   }, []);
 
+  // Reset "View Full Team" when the filter changes so the grid behaves
+  // deterministically and the count below matches what's actually rendered.
+  useEffect(() => {
+    setShowAll(false);
+  }, [activeFilter]);
+
   // Esc to close artist modal
   useEffect(() => {
     if (!selectedArtist) return;
@@ -283,6 +289,24 @@ export const ArtistsSection = () => {
               {helperStrips[activeFilter] || helperStrips.all}
             </m.p>
           </AnimatePresence>
+
+          {/* Result count — keeps filter behavior unambiguous */}
+          {hasResults && (
+            <p
+              key={`count-${activeFilter}`}
+              className="font-body text-[11px] uppercase tracking-[0.25em] text-gold/70 text-center -mt-8 mb-10"
+              aria-live="polite"
+            >
+              {(() => {
+                const total = filteredFounders.length + filteredTeam.length;
+                if (activeFilter === "all") {
+                  return `Showing all ${total} Rockstars`;
+                }
+                const label = filterChips.find(c => c.id === activeFilter)?.label ?? activeFilter;
+                return `Showing ${total} ${label} ${total === 1 ? "specialist" : "specialists"}`;
+              })()}
+            </p>
+          )}
 
           {/* No results */}
           <AnimatePresence mode="wait">
