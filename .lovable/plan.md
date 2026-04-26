@@ -1,76 +1,57 @@
+# Set up Lovable Email + finish wiring instant guest confirmations
 
-# Full Build: Instant Guest Confirmations (SMS + Email)
+Twilio is connected. Now setting up the email half of the loop and wiring everything together end-to-end.
 
-Closes the "what happens after I submit?" trust gap by sending an instant SMS and a branded email to every guest who submits a callback request or lead. Both channels respect Tucson hours and tell guests exactly when to expect Kendell to reach back out.
+## Step 1: Open the email domain setup dialog
+Trigger the `<lov-open-email-setup>` dialog so you can pick a sender domain.
 
-## What guests will experience
+**Recommendation for the demo:** use a domain you personally own or a Lovable-provided subdomain — NOT `hushsalontucson.com`. Reason: setting up `notify.hushsalontucson.com` requires NS record changes at the founders' registrar, which means asking them for DNS access *before* you've sold them. We'll swap to their real domain post-signing in 5 minutes.
 
-**Sunday 9pm — guest fills out callback form:**
-1. Form confirms instantly on screen (already works)
-2. **~3 seconds later:** SMS arrives — *"Hi Sarah — Hush Salon got your callback request. We're closed Sun/Mon, so Kendell will reach out Tuesday morning. Reply STOP to opt out."*
-3. **~10 seconds later:** Branded Hush email lands — header in Playfair gold, body explaining what to expect, salon address, hours, and direct phone fallback.
+The email will still display "Hush Salon Tucson" as the sender name and be fully Hush-branded — only the technical sender domain (in email headers, not visible during a sales conversation) changes.
 
-**Tuesday 2pm — guest fills out form:**
-1. SMS: *"Hi Sarah — Hush Salon got your request. Kendell will call you within the hour."*
-2. Branded email confirming the same.
+## Step 2: Auto-run email infrastructure setup
+Once the domain is selected, automatically call `email_domain--setup_email_infra` to provision the queue, tables, cron job, and `process-email-queue` function.
 
-## Architecture
+## Step 3: Auto-scaffold transactional email
+Call `email_domain--scaffold_transactional_email` to create:
+- `send-transactional-email` edge function
+- `handle-email-unsubscribe` edge function
+- `handle-email-suppression` edge function
+- Sample template + registry
 
-### 1. Connect Twilio (gateway)
-- Use `standard_connectors--connect` with `connector_id: "twilio"` to link a Twilio connection. User picks the from-number during the connect dialog.
-- Removes need for manual `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN` secrets — gateway handles auth.
-- Add new project secret: `TWILIO_FROM_NUMBER` (the verified Hush sending number, E.164 format).
+## Step 4: Build the two Hush-branded email templates
+In `supabase/functions/_shared/transactional-email-templates/`:
 
-### 2. Set up Lovable Email infrastructure
-- Show email domain setup dialog (suggest `notify.hushsalontucson.com` as the subdomain — user can change).
-- Once user completes domain setup → automatically run `email_domain--setup_email_infra` → automatically scaffold transactional emails via `email_domain--scaffold_transactional_email`.
-- Build the `/unsubscribe` page in the React app at the path the scaffold tool returns (matched to Hush's dark warm-premium design).
+**`callback-confirmation.tsx`** — for callback form + Luna voice callback:
+- White body (#ffffff), gold accent (#C9A84C) header bar
+- Playfair Display heading: "We've got your callback request"
+- Body: "{name}, Kendell will reach out {nextOpenWindow}."
+- "What happens next" section: 3 numbered steps
+- Salon address: 4326 N Campbell Ave, Tucson AZ 85718
+- Direct phone CTA: (520) 327-6753
+- Hours table (verified hours from memory)
+- `templateData`: `{ name, nextOpenWindow, category?, timing? }`
 
-### 3. Shared helper: `_shared/booking-rules.ts`
-Add `getNextOpenWindow()` that returns Tucson-local human-readable strings:
-- Sunday → `"Tuesday morning"`
-- Monday → `"Tuesday morning"`
-- Tue–Fri before close → `"within the hour"`
-- Tue–Fri after close → `"tomorrow morning"`
-- Saturday after close → `"Tuesday morning"`
+**`lead-capture-confirmation.tsx`** — for general leads from forms + Luna chat:
+- Same brand styling
+- Heading: "Thanks for reaching out, {name}"
+- Body explains category-specific next step + timing
+- Same address, phone, hours blocks
+- `templateData`: `{ name, nextOpenWindow, category?, goal?, timing? }`
 
-Used by both SMS body and email template data.
+Register both in `registry.ts`.
 
-### 4. New shared helper: `_shared/twilio-sms.ts`
-Single `sendGuestSms({ to, body })` function:
-- Validates E.164 format, normalizes US numbers (+1 prefix)
-- Calls Twilio gateway (`https://connector-gateway.lovable.dev/twilio/Messages.json`)
-- Handles SMS Pumping fraud protection (recommends user enable in Twilio Console after build)
-- Logs send attempts to a new `sms_send_log` table for audit/debugging
-- Idempotency: skip if a successful SMS to the same phone for the same `idempotency_key` was sent within 5 minutes
+## Step 5: Build the unsubscribe page in React
+Create `src/pages/Unsubscribe.tsx` matching Hush dark warm-premium aesthetic:
+- Reads `?token=` from URL
+- Validates via GET to `handle-email-unsubscribe`
+- Shows "Confirm Unsubscribe" button styled with gold accent
+- Success/error states styled consistently with the rest of the site
+- Add route to `App.tsx` at the path the scaffold tool returns
 
-### 5. New transactional email templates
-Located in `supabase/functions/_shared/transactional-email-templates/`:
-- `callback-confirmation.tsx` — for `request-callback` and the website callback form
-- `lead-capture-confirmation.tsx` — for general lead submissions from `submit-lead` and `capture-lead`
+## Step 6: Build SMS infrastructure
 
-Both styled to match Hush brand:
-- White email body (required)
-- Gold accent (`#C9A84C`) for headers and CTA bar
-- Playfair Display headings, system fallback for body
-- Salon address, "What happens next" section, direct phone `(520) 327-6753`
-- `templateData` props: `{ name, nextOpenWindow, category?, timing? }`
-
-### 6. Trigger SMS + email from edge functions
-
-**`request-callback/index.ts`** (called by Luna voice + form):
-- After successful DB insert → fire SMS + email in parallel (non-blocking — wrap in `EdgeRuntime.waitUntil`)
-- Idempotency keys: `callback-sms-{row.id}`, `callback-email-{row.id}`
-
-**`submit-lead/index.ts`** (called by website forms — handles both `type: "callback"` and `type: "lead"`):
-- For `callback` type → same SMS + callback-confirmation email as above
-- For `lead` type with phone → SMS + lead-capture-confirmation email
-- For `lead` type with email only → email only (no SMS)
-
-**`capture-lead/index.ts`** (called by Luna chat):
-- Same dual-trigger as `submit-lead`'s lead path
-
-### 7. New database table: `sms_send_log`
+### Migration: `sms_send_log` table
 ```sql
 create table public.sms_send_log (
   id uuid primary key default gen_random_uuid(),
@@ -90,25 +71,56 @@ alter table public.sms_send_log enable row level security;
 -- No client policies — service role only.
 ```
 
-### 8. Deploy
-- `lead-qualify`, `request-callback`, `submit-lead`, `capture-lead`
+### Shared helper: `_shared/twilio-sms.ts`
+- `sendGuestSms({ to, body, idempotencyKey, relatedTable?, relatedId? })`
+- E.164 normalization (auto-prefix +1 for US numbers)
+- 5-minute idempotency check against `sms_send_log`
+- Calls Twilio gateway: `https://connector-gateway.lovable.dev/twilio/Messages.json`
+- Logs every attempt (queued → sent/failed) to `sms_send_log`
+- Reads `TWILIO_FROM_NUMBER` from env (you'll provide after this build)
+
+### Shared helper: `_shared/booking-rules.ts` — add `getNextOpenWindow()`
+Returns Tucson-local human strings for both SMS body and email template data:
+- Sunday/Monday → `"Tuesday morning"`
+- Tue/Thu before 7pm → `"within the hour"`
+- Wed/Fri before 5pm → `"within the hour"`
+- Sat before 4pm → `"within the hour"`
+- After close on Tue–Fri → `"tomorrow morning"`
+- Sat after close → `"Tuesday morning"`
+
+## Step 7: Wire SMS + email into existing edge functions
+
+### `request-callback/index.ts` (Luna voice + form callbacks)
+After successful insert, fire both in parallel via `EdgeRuntime.waitUntil`:
+- SMS: *"Hi {name} — Hush Salon got your callback request. Kendell will reach out {nextOpenWindow}. Reply STOP to opt out."*
+- Email: `callback-confirmation` template
+- Idempotency keys: `callback-sms-{row.id}`, `callback-email-{row.id}`
+
+### `submit-lead/index.ts` (website forms)
+- For `type: "callback"` → SMS + `callback-confirmation` email (same as above)
+- For `type: "lead"` with phone → SMS + `lead-capture-confirmation` email
+- For `type: "lead"` with email only → email only
+
+### `capture-lead/index.ts` (Luna chat)
+Same dual-trigger as `submit-lead`'s lead path.
+
+All sends are non-blocking (`EdgeRuntime.waitUntil`) so the form response stays instant.
+
+## Step 8: Deploy everything
+- `request-callback`, `submit-lead`, `capture-lead` (modified)
 - `send-transactional-email`, `process-email-queue`, `handle-email-unsubscribe`, `handle-email-suppression` (auto-deployed by scaffold)
 
-## What I will need from you during the build
+## What I need from you during the build
+1. **Email domain dialog** — pick a Lovable subdomain or your own personal domain (NOT `hushsalontucson.com`)
+2. **`TWILIO_FROM_NUMBER` secret** — the verified Twilio sending number in E.164 format (e.g., `+15205551234`) — I'll request it after templates are built
 
-1. **Twilio connection** — pick or create one in the connector dialog when prompted, including a verified sending phone number.
-2. **Email subdomain** — confirm `notify.hushsalontucson.com` (or pick another) when the email setup dialog appears, then add the NS records at your domain registrar.
-3. **`TWILIO_FROM_NUMBER`** secret — the E.164 sending number after Twilio is connected.
+## What happens after the build
+- Test by submitting a callback yourself — your phone should buzz within ~5 seconds and a branded Hush email should arrive within ~10 seconds
+- Post-signing: 5-min task to swap to `notify.hushsalontucson.com` once the founders give DNS access
+- Recommendation: enable SMS Pumping Protection + US-only Geo Permissions in Twilio Console (I'll show you where after the build)
 
-Everything else is automated.
-
-## What I will explicitly NOT do
-- No marketing emails, no drip sequences, no "we miss you" campaigns
-- No GoHighLevel integration
-- No changes to Slack routing (keeps working as-is)
-- No changes to Luna chat copy (already fixed in last build)
-- No mass send loops — every confirmation is 1:1, triggered by a specific guest action
-
-## Post-build recommendations
-- Enable **SMS Pumping Protection** + restrict **SMS Geo Permissions** to US-only in your Twilio Console (I'll show you where after the build is live).
-- Test by submitting a real callback yourself — phone should buzz within ~5 seconds.
+## Out of scope (intentionally)
+- No marketing emails, drip sequences, or "we miss you" campaigns
+- No GoHighLevel
+- No changes to Slack routing (works as-is)
+- No changes to Luna chat copy
