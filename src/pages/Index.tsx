@@ -69,18 +69,38 @@ const Index = () => {
       <main id="main-content">
         <HeroSection />
         <TrustBar />
-        <Suspense fallback={<SectionFallback />}>
+        <Suspense fallback={<Skeleton h="min-h-[640px]" />}>
           <ExperienceFinderSection />
-          <StepInsideSection />
+        </Suspense>
+        <StepInsideSection />
+        <Suspense fallback={<Skeleton h="min-h-[520px]" />}>
           <PersonalizedPlanSection />
+        </Suspense>
+        <Suspense fallback={<Skeleton h="min-h-[900px]" />}>
           <ServicesSection />
+        </Suspense>
+        <Suspense fallback={<Skeleton h="min-h-[180px]" />}>
           <InlineCallbackCTA />
+        </Suspense>
+        <Suspense fallback={<Skeleton h="min-h-[760px]" />}>
           <ArtistsSection />
+        </Suspense>
+        <Suspense fallback={<Skeleton h="min-h-[680px]" />}>
           <TestimonialsSection />
+        </Suspense>
+        <Suspense fallback={<Skeleton h="min-h-[560px]" />}>
           <AboutSection />
+        </Suspense>
+        <Suspense fallback={<Skeleton h="min-h-[480px]" />}>
           <JoinHushSection />
+        </Suspense>
+        <Suspense fallback={<Skeleton h="min-h-[720px]" />}>
           <BookingCallbackSection />
+        </Suspense>
+        <Suspense fallback={<Skeleton h="min-h-[320px]" />}>
           <FooterSection />
+        </Suspense>
+        <Suspense fallback={null}>
           <MobileStickyBar />
           {isModalOpen && (
             <LunaModal isOpen={isModalOpen} onClose={closeModal} context={context} />
