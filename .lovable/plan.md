@@ -1,55 +1,69 @@
-# Founder Pitch Kit — Hush Salon & Day Spa
+# Hush Lovable Hub — NotebookLM Source Document
 
-Goal: Produce two pre-sale assets that move Hush's founders (Sheri, Danielle, Kathy) from "interesting" to "yes." No code changes to the live site — these are standalone deliverables.
+## Deliverable
 
-## Deliverable 1 — `Hush_Founder_Pitch.pdf` (1-page, print-ready)
+One file: `/mnt/documents/Hush_Lovable_Hub_NotebookLM_Source.md` (~7,000+ words, plain markdown, no design layer).
 
-A single-page, beautifully designed PDF using the Hush brand palette (charcoal `#0d0d0d`, gold `#d8b063`, cream `#f5f3ee`) with Playfair Display headings and DM Sans body, generated via ReportLab.
+## Why markdown for NotebookLM
 
-**Layout (top → bottom):**
+NotebookLM extracts citations and answers Q&A best from structured plain text — heavy H2/H3 headers, short paragraphs, bullet lists. PDFs add OCR noise and weaken citation quality. Markdown is also editable in any text editor before uploading.
 
-1. **Header band** — black with gold "Hush" wordmark + tagline *"A front desk that never closes."*
-2. **The Problem (boxed, 3 stats from SimilarWeb March 2026):**
-   - 1,000 monthly visits · 1.05 pages/visit · ranks for 3 branded keywords only
-   - One-line interpretation: *"A 24-year reputation invisible to digital discovery."*
-3. **The Solution (3 columns with icons):**
-   - **Luna AI Concierge** — denies services you don't offer, defers multi-provider bookings, answers at 11 PM Sunday
-   - **Experience Finder** — 4-step guided quiz with 24-hour session memory
-   - **Lead Capture Triple-Net** — callback form + Luna chat + Finder result, all wired to SMS + email + Slack
-4. **The Math (highlighted gold band):**
-   - 1,000 visits/mo × 2% capture = **20 leads/mo**
-   - 20 × 30% close × $130 ticket = **$780/mo · $9,360/yr**
-   - At 5× revenue multiple = **$46K+ enterprise value added**
-   - *…from the same traffic you already have.*
-5. **Proof (footer):** "Built on Lovable + Supabase + Twilio. Live at hush-salon.lovable.app. TCPA-compliant. SMS-verified. Tested with real guest persona April 26, 2026."
+## Document structure (12 sections)
 
-**Generation approach:** Python + ReportLab using the PDF skill. Output to `/mnt/documents/Hush_Founder_Pitch.pdf`. Mandatory visual QA via `pdftoppm` to confirm no overlap, proper margins, readable contrast on dark band.
+1. **Executive Summary** — standalone one-pager NotebookLM can quote in isolation
+2. **What the Lovable Hub IS** — every component defined in plain language (Hero, Experience Finder, Luna, callback system, SMS/email/Slack routing, session memory, trust infrastructure, TCPA compliance)
+3. **What the Lovable Hub IS NOT** — explicit denials (not a booking platform, not a chatbot, not a Vagaro replacement, not SaaS, not generic AI). Critical because NotebookLM tends to overgeneralize
+4. **Why It Was Built for Hush Specifically** — the 24-year reputation gap, SimilarWeb diagnostics (1,000 visits/mo, 1.05 pages/visit, 3 branded keywords, 0 organic discovery), the "front desk that never closes" thesis, gap between 315+ Google reviews vs. near-zero web presence
+5. **The Five Pillars** — Luna AI Concierge · Experience Finder · Real-Time Business Logic · Triple-Net Lead Capture · Trust Infrastructure. For each: what it does, why it matters, what makes it categorically different
+6. **Luna Behavioral Rules** — neutral guidance policy, hot-stone/prenatal/LED denial, multi-provider deferral, single-provider naming permitted (Tammi/Allison/Kelli), TCPA compliance, front desk routing to Kendell at (520) 327-6753
+7. **Competitive Differentiation** — vs. typical Tucson salon sites · vs. Vagaro/Square embeds · vs. generic ChatGPT bots · vs. $50K+ custom agency builds · vs. Salon Blonde
+8. **The Value Proposition** — in one sentence, one paragraph, one page. ROI math: 1,000 visits × 2% capture × 30% close × $130 ticket = $9,360/year → $46K enterprise value at 5× revenue multiple
+9. **What Makes Hush Stand Out After Launch** — discovery, conversion, retention, brand equity preservation ("Rockstars" / "Groupies Only" / "Tucson Comes to Feel Legendary")
+10. **Honest Limitations & Phase 2 Roadmap** — what it doesn't do yet (SEO service landing pages, paid ads, GBP integration block, dynamic meta tags, sitemap)
+11. **FAQ (25+ questions)** — structured for NotebookLM Q&A retrieval: "Does Luna replace the front desk?" "Can I edit copy myself?" "What happens if Luna gets a question wrong?" "How is this different from Vagaro?" "What does it cost monthly?" "Is the data secure?" "What if a guest doesn't want SMS?" etc.
+12. **Glossary** — every proper noun and technical term defined (Lovable, Supabase, Twilio, TCPA, Slack routing, Experience Finder, Luna, ConciergeContext, session TTL, Pure 100 Club)
 
-## Deliverable 2 — `Hush_Demo_Script.pdf` (60-second Loom walkthrough)
+## Voice, tone, and format rules
 
-A second 1-page PDF formatted as a director's shot list for recording a Loom you can text/email to founders.
+- Confident, warm, founder-friendly. No jargon without immediate plain-English translation
+- Mirror existing brand voice ("Rockstars" / "Tucson Comes to Feel Legendary" / "Three founders still behind the chair")
+- Heavy H2/H3 headers, bullet lists, short paragraphs so NotebookLM extracts cleanly
+- Every numerical claim (1,000 visits, $130 ticket, 4.7 stars, 315+ reviews, 24 years, SimilarWeb March 2026) gets inline source attribution
 
-**Sections:**
-- **Setup** — context line ("It's 11 PM Sunday. Hush is closed. A new guest just Googled 'balayage Tucson'…")
-- **Shot list (6 beats, ~10 sec each)** with exact narration + on-screen action:
-  1. Hero loads → "Open Today" badge auto-flips to "Closed — opens Tue 9 AM"
-  2. Click Experience Finder → pick Hair → goal "feel legendary"
-  3. Personalized plan reveals → soft language, no stylist named
-  4. Open Luna → ask "do you do hot stone?" → watch her decline cleanly
-  5. Submit callback form with TCPA checkbox → success screen
-  6. Cut to phone → SMS arrives within 5 seconds
-- **Closing line** — *"That guest didn't bounce. Hush owns that lead before Tuesday morning."*
-- **Recording tips** — 1280×720 viewport, mute browser audio, end with Loom CTA card
+## Faithfulness to existing brand memory
 
-**Generation approach:** Same ReportLab pipeline, second file → `/mnt/documents/Hush_Demo_Script.pdf`.
+- Luna is chat-only (no voice / ElevenLabs)
+- Neutral guidance: Luna names artists for single-provider services only, defers multi-provider booking
+- Site-wide contact: (520) 327-6753 (Kendell, Front Desk)
+- Hours: Tue/Thu 9–7, Wed/Fri 9–5, Sat 9–4, Closed Sun/Mon
+- Founders: Sheri Turner, Danielle Cole, Kathy
+- Factual services only — explicit denial of hot stone, prenatal massage, LED
+- Brand equity preserved: "Be a Rockstar" careers + "Groupies Only" referral
+- Real photography only
 
-## What I will NOT do in this loop
-- No edits to the live site — pre-sale, no buy-in yet
-- No SEO landing pages (that's the Phase 2 sale)
-- No video recording (you'll record the Loom yourself using the script)
-- No SaaS productization
+## Generation approach
 
-## QA checklist before delivery
-- Render both PDFs to JPG via `pdftoppm` and visually inspect every page
-- Confirm: no clipped text, gold-on-black contrast passes AA, columns aligned, brand voice consistent ("Rockstars" / "Tucson Comes to Feel Legendary")
-- Both files emitted as `<lov-artifact>` tags so you can download immediately
+- Pure write operation — author markdown directly, no scripts
+- Written to `/mnt/documents/` and emitted as `<lov-artifact>` with `mime_type="text/markdown"`
+
+## QA checklist
+
+- Word count ≥ 7,000
+- All 12 sections present
+- FAQ has ≥ 25 Q&A pairs
+- Glossary covers every proper noun
+- No contradictions with brand memory
+- First 500 words read as standalone executive summary
+
+## Out of scope this loop
+
+- No code changes to live site
+- No PDF/DOCX (markdown was the explicit format choice)
+- No NotebookLM upload — manual step you'll do with the file
+
+## How you'll use it
+
+1. Download the .md file
+2. NotebookLM → New notebook → Upload source → drop the file in
+3. (Optional) Add `Hush_Founder_Pitch.pdf` + `Hush_Demo_Script.pdf` as additional sources
+4. Query before the Hush meeting and/or share notebook link with founders as a leave-behind
