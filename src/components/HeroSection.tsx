@@ -75,8 +75,10 @@ export const HeroSection = () => {
           />
         </div>
 
-        {/* Gradient overlay */}
+        {/* Gradient overlays — vertical for legibility + horizontal vignette
+            to soften the desktop video's narrower framing on widescreen. */}
         <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/30 to-background/90" />
+        <div className="absolute inset-0 hidden md:block bg-gradient-to-r from-background/70 via-transparent to-background/70" />
       </div>
 
       {/* Content */}
