@@ -1,71 +1,114 @@
-# Plan: Fix founder-presentation UX audit blockers
 
-## Goal
-Turn the audit into concrete fixes that protect the first impression, keep guests on-site, make Luna more operationally accurate, and clean up the presentation-risk items before showing the founders.
+# Full Build: Instant Guest Confirmations (SMS + Email)
 
-## Priority fixes
+Closes the "what happens after I submit?" trust gap by sending an instant SMS and a branded email to every guest who submits a callback request or lead. Both channels respect Tucson hours and tell guests exactly when to expect Kendell to reach back out.
 
-1. **Replace the cold-load black screen with a branded instant shell**
-   - Add a static, no-JavaScript loading experience directly in `index.html` so first-time guests immediately see Hush branding instead of a blank black screen.
-   - Include a small gold “H”/Luna-style mark, “Hush Salon & Day Spa”, and a short line such as “Preparing your Hush experience…” using inline CSS only.
-   - Hide/remove the shell as soon as React mounts from `src/main.tsx`.
-   - Add a document-level fallback that still looks polished if JS takes several seconds.
+## What guests will experience
 
-2. **Improve perceived first paint beyond the shell**
-   - Keep the Hero’s above-the-fold copy lightweight and visible quickly.
-   - Reduce early media contention: avoid forcing both desktop and mobile hero videos to load/play at the same time; only the matching viewport video should aggressively load.
-   - Keep the Hero video requirement intact: autoplay, muted, loop, playsInline.
-   - Keep the “Step Inside” section video as an actual `<video>` element, but prevent it from competing with first paint where possible.
+**Sunday 9pm — guest fills out callback form:**
+1. Form confirms instantly on screen (already works)
+2. **~3 seconds later:** SMS arrives — *"Hi Sarah — Hush Salon got your callback request. We're closed Sun/Mon, so Kendell will reach out Tuesday morning. Reply STOP to opt out."*
+3. **~10 seconds later:** Branded Hush email lands — header in Playfair gold, body explaining what to expect, salon address, hours, and direct phone fallback.
 
-3. **Keep Google/third-party links from taking guests away**
-   - Re-audit all Google Maps/reviews/social/external links and ensure every external destination uses `target="_blank" rel="noopener noreferrer"`.
-   - The code already shows the main TrustBar and Testimonials Google links have this, so I’ll verify the issue is not coming from another link path or stale deployed code.
+**Tuesday 2pm — guest fills out form:**
+1. SMS: *"Hi Sarah — Hush Salon got your request. Kendell will call you within the hour."*
+2. Branded email confirming the same.
 
-4. **Fix Luna closed-day callback language**
-   - Add a current-day/time context to the Luna chat system prompt.
-   - Add an explicit scheduling rule: if the user asks for tomorrow and tomorrow is Sunday or Monday, Luna must say Hush is closed and offer the next open business day.
-   - Preferred wording: “We’re closed Monday — the earliest callback is Tuesday morning when Kendell is back at 9 AM.”
-   - Preserve the existing neutrality policy: Luna still does not make artist booking decisions.
+## Architecture
 
-5. **Clarify closed-day expectations in the Hero and callback form**
-   - When Hush is closed, supplement the “Closed Today” badge with a small expectation-setting line, e.g. “We open Tuesday at 9 AM — your request will be ready for Kendell when the salon reopens.”
-   - In the callback form, strengthen the response-time microcopy so Sunday/Monday submissions do not imply same-day or Monday callbacks.
+### 1. Connect Twilio (gateway)
+- Use `standard_connectors--connect` with `connector_id: "twilio"` to link a Twilio connection. User picks the from-number during the connect dialog.
+- Removes need for manual `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN` secrets — gateway handles auth.
+- Add new project secret: `TWILIO_FROM_NUMBER` (the verified Hush sending number, E.164 format).
 
-6. **Strengthen the Privacy Policy modal for phone collection**
-   - Replace the current one-paragraph policy with a more complete, presentation-ready modal:
-     - Effective date
-     - What information is collected
-     - How Hush uses phone/email submissions
-     - TCPA/contact consent language
-     - Cookies/basic analytics disclosure
-     - Data retention overview
-     - Third-party/service-provider statement
-     - How to contact Hush for privacy questions
-   - Keep it readable and guest-friendly; not legalese-heavy.
+### 2. Set up Lovable Email infrastructure
+- Show email domain setup dialog (suggest `notify.hushsalontucson.com` as the subdomain — user can change).
+- Once user completes domain setup → automatically run `email_domain--setup_email_infra` → automatically scaffold transactional emails via `email_domain--scaffold_transactional_email`.
+- Build the `/unsubscribe` page in the React app at the path the scaffold tool returns (matched to Hush's dark warm-premium design).
 
-7. **Fix nail artist card image reliability**
-   - Remove lazy-loading from artist card images that are shown/filtered interactively, or switch to eager/async decoding for the visible team cards.
-   - Add a graceful image fallback so a failed photo never renders as an empty dark card.
-   - Keep real artist photos only; no AI/stock placeholders.
+### 3. Shared helper: `_shared/booking-rules.ts`
+Add `getNextOpenWindow()` that returns Tucson-local human-readable strings:
+- Sunday → `"Tuesday morning"`
+- Monday → `"Tuesday morning"`
+- Tue–Fri before close → `"within the hour"`
+- Tue–Fri after close → `"tomorrow morning"`
+- Saturday after close → `"Tuesday morning"`
 
-8. **Clarify Artist filter behavior**
-   - The current code is single-select, but the audit observed apparent multi-select/confusing state. Add a visible result count and active-filter label like “Showing 3 nail specialists” or “Showing all Rockstars.”
-   - Optionally reset `showAll` when a filter changes so the grid state feels deterministic.
-   - Avoid introducing true multi-select unless explicitly desired.
+Used by both SMS body and email template data.
 
-9. **Founder photo risk item**
-   - The code currently uses `Founders_Hush.jpg` with alt text naming all three founders. I’ll inspect available assets and only swap if there is already a genuine all-three-founders photo available, likely `founders-champagne.jpg`.
-   - If no clear all-three image exists, I will not substitute a misleading image; instead I’ll adjust the caption/alt text to match the actual photo until a correct founder photo is provided.
+### 4. New shared helper: `_shared/twilio-sms.ts`
+Single `sendGuestSms({ to, body })` function:
+- Validates E.164 format, normalizes US numbers (+1 prefix)
+- Calls Twilio gateway (`https://connector-gateway.lovable.dev/twilio/Messages.json`)
+- Handles SMS Pumping fraud protection (recommends user enable in Twilio Console after build)
+- Logs send attempts to a new `sms_send_log` table for audit/debugging
+- Idempotency: skip if a successful SMS to the same phone for the same `idempotency_key` was sent within 5 minutes
 
-## Validation
+### 5. New transactional email templates
+Located in `supabase/functions/_shared/transactional-email-templates/`:
+- `callback-confirmation.tsx` — for `request-callback` and the website callback form
+- `lead-capture-confirmation.tsx` — for general lead submissions from `submit-lead` and `capture-lead`
 
-After implementation, I will run:
-- TypeScript/build check.
-- Browser performance profile to confirm first visible content is no longer a blank black screen.
-- Network/resource check to confirm only the relevant hero video is prioritized on load.
-- Desktop and mobile visual spot-checks for Hero, Step Inside, Artists/Nails filter, TrustBar/Testimonials links, Privacy modal, and callback microcopy.
-- A Luna closed-day prompt test where “tomorrow” falls on a closed day, if the environment allows backend function testing.
+Both styled to match Hush brand:
+- White email body (required)
+- Gold accent (`#C9A84C`) for headers and CTA bar
+- Playfair Display headings, system fallback for body
+- Salon address, "What happens next" section, direct phone `(520) 327-6753`
+- `templateData` props: `{ name, nextOpenWindow, category?, timing? }`
 
-## Notes
-- The ideal architectural solution would be SSR/SSG, but this Vite SPA cannot be converted to another framework in this project. The zero-JS branded shell plus media-load tuning is the right fast fix for the founder presentation and guest perception.
-- No database schema changes are expected.
+### 6. Trigger SMS + email from edge functions
+
+**`request-callback/index.ts`** (called by Luna voice + form):
+- After successful DB insert → fire SMS + email in parallel (non-blocking — wrap in `EdgeRuntime.waitUntil`)
+- Idempotency keys: `callback-sms-{row.id}`, `callback-email-{row.id}`
+
+**`submit-lead/index.ts`** (called by website forms — handles both `type: "callback"` and `type: "lead"`):
+- For `callback` type → same SMS + callback-confirmation email as above
+- For `lead` type with phone → SMS + lead-capture-confirmation email
+- For `lead` type with email only → email only (no SMS)
+
+**`capture-lead/index.ts`** (called by Luna chat):
+- Same dual-trigger as `submit-lead`'s lead path
+
+### 7. New database table: `sms_send_log`
+```sql
+create table public.sms_send_log (
+  id uuid primary key default gen_random_uuid(),
+  phone text not null,
+  body text not null,
+  idempotency_key text not null,
+  twilio_sid text,
+  status text not null check (status in ('queued','sent','failed','suppressed')),
+  error_message text,
+  related_table text,
+  related_id uuid,
+  created_at timestamptz not null default now()
+);
+create index sms_send_log_idem_idx on public.sms_send_log (idempotency_key, created_at desc);
+create index sms_send_log_phone_idx on public.sms_send_log (phone, created_at desc);
+alter table public.sms_send_log enable row level security;
+-- No client policies — service role only.
+```
+
+### 8. Deploy
+- `lead-qualify`, `request-callback`, `submit-lead`, `capture-lead`
+- `send-transactional-email`, `process-email-queue`, `handle-email-unsubscribe`, `handle-email-suppression` (auto-deployed by scaffold)
+
+## What I will need from you during the build
+
+1. **Twilio connection** — pick or create one in the connector dialog when prompted, including a verified sending phone number.
+2. **Email subdomain** — confirm `notify.hushsalontucson.com` (or pick another) when the email setup dialog appears, then add the NS records at your domain registrar.
+3. **`TWILIO_FROM_NUMBER`** secret — the E.164 sending number after Twilio is connected.
+
+Everything else is automated.
+
+## What I will explicitly NOT do
+- No marketing emails, no drip sequences, no "we miss you" campaigns
+- No GoHighLevel integration
+- No changes to Slack routing (keeps working as-is)
+- No changes to Luna chat copy (already fixed in last build)
+- No mass send loops — every confirmation is 1:1, triggered by a specific guest action
+
+## Post-build recommendations
+- Enable **SMS Pumping Protection** + restrict **SMS Geo Permissions** to US-only in your Twilio Console (I'll show you where after the build is live).
+- Test by submitting a real callback yourself — phone should buzz within ~5 seconds.
