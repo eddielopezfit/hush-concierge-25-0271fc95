@@ -14,15 +14,14 @@ import {
   deriveInternalRouting,
   PRIORITY_EMOJI,
   PRIORITY_LABEL,
-  getUrgencyAction,
   type Priority,
   type SlackChannel,
 } from "../_shared/booking-rules.ts";
+import { postMessage, resolveMention } from "../_shared/slack-client.ts";
 
 // ── Environment ─────────────────────────────────────────────────────────────
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const SLACK_WEBHOOK_URL = Deno.env.get("SLACK_WEBHOOK_URL");
 const GHL_API_KEY = Deno.env.get("GHL_API_KEY");
 const GHL_WEBHOOK_URL = Deno.env.get("GHL_WEBHOOK_URL");
 const TWILIO_ACCOUNT_SID = Deno.env.get("TWILIO_ACCOUNT_SID");
@@ -58,11 +57,16 @@ interface LeadPayload {
 
 // ── Slack Alert Formatting ──────────────────────────────────────────────────
 
-function formatSlackMessage(lead: LeadPayload, priority: Priority, channel: SlackChannel): object {
+async function formatSlackMessage(lead: LeadPayload, priority: Priority, channel: SlackChannel): Promise<{ text: string; blocks: unknown[] }> {
   const routing = deriveInternalRouting(lead.category ?? null, lead.service ?? null);
   const bookingDisplay = getInternalBookingPath(lead.category);
   const rule = getRoutingRule(lead.category);
-  const urgencyAction = getUrgencyAction(priority, channel);
+  const mention = await resolveMention(channel);
+  const actionVerb = priority === "P1"
+    ? `🚨 *Action:* ${mention} — Call within 10 minutes`
+    : priority === "P2"
+    ? `⏰ *Action:* ${mention} — Follow up today`
+    : `📋 *Action:* ${mention} — Add to follow-up queue`;
 
   const notesLines: string[] = [];
   if (lead.consultation_required) {
@@ -122,10 +126,7 @@ function formatSlackMessage(lead: LeadPayload, priority: Priority, channel: Slac
     },
     {
       type: "section",
-      text: {
-        type: "mrkdwn",
-        text: urgencyAction,
-      },
+      text: { type: "mrkdwn", text: actionVerb },
     },
     {
       type: "context",
@@ -138,7 +139,8 @@ function formatSlackMessage(lead: LeadPayload, priority: Priority, channel: Slac
     },
   ];
 
-  return { blocks };
+  const text = `${PRIORITY_EMOJI[priority]} ${PRIORITY_LABEL[priority]} ${lead.callback_requested ? "callback" : "lead"} — ${lead.guest_name || "Guest"} · ${lead.category || "?"} · ${lead.timing || "?"}`;
+  return { text, blocks };
 }
 
 // ── Slack Send ──────────────────────────────────────────────────────────────
@@ -147,29 +149,15 @@ async function sendSlackAlert(
   lead: LeadPayload,
   priority: Priority,
   channel: SlackChannel,
-): Promise<void> {
-  if (!SLACK_WEBHOOK_URL) {
-    console.warn("[lead-qualify] SLACK_WEBHOOK_URL not set, skipping Slack alert");
-    return;
+  threadTs?: string,
+): Promise<{ ts?: string; via: string } | null> {
+  const { text, blocks } = await formatSlackMessage(lead, priority, channel);
+  const result = await postMessage({ channelKey: channel, text, blocks, thread_ts: threadTs });
+  if (!result.ok) {
+    console.error(`[lead-qualify] Slack ${channel} send failed:`, result.error, "via", result.via);
+    return null;
   }
-
-  const channelWebhookKey = `SLACK_WEBHOOK_URL_${channel.toUpperCase()}`;
-  const webhookUrl = Deno.env.get(channelWebhookKey) || SLACK_WEBHOOK_URL;
-
-  const payload = formatSlackMessage(lead, priority, channel);
-
-  try {
-    const res = await fetch(webhookUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) {
-      console.error(`[lead-qualify] Slack ${channel} error:`, res.status, await res.text());
-    }
-  } catch (err) {
-    console.error(`[lead-qualify] Slack ${channel} fetch error:`, err);
-  }
+  return { ts: result.ts, via: result.via };
 }
 
 // ── CRM Stub (GoHighLevel) ─────────────────────────────────────────────────
@@ -324,7 +312,32 @@ Deno.serve(async (req) => {
 
     // 3. Slack notifications — route by category + type
     const slackChannel = resolveSlackChannel(lead.category ?? null, callbackRequested);
-    await sendSlackAlert(enrichedLead, priority, slackChannel);
+
+    // If a previous post for this lead exists, reply in-thread instead of new message
+    let parentTs: string | undefined;
+    if (lead.phone) {
+      const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const { data: prior } = await supabase
+        .from("leads")
+        .select("slack_message_ts")
+        .eq("phone", lead.phone)
+        .gte("created_at", since)
+        .not("slack_message_ts", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(1);
+      parentTs = prior?.[0]?.slack_message_ts ?? undefined;
+    }
+
+    const slackResult = await sendSlackAlert(enrichedLead, priority, slackChannel, parentTs);
+
+    // Persist ts for future threading (only on top-level posts)
+    if (slackResult?.ts && !parentTs && lead.phone) {
+      await supabase
+        .from("leads")
+        .update({ slack_message_ts: slackResult.ts })
+        .eq("phone", lead.phone)
+        .is("slack_message_ts", null);
+    }
 
     // 4. CRM push (stub)
     await pushToCRM(enrichedLead);
