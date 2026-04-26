@@ -43,27 +43,53 @@ async function sendWelcomeSequence(
 
   const firstName = name?.trim().split(/\s+/)[0] || undefined;
 
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const sendUrl = `${supabaseUrl}/functions/v1/send-transactional-email`;
+  // send-transactional-email runs with verify_jwt = false (internal-only).
+  // We still send the service-role key as apikey for project association.
+  const authHeaders = {
+    "Content-Type": "application/json",
+    apikey: serviceRoleKey,
+  };
+
   try {
     // 1. Immediate welcome
-    await db.functions.invoke("send-transactional-email", {
-      body: {
+    const welcomeRes = await fetch(sendUrl, {
+      method: "POST",
+      headers: authHeaders,
+      body: JSON.stringify({
         templateName: "welcome",
         recipientEmail,
         idempotencyKey: `welcome-${leadId}`,
         templateData: firstName ? { name: firstName } : {},
-      },
+      }),
     });
+    if (!welcomeRes.ok) {
+      const txt = await welcomeRes.text();
+      console.error("[submit-lead] welcome failed:", welcomeRes.status, txt);
+    } else {
+      console.log("[submit-lead] welcome OK");
+    }
 
     // 2. Follow-up: prepare for first visit (queued right after — arrives
     // moments later in the same inbox)
-    await db.functions.invoke("send-transactional-email", {
-      body: {
+    const nextRes = await fetch(sendUrl, {
+      method: "POST",
+      headers: authHeaders,
+      body: JSON.stringify({
         templateName: "what-happens-next",
         recipientEmail,
         idempotencyKey: `what-happens-next-${leadId}`,
         templateData: firstName ? { name: firstName } : {},
-      },
+      }),
     });
+    if (!nextRes.ok) {
+      const txt = await nextRes.text();
+      console.error("[submit-lead] what-happens-next failed:", nextRes.status, txt);
+    } else {
+      console.log("[submit-lead] what-happens-next OK");
+    }
   } catch (err) {
     console.warn("[submit-lead] welcome sequence failed:", err);
   }
