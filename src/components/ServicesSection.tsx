@@ -5,6 +5,7 @@ import { ServiceMenuModal } from "./ServiceMenuModal";
 import { getCategoryById } from "@/data/servicesMenuData";
 import { useLuna } from "@/contexts/LunaContext";
 import type { ServiceCategoryId } from "@/types/concierge";
+import { TryOnEntryButton } from "@/components/tryon/TryOnEntryButton";
 import hairHero from "@/assets/hair-hero.jpg";
 import lashesHero from "@/assets/lashes-hero.jpg";
 
@@ -119,6 +120,11 @@ export const ServicesSection = () => {
         <p className="font-body text-[11px] text-gold/60 leading-relaxed mb-3">
           Loved by 315+ guests · 4.7★ on Google
         </p>
+        {service.id === "hair" && (
+          <div className="mb-3" onClick={(e) => e.stopPropagation()}>
+            <TryOnEntryButton variant="chip" label="Try Your New Look" source="Services Card" />
+          </div>
+        )}
         <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
           <button
             onClick={(e) => handleStartLuna(service.id as ServiceCategoryId, e)}
