@@ -9,8 +9,8 @@
  *   - Priority scoring
  *   - Slack channel routing
  *
- * SYNC NOTE: If these rules change, update SYSTEM_PROMPT_v5.md Section 8 and
- *            the ElevenLabs agent prompt to match.
+ * SYNC NOTE: If these rules change, update supabase/functions/_shared/luna-brain.ts
+ *            (CORE_BRAIN — Booking Decision Tree) and the ElevenLabs agent prompt to match.
  */
 
 // ── Consultation-Required Services ──────────────────────────────────────────
