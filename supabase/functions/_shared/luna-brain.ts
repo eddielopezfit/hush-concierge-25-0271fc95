@@ -14,11 +14,11 @@
  * direct lead/callback capture via function-calling, comparable to
  * voice tools (capture_lead, request_callback).
  *
- * Knowledge sources:
- * - SYSTEM_PROMPT_v6.md (Sections 0-23)
- * - KB10_service_intelligence.md (946 lines)
- * - KB11_team_intelligence.md (1453 lines)
- * - KB12_recommendation_engine.md (420 lines)
+ * Knowledge sources (reference docs in src/lib/, NOT bundled — content embedded below):
+ * - SYSTEM_PROMPT_v7.md (latest spec — Sections 0-23)
+ * - KB10_service_intelligence.md (service catalog & explanations)
+ * - KB11_team_intelligence.md (artist profiles & specialties)
+ * - KB12_recommendation_engine.md (DEPRECATED — neutral guidance policy supersedes)
  */
 
 // ── Brain Constants (Section 18) ────────────────────────────────────────────
