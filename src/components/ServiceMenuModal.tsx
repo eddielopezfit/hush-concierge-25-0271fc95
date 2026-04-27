@@ -152,9 +152,9 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
                                   {item.name}
                                 </span>
                                 {item.description && (
-                                  <p className="mt-1 font-body text-[12px] md:text-[13px] leading-snug text-muted-foreground/85">
+                                  <span className="mt-1 block text-[12px] md:text-[13px] font-body text-muted-foreground/80 leading-snug">
                                     {item.description}
-                                  </p>
+                                  </span>
                                 )}
                                 {showConsultationNote && (
                                   <span className="mt-1 block text-[11px] font-body text-muted-foreground/80">

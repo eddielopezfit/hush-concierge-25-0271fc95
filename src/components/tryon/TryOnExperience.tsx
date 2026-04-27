@@ -42,7 +42,7 @@ function MatchBadge({ tier }: { tier: MatchTier }) {
   );
 }
 
-type Step = "intro" | "face" | "category" | "style" | "color" | "review" | "preview" | "convert";
+type Step = "intro" | "face" | "category" | "style" | "color" | "preview" | "convert";
 
 interface SavedLook {
   id: string;
@@ -168,9 +168,9 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
     setStep("color");
   };
 
-  const handleColorPick = (id: string | null) => {
+  const handleColorPick = async (id: string | null) => {
     setColorId(id);
-    setStep("review");
+    if (styleId) await generate(styleId, id);
   };
 
   const saveLook = () => {
@@ -276,37 +276,17 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
     else if (step === "category") setStep("face");
     else if (step === "style") setStep("category");
     else if (step === "color") setStep("style");
-    else if (step === "review") setStep("color");
-    else if (step === "preview") setStep("review");
+    else if (step === "preview") setStep("color");
     else if (step === "convert") setStep("preview");
   };
 
   const resetFaceAndUndertone = () => {
     setFaceShape(null);
     setUndertone(null);
-    try {
-      console.info("[try-on] features_reset", { sessionId });
-      sessionStorage.removeItem("hush_tryon_features");
-    } catch { /* noop */ }
     toast.success("Cleared — re-sorting styles & colors");
   };
 
   const hasFaceOrUndertone = faceShape !== null || undertone !== null;
-
-  const logFeatureSelections = useCallback((source: "continue" | "skip") => {
-    const payload = {
-      sessionId,
-      faceShape: faceShape ?? null,
-      undertone: undertone ?? null,
-      completed: source === "continue" && (faceShape !== null || undertone !== null) && faceShape !== "unsure" && undertone !== "unsure",
-      skipped: source === "skip",
-      at: new Date().toISOString(),
-    };
-    try {
-      console.info("[try-on] features_step", payload);
-      sessionStorage.setItem("hush_tryon_features", JSON.stringify(payload));
-    } catch { /* noop */ }
-  }, [faceShape, undertone, sessionId]);
 
   const modal = (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-charcoal/90 backdrop-blur-sm p-0 sm:p-6 animate-fade-in">
@@ -432,13 +412,13 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                 <button
-                  onClick={() => { logFeatureSelections("continue"); setStep("category"); }}
+                  onClick={() => setStep("category")}
                   className="btn-gold py-2.5 px-6 text-sm w-full sm:w-auto"
                 >
                   Continue
                 </button>
                 <button
-                  onClick={() => { setFaceShape("unsure"); setUndertone("unsure"); logFeatureSelections("skip"); setStep("category"); }}
+                  onClick={() => { setFaceShape("unsure"); setUndertone("unsure"); setStep("category"); }}
                   className="font-body text-sm text-cream/60 underline underline-offset-4 hover:text-gold"
                 >
                   Skip — I'll let my stylist decide
@@ -544,8 +524,9 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
                 {colors.map((c) => (
                   <button
                     key={c.id}
+                    disabled={isGenerating}
                     onClick={() => handleColorPick(c.id)}
-                    className="flex items-center gap-3 rounded-xl border border-border bg-charcoal/40 p-3 text-left transition-colors hover:border-gold/60 hover:bg-charcoal/60"
+                    className="flex items-center gap-3 rounded-xl border border-border bg-charcoal/40 p-3 text-left transition-colors hover:border-gold/60 hover:bg-charcoal/60 disabled:opacity-50"
                   >
                     <span className="h-10 w-10 shrink-0 rounded-full border border-cream/15" style={{ backgroundColor: c.swatch }} />
                 <span className="min-w-0 flex-1">
@@ -560,94 +541,20 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
               </div>
               <div className="mt-5 text-center">
                 <button
+                  disabled={isGenerating}
                   onClick={() => handleColorPick(null)}
-                  className="font-body text-sm text-cream/60 underline underline-offset-4 hover:text-gold"
+                  className="font-body text-sm text-cream/60 underline underline-offset-4 hover:text-gold disabled:opacity-50"
                 >
                   Skip color — preview the cut only
                 </button>
               </div>
-            </div>
-          )}
-
-          {step === "review" && (
-            <div className="mx-auto max-w-xl">
-              <h2 className="font-display text-2xl text-cream mb-1 text-center">Review your features</h2>
-              <p className="font-body text-sm text-cream/60 mb-6 text-center">
-                Quick check before we generate your preview. Edit anything that's not quite right.
-              </p>
-
-              <ul className="space-y-3 mb-6">
-                {[
-                  {
-                    label: "Style",
-                    value: styleId ? getStyleMeta(styleId)?.name ?? "—" : "—",
-                    onEdit: () => setStep("style"),
-                  },
-                  {
-                    label: "Color",
-                    value: colorId ? getColorMeta(colorId)?.name ?? "—" : "Keeping current color",
-                    onEdit: () => setStep("color"),
-                  },
-                  {
-                    label: "Face shape",
-                    value: faceShape && faceShape !== "unsure"
-                      ? FACE_SHAPES.find((f) => f.id === faceShape)?.label ?? "Not specified"
-                      : "Not specified",
-                    onEdit: () => setStep("face"),
-                  },
-                  {
-                    label: "Skin undertone",
-                    value: undertone && undertone !== "unsure"
-                      ? UNDERTONES.find((u) => u.id === undertone)?.label ?? "Not specified"
-                      : "Not specified",
-                    onEdit: () => setStep("face"),
-                  },
-                ].map((row) => (
-                  <li
-                    key={row.label}
-                    className="flex items-center justify-between gap-3 rounded-lg border border-border bg-charcoal/40 px-4 py-3"
-                  >
-                    <div className="min-w-0">
-                      <p className="font-body text-[11px] uppercase tracking-wider text-cream/45">{row.label}</p>
-                      <p className="font-display text-base text-cream truncate">{row.value}</p>
-                    </div>
-                    <button
-                      onClick={row.onEdit}
-                      disabled={isGenerating}
-                      className="font-body text-xs text-gold underline underline-offset-4 hover:text-gold/80 disabled:opacity-50"
-                    >
-                      Edit
-                    </button>
-                  </li>
-                ))}
-              </ul>
-
-              <div className="flex flex-col items-center gap-3">
-                <button
-                  onClick={() => { if (styleId) void generate(styleId, colorId); }}
-                  disabled={isGenerating || !styleId}
-                  className="btn-gold py-3 px-6 text-sm w-full sm:w-auto inline-flex items-center justify-center gap-2 disabled:opacity-60"
-                >
-                  {isGenerating ? (
-                    <><Loader2 className="h-4 w-4 animate-spin" /> Generating…</>
-                  ) : (
-                    <><Wand2 className="h-4 w-4" /> Generate my look</>
-                  )}
-                </button>
-                {!isGenerating && (
-                  <button
-                    onClick={() => setStep("face")}
-                    className="font-body text-xs text-cream/55 underline underline-offset-4 hover:text-gold"
-                  >
-                    Edit face shape & undertone
-                  </button>
-                )}
-              </div>
 
               {isGenerating && (
-                <p className="mt-4 text-center font-body text-[11px] text-cream/50">
-                  Usually 5–10 seconds
-                </p>
+                <div className="mt-8 flex flex-col items-center gap-3 text-cream/80">
+                  <Loader2 className="h-8 w-8 animate-spin text-gold" />
+                  <p className="font-body text-sm">Bringing your new look to life…</p>
+                  <p className="font-body text-[11px] text-cream/50">Usually 5–10 seconds</p>
+                </div>
               )}
             </div>
           )}

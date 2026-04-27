@@ -209,8 +209,6 @@ Deno.serve(async (req) => {
         last_style_id: styleId,
         last_color_id: colorId ?? null,
         last_render_path: renderPath,
-        face_shape: safeFace,
-        undertone: safeUndertone,
       })
       .eq("id", workingSessionId);
 
