@@ -124,6 +124,34 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
     setTimeout(() => openModal(ctx), 100);
   };
 
+  const itemKey = (groupName: string, idx: number, name: string) => `${groupName}::${idx}::${name}`;
+
+  const toggleItem = (key: string) => {
+    setExpandedItems((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
+  const handleToggleAll = () => {
+    if (!resolvedCategory) return;
+    if (allExpanded) {
+      setExpandedItems(new Set());
+      setAllExpanded(false);
+    } else {
+      const all = new Set<string>();
+      resolvedCategory.groups.forEach((g) =>
+        g.items.forEach((it, idx) => {
+          if (it.description) all.add(itemKey(g.name, idx, it.name));
+        })
+      );
+      setExpandedItems(all);
+      setAllExpanded(true);
+    }
+  };
+
   if (!baseCategory) return null;
 
   const CategoryIcon = baseCategory.icon;
