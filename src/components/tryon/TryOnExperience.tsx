@@ -253,6 +253,15 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
     else if (step === "convert") setStep("preview");
   };
 
+  const resetFaceAndUndertone = () => {
+    setFaceShape(null);
+    setUndertone(null);
+    toast.success("Cleared — re-sorting styles & colors");
+  };
+
+  const hasFaceOrUndertone =
+    (!!faceShape && faceShape !== null) || (!!undertone && undertone !== null);
+
   const modal = (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-charcoal/90 backdrop-blur-sm p-0 sm:p-6 animate-fade-in">
       <div className="relative flex h-full w-full max-w-5xl flex-col overflow-hidden bg-card text-cream shadow-2xl sm:h-[92vh] sm:rounded-2xl sm:border sm:border-gold/20">
