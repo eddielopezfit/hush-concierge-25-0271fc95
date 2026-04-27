@@ -253,6 +253,14 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
     else if (step === "convert") setStep("preview");
   };
 
+  const resetFaceAndUndertone = () => {
+    setFaceShape(null);
+    setUndertone(null);
+    toast.success("Cleared — re-sorting styles & colors");
+  };
+
+  const hasFaceOrUndertone = faceShape !== null || undertone !== null;
+
   const modal = (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-charcoal/90 backdrop-blur-sm p-0 sm:p-6 animate-fade-in">
       <div className="relative flex h-full w-full max-w-5xl flex-col overflow-hidden bg-card text-cream shadow-2xl sm:h-[92vh] sm:rounded-2xl sm:border sm:border-gold/20">
@@ -389,6 +397,16 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
                   Skip — I'll let my stylist decide
                 </button>
               </div>
+              {hasFaceOrUndertone && (
+                <div className="mt-4 text-center">
+                  <button
+                    onClick={resetFaceAndUndertone}
+                    className="font-body text-xs text-cream/55 underline underline-offset-4 hover:text-gold"
+                  >
+                    Reset my face & undertone
+                  </button>
+                </div>
+              )}
               <p className="mt-4 text-center font-body text-[11px] text-cream/45">
                 Your stylist always has the final say — this just helps us start you in the right direction.
               </p>
@@ -427,6 +445,16 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
                     ✦ Sorted with {FACE_SHAPES.find((f) => f.id === faceShape)?.label.toLowerCase()}-face matches first
                   </span>
                 )}
+                {hasFaceOrUndertone && (
+                  <span className="block mt-2">
+                    <button
+                      onClick={() => { resetFaceAndUndertone(); setStep("face"); }}
+                      className="font-body text-[11px] text-cream/55 underline underline-offset-4 hover:text-gold"
+                    >
+                      Reset my face & undertone
+                    </button>
+                  </span>
+                )}
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                 {styles.map((s) => (
@@ -456,6 +484,16 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
                 {undertone && undertone !== "unsure" && (
                   <span className="block text-[11px] text-gold/80 mt-1">
                     ✦ Sorted with {UNDERTONES.find((u) => u.id === undertone)?.label.toLowerCase()}-undertone matches first
+                  </span>
+                )}
+                {hasFaceOrUndertone && (
+                  <span className="block mt-2">
+                    <button
+                      onClick={() => { resetFaceAndUndertone(); setStep("face"); }}
+                      className="font-body text-[11px] text-cream/55 underline underline-offset-4 hover:text-gold"
+                    >
+                      Reset my face & undertone
+                    </button>
                   </span>
                 )}
               </p>
