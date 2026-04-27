@@ -12,6 +12,7 @@ export const HeroSection = () => {
   const startLuna = useStartLuna();
   const sectionRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const isVideoVisibleRef = useRef(true);
   // Pick ONE viewport-appropriate video so we never download both masters
   // and compete with first paint. SSR-safe default = desktop.
   const [isMobile, setIsMobile] = useState<boolean>(() =>
@@ -40,24 +41,57 @@ export const HeroSection = () => {
     return () => events.forEach((e) => window.removeEventListener(e, tryPlay));
   }, [isMobile]);
 
-  // Play only while the hero is the dominant viewport section. This prevents
-  // the hero video from decoding behind the Step Inside video during scroll.
+  // Play only while the hero is visible, and recover if browser autoplay or
+  // decoder timing leaves the visible video stalled on desktop.
   useEffect(() => {
     const section = sectionRef.current;
     const v = videoRef.current;
     if (!section || !v) return;
+
+    const playVisibleVideo = () => {
+      if (!isVideoVisibleRef.current) return;
+      v.play().catch(() => {});
+    };
+
     const io = new IntersectionObserver(
       ([entry]) => {
-        if (entry.intersectionRatio >= 0.45) {
-          v.play().catch(() => {});
+        isVideoVisibleRef.current = entry.isIntersecting;
+        if (entry.isIntersecting) {
+          playVisibleVideo();
         } else {
           v.pause();
         }
       },
-      { threshold: [0, 0.45] }
+      { threshold: 0.01 }
     );
     io.observe(section);
-    return () => io.disconnect();
+
+    let lastTime = -1;
+    let stalledTicks = 0;
+    const watchdog = window.setInterval(() => {
+      if (!isVideoVisibleRef.current) return;
+      if (v.paused) {
+        playVisibleVideo();
+        return;
+      }
+      if (v.readyState < 2) return;
+      if (Math.abs(v.currentTime - lastTime) < 0.05) {
+        stalledTicks += 1;
+        if (stalledTicks >= 2) {
+          v.load();
+          playVisibleVideo();
+          stalledTicks = 0;
+        }
+      } else {
+        stalledTicks = 0;
+      }
+      lastTime = v.currentTime;
+    }, 1500);
+
+    return () => {
+      io.disconnect();
+      window.clearInterval(watchdog);
+    };
   }, [isMobile]);
 
   const videoSrc = isMobile
