@@ -12,6 +12,7 @@ import {
 } from "@/data/servicesMenuData";
 import { useLuna } from "@/contexts/LunaContext";
 import { ServiceCategoryId } from "@/types/concierge";
+import { serviceDescriptionClass } from "@/lib/serviceDescriptionTokens";
 
 const PAGE_TITLE = "Services Knowledge Base — Hush Salon & Day Spa";
 const PAGE_DESCRIPTION =
@@ -258,7 +259,7 @@ const ServicesKnowledgeBase = () => {
                               </span>
                             </div>
                             {item.description && (
-                              <p className="font-body font-light text-[13px] text-cream/60 leading-[1.65] tracking-[0.005em] mb-4 max-w-prose before:content-['—'] before:mr-2 before:text-gold/60">
+                              <p className={serviceDescriptionClass.editorial}>
                                 {item.description}
                               </p>
                             )}
