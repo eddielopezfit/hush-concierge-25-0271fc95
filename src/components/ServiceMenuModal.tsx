@@ -7,7 +7,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { ServiceCategory, getCategoryWithCrossRefs } from "@/data/servicesMenuData";
+import { ServiceCategory, ServiceItem, getCategoryWithCrossRefs, servicesMenuData } from "@/data/servicesMenuData";
 import { useLuna } from "@/contexts/LunaContext";
 import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
 import { PriceConfidenceAccordion } from "@/components/PriceConfidenceAccordion";
@@ -18,12 +18,67 @@ interface ServiceMenuModalProps {
   category: ServiceCategory | null;
 }
 
+type PriceRangeId = "all" | "under50" | "50to100" | "100to200" | "over200" | "consult";
+
+const PRICE_RANGES: { id: PriceRangeId; label: string }[] = [
+  { id: "all", label: "All prices" },
+  { id: "under50", label: "Under $50" },
+  { id: "50to100", label: "$50–$100" },
+  { id: "100to200", label: "$100–$200" },
+  { id: "over200", label: "$200+" },
+  { id: "consult", label: "Consultation" },
+];
+
+/** Parse the lowest dollar number from a price string like "$60+", "$50–$80", or "Based on consultation". Returns null if non-numeric. */
+function parseStartingPrice(price: string): number | null {
+  const match = price.match(/\$\s*(\d+(?:\.\d+)?)/);
+  return match ? parseFloat(match[1]) : null;
+}
+
+function isConsultationPriceStr(price: string): boolean {
+  return /consultation|call/i.test(price);
+}
+
+function matchesRange(item: ServiceItem, range: PriceRangeId): boolean {
+  if (range === "all") return true;
+  if (range === "consult") return isConsultationPriceStr(item.price);
+  const value = parseStartingPrice(item.price);
+  if (value == null) return false;
+  switch (range) {
+    case "under50": return value < 50;
+    case "50to100": return value >= 50 && value <= 100;
+    case "100to200": return value > 100 && value <= 200;
+    case "over200": return value > 200;
+    default: return true;
+  }
+}
+
 export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModalProps) => {
   const { openModal, setConcierge } = useLuna();
   const [openAccordions, setOpenAccordions] = useState<string[]>([]);
+  const [activeCategoryId, setActiveCategoryId] = useState<string | null>(category?.id ?? null);
+  const [priceRange, setPriceRange] = useState<PriceRangeId>("all");
+
+  // Sync active category when prop changes (modal reopened on a different card)
+  useEffect(() => {
+    if (category) {
+      setActiveCategoryId(category.id);
+      setPriceRange("all");
+    }
+  }, [category?.id]);
 
   // Resolve category with cross-referenced items
-  const resolvedCategory = category ? getCategoryWithCrossRefs(category.id) ?? category : null;
+  const baseCategory = activeCategoryId ? getCategoryWithCrossRefs(activeCategoryId) ?? null : null;
+
+  // Apply price-range filter
+  const resolvedCategory: ServiceCategory | null = baseCategory
+    ? {
+        ...baseCategory,
+        groups: baseCategory.groups
+          .map((g) => ({ ...g, items: g.items.filter((it) => matchesRange(it, priceRange)) }))
+          .filter((g) => g.items.length > 0),
+      }
+    : null;
 
   useEffect(() => {
     if (isOpen) {
@@ -35,20 +90,21 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
   }, [isOpen]);
 
   useEffect(() => {
-    if (resolvedCategory && resolvedCategory.groups.length === 1) {
-      setOpenAccordions([resolvedCategory.groups[0].name]);
+    if (baseCategory && baseCategory.groups.length === 1) {
+      setOpenAccordions([baseCategory.groups[0].name]);
     } else {
       setOpenAccordions([]);
     }
-  }, [category?.id]);
+  }, [activeCategoryId]);
 
   const buildCategoryContext = (groupName?: string, itemName?: string, itemPrice?: string): ConciergeContext => {
-    if (!category) {
+    const cat = baseCategory;
+    if (!cat) {
       return { source: "Service Menu", categories: [], goal: null, timing: null };
     }
     return {
-      source: `Service Menu: ${category.title}`,
-      categories: [category.id as ServiceCategoryId],
+      source: `Service Menu: ${cat.title}`,
+      categories: [cat.id as ServiceCategoryId],
       goal: null,
       timing: null,
       group: groupName || null,
@@ -64,9 +120,10 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
     setTimeout(() => openModal(ctx), 100);
   };
 
-  if (!resolvedCategory) return null;
+  if (!baseCategory) return null;
 
-  const CategoryIcon = resolvedCategory.icon;
+  const CategoryIcon = baseCategory.icon;
+  const hasResults = !!resolvedCategory && resolvedCategory.groups.length > 0;
 
   return (
     <AnimatePresence>
@@ -101,31 +158,95 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
                   <CategoryIcon className="w-6 h-6 text-gold" />
                 </div>
                 <h2 className="font-display text-2xl md:text-3xl text-cream">
-                  {resolvedCategory.title}
+                  {baseCategory.title}
                 </h2>
               </div>
               <p className="font-body text-muted-foreground text-sm md:text-base mb-3">
                 Explore services and pricing. Luna can help you choose the right artist and confirm details.
               </p>
-              <p className="font-body text-muted-foreground/70 text-xs italic">
+              <p className="font-body text-muted-foreground/70 text-xs italic mb-4">
                 Prices shown are listed starting points. Some services are consultation-based.
               </p>
+
+              {/* Quick filters */}
+              <div className="space-y-3" role="group" aria-label="Quick filters">
+                <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by category">
+                  {servicesMenuData.map((cat) => {
+                    const Icon = cat.icon;
+                    const isActive = cat.id === activeCategoryId;
+                    return (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => {
+                          setActiveCategoryId(cat.id);
+                          setPriceRange("all");
+                        }}
+                        aria-pressed={isActive}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-body transition-all ${
+                          isActive
+                            ? "bg-gold/20 border-gold/60 text-gold"
+                            : "bg-secondary/40 border-secondary text-cream/70 hover:text-cream hover:border-gold/30"
+                        }`}
+                      >
+                        <Icon className="w-3.5 h-3.5" />
+                        <span>{cat.title}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by starting price">
+                  {PRICE_RANGES.map((range) => {
+                    const isActive = range.id === priceRange;
+                    return (
+                      <button
+                        key={range.id}
+                        type="button"
+                        onClick={() => setPriceRange(range.id)}
+                        aria-pressed={isActive}
+                        className={`px-3 py-1.5 rounded-full border text-xs font-body transition-all ${
+                          isActive
+                            ? "bg-gold/20 border-gold/60 text-gold"
+                            : "bg-secondary/40 border-secondary text-cream/70 hover:text-cream hover:border-gold/30"
+                        }`}
+                      >
+                        {range.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
 
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto overscroll-contain px-6 md:px-8 py-4">
-              {resolvedCategory.id === "hair" && (
+              {baseCategory.id === "hair" && (
                 <div className="mb-4">
                   <PriceConfidenceAccordion />
                 </div>
               )}
+              {!hasResults && (
+                <div className="py-10 text-center">
+                  <p className="font-body text-sm text-muted-foreground mb-3">
+                    No services match this price range in {baseCategory.title}.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setPriceRange("all")}
+                    className="font-body text-sm text-gold hover:text-gold/80 underline-offset-4 hover:underline"
+                  >
+                    Clear price filter
+                  </button>
+                </div>
+              )}
+              {hasResults && (
               <Accordion
                 type="multiple"
                 value={openAccordions}
                 onValueChange={setOpenAccordions}
                 className="space-y-2"
               >
-                {resolvedCategory.groups.map((group) => (
+                {resolvedCategory!.groups.map((group) => (
                   <AccordionItem
                     key={group.name}
                     value={group.name}
@@ -140,7 +261,7 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
                       <div className="space-y-0">
                         {group.items.map((item, idx) => {
                           const isConsultationPrice = item.price.toLowerCase().includes("consultation");
-                          const showConsultationNote = resolvedCategory.id === "hair" && isConsultationPrice;
+                          const showConsultationNote = baseCategory.id === "hair" && isConsultationPrice;
 
                           return (
                             <div
@@ -179,10 +300,11 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
                   </AccordionItem>
                 ))}
               </Accordion>
+              )}
 
-              {resolvedCategory.notes && resolvedCategory.notes.length > 0 && (
+              {baseCategory.notes && baseCategory.notes.length > 0 && (
                 <div className="mt-6 p-4 bg-secondary/30 rounded-lg border border-secondary/50">
-                  {resolvedCategory.notes!.map((note, idx) => (
+                  {baseCategory.notes!.map((note, idx) => (
                     <p key={idx} className="font-body text-sm text-cream/60 italic">
                       {note}
                     </p>
@@ -190,13 +312,13 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
                 </div>
               )}
 
-              {resolvedCategory.directContacts && resolvedCategory.directContacts.length > 0 && (
+              {baseCategory.directContacts && baseCategory.directContacts.length > 0 && (
                 <div className="mt-6 pt-6 border-t border-secondary/50">
                   <h4 className="font-body text-xs text-muted-foreground uppercase tracking-wide mb-4">
                     Direct Booking Contacts
                   </h4>
                   <div className="space-y-2">
-                    {resolvedCategory.directContacts.map((contact) => (
+                    {baseCategory.directContacts.map((contact) => (
                       <div key={contact.name} className="flex justify-between items-center py-2">
                         <span className="font-body text-cream/70 text-sm">{contact.name}</span>
                         <a
