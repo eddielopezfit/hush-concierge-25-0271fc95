@@ -15,4 +15,5 @@ type: feature
 - Conversion bridge: "Book this look" merges look into ConciergeContext + scrolls to booking-callback. "Get a stylist consultation" opens Luna chat tab
 - Photo retention: stated as 7 days (cleanup cron deferred to Phase 3)
 - Uses sonner for toasts, createPortal for modal, custom CompareSlider (no extra deps)
+- Personalization step (between Upload and Category) captures optional face shape + skin undertone. Used to (a) sort styles/colors with best matches first via `sortStylesByFace` / `sortColorsByUndertone`, (b) inject soft guidance into the AI prompt server-side, (c) include in the "Send to Luna" handoff message. Both fields are skippable ("Not sure"). Not persisted to DB yet — session-scoped only.
 
