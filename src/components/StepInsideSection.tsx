@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useSeamlessVideoPlayback } from "@/hooks/useSeamlessVideoPlayback";
 
 const DESKTOP_POSTER = "https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Step_Inside_Poster_v3.webp";
-const DESKTOP_SRC = "/videos/Hush_Step_Inside_Desktop_v2.mp4";
+const DESKTOP_SRC = "/videos/hush-interior.mp4";
 const MOBILE_SRC = "/videos/Hush_Step_Inside_Mobile.mp4";
 
 /**
@@ -73,7 +73,7 @@ export const StepInsideSection = () => {
               poster={DESKTOP_POSTER}
               aria-hidden="true"
               onCanPlay={(e) => { e.currentTarget.play().catch(() => {}); }}
-              className="absolute inset-0 w-full h-full object-cover object-center"
+              className="absolute inset-0 w-full h-full object-cover object-center scale-[1.08]"
             />
           )}
         </div>
