@@ -10,18 +10,37 @@ import {
   TRY_ON_COLORS,
   TRY_ON_STYLES,
   UNDERTONES,
-  colorFlattersUndertone,
+  colorMatchTier,
   getColorMeta,
   getStyleMeta,
   sortColorsByUndertone,
   sortStylesByFace,
-  styleFlattersFace,
+  styleMatchTier,
+  type MatchTier,
   type FaceShape,
   type TryOnStyleCategory,
   type Undertone,
 } from "@/data/tryOnStyleData";
 import { CompareSlider } from "./CompareSlider";
 import { cn } from "@/lib/utils";
+
+function MatchBadge({ tier }: { tier: MatchTier }) {
+  if (tier === "none") return null;
+  const isBest = tier === "best";
+  return (
+    <span
+      className={cn(
+        "inline-flex shrink-0 items-center gap-1 rounded-full border px-1.5 py-0.5 font-body text-[9px] uppercase tracking-wider leading-none",
+        isBest
+          ? "border-gold/60 bg-gold/15 text-gold"
+          : "border-cream/20 bg-cream/5 text-cream/70"
+      )}
+    >
+      <Sparkle className="h-2.5 w-2.5" />
+      {isBest ? "Best match" : "Good match"}
+    </span>
+  );
+}
 
 type Step = "intro" | "face" | "category" | "style" | "color" | "preview" | "convert";
 
@@ -463,12 +482,8 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
                     onClick={() => handleStylePick(s.id)}
                     className="flex flex-col items-start gap-1 rounded-xl border border-border bg-charcoal/40 p-3 text-left transition-colors hover:border-gold/60 hover:bg-charcoal/60"
                   >
-                    <span className="flex items-center gap-1.5 font-display text-base text-cream">
-                      {s.name}
-                      {styleFlattersFace(s.id, faceShape) && (
-                        <Sparkle className="h-3 w-3 text-gold" aria-label="Flattering for your face shape" />
-                      )}
-                    </span>
+                <span className="font-display text-base text-cream">{s.name}</span>
+                    <MatchBadge tier={styleMatchTier(s.id, faceShape)} />
                     <span className="font-body text-[11px] text-cream/55">{s.blurb}</span>
                   </button>
                 ))}
@@ -506,12 +521,10 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
                     className="flex items-center gap-3 rounded-xl border border-border bg-charcoal/40 p-3 text-left transition-colors hover:border-gold/60 hover:bg-charcoal/60 disabled:opacity-50"
                   >
                     <span className="h-10 w-10 shrink-0 rounded-full border border-cream/15" style={{ backgroundColor: c.swatch }} />
-                    <span className="min-w-0">
-                      <span className="flex items-center gap-1.5 font-display text-base text-cream truncate">
-                        {c.name}
-                        {colorFlattersUndertone(c.id, undertone) && (
-                          <Sparkle className="h-3 w-3 shrink-0 text-gold" aria-label="Flatters your undertone" />
-                        )}
+                <span className="min-w-0 flex-1">
+                      <span className="flex items-center gap-1.5">
+                        <span className="font-display text-base text-cream truncate">{c.name}</span>
+                        <MatchBadge tier={colorMatchTier(c.id, undertone)} />
                       </span>
                       <span className="block font-body text-[11px] text-cream/55 truncate">{c.blurb}</span>
                     </span>
