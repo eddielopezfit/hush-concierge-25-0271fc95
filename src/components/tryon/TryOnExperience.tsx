@@ -168,9 +168,9 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
     setStep("color");
   };
 
-  const handleColorPick = async (id: string | null) => {
+  const handleColorPick = (id: string | null) => {
     setColorId(id);
-    if (styleId) await generate(styleId, id);
+    setStep("review");
   };
 
   const saveLook = () => {
@@ -276,7 +276,8 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
     else if (step === "category") setStep("face");
     else if (step === "style") setStep("category");
     else if (step === "color") setStep("style");
-    else if (step === "preview") setStep("color");
+    else if (step === "review") setStep("color");
+    else if (step === "preview") setStep("review");
     else if (step === "convert") setStep("preview");
   };
 
