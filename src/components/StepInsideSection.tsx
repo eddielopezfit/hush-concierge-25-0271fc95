@@ -29,21 +29,6 @@ export const StepInsideSection = () => {
   }, []);
 
   useEffect(() => {
-    const tryPlay = () => {
-      const v = videoRef.current;
-      if (v && v.paused) v.play().catch(() => {});
-    };
-    // Force the element to (re)load the new src and attempt play
-    if (videoRef.current) {
-      videoRef.current.load();
-    }
-    tryPlay();
-    const events = ["pointerdown", "touchstart", "keydown", "scroll"] as const;
-    events.forEach((e) => window.addEventListener(e, tryPlay, { once: true, passive: true }));
-    return () => events.forEach((e) => window.removeEventListener(e, tryPlay));
-  }, [src]);
-
-  useEffect(() => {
     const section = sectionRef.current;
     if (!section) return;
     const io = new IntersectionObserver(
