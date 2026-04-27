@@ -73,7 +73,7 @@ for (const [catId, expectedRows] of Object.entries(SOURCE_MENU)) {
   Deno.test(`[${catId}] rendered markdown table contains every row`, () => {
     const rendered = renderCategoryMarkdown(getCategory(catId));
     const missing = expectedRows.filter(
-      (row) => !rendered.includes(`| ${row} |`),
+      (row) => !rendered.includes(`| ${row} | `),
     );
     assertEquals(
       missing,
@@ -86,14 +86,16 @@ for (const [catId, expectedRows] of Object.entries(SOURCE_MENU)) {
   Deno.test(`[${catId}] every rendered row carries a non-empty price`, () => {
     const rendered = renderCategoryMarkdown(getCategory(catId));
     for (const row of expectedRows) {
-      // Match: "| <row> | <price> |"
+      // Match: "| <row> | <price> | <description> |"
       const re = new RegExp(
-        `\\|\\s*${row.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*\\|\\s*([^|]+?)\\s*\\|`,
+        `\\|\\s*${row.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*\\|\\s*([^|]+?)\\s*\\|\\s*([^|]+?)\\s*\\|`,
       );
       const match = rendered.match(re);
       assert(match, `Row "${row}" not found in ${catId} table`);
       const price = match![1].trim();
       assert(price.length > 0, `Row "${row}" has empty price`);
+      const desc = match![2].trim();
+      assert(desc.length > 0, `Row "${row}" has empty description`);
     }
   });
 }
@@ -116,7 +118,7 @@ Deno.test("[nails] golden render matches expected snapshot of all 11 rows", () =
   ];
   for (const [name, price] of expectedRows) {
     assert(
-      rendered.includes(`| ${name} | ${price} |`),
+      rendered.includes(`| ${name} | ${price} | `),
       `Expected nails row "${name} | ${price}" missing in:\n${rendered}`,
     );
   }
@@ -172,7 +174,7 @@ Deno.test("renderPricingBlock(all categories) preserves every source row", () =>
   for (const [catId, expectedRows] of Object.entries(SOURCE_MENU)) {
     for (const row of expectedRows) {
       assert(
-        block.includes(`| ${row} |`),
+        block.includes(`| ${row} | `),
         `Row "${row}" missing from full pricing block (category: ${catId})`,
       );
     }
