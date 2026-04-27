@@ -108,6 +108,38 @@ export function colorFlattersUndertone(colorId: string, undertone: Undertone | n
   return !!getColorMeta(colorId)?.flattersUndertones?.includes(undertone);
 }
 
+export type MatchTier = "best" | "good" | "none";
+
+/**
+ * Score a style against the chosen face shape.
+ * - "best": style explicitly flatters this face shape
+ * - "good": style is broadly universal (flatters 4+ shapes), so it's a safe pick
+ * - "none": no signal (or face = unsure / null)
+ */
+export function styleMatchTier(styleId: string, face: FaceShape | null): MatchTier {
+  if (!face || face === "unsure") return "none";
+  const meta = getStyleMeta(styleId);
+  if (!meta?.flattersShapes?.length) return "none";
+  if (meta.flattersShapes.includes(face)) return "best";
+  if (meta.flattersShapes.length >= 4) return "good";
+  return "none";
+}
+
+/**
+ * Score a color against the chosen undertone.
+ * - "best": color explicitly flatters this undertone
+ * - "good": color works across all 3 undertones (universally flattering)
+ * - "none": no signal
+ */
+export function colorMatchTier(colorId: string, undertone: Undertone | null): MatchTier {
+  if (!undertone || undertone === "unsure") return "none";
+  const meta = getColorMeta(colorId);
+  if (!meta?.flattersUndertones?.length) return "none";
+  if (meta.flattersUndertones.includes(undertone)) return "best";
+  if (meta.flattersUndertones.length >= 3) return "good";
+  return "none";
+}
+
 export function getStyleMeta(id: string) {
   return TRY_ON_STYLES.find((s) => s.id === id);
 }
