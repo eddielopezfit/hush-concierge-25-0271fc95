@@ -486,6 +486,16 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
                     ✦ Sorted with {UNDERTONES.find((u) => u.id === undertone)?.label.toLowerCase()}-undertone matches first
                   </span>
                 )}
+                {hasFaceOrUndertone && (
+                  <span className="block mt-2">
+                    <button
+                      onClick={() => { resetFaceAndUndertone(); setStep("face"); }}
+                      className="font-body text-[11px] text-cream/55 underline underline-offset-4 hover:text-gold"
+                    >
+                      Reset my face & undertone
+                    </button>
+                  </span>
+                )}
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {colors.map((c) => (
