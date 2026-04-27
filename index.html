@@ -22,6 +22,24 @@
       fetchpriority="high"
       media="(max-width: 767px)"
     />
+    <!-- Eager-warm the hero background videos so playback starts the instant
+         React mounts the <video> element (no extra round-trip on first paint). -->
+    <link
+      rel="preload"
+      as="video"
+      type="video/mp4"
+      href="/videos/hero-backdrop.mp4"
+      fetchpriority="high"
+      media="(min-width: 768px)"
+    />
+    <link
+      rel="preload"
+      as="video"
+      type="video/mp4"
+      href="/videos/Hush_Hero_v2_Mobile.mp4"
+      fetchpriority="high"
+      media="(max-width: 767px)"
+    />
     <style>
       html,body{background:#0d0d0d;color:#f5f3ee;margin:0;}
       /* Branded cold-load shell — visible instantly without JS so guests
