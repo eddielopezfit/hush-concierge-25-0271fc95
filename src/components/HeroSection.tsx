@@ -2,6 +2,7 @@ import { ArrowDown, Sparkles, MessageSquare } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useLuna } from "@/contexts/LunaContext";
 import { useStartLuna } from "@/hooks/useStartLuna";
+import { useSeamlessVideoPlayback } from "@/hooks/useSeamlessVideoPlayback";
 
 /**
  * Hero — pure CSS animations (no framer-motion) so the eager bundle stays small.
@@ -12,7 +13,6 @@ export const HeroSection = () => {
   const startLuna = useStartLuna();
   const sectionRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const isVideoVisibleRef = useRef(true);
   // Pick ONE viewport-appropriate video so we never download both masters
   // and compete with first paint. SSR-safe default = desktop.
   const [isMobile, setIsMobile] = useState<boolean>(() =>
@@ -27,79 +27,13 @@ export const HeroSection = () => {
     return () => mq.removeEventListener("change", update);
   }, []);
 
-  // Force-start the active hero video and retry on first user interaction
-  // (covers iframe autoplay restrictions in strict browsers).
-  useEffect(() => {
-    const tryPlay = () => {
-      const v = videoRef.current;
-      if (v && v.paused) v.play().catch(() => {});
-    };
-    videoRef.current?.load();
-    tryPlay();
-    const events = ["pointerdown", "touchstart", "keydown", "scroll"] as const;
-    events.forEach((e) => window.addEventListener(e, tryPlay, { once: true, passive: true }));
-    return () => events.forEach((e) => window.removeEventListener(e, tryPlay));
-  }, [isMobile]);
-
-  // Play only while the hero is visible, and recover if browser autoplay or
-  // decoder timing leaves the visible video stalled on desktop.
-  useEffect(() => {
-    const section = sectionRef.current;
-    const v = videoRef.current;
-    if (!section || !v) return;
-
-    const playVisibleVideo = () => {
-      if (!isVideoVisibleRef.current) return;
-      v.play().catch(() => {});
-    };
-
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        isVideoVisibleRef.current = entry.isIntersecting;
-        if (entry.isIntersecting) {
-          playVisibleVideo();
-        } else {
-          v.pause();
-        }
-      },
-      { threshold: 0.01 }
-    );
-    io.observe(section);
-
-    let lastTime = -1;
-    let stalledTicks = 0;
-    const watchdog = window.setInterval(() => {
-      if (!isVideoVisibleRef.current) return;
-      if (v.paused) {
-        playVisibleVideo();
-        return;
-      }
-      if (v.readyState < 2) return;
-      if (Math.abs(v.currentTime - lastTime) < 0.05) {
-        stalledTicks += 1;
-        if (stalledTicks >= 2) {
-          v.load();
-          playVisibleVideo();
-          stalledTicks = 0;
-        }
-      } else {
-        stalledTicks = 0;
-      }
-      lastTime = v.currentTime;
-    }, 1500);
-
-    return () => {
-      io.disconnect();
-      window.clearInterval(watchdog);
-    };
-  }, [isMobile]);
-
   const videoSrc = isMobile
     ? "/videos/Hush_Hero_v2_Mobile.mp4"
-    : "/videos/Hush_Hero_v2_Desktop.mp4";
+    : "/videos/hero-backdrop.mp4";
   const videoPoster = isMobile
     ? "https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Hero_v2_Mobile_Poster.jpg"
     : "https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Hero_v2_Desktop_Poster.jpg";
+  const isVideoActive = useSeamlessVideoPlayback({ sectionRef, videoRef, sourceKey: videoSrc });
 
   const handleDiscoverClick = () => {
     document.getElementById("experience-finder")?.scrollIntoView({ behavior: "smooth" });
@@ -109,7 +43,7 @@ export const HeroSection = () => {
     <section ref={sectionRef} className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Video */}
       <div className="absolute inset-0 z-0 overflow-hidden bg-charcoal">
-        <div className="absolute inset-0 overflow-hidden">
+        <div className={isVideoActive ? "absolute inset-0 overflow-hidden animate-ken-burns" : "absolute inset-0 overflow-hidden"}>
           <video
             ref={videoRef}
             key={videoSrc}
@@ -125,7 +59,7 @@ export const HeroSection = () => {
             className={
               isMobile
                 ? "absolute inset-0 w-full h-full object-cover [object-position:center_top]"
-                : "absolute inset-0 w-full h-full object-cover object-center"
+                : "absolute inset-0 w-full h-full object-cover object-center scale-[1.08]"
             }
           />
         </div>
