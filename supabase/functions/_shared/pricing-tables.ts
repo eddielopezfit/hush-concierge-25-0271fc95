@@ -2,7 +2,7 @@
 // Used by luna-chat to inject deterministic, complete pricing tables so the LLM
 // never trims rows when summarizing a category's menu.
 
-export type PricingItem = { name: string; price: string };
+export type PricingItem = { name: string; price: string; description?: string };
 export type PricingCategory = {
   id: "hair" | "nails" | "lashes" | "skincare" | "massage";
   title: string;
