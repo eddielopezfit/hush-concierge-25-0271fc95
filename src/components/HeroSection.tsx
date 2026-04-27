@@ -10,6 +10,7 @@ import { useStartLuna } from "@/hooks/useStartLuna";
 export const HeroSection = () => {
   const { openChatWidget } = useLuna();
   const startLuna = useStartLuna();
+  const sectionRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   // Pick ONE viewport-appropriate video so we never download both masters
   // and compete with first paint. SSR-safe default = desktop.
@@ -39,22 +40,23 @@ export const HeroSection = () => {
     return () => events.forEach((e) => window.removeEventListener(e, tryPlay));
   }, [isMobile]);
 
-  // Pause hero video when it scrolls out of view to free the GPU decoder
-  // for the Step Inside video below. Major fix for desktop choppiness.
+  // Play only while the hero is the dominant viewport section. This prevents
+  // the hero video from decoding behind the Step Inside video during scroll.
   useEffect(() => {
+    const section = sectionRef.current;
     const v = videoRef.current;
-    if (!v) return;
+    if (!section || !v) return;
     const io = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        if (entry.intersectionRatio >= 0.45) {
           v.play().catch(() => {});
         } else {
           v.pause();
         }
       },
-      { threshold: 0.05 }
+      { threshold: [0, 0.45] }
     );
-    io.observe(v);
+    io.observe(section);
     return () => io.disconnect();
   }, [isMobile]);
 
@@ -70,10 +72,10 @@ export const HeroSection = () => {
   };
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Background Video — Ken Burns slow zoom via CSS */}
+    <section ref={sectionRef} className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      {/* Background Video */}
       <div className="absolute inset-0 z-0 overflow-hidden bg-charcoal">
-        <div className="absolute inset-0 overflow-hidden animate-ken-burns [transform-origin:center_center]">
+        <div className="absolute inset-0 overflow-hidden">
           <video
             ref={videoRef}
             key={videoSrc}
