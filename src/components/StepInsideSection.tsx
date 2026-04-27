@@ -10,7 +10,9 @@ const MOBILE_SRC = "/videos/Hush_Step_Inside_Mobile.mp4";
  * Pure CSS animations (no framer-motion) — keeps eager bundle small.
  */
 export const StepInsideSection = () => {
+  const sectionRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
   const [src, setSrc] = useState<string>(() =>
     typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches
       ? MOBILE_SRC
@@ -40,47 +42,67 @@ export const StepInsideSection = () => {
     return () => events.forEach((e) => window.removeEventListener(e, tryPlay));
   }, [src]);
 
-  // Only decode/play when in view — avoids two 1080p videos compositing
-  // at the same time on desktop, which was the source of the choppiness.
   useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
+    const section = sectionRef.current;
+    if (!section) return;
     const io = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
+          setShouldLoadVideo(true);
+          io.disconnect();
+        }
+      },
+      { rootMargin: "350px 0px" }
+    );
+    io.observe(section);
+    return () => io.disconnect();
+  }, []);
+
+  // Only decode/play when Step Inside is visible — avoids multiple full-bleed
+  // videos compositing at once on desktop.
+  useEffect(() => {
+    const section = sectionRef.current;
+    const v = videoRef.current;
+    if (!section || !v) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.intersectionRatio >= 0.25) {
           v.play().catch(() => {});
         } else {
           v.pause();
         }
       },
-      { threshold: 0.1 }
+      { threshold: [0, 0.25] }
     );
-    io.observe(v);
+    io.observe(section);
     return () => io.disconnect();
-  }, [src]);
+  }, [src, shouldLoadVideo]);
 
   return (
     <section
+      ref={sectionRef}
       aria-label="Step inside Hush"
       className="relative w-full overflow-hidden h-[45vh] min-h-[320px] md:h-[55vh] md:min-h-[440px] max-h-[640px]"
     >
-      {/* Video layer with slow Ken Burns zoom */}
+      {/* Video layer */}
       <div className="absolute inset-0 bg-background overflow-hidden">
-        <div className="absolute inset-0 origin-top animate-ken-burns">
-          <video
-            ref={videoRef}
-            key={src}
-            src={src}
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="auto"
-            poster={DESKTOP_POSTER}
-            aria-hidden="true"
-            onCanPlay={(e) => { e.currentTarget.play().catch(() => {}); }}
-            className="absolute inset-0 w-full h-full object-cover object-center"
-          />
+        <div className="absolute inset-0 origin-top">
+          {shouldLoadVideo && (
+            <video
+              ref={videoRef}
+              key={src}
+              src={src}
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="auto"
+              poster={DESKTOP_POSTER}
+              aria-hidden="true"
+              onCanPlay={(e) => { e.currentTarget.play().catch(() => {}); }}
+              className="absolute inset-0 w-full h-full object-cover object-center"
+            />
+          )}
         </div>
 
         {/* Cinematic overlay — left-side scrim for headline readability */}
