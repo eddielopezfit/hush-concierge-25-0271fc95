@@ -1,5 +1,5 @@
 import { m, AnimatePresence } from "framer-motion";
-import { X, MessageSquare, Phone } from "lucide-react";
+import { X, MessageSquare, Phone, ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   Accordion,
