@@ -56,7 +56,7 @@ export const StepInsideSection = () => {
             loop
             muted
             playsInline
-            preload="metadata"
+            preload="auto"
             poster={DESKTOP_POSTER}
             aria-hidden="true"
             onCanPlay={(e) => { e.currentTarget.play().catch(() => {}); }}
