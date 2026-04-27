@@ -57,7 +57,29 @@ export function findColor(id: string): TryOnColor | undefined {
   return TRY_ON_COLORS.find((c) => c.id === id);
 }
 
-export function buildEditPrompt(styleId: string, colorId: string | null): string {
+export type FaceShape = "oval" | "round" | "square" | "heart" | "long" | "unsure";
+export type Undertone = "cool" | "warm" | "neutral" | "unsure";
+
+const FACE_SHAPE_GUIDANCE: Record<Exclude<FaceShape, "unsure">, string> = {
+  oval:   "an oval face",
+  round:  "a round face — favor shapes that add length and structure",
+  square: "a square face — favor soft, layered shapes that balance a strong jawline",
+  heart:  "a heart-shaped face — favor shapes that add width near the jaw",
+  long:   "a long face — favor shapes with width and softness around the cheekbones",
+};
+
+const UNDERTONE_GUIDANCE: Record<Exclude<Undertone, "unsure">, string> = {
+  cool:    "cool skin undertones (pink/blue)",
+  warm:    "warm skin undertones (golden/peach)",
+  neutral: "neutral skin undertones",
+};
+
+export function buildEditPrompt(
+  styleId: string,
+  colorId: string | null,
+  faceShape: FaceShape | null = null,
+  undertone: Undertone | null = null,
+): string {
   const style = findStyle(styleId);
   const color = colorId ? findColor(colorId) : null;
 
@@ -69,8 +91,19 @@ export function buildEditPrompt(styleId: string, colorId: string | null): string
     ? ` Recolor the hair to ${color.prompt}.`
     : "";
 
+  const guidanceParts: string[] = [];
+  if (faceShape && faceShape !== "unsure") {
+    guidanceParts.push(`Tailor the cut to flatter ${FACE_SHAPE_GUIDANCE[faceShape]}`);
+  }
+  if (color && undertone && undertone !== "unsure") {
+    guidanceParts.push(`Adjust tonality so the color harmonizes with ${UNDERTONE_GUIDANCE[undertone]}`);
+  }
+  const guidanceLine = guidanceParts.length
+    ? ` ${guidanceParts.join(". ")}.`
+    : "";
+
   return [
-    styleLine + colorLine,
+    styleLine + colorLine + guidanceLine,
     "Strict rules: only modify the hair (cut, length, shape, color, texture).",
     "Do NOT change the person's face, skin tone, identity, age, expression, eye color, makeup, jewelry, clothing, lighting, camera angle, or background.",
     "Keep the result photorealistic, professional salon-quality, with natural shine and realistic edges where the hair meets the skin.",

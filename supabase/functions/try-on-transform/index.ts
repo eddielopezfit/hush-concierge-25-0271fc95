@@ -57,12 +57,23 @@ Deno.serve(async (req) => {
     if (!SUPABASE_URL || !SERVICE_ROLE) return json({ error: "Storage not configured" }, 500);
 
     const body = await req.json().catch(() => null) as
-      | { imageBase64?: string; styleId?: string; colorId?: string | null; sessionId?: string | null }
+      | {
+          imageBase64?: string;
+          styleId?: string;
+          colorId?: string | null;
+          sessionId?: string | null;
+          faceShape?: string | null;
+          undertone?: string | null;
+        }
       | null;
 
     if (!body) return json({ error: "Invalid JSON body" }, 400);
 
-    const { imageBase64, styleId, colorId, sessionId } = body;
+    const { imageBase64, styleId, colorId, sessionId, faceShape, undertone } = body;
+    const VALID_FACES = new Set(["oval", "round", "square", "heart", "long", "unsure"]);
+    const VALID_UNDERTONES = new Set(["cool", "warm", "neutral", "unsure"]);
+    const safeFace = faceShape && VALID_FACES.has(faceShape) ? (faceShape as any) : null;
+    const safeUndertone = undertone && VALID_UNDERTONES.has(undertone) ? (undertone as any) : null;
     if (!imageBase64 || typeof imageBase64 !== "string") {
       return json({ error: "imageBase64 is required (data URL)" }, 400);
     }
@@ -132,7 +143,7 @@ Deno.serve(async (req) => {
     }
 
     // Call Lovable AI image edit
-    const prompt = buildEditPrompt(styleId, colorId ?? null);
+    const prompt = buildEditPrompt(styleId, colorId ?? null, safeFace, safeUndertone);
     const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {

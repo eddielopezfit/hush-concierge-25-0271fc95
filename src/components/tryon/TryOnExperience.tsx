@@ -1,21 +1,29 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { ArrowLeft, Camera, Check, Loader2, MessageCircle, Sparkles, Upload, Wand2, X } from "lucide-react";
+import { ArrowLeft, Camera, Check, Loader2, MessageCircle, Sparkles, Sparkle, Upload, Wand2, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useLuna } from "@/contexts/LunaContext";
 import {
+  FACE_SHAPES,
   TRY_ON_CATEGORIES,
   TRY_ON_COLORS,
   TRY_ON_STYLES,
+  UNDERTONES,
+  colorFlattersUndertone,
   getColorMeta,
   getStyleMeta,
+  sortColorsByUndertone,
+  sortStylesByFace,
+  styleFlattersFace,
+  type FaceShape,
   type TryOnStyleCategory,
+  type Undertone,
 } from "@/data/tryOnStyleData";
 import { CompareSlider } from "./CompareSlider";
 import { cn } from "@/lib/utils";
 
-type Step = "intro" | "category" | "style" | "color" | "preview" | "convert";
+type Step = "intro" | "face" | "category" | "style" | "color" | "preview" | "convert";
 
 interface SavedLook {
   id: string;
@@ -50,6 +58,8 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
   const { mergeConcierge, openChatWidget } = useLuna();
   const [step, setStep] = useState<Step>("intro");
   const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null);
+  const [faceShape, setFaceShape] = useState<FaceShape | null>(null);
+  const [undertone, setUndertone] = useState<Undertone | null>(null);
   const [category, setCategory] = useState<TryOnStyleCategory | null>(null);
   const [styleId, setStyleId] = useState<string | null>(null);
   const [colorId, setColorId] = useState<string | null>(null);
@@ -68,9 +78,14 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
     return () => { document.body.style.overflow = prev; };
   }, []);
 
-  const styles = useMemo(
-    () => TRY_ON_STYLES.filter((s) => !category || s.category === category),
-    [category]
+  const styles = useMemo(() => {
+    const filtered = TRY_ON_STYLES.filter((s) => !category || s.category === category);
+    return sortStylesByFace(filtered, faceShape);
+  }, [category, faceShape]);
+
+  const colors = useMemo(
+    () => sortColorsByUndertone(TRY_ON_COLORS, undertone),
+    [undertone]
   );
 
   const handleFile = useCallback(async (file: File) => {
@@ -85,7 +100,7 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
     }
     const dataUrl = await fileToDataUrl(file);
     setPhotoDataUrl(dataUrl);
-    setStep("category");
+    setStep("face");
   }, []);
 
   const generate = useCallback(async (chosenStyleId: string, chosenColorId: string | null) => {
@@ -99,6 +114,8 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
           styleId: chosenStyleId,
           colorId: chosenColorId,
           sessionId,
+          faceShape,
+          undertone,
         },
       });
       if (fnErr) {
@@ -124,6 +141,8 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
       setIsGenerating(false);
     }
   }, [photoDataUrl, sessionId]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // (faceShape/undertone are read at call time and don't need to invalidate the callback)
 
   const handleStylePick = (id: string) => {
     setStyleId(id);
@@ -195,10 +214,19 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
       goal: lookLabel ? `Try-On: ${lookLabel}` : null,
     });
 
+    const faceLabel = faceShape && faceShape !== "unsure"
+      ? FACE_SHAPES.find((f) => f.id === faceShape)?.label
+      : null;
+    const undertoneLabel = undertone && undertone !== "unsure"
+      ? UNDERTONES.find((u) => u.id === undertone)?.label
+      : null;
+
     const lines = [
       `I just tried on a look in the virtual try-on and want your take.`,
       styleMeta ? `• Style: ${styleMeta.name}${styleMeta.blurb ? ` — ${styleMeta.blurb}` : ""}` : null,
       colorMeta ? `• Color: ${colorMeta.name}${colorMeta.blurb ? ` — ${colorMeta.blurb}` : ""}` : `• Color: keeping my current color`,
+      faceLabel ? `• Face shape: ${faceLabel}` : null,
+      undertoneLabel ? `• Skin undertone: ${undertoneLabel}` : null,
       renderSignedUrl ? `• Preview: ${renderSignedUrl}` : null,
       ``,
       `Can you tell me which stylist would be a great fit and what to expect at my appointment?`,
@@ -217,7 +245,8 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
 
   const stepBack = () => {
     setError(null);
-    if (step === "category") setStep("intro");
+    if (step === "face") setStep("intro");
+    else if (step === "category") setStep("face");
     else if (step === "style") setStep("category");
     else if (step === "color") setStep("style");
     else if (step === "preview") setStep("color");
@@ -297,6 +326,75 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
             </div>
           )}
 
+          {step === "face" && (
+            <div className="mx-auto max-w-2xl">
+              <h2 className="font-display text-2xl text-cream mb-1 text-center">A little about your features</h2>
+              <p className="font-body text-sm text-cream/60 mb-6 text-center">
+                Optional — helps us sort the most flattering looks first and gives Luna better context. Tap <em className="not-italic text-cream/80">Not sure</em> for either to skip.
+              </p>
+
+              <div className="mb-7">
+                <p className="font-body text-xs uppercase tracking-wider text-cream/55 mb-3">Face shape</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                  {FACE_SHAPES.map((f) => (
+                    <button
+                      key={f.id}
+                      onClick={() => setFaceShape(f.id)}
+                      className={cn(
+                        "rounded-lg border bg-charcoal/40 p-3 text-left transition-colors",
+                        faceShape === f.id
+                          ? "border-gold bg-charcoal/70"
+                          : "border-border hover:border-gold/60"
+                      )}
+                    >
+                      <span className="block font-display text-sm text-cream">{f.label}</span>
+                      <span className="block font-body text-[11px] text-cream/55 leading-snug">{f.hint}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mb-7">
+                <p className="font-body text-xs uppercase tracking-wider text-cream/55 mb-3">Skin undertone</p>
+                <div className="grid grid-cols-2 sm:grid-cols-2 gap-2.5">
+                  {UNDERTONES.map((u) => (
+                    <button
+                      key={u.id}
+                      onClick={() => setUndertone(u.id)}
+                      className={cn(
+                        "rounded-lg border bg-charcoal/40 p-3 text-left transition-colors",
+                        undertone === u.id
+                          ? "border-gold bg-charcoal/70"
+                          : "border-border hover:border-gold/60"
+                      )}
+                    >
+                      <span className="block font-display text-sm text-cream">{u.label}</span>
+                      <span className="block font-body text-[11px] text-cream/55 leading-snug">{u.hint}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <button
+                  onClick={() => setStep("category")}
+                  className="btn-gold py-2.5 px-6 text-sm w-full sm:w-auto"
+                >
+                  Continue
+                </button>
+                <button
+                  onClick={() => { setFaceShape("unsure"); setUndertone("unsure"); setStep("category"); }}
+                  className="font-body text-sm text-cream/60 underline underline-offset-4 hover:text-gold"
+                >
+                  Skip — I'll let my stylist decide
+                </button>
+              </div>
+              <p className="mt-4 text-center font-body text-[11px] text-cream/45">
+                Your stylist always has the final say — this just helps us start you in the right direction.
+              </p>
+            </div>
+          )}
+
           {step === "category" && (
             <div>
               <h2 className="font-display text-2xl text-cream mb-1 text-center">Pick a direction</h2>
@@ -322,7 +420,14 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
           {step === "style" && (
             <div>
               <h2 className="font-display text-2xl text-cream mb-1 text-center">Choose a style</h2>
-              <p className="font-body text-sm text-cream/60 mb-6 text-center">Tap one to keep going. You can try others after.</p>
+              <p className="font-body text-sm text-cream/60 mb-6 text-center">
+                Tap one to keep going. You can try others after.
+                {faceShape && faceShape !== "unsure" && (
+                  <span className="block text-[11px] text-gold/80 mt-1">
+                    ✦ Sorted with {FACE_SHAPES.find((f) => f.id === faceShape)?.label.toLowerCase()}-face matches first
+                  </span>
+                )}
+              </p>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                 {styles.map((s) => (
                   <button
@@ -330,7 +435,12 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
                     onClick={() => handleStylePick(s.id)}
                     className="flex flex-col items-start gap-1 rounded-xl border border-border bg-charcoal/40 p-3 text-left transition-colors hover:border-gold/60 hover:bg-charcoal/60"
                   >
-                    <span className="font-display text-base text-cream">{s.name}</span>
+                    <span className="flex items-center gap-1.5 font-display text-base text-cream">
+                      {s.name}
+                      {styleFlattersFace(s.id, faceShape) && (
+                        <Sparkle className="h-3 w-3 text-gold" aria-label="Flattering for your face shape" />
+                      )}
+                    </span>
                     <span className="font-body text-[11px] text-cream/55">{s.blurb}</span>
                   </button>
                 ))}
@@ -341,9 +451,16 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
           {step === "color" && (
             <div>
               <h2 className="font-display text-2xl text-cream mb-1 text-center">Pick a color</h2>
-              <p className="font-body text-sm text-cream/60 mb-6 text-center">Or skip — we'll preview just the cut.</p>
+              <p className="font-body text-sm text-cream/60 mb-6 text-center">
+                Or skip — we'll preview just the cut.
+                {undertone && undertone !== "unsure" && (
+                  <span className="block text-[11px] text-gold/80 mt-1">
+                    ✦ Sorted with {UNDERTONES.find((u) => u.id === undertone)?.label.toLowerCase()}-undertone matches first
+                  </span>
+                )}
+              </p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {TRY_ON_COLORS.map((c) => (
+                {colors.map((c) => (
                   <button
                     key={c.id}
                     disabled={isGenerating}
@@ -352,7 +469,12 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
                   >
                     <span className="h-10 w-10 shrink-0 rounded-full border border-cream/15" style={{ backgroundColor: c.swatch }} />
                     <span className="min-w-0">
-                      <span className="block font-display text-base text-cream truncate">{c.name}</span>
+                      <span className="flex items-center gap-1.5 font-display text-base text-cream truncate">
+                        {c.name}
+                        {colorFlattersUndertone(c.id, undertone) && (
+                          <Sparkle className="h-3 w-3 shrink-0 text-gold" aria-label="Flatters your undertone" />
+                        )}
+                      </span>
                       <span className="block font-body text-[11px] text-cream/55 truncate">{c.blurb}</span>
                     </span>
                   </button>
