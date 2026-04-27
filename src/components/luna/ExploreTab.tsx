@@ -1,5 +1,5 @@
 import { m } from "framer-motion";
-import { servicesMenuData } from "@/data/servicesMenuData";
+import { servicesMenuData, ServiceItem, ServiceCategory } from "@/data/servicesMenuData";
 import { ChevronRight, ArrowLeft, Sun, Heart, Palette, Scissors, Eye, Hand, Sparkles, Flower2, MessageSquare } from "lucide-react";
 import { useState } from "react";
 import { useLuna } from "@/contexts/LunaContext";
@@ -60,6 +60,39 @@ export const ExploreTab = ({ onSwitchTab }: ExploreTabProps) => {
     }
   };
 
+  const handleAskAboutItem = (item: ServiceItem, group: string, service: ServiceCategory) => {
+    // Inject context so Luna's brain knows what the guest is exploring
+    mergeConcierge({
+      source: "Explore › Service Card",
+      categories: [service.id as ServiceCategoryId],
+      category: service.id as ServiceCategoryId,
+      group,
+      item: item.name,
+      price: item.price,
+    });
+    trackServiceClick(item.name, service.id);
+
+    const descriptionLine = item.description
+      ? `Here's the official description so you can read it back to me verbatim before asking follow-ups:\n"${item.description}"`
+      : `(No stored description — share what you know about this service from the Hush knowledge base.)`;
+
+    const prompt = [
+      `I'm interested in **${item.name}** (${service.title} › ${group}) — listed at ${item.price}.`,
+      "",
+      descriptionLine,
+      "",
+      "Please:",
+      "1. Read the description back to me in 1–2 sentences so I know we're aligned.",
+      "2. Ask me 2–3 quick follow-up questions to tailor the recommendation (e.g. hair length / current state, goal, timing, first visit or returning).",
+      "3. Once I answer, suggest the best next step to book — front desk number, direct specialist, or a callback.",
+    ].join("\n");
+
+    try {
+      sessionStorage.setItem("hush_chat_pending_prompt", prompt);
+    } catch { /* ignore */ }
+    onSwitchTab("chat");
+  };
+
   if (selectedCategory && selectedService) {
     // Narrow groups when the user picked a sub-category like "Blonde" or "Bold Color"
     const keywords = selectedLookCat?.keywords || [];
@@ -99,10 +132,26 @@ export const ExploreTab = ({ onSwitchTab }: ExploreTabProps) => {
               <p className="text-[10px] font-body text-primary uppercase tracking-wider mb-2">{group.name}</p>
               <div className="space-y-1">
                 {group.items.map(item => (
-                  <div key={item.name} className="flex justify-between items-center py-2 px-3 rounded-lg bg-card border border-border text-sm font-body">
-                    <span className="text-foreground">{item.name}</span>
-                    <span className="text-primary text-xs">{item.price}</span>
-                  </div>
+                  <button
+                    key={item.name}
+                    type="button"
+                    onClick={() => handleAskAboutItem(item, group.name, selectedService)}
+                    aria-label={`Ask Luna about ${item.name}`}
+                    className="w-full text-left py-2 px-3 rounded-lg bg-card border border-border text-sm font-body hover:border-primary/40 hover:bg-primary/5 transition-colors group"
+                  >
+                    <div className="flex justify-between items-center gap-3">
+                      <span className="text-foreground">{item.name}</span>
+                      <span className="flex items-center gap-1.5 shrink-0">
+                        <span className="text-primary text-xs">{item.price}</span>
+                        <MessageSquare className="w-3 h-3 text-muted-foreground/60 group-hover:text-primary transition-colors" />
+                      </span>
+                    </div>
+                    {item.description && (
+                      <p className="mt-1 text-[11px] text-muted-foreground/80 leading-snug line-clamp-2">
+                        {item.description}
+                      </p>
+                    )}
+                  </button>
                 ))}
               </div>
             </div>
