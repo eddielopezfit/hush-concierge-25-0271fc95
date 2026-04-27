@@ -5,6 +5,7 @@ import {
   detectPricingCategories,
   renderPricingBlock,
   PRICING_CATEGORIES,
+  renderServiceDescriptionsCatalog,
 } from "../_shared/pricing-tables.ts";
 // ── Environment ─────────────────────────────────────────────────────────────
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
@@ -113,6 +114,10 @@ Deno.serve(async (req) => {
 
     // Build system prompt from canonical shared brain
     let systemPrompt = buildChatSystemPrompt(journeyContext);
+
+    // Append the service-descriptions catalog so Luna can reference what's
+    // included in any service without the guest having to scroll the menu.
+    systemPrompt += "\n\n" + renderServiceDescriptionsCatalog();
 
     // ── Live day/time context + closed-day callback rule ────────────────
     // Inject the actual current day in Tucson (America/Phoenix, no DST) so
