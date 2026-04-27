@@ -199,10 +199,11 @@ export function renderCategoryMarkdown(cat: PricingCategory): string {
   for (const group of cat.groups) {
     if (cat.groups.length > 1) lines.push(`\n**${group.name}**`);
     lines.push("");
-    lines.push("| Service | Starting at |");
-    lines.push("| --- | --- |");
+    lines.push("| Service | Starting at | What's included |");
+    lines.push("| --- | --- | --- |");
     for (const item of group.items) {
-      lines.push(`| ${item.name} | ${item.price} |`);
+      const desc = (item.description ?? "—").replace(/\|/g, "\\|");
+      lines.push(`| ${item.name} | ${item.price} | ${desc} |`);
     }
   }
   if (cat.notes && cat.notes.length) {
@@ -215,4 +216,47 @@ export function renderCategoryMarkdown(cat: PricingCategory): string {
 /** Build the full pre-message block for one or more categories. */
 export function renderPricingBlock(categories: PricingCategory[]): string {
   return categories.map(renderCategoryMarkdown).join("\n\n");
+}
+
+/**
+ * Render a compact "Service Descriptions Catalog" for system-prompt injection.
+ * Gives Luna the exact one-line description for every service so she can answer
+ * "what's included in X?" without forcing the guest to scroll the menu.
+ */
+export function renderServiceDescriptionsCatalog(): string {
+  const lines: string[] = [];
+  lines.push("## SERVICE DESCRIPTIONS CATALOG (one-liner per service)");
+  lines.push(
+    "Use these exact, guest-facing descriptions when explaining what a service includes. " +
+    "Paraphrase naturally — never read verbatim — and always pair with the starting price already in the SERVICES & PRICING section. " +
+    "If a guest asks about a service NOT in this catalog, do not invent one."
+  );
+  for (const cat of PRICING_CATEGORIES) {
+    lines.push(`\n### ${cat.title}`);
+    for (const group of cat.groups) {
+      for (const item of group.items) {
+        if (!item.description) continue;
+        lines.push(`- **${item.name}** (${item.price}) — ${item.description}`);
+      }
+    }
+  }
+  return lines.join("\n");
+}
+
+/** Find a single service by fuzzy name match. Useful for follow-up tools/tests. */
+export function findServiceDescription(query: string): { name: string; price: string; description: string; category: string } | null {
+  const q = query.trim().toLowerCase();
+  if (!q) return null;
+  for (const cat of PRICING_CATEGORIES) {
+    for (const group of cat.groups) {
+      for (const item of group.items) {
+        if (!item.description) continue;
+        const n = item.name.toLowerCase();
+        if (n === q || n.includes(q) || q.includes(n)) {
+          return { name: item.name, price: item.price, description: item.description, category: cat.title };
+        }
+      }
+    }
+  }
+  return null;
 }
