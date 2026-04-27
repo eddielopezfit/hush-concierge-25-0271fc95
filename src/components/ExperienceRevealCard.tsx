@@ -1,6 +1,6 @@
 import { m } from "framer-motion";
 import { Sparkles, Clock, DollarSign, ChevronDown } from "lucide-react";
-import { RevealData } from "@/lib/experienceReveal";
+import { RevealData, deriveBookingMode } from "@/lib/experienceReveal";
 import { useLuna } from "@/contexts/LunaContext";
 import { BookingDecisionCard } from "@/components/BookingDecisionCard";
 import { PriceConfidenceAccordion } from "@/components/PriceConfidenceAccordion";
@@ -12,6 +12,11 @@ interface ExperienceRevealCardProps {
 
 export const ExperienceRevealCard = ({ data, onBook: _onBook }: ExperienceRevealCardProps) => {
   const { conciergeContext } = useLuna();
+  const bookingMode = deriveBookingMode(data, conciergeContext);
+  const planLinkLabel =
+    bookingMode === "consultation"
+      ? "See what your visit may include"
+      : "See your full personalized plan";
 
   const handleScrollToPlan = () => {
     const el = document.getElementById("personalized-plan");
@@ -96,9 +101,9 @@ export const ExperienceRevealCard = ({ data, onBook: _onBook }: ExperienceReveal
           >
             <button
               onClick={handleScrollToPlan}
-              className="inline-flex items-center gap-1.5 font-body text-xs text-gold/70 hover:text-gold transition-colors group"
+              className="inline-flex items-center gap-2 font-body text-xs md:text-sm text-gold/85 hover:text-gold transition-colors group px-4 py-2 rounded-lg border border-gold/20 hover:border-gold/40 hover:bg-gold/5"
             >
-              See your full personalized plan
+              {planLinkLabel}
               <ChevronDown className="w-3.5 h-3.5 group-hover:translate-y-0.5 transition-transform" />
             </button>
           </m.div>

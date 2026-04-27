@@ -18,11 +18,19 @@ const DEFAULT_FACTORS = [
 const DEFAULT_SUMMARY =
   "Most color visits typically fall between $130–$280, and your stylist will confirm everything during your complimentary consultation.";
 
+interface PriceConfidenceAccordionPropsExt extends PriceConfidenceAccordionProps {
+  /** One-line teaser shown next to the title when collapsed (e.g. number of factors). */
+  teaser?: string;
+}
+
 export const PriceConfidenceAccordion = ({
   summary = DEFAULT_SUMMARY,
   factors = DEFAULT_FACTORS,
-}: PriceConfidenceAccordionProps) => {
+  teaser,
+}: PriceConfidenceAccordionPropsExt) => {
+  // Always start collapsed for a consistent first impression across surfaces.
   const [isOpen, setIsOpen] = useState(false);
+  const teaserText = teaser ?? `${factors.length} factors shape your final price — tap to see`;
 
   return (
     <div className="rounded-xl border border-gold/15 bg-secondary/40 overflow-hidden">
@@ -32,8 +40,15 @@ export const PriceConfidenceAccordion = ({
         aria-expanded={isOpen}
         className="w-full flex items-center justify-between gap-3 px-4 py-3 md:px-5 md:py-3.5 text-left hover:bg-gold/5 transition-colors"
       >
-        <span className="font-body text-sm text-cream/85">
-          What affects your price?
+        <span className="flex flex-col items-start min-w-0">
+          <span className="font-body text-sm text-cream/85">
+            What affects your price?
+          </span>
+          {!isOpen && (
+            <span className="font-body text-[11px] text-cream/45 italic mt-0.5 truncate max-w-full">
+              {teaserText}
+            </span>
+          )}
         </span>
         <m.span
           animate={{ rotate: isOpen ? 180 : 0 }}
