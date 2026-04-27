@@ -1,5 +1,5 @@
 import { m, AnimatePresence } from "framer-motion";
-import { X, MessageSquare, Phone } from "lucide-react";
+import { X, MessageSquare, Phone, ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   Accordion,
@@ -58,12 +58,16 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
   const [openAccordions, setOpenAccordions] = useState<string[]>([]);
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(category?.id ?? null);
   const [priceRange, setPriceRange] = useState<PriceRangeId>("all");
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+  const [allExpanded, setAllExpanded] = useState(false);
 
   // Sync active category when prop changes (modal reopened on a different card)
   useEffect(() => {
     if (category) {
       setActiveCategoryId(category.id);
       setPriceRange("all");
+      setExpandedItems(new Set());
+      setAllExpanded(false);
     }
   }, [category?.id]);
 
@@ -118,6 +122,34 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
     setConcierge(ctx);
     onClose();
     setTimeout(() => openModal(ctx), 100);
+  };
+
+  const itemKey = (groupName: string, idx: number, name: string) => `${groupName}::${idx}::${name}`;
+
+  const toggleItem = (key: string) => {
+    setExpandedItems((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
+  const handleToggleAll = () => {
+    if (!resolvedCategory) return;
+    if (allExpanded) {
+      setExpandedItems(new Set());
+      setAllExpanded(false);
+    } else {
+      const all = new Set<string>();
+      resolvedCategory.groups.forEach((g) =>
+        g.items.forEach((it, idx) => {
+          if (it.description) all.add(itemKey(g.name, idx, it.name));
+        })
+      );
+      setExpandedItems(all);
+      setAllExpanded(true);
+    }
   };
 
   if (!baseCategory) return null;
@@ -240,6 +272,18 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
                 </div>
               )}
               {hasResults && (
+              <div className="flex items-center justify-end mb-2">
+                <button
+                  type="button"
+                  onClick={handleToggleAll}
+                  className="text-[11px] font-body uppercase tracking-[0.16em] text-muted-foreground hover:text-gold transition-colors"
+                  aria-pressed={allExpanded}
+                >
+                  {allExpanded ? "Collapse all" : "Expand all"}
+                </button>
+              </div>
+              )}
+              {hasResults && (
               <Accordion
                 type="multiple"
                 value={openAccordions}
@@ -262,26 +306,56 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
                         {group.items.map((item, idx) => {
                           const isConsultationPrice = item.price.toLowerCase().includes("consultation");
                           const showConsultationNote = baseCategory.id === "hair" && isConsultationPrice;
+                          const key = itemKey(group.name, idx, item.name);
+                          const isExpanded = expandedItems.has(key);
+                          const hasDescription = !!item.description;
 
                           return (
                             <div
                               key={`${item.name}-${idx}`}
                               className="flex justify-between items-start py-3 min-h-[48px] border-b border-secondary/50 last:border-0"
                             >
-                              <div className="pr-4">
-                                <span className="font-body text-cream/90 text-sm md:text-base block">
-                                  {item.name}
-                                </span>
-                                {item.description && (
-                                  <m.p
-                                    initial={{ opacity: 0, y: 2 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.35, ease: "easeOut" }}
-                                    className="mt-1.5 max-w-prose text-[12.5px] md:text-[13.5px] font-body font-light text-cream/55 leading-[1.55] tracking-[0.005em] before:content-['—'] before:mr-1.5 before:text-gold/60"
+                              <div className="pr-4 min-w-0 flex-1">
+                                {hasDescription ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleItem(key)}
+                                    aria-expanded={isExpanded}
+                                    aria-controls={`desc-${key}`}
+                                    className="group inline-flex items-center gap-1.5 -mx-1 px-1 py-0.5 rounded hover:bg-gold/5 transition-colors text-left"
                                   >
-                                    {item.description}
-                                  </m.p>
+                                    <span className="font-body text-cream/90 text-sm md:text-base">
+                                      {item.name}
+                                    </span>
+                                    <ChevronDown
+                                      className={`w-3.5 h-3.5 text-muted-foreground/60 group-hover:text-gold transition-transform ${
+                                        isExpanded ? "rotate-180 text-gold/80" : ""
+                                      }`}
+                                      aria-hidden="true"
+                                    />
+                                  </button>
+                                ) : (
+                                  <span className="font-body text-cream/90 text-sm md:text-base block">
+                                    {item.name}
+                                  </span>
                                 )}
+                                <AnimatePresence initial={false}>
+                                  {hasDescription && isExpanded && (
+                                    <m.div
+                                      id={`desc-${key}`}
+                                      key="desc"
+                                      initial={{ opacity: 0, height: 0 }}
+                                      animate={{ opacity: 1, height: "auto" }}
+                                      exit={{ opacity: 0, height: 0 }}
+                                      transition={{ duration: 0.28, ease: "easeOut" }}
+                                      className="overflow-hidden"
+                                    >
+                                      <p className="mt-1.5 max-w-prose text-[12.5px] md:text-[13.5px] font-body font-light text-cream/55 leading-[1.55] tracking-[0.005em] before:content-['—'] before:mr-1.5 before:text-gold/60">
+                                        {item.description}
+                                      </p>
+                                    </m.div>
+                                  )}
+                                </AnimatePresence>
                                 {showConsultationNote && (
                                   <span className="mt-1 block text-[11px] font-body text-muted-foreground/80">
                                     Price based on consultation
