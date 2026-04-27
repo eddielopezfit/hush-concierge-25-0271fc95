@@ -40,6 +40,25 @@ export const StepInsideSection = () => {
     return () => events.forEach((e) => window.removeEventListener(e, tryPlay));
   }, [src]);
 
+  // Only decode/play when in view — avoids two 1080p videos compositing
+  // at the same time on desktop, which was the source of the choppiness.
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          v.play().catch(() => {});
+        } else {
+          v.pause();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    io.observe(v);
+    return () => io.disconnect();
+  }, [src]);
+
   return (
     <section
       aria-label="Step inside Hush"
@@ -47,7 +66,7 @@ export const StepInsideSection = () => {
     >
       {/* Video layer with slow Ken Burns zoom */}
       <div className="absolute inset-0 bg-background overflow-hidden">
-        <div className="absolute inset-0 origin-top will-change-transform animate-ken-burns">
+        <div className="absolute inset-0 origin-top animate-ken-burns">
           <video
             ref={videoRef}
             key={src}

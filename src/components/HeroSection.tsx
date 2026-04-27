@@ -39,6 +39,25 @@ export const HeroSection = () => {
     return () => events.forEach((e) => window.removeEventListener(e, tryPlay));
   }, [isMobile]);
 
+  // Pause hero video when it scrolls out of view to free the GPU decoder
+  // for the Step Inside video below. Major fix for desktop choppiness.
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          v.play().catch(() => {});
+        } else {
+          v.pause();
+        }
+      },
+      { threshold: 0.05 }
+    );
+    io.observe(v);
+    return () => io.disconnect();
+  }, [isMobile]);
+
   const videoSrc = isMobile
     ? "/videos/Hush_Hero_v2_Mobile.mp4"
     : "/videos/Hush_Hero_v2_Desktop.mp4";
@@ -54,7 +73,7 @@ export const HeroSection = () => {
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Video — Ken Burns slow zoom via CSS */}
       <div className="absolute inset-0 z-0 overflow-hidden bg-charcoal">
-        <div className="absolute inset-0 overflow-hidden animate-ken-burns will-change-transform [transform-origin:center_center]">
+        <div className="absolute inset-0 overflow-hidden animate-ken-burns [transform-origin:center_center]">
           <video
             ref={videoRef}
             key={videoSrc}
