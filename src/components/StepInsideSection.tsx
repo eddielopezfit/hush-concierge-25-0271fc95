@@ -1,5 +1,6 @@
 import { ArrowDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useSeamlessVideoPlayback } from "@/hooks/useSeamlessVideoPlayback";
 
 const DESKTOP_POSTER = "https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Step_Inside_Poster_v3.webp";
 const DESKTOP_SRC = "/videos/Hush_Step_Inside_Desktop_v2.mp4";
@@ -12,7 +13,6 @@ const MOBILE_SRC = "/videos/Hush_Step_Inside_Mobile.mp4";
 export const StepInsideSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const isVideoVisibleRef = useRef(false);
   const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
   const [src, setSrc] = useState<string>(() =>
     typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches
@@ -59,58 +59,12 @@ export const StepInsideSection = () => {
     return () => io.disconnect();
   }, []);
 
-  // Only decode/play when Step Inside is visible, and recover if browser
-  // autoplay timing leaves the visible video stalled.
-  useEffect(() => {
-    const section = sectionRef.current;
-    const v = videoRef.current;
-    if (!section || !v) return;
-
-    const playVisibleVideo = () => {
-      if (!isVideoVisibleRef.current) return;
-      v.play().catch(() => {});
-    };
-
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        isVideoVisibleRef.current = entry.isIntersecting;
-        if (entry.isIntersecting) {
-          playVisibleVideo();
-        } else {
-          v.pause();
-        }
-      },
-      { threshold: 0.01 }
-    );
-    io.observe(section);
-
-    let lastTime = -1;
-    let stalledTicks = 0;
-    const watchdog = window.setInterval(() => {
-      if (!isVideoVisibleRef.current) return;
-      if (v.paused) {
-        playVisibleVideo();
-        return;
-      }
-      if (v.readyState < 2) return;
-      if (Math.abs(v.currentTime - lastTime) < 0.05) {
-        stalledTicks += 1;
-        if (stalledTicks >= 2) {
-          v.load();
-          playVisibleVideo();
-          stalledTicks = 0;
-        }
-      } else {
-        stalledTicks = 0;
-      }
-      lastTime = v.currentTime;
-    }, 1500);
-
-    return () => {
-      io.disconnect();
-      window.clearInterval(watchdog);
-    };
-  }, [src, shouldLoadVideo]);
+  const isVideoActive = useSeamlessVideoPlayback({
+    sectionRef,
+    videoRef,
+    sourceKey: src,
+    enabled: shouldLoadVideo,
+  });
 
   return (
     <section
@@ -120,7 +74,7 @@ export const StepInsideSection = () => {
     >
       {/* Video layer */}
       <div className="absolute inset-0 bg-background overflow-hidden">
-        <div className="absolute inset-0 origin-top">
+        <div className={isVideoActive ? "absolute inset-0 origin-top animate-ken-burns" : "absolute inset-0 origin-top"}>
           {shouldLoadVideo && (
             <video
               ref={videoRef}
