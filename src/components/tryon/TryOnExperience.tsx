@@ -432,13 +432,13 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                 <button
-                  onClick={() => setStep("category")}
+                  onClick={() => { logFeatureSelections("continue"); setStep("category"); }}
                   className="btn-gold py-2.5 px-6 text-sm w-full sm:w-auto"
                 >
                   Continue
                 </button>
                 <button
-                  onClick={() => { setFaceShape("unsure"); setUndertone("unsure"); setStep("category"); }}
+                  onClick={() => { setFaceShape("unsure"); setUndertone("unsure"); logFeatureSelections("skip"); setStep("category"); }}
                   className="font-body text-sm text-cream/60 underline underline-offset-4 hover:text-gold"
                 >
                   Skip — I'll let my stylist decide
