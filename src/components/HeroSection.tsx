@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useLuna } from "@/contexts/LunaContext";
 import { useStartLuna } from "@/hooks/useStartLuna";
 import { useSeamlessVideoPlayback } from "@/hooks/useSeamlessVideoPlayback";
+import { TryOnEntryButton } from "@/components/tryon/TryOnEntryButton";
 
 /**
  * Hero — pure CSS animations (no framer-motion) so the eager bundle stays small.
@@ -108,6 +109,12 @@ export const HeroSection = () => {
             <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
             Find Your Experience
           </button>
+
+          <TryOnEntryButton
+            variant="ghost"
+            label="Try Your New Look"
+            source="Hero"
+          />
 
           <button
             onClick={openChatWidget}

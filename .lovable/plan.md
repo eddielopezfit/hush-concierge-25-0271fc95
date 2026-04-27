@@ -1,147 +1,133 @@
-# Plan — Hush Build Audit Dossier v1
+## Virtual Try-On Experience — "Try Your New Look"
 
-Generate a single deliverable: **`Hush_Build_Audit_v1.md`** (and a branded PDF copy) in `/mnt/documents/`. Written in plain English as a strategic dossier for ChatGPT to use for sales positioning, pricing defense, and pitch development. Brutally honest — no marketing fluff.
-
----
-
-## Source-of-truth verified before writing
-
-- **Code**: 22 marketing components (~6,800 LOC) + 7 Luna concierge surfaces (~2,200 LOC) + 14 edge functions (~3,700 LOC) + 16 lib modules (~2,700 LOC). Total ~14,800 lines of real code.
-- **Live data in production DB**: 162 conversations, 804 chat messages, 38 leads, 25 callback requests, 28 guest profiles, 18 SMS sends, 4 transactional emails, 20 artists, 55 service rows, 12 knowledge items.
-- **Edge functions deployed**: luna-chat, lead-qualify, capture-lead, request-callback, submit-lead, session-start, session-summarize, daily-digest, health-check, send-transactional-email, process-email-queue, handle-email-suppression, handle-email-unsubscribe, preview-transactional-email, auth-email-hook.
-- **Secrets configured**: Slack webhooks (general + nails/lashes/skin/massage/callbacks), Twilio SMS, Lovable AI key, Firecrawl, Perplexity, internal function secret.
+A new **Phase 2: Transformation Engine** that lets a guest upload a selfie (or pick a sample model), preview curated styles & colors, save/compare looks, and hand the chosen look directly into Luna + the booking pipeline.
 
 ---
 
-## Document structure (15 sections, ~30 pages)
+### 1. Tech approach (honest & realistic)
 
-### 1. Executive Summary
-One-page TL;DR: what this build is, who it serves, what stage it's at (production-deployed and capturing real leads), headline metrics from live DB.
+True browser-based hair try-on requires either:
+- a licensed AR SDK (ModiFace / Perfect Corp / Banuba — paid, account-gated), or
+- an AI image-editing model.
 
-### 2. Page-by-Page UX Walkthrough
-Single-page React app with hash routing. Walk through the 10-section narrative flow as three personas:
-- **First-time visitor**: lands on Hero → reads Trust Bar (4.7★, 315+ reviews, dynamic Open Today badge) → meets the chair-first story → enters Experience Finder
-- **Returning client**: detected via fingerprint + localStorage → ReturningClientBanner offers fast-path skip
-- **Salon owner**: sees the brand they spent 24 years building, finally rendered with editorial weight
+**We'll use Lovable AI image editing** (`google/gemini-3.1-flash-image-preview`, aka Nano Banana 2). It's already wired through `LOVABLE_API_KEY` — no external account, no per-key billing setup for the founders. Each transformation is a single edge-function call returning a new PNG.
 
-### 3. Every Major Section & Its Job
-For each of the 22 components, one paragraph: what it shows, what it's designed to convert, and where it sits in the funnel.
-- Hero, TrustBar, ExperienceFinder, StepInside, PersonalizedPlan, Services, InlineCallbackCTA, Artists, Testimonials, About, JoinHush, BookingCallback, Footer, MobileStickyBar, Navigation, ServiceMenuModal, BookingDecisionCard, etc.
+Tradeoff to be transparent about: it's **AI-generated preview**, not real-time AR. Render time is ~3–8s per look. We'll frame the UX as "stylist-curated preview" with a clear *"AI-generated visualization — your stylist will tailor the final result"* disclaimer to manage expectations and stay aligned with Luna's neutral-guidance brand voice.
 
-### 4. Conversion Paths & CTAs
-Map every CTA and where it routes:
-- "Let Luna Guide You" → opens LunaModal with context
-- "Request a Callback" → BookingCallbackSection inline form → `request-callback` edge function → Slack + SMS to Kendell
-- "Check Availability" → BookingDecisionCard (3 modes: consultation / guided_front_desk / direct_or_callback)
-- "Call (520) 327-6753" → tel: link (mobile-first)
-- Mobile sticky bar always-visible call/chat
-- Exit-intent phone capture on LunaModal dismiss
+### 2. New section + entry points
 
-### 5. Luna AI Concierge — Full Behavior Spec
-- 4 tabs: Chat, Find My Look, Explore, Artists, My Plan
-- System prompt v7 (current) + KB10 (services) + KB11 (team) + KB12 (recommendation engine)
-- Quick reply persistence after every assistant turn
-- Proactive nudges: dwell-based + inactivity-based
-- Lead capture form triggers after 4th message
-- Guardrails: neutral guidance policy (names artists, never recommends booking choice), denies nonexistent services (no hot stone, no prenatal, no LED), defers booking to (520) 327-6753
-- Persistence: chat history in localStorage + Supabase `conversations` + `messages` tables
-- Streaming: SSE from `luna-chat` edge function via Lovable AI Gateway (gemini-2.5-flash default)
+- **New full-screen modal**: `src/components/tryon/TryOnExperience.tsx` (lazy-loaded) — owns the entire flow.
+- **Entry CTA "Try Your New Look"** added to:
+  - `HeroSection.tsx` — secondary CTA next to the existing "Discover" button
+  - `ServicesSection.tsx` — pinned chip on the **Hair** card
+  - `PersonalizedPlanSection.tsx` — appended as a discovery step
+  - `LunaChatWidget` ExploreTab — new tile
 
-### 6. Experience Finder Flow — How Quiz Answers Affect the Site
-- Step 0 fork: "I know what I want" (jumps to Services) vs "Help me decide"
-- Step 1: name capture (personalization seed)
-- Step 2: category selection (multi-select: hair/nails/lashes/skincare/massage)
-- Step 3: priority picker (only if multi-select)
-- Step 4: subtype qualifier (e.g., color vs cut vs both)
-- Step 5: goal + timing
-- Reveal: ExperienceRevealCard with soft-language recommendation
-- Persists to `ConciergeContext` (24-hr TTL) → drives Luna's first message, PersonalizedPlan reveal, and BookingDecisionCard mode
+### 3. Flow (5 steps, stylist-paced — never overwhelming)
 
-### 7. Booking & Callback Flow
-- Three booking modes determined by intent score
-- `request-callback` edge function: dedup window (2m/5m/24h tiers), Slack alert with priority badge, SMS to front desk
-- `submit-lead` and `capture-lead` for soft and hard captures
-- `lead-qualify` engine routes to category-specific Slack channels with 🔴/🟡 priority
-- First-visit reassurance block (cancellation policy, parking, what to expect)
+| Step | Screen | Notes |
+|---|---|---|
+| 1 | **Intro + photo source** | "Upload a selfie" or "Use a model similar to me" (4 curated diverse model thumbnails — real photography per project rule, no AI/stock). Helper copy: *"See how different styles and colors could look on you before booking."* |
+| 2 | **Style category** | 4 cards: Short/Textured · Medium/Layered · Long/Flowing · Bold/Trendy. Each opens a 6-style mini-gallery sourced from `tryOnStyleData.ts`. |
+| 3 | **Color** | 4 default tones (Ash Brown, Dark Chocolate, Soft Black, Caramel Highlights) + a 5th "Skip color" pill. |
+| 4 | **Preview** | Side-by-side **Original ↔ Transformed** with a draggable swipe slider (`react-compare-slider` or hand-rolled — preference is hand-rolled to avoid the dep). Buttons: *Save look · Try another color · Try another style · Compare saved looks*. |
+| 5 | **Conversion bridge** | Two CTAs: **"Book this look"** (opens BookingDecisionCard, pre-filled with style+color+photo URL) and **"Get a stylist consultation"** (opens Luna chat with full try-on context merged into `ConciergeContext`). |
 
-### 8. Mobile Experience & Sticky Actions
-- Mobile-first design throughout
-- MobileStickyBar: Call + Chat with Luna, always visible, hides on desktop
-- 24-hr `pb-24` padding to prevent overlap
-- Hash anchor scroll fix for lazy-loaded sections (rAF + retry pattern)
+After 2–3 interactions, **Luna nudge** slides up from bottom: *"Based on what you're trying, here are looks our team would love to bring to life for you…"* — three curated matches. This uses the existing `useDwellNudge` pattern, not a separate engine.
 
-### 9. Returning Visitor Behavior
-- Browser fingerprint + localStorage detects returns
-- ConciergeContext rehydrated from storage (24-hr TTL)
-- Cross-tab sync via `storage` event listener
-- Last category remembered for one-tap "Start Luna"
+### 4. Backend — new edge function `try-on-transform`
 
-### 10. Backend Systems (Complete Map)
-- **13 tables**: artists, services, knowledge_items, conversations, messages, guest_profiles, leads, callback_requests, sms_send_log, email_send_log, email_send_state, email_unsubscribe_tokens, suppressed_emails
-- **15 edge functions** (each documented with purpose, inputs, side effects)
-- **Storage**: `site-assets` public bucket for editorial photography
-- **Integrations**: Slack (5 routed webhooks + Slack API connector), Twilio SMS, Lovable AI Gateway, Lovable Email queue, Firecrawl, Perplexity
-- **Realtime**: not in use (could be added for live chat handoff)
-- **RLS**: service-role-only on all sensitive tables, anon SELECT on `services` only
+`supabase/functions/try-on-transform/index.ts`
+- Accepts: `{ imageBase64, styleId, colorId, sessionId }`
+- Validates with Zod (max 6MB image, allowed mime: jpeg/png/webp)
+- Calls Lovable AI Gateway with `google/gemini-3.1-flash-image-preview`, system prompt instructing it to **only modify hair** (style + color) while preserving face, identity, lighting, background
+- Returns the generated image as base64 + a signed Supabase Storage URL (uploads to a new private `try-on-renders` bucket so we can analytics/recall later)
+- Handles 429 / 402 with friendly toasts on the client (per Lovable AI patterns)
+- CORS allowlist matches existing functions
+- Adds `verify_jwt = false` block in `supabase/config.toml` so anon visitors can use it
 
-### 11. Live vs Mocked vs Incomplete (Brutally Honest)
-- **Live and proven by production data**: Luna chat (804 msgs across 162 sessions), lead capture (38 leads), callback flow (25 requests), SMS to Kendell (18 sent), Slack routing, journey tracking
-- **Live but lightly used**: transactional email queue (only 4 sends — infrastructure ready, scenarios not yet wired)
-- **Working but unverified at scale**: session-summarize loop, cadence/upsell engines (Hush Plan not yet user-facing)
-- **Disabled / removed**: ElevenLabs voice (memory: no-voice-integration constraint)
-- **Mocked / placeholder**: none of significance — the site runs on real data
+### 5. Database additions (one migration)
 
-### 12. Performance, Accessibility, Security, Compliance
-- **Perf**: lazy-loaded below-fold sections with skeleton placeholders sized to prevent CLS, image optimization in place
-- **A11y**: skip-to-main link, semantic landmarks, aria-hidden skeletons, AA-contrast typography (Playfair Display + DM Sans tested)
-- **Security**: RLS on all tables, secrets in Supabase vault, CORS allowlist on edge functions, dedup windows prevent flood attacks
-- **Compliance**: TCPA-compliant lead capture with explicit consent copy, Privacy Policy modal in footer, one-click unsubscribe tokens, suppression table for bounces/complaints
+```
+- table public.try_on_sessions
+   - id uuid pk default gen_random_uuid()
+   - guest_profile_id uuid null (links to existing guest_profiles)
+   - source_image_path text  (storage path, private)
+   - chosen_styles jsonb     (array of {styleId, colorId, render_path, saved_at})
+   - converted_to_lead bool default false
+   - created_at, updated_at
+- new private storage bucket: try-on-renders (RLS: service_role write, owners read via signed URLs only — no public access for privacy)
+- RLS: service_role full access, no anon read (signed URLs only)
+```
 
-### 13. Known Bugs, Risks, Weak Points
-- **Risk: single-instance Supabase** — no read replicas, fine for current load but a scale ceiling
-- **Risk: Lovable AI Gateway dependency** — Luna goes down if gateway has an outage
-- **Weak point: no admin dashboard** — owner relies on Slack feed and DB queries
-- **Weak point: knowledge_items has only 12 rows** — KB is partly hardcoded in TS files (KB10/11/12), partly in DB; not a single source of truth
-- **Bug surface: hash anchor scroll relies on retry loop** — works but fragile if section IDs change
-- **Untested: process-email-queue at volume** — TTL and DLQ logic exists but only 4 sends to date
-- **Daily-digest edge function exists but no evidence of cron schedule** — needs verification
+A row is created on first transform, updated as user saves looks, and the `id` is appended to `concierge_context` when handing off to booking/Luna so Slack alerts include a deep-link to the rendered image for the front desk.
 
-### 14. What a Salon Owner Actually Cares About
-- "Will my phone ring more?" → Yes, 25 callback requests + 38 leads in production already
-- "Can I edit this myself?" → Partially — content edits require a developer, but Slack feed and DB are visible
-- "What if Luna says something dumb?" → Guardrails enforce factual denial of nonexistent services, neutral artist policy, defer-to-front-desk on bookings
-- "What happens if you disappear?" → Code is in their Lovable workspace, all data in Supabase, exportable
-- "Will it embarrass us?" → Editorial photography, real testimonials, accurate hours, real artist bios
+### 6. Style/Color catalog
 
-### 15. Case Study Value & Brutally Honest Commercial Assessment
-- **What makes it a case study**: 24-year legacy salon × modern AI concierge × measurable lead lift, all in one project
-- **Replicable across salon, spa, med-spa, wellness, boutique fitness verticals** with category swaps
-- **Honest pricing defense**:
-  - Comparable agency build: $20k–$50k + $500–$2k/mo retainer
-  - Comparable AI concierge alone: $300–$1,500/mo (Intercom Fin, Ada)
-  - This delivers both for $1,500 + $297/mo
-  - The math defends itself if even 2 first-time guests/mo convert ($1,800/yr lift)
-- **Honest weaknesses**:
-  - No proven ROI data yet at the destination salon (need 90 days)
-  - No admin UI — owner-edit story is a future phase
-  - One developer dependency
-- **Commercial verdict**: **Real, defensible, sellable.** Not vapor. The production data proves the system works. The pricing model leaves room for upside without insulting the work.
+`src/data/tryOnStyleData.ts` — typed array of ~24 curated styles across the 4 categories, each with: `id`, `name`, `category`, `referenceImageUrl` (real reference, used for thumbnail only), `prompt` (the precise instruction passed to the image model, e.g. *"transform the hair to a chin-length textured French bob with soft curtain bangs, keeping face, skin tone, and background unchanged"*).
+
+Same shape for `tryOnColorData.ts`.
+
+This keeps prompts **on the backend-readable client data file** but the actual model call still happens inside the edge function — we pass `styleId`+`colorId` only, and the function looks up the prompt server-side from a mirrored `_shared/try-on-catalog.ts`. Prevents prompt-injection from a tampered client.
+
+### 7. Luna integration (neutral, on-brand)
+
+- Adds `tryOnLook` to `ConciergeContext`: `{ styleId, styleName, colorId, colorName, renderUrl, savedLooks: string[] }`
+- When user picks **"Get a stylist consultation"**, Luna opens with a contextual greeting: *"I see you've been exploring a [Soft Caramel Bob] — beautiful direction. I can help you find the right time and our front desk will pair you with the stylist best suited to bring it to life."* (Stays neutral per the artist-recommendation policy — never names a specific stylist for hair color/cut.)
+- Slack lead routing (`lead-qualify`) gets a new field `try_on_render_url` so Kendell + the hair channel see the actual visualization.
+
+### 8. UX guardrails (matches existing principles)
+
+- **Zero Dead Ends**: every screen has a primary action + a "Save & exit" path that still captures the lead.
+- **No Continue copy**: buttons read *"See my new look"*, *"Try this color"*, *"Save this style"*, *"Show me the booking"*.
+- **Privacy**: a one-line consent under the upload box: *"Your photo is used only to generate your preview and is automatically deleted after 7 days."* — backed by a scheduled cleanup (added to existing `process-email-queue` cron pattern, or a new tiny cron function).
+- **Mobile-first**: full-screen sheet on mobile; centered modal on desktop. Swipe-slider works with touch + mouse drag.
+- **Performance**: TryOn modal is **route-split** (`React.lazy`) so it never enters the eager bundle and doesn't impact the hero video work we just finished.
+
+### 9. Memory updates
+
+After build, save:
+- `mem://features/virtual-try-on` — feature spec, Lovable AI image-edit model, 7-day retention, neutral-guidance disclaimer
+- Update `mem://index.md` Memories list
+
+### 10. What is **not** in scope for Phase 2 (deferred to Phase 3)
+
+- AI face-shape / undertone detection
+- Personalized style ranking algorithm
+- Social sharing / "rate my look"
+- Custom user-defined color tones
+- Real-time AR (would require ModiFace/Perfect Corp license — separate conversation)
+
+### 11. Files to be created / edited
+
+**Created**
+- `src/components/tryon/TryOnExperience.tsx` (root modal)
+- `src/components/tryon/steps/PhotoStep.tsx`
+- `src/components/tryon/steps/StyleStep.tsx`
+- `src/components/tryon/steps/ColorStep.tsx`
+- `src/components/tryon/steps/PreviewStep.tsx`
+- `src/components/tryon/steps/ConversionStep.tsx`
+- `src/components/tryon/CompareSlider.tsx`
+- `src/components/tryon/TryOnEntryButton.tsx` (reusable CTA)
+- `src/data/tryOnStyleData.ts`
+- `src/data/tryOnColorData.ts`
+- `src/hooks/useTryOnSession.ts`
+- `supabase/functions/try-on-transform/index.ts`
+- `supabase/functions/_shared/try-on-catalog.ts`
+- `supabase/functions/try-on-cleanup/index.ts` (7-day retention)
+- One migration: `try_on_sessions` table + `try-on-renders` bucket + RLS
+
+**Edited**
+- `src/components/HeroSection.tsx` — add secondary "Try Your New Look" CTA
+- `src/components/ServicesSection.tsx` — add try-on chip on Hair card
+- `src/components/PersonalizedPlanSection.tsx` — append try-on prompt
+- `src/components/luna/ExploreTab.tsx` — add tile
+- `src/contexts/LunaContext.tsx` + `src/types/concierge.ts` — add `tryOnLook` field
+- `supabase/functions/lead-qualify/index.ts` — pass `try_on_render_url` into Slack payload
+- `supabase/config.toml` — register new functions
 
 ---
 
-## QA checklist before delivery
+**Reality check for the founders:** this is exactly the "wow within 60 seconds" moment that turns the hub from *salon website* into *transformation platform*. The disclaimer keeps it honest (it's a preview, not a guarantee), the front desk still owns the final stylist match (preserves the human touch), and every saved look becomes a richer lead than a plain callback request.
 
-- [ ] Every component count, line count, and DB row count matches verified source-of-truth above
-- [ ] No marketing fluff — owner-facing language, salon-shop vocabulary
-- [ ] Each section ends with one concrete takeaway
-- [ ] "Live vs mocked" section is unsparing
-- [ ] Pricing section uses the $1,500 / $297 / 90-day numbers consistently
-- [ ] PDF is branded with charcoal `#0d0d0d`, cream `#f5f3ee`, gold `#d8b063`, Playfair Display headings, DM Sans body
-- [ ] Render every PDF page to image and visually inspect for clipping/overflow before delivery
-
-## Deliverables to `/mnt/documents/`
-
-1. `Hush_Build_Audit_v1.md` — the markdown dossier
-2. `Hush_Build_Audit_v1.pdf` — branded PDF version
-
-Both surfaced as `<lov-artifact>` tags so the user can hand them to ChatGPT immediately.
+Approve to build Phase 2 as scoped, or tell me which parts you want trimmed first (e.g. ship without saved-look comparison, defer the cleanup cron, etc.).
