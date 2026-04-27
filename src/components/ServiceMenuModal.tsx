@@ -151,6 +151,11 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
                                 <span className="font-body text-cream/90 text-sm md:text-base block">
                                   {item.name}
                                 </span>
+                                {item.description && (
+                                  <span className="mt-1 block text-[12px] md:text-[13px] font-body text-muted-foreground/80 leading-snug">
+                                    {item.description}
+                                  </span>
+                                )}
                                 {showConsultationNote && (
                                   <span className="mt-1 block text-[11px] font-body text-muted-foreground/80">
                                     Price based on consultation
