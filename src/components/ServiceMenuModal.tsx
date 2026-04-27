@@ -273,9 +273,14 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
                                   {item.name}
                                 </span>
                                 {item.description && (
-                                  <span className="mt-1 block text-[12px] md:text-[13px] font-body text-muted-foreground/80 leading-snug">
+                                  <m.p
+                                    initial={{ opacity: 0, y: 2 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.35, ease: "easeOut" }}
+                                    className="mt-1.5 max-w-prose text-[12.5px] md:text-[13.5px] font-body font-light text-cream/55 leading-[1.55] tracking-[0.005em] before:content-['—'] before:mr-1.5 before:text-gold/60"
+                                  >
                                     {item.description}
-                                  </span>
+                                  </m.p>
                                 )}
                                 {showConsultationNote && (
                                   <span className="mt-1 block text-[11px] font-body text-muted-foreground/80">
