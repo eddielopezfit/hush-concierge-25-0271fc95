@@ -397,6 +397,16 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
                   Skip — I'll let my stylist decide
                 </button>
               </div>
+              {hasFaceOrUndertone && (
+                <div className="mt-4 text-center">
+                  <button
+                    onClick={resetFaceAndUndertone}
+                    className="font-body text-xs text-cream/55 underline underline-offset-4 hover:text-gold"
+                  >
+                    Reset my face & undertone
+                  </button>
+                </div>
+              )}
               <p className="mt-4 text-center font-body text-[11px] text-cream/45">
                 Your stylist always has the final say — this just helps us start you in the right direction.
               </p>
