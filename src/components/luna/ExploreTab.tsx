@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useLuna } from "@/contexts/LunaContext";
 import { ServiceCategoryId } from "@/types/concierge";
 import { trackServiceClick } from "@/lib/journeyTracker";
+import { serviceDescriptionClass, serviceDescriptionMotion } from "@/lib/serviceDescriptionTokens";
 
 // keywords let us narrow the displayed pricing list to what the user actually clicked
 const lookCategories = [
@@ -148,10 +149,8 @@ export const ExploreTab = ({ onSwitchTab }: ExploreTabProps) => {
                     </div>
                     {item.description && (
                       <m.p
-                        initial={{ opacity: 0, y: 2 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3, ease: "easeOut" }}
-                        className="mt-1.5 text-[11.5px] font-body font-light text-cream/55 leading-[1.55] tracking-[0.005em] line-clamp-2 before:content-['—'] before:mr-1.5 before:text-primary/60"
+                        {...serviceDescriptionMotion.inline}
+                        className={serviceDescriptionClass.inline}
                       >
                         {item.description}
                       </m.p>

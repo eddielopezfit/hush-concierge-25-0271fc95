@@ -11,6 +11,7 @@ import { ServiceCategory, ServiceItem, getCategoryWithCrossRefs, servicesMenuDat
 import { useLuna } from "@/contexts/LunaContext";
 import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
 import { PriceConfidenceAccordion } from "@/components/PriceConfidenceAccordion";
+import { serviceDescriptionClass, serviceDescriptionMotion } from "@/lib/serviceDescriptionTokens";
 
 interface ServiceMenuModalProps {
   isOpen: boolean;
@@ -344,13 +345,10 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
                                     <m.div
                                       id={`desc-${key}`}
                                       key="desc"
-                                      initial={{ opacity: 0, height: 0 }}
-                                      animate={{ opacity: 1, height: "auto" }}
-                                      exit={{ opacity: 0, height: 0 }}
-                                      transition={{ duration: 0.28, ease: "easeOut" }}
+                                      {...serviceDescriptionMotion.reveal}
                                       className="overflow-hidden"
                                     >
-                                      <p className="mt-1.5 max-w-prose text-[12.5px] md:text-[13.5px] font-body font-light text-cream/55 leading-[1.55] tracking-[0.005em] before:content-['—'] before:mr-1.5 before:text-gold/60">
+                                      <p className={serviceDescriptionClass.compact}>
                                         {item.description}
                                       </p>
                                     </m.div>
