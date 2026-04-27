@@ -259,8 +259,7 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
     toast.success("Cleared — re-sorting styles & colors");
   };
 
-  const hasFaceOrUndertone =
-    (!!faceShape && faceShape !== null) || (!!undertone && undertone !== null);
+  const hasFaceOrUndertone = faceShape !== null || undertone !== null;
 
   const modal = (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-charcoal/90 backdrop-blur-sm p-0 sm:p-6 animate-fade-in">
