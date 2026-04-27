@@ -29,19 +29,24 @@ export const StepInsideSection = () => {
   }, []);
 
   useEffect(() => {
-    const section = sectionRef.current;
-    if (!section) return;
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setShouldLoadVideo(true);
-          io.disconnect();
-        }
-      },
-      { rootMargin: "350px 0px" }
-    );
-    io.observe(section);
-    return () => io.disconnect();
+    // Warm the Step Inside video as soon as the browser is idle after first
+    // paint, so it's already buffered by the time the guest scrolls down.
+    const trigger = () => setShouldLoadVideo(true);
+    const w = window as unknown as {
+      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
+    let idleId: number | undefined;
+    let timeoutId: number | undefined;
+    if (typeof w.requestIdleCallback === "function") {
+      idleId = w.requestIdleCallback(trigger, { timeout: 1500 });
+    } else {
+      timeoutId = window.setTimeout(trigger, 800);
+    }
+    return () => {
+      if (idleId !== undefined && w.cancelIdleCallback) w.cancelIdleCallback(idleId);
+      if (timeoutId !== undefined) window.clearTimeout(timeoutId);
+    };
   }, []);
 
   const isVideoActive = useSeamlessVideoPlayback({
