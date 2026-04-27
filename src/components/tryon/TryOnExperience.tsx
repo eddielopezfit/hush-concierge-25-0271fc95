@@ -1,21 +1,29 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { ArrowLeft, Camera, Check, Loader2, MessageCircle, Sparkles, Upload, Wand2, X } from "lucide-react";
+import { ArrowLeft, Camera, Check, Loader2, MessageCircle, Sparkles, Sparkle, Upload, Wand2, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useLuna } from "@/contexts/LunaContext";
 import {
+  FACE_SHAPES,
   TRY_ON_CATEGORIES,
   TRY_ON_COLORS,
   TRY_ON_STYLES,
+  UNDERTONES,
+  colorFlattersUndertone,
   getColorMeta,
   getStyleMeta,
+  sortColorsByUndertone,
+  sortStylesByFace,
+  styleFlattersFace,
+  type FaceShape,
   type TryOnStyleCategory,
+  type Undertone,
 } from "@/data/tryOnStyleData";
 import { CompareSlider } from "./CompareSlider";
 import { cn } from "@/lib/utils";
 
-type Step = "intro" | "category" | "style" | "color" | "preview" | "convert";
+type Step = "intro" | "face" | "category" | "style" | "color" | "preview" | "convert";
 
 interface SavedLook {
   id: string;
@@ -50,6 +58,8 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
   const { mergeConcierge, openChatWidget } = useLuna();
   const [step, setStep] = useState<Step>("intro");
   const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null);
+  const [faceShape, setFaceShape] = useState<FaceShape | null>(null);
+  const [undertone, setUndertone] = useState<Undertone | null>(null);
   const [category, setCategory] = useState<TryOnStyleCategory | null>(null);
   const [styleId, setStyleId] = useState<string | null>(null);
   const [colorId, setColorId] = useState<string | null>(null);
@@ -68,9 +78,14 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
     return () => { document.body.style.overflow = prev; };
   }, []);
 
-  const styles = useMemo(
-    () => TRY_ON_STYLES.filter((s) => !category || s.category === category),
-    [category]
+  const styles = useMemo(() => {
+    const filtered = TRY_ON_STYLES.filter((s) => !category || s.category === category);
+    return sortStylesByFace(filtered, faceShape);
+  }, [category, faceShape]);
+
+  const colors = useMemo(
+    () => sortColorsByUndertone(TRY_ON_COLORS, undertone),
+    [undertone]
   );
 
   const handleFile = useCallback(async (file: File) => {
@@ -85,7 +100,7 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
     }
     const dataUrl = await fileToDataUrl(file);
     setPhotoDataUrl(dataUrl);
-    setStep("category");
+    setStep("face");
   }, []);
 
   const generate = useCallback(async (chosenStyleId: string, chosenColorId: string | null) => {
@@ -99,6 +114,8 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
           styleId: chosenStyleId,
           colorId: chosenColorId,
           sessionId,
+          faceShape,
+          undertone,
         },
       });
       if (fnErr) {
@@ -124,6 +141,8 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
       setIsGenerating(false);
     }
   }, [photoDataUrl, sessionId]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // (faceShape/undertone are read at call time and don't need to invalidate the callback)
 
   const handleStylePick = (id: string) => {
     setStyleId(id);
@@ -195,10 +214,19 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
       goal: lookLabel ? `Try-On: ${lookLabel}` : null,
     });
 
+    const faceLabel = faceShape && faceShape !== "unsure"
+      ? FACE_SHAPES.find((f) => f.id === faceShape)?.label
+      : null;
+    const undertoneLabel = undertone && undertone !== "unsure"
+      ? UNDERTONES.find((u) => u.id === undertone)?.label
+      : null;
+
     const lines = [
       `I just tried on a look in the virtual try-on and want your take.`,
       styleMeta ? `• Style: ${styleMeta.name}${styleMeta.blurb ? ` — ${styleMeta.blurb}` : ""}` : null,
       colorMeta ? `• Color: ${colorMeta.name}${colorMeta.blurb ? ` — ${colorMeta.blurb}` : ""}` : `• Color: keeping my current color`,
+      faceLabel ? `• Face shape: ${faceLabel}` : null,
+      undertoneLabel ? `• Skin undertone: ${undertoneLabel}` : null,
       renderSignedUrl ? `• Preview: ${renderSignedUrl}` : null,
       ``,
       `Can you tell me which stylist would be a great fit and what to expect at my appointment?`,
@@ -217,7 +245,8 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
 
   const stepBack = () => {
     setError(null);
-    if (step === "category") setStep("intro");
+    if (step === "face") setStep("intro");
+    else if (step === "category") setStep("face");
     else if (step === "style") setStep("category");
     else if (step === "color") setStep("style");
     else if (step === "preview") setStep("color");
