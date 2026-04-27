@@ -326,6 +326,75 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
             </div>
           )}
 
+          {step === "face" && (
+            <div className="mx-auto max-w-2xl">
+              <h2 className="font-display text-2xl text-cream mb-1 text-center">A little about your features</h2>
+              <p className="font-body text-sm text-cream/60 mb-6 text-center">
+                Optional — helps us sort the most flattering looks first and gives Luna better context. Tap <em className="not-italic text-cream/80">Not sure</em> for either to skip.
+              </p>
+
+              <div className="mb-7">
+                <p className="font-body text-xs uppercase tracking-wider text-cream/55 mb-3">Face shape</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                  {FACE_SHAPES.map((f) => (
+                    <button
+                      key={f.id}
+                      onClick={() => setFaceShape(f.id)}
+                      className={cn(
+                        "rounded-lg border bg-charcoal/40 p-3 text-left transition-colors",
+                        faceShape === f.id
+                          ? "border-gold bg-charcoal/70"
+                          : "border-border hover:border-gold/60"
+                      )}
+                    >
+                      <span className="block font-display text-sm text-cream">{f.label}</span>
+                      <span className="block font-body text-[11px] text-cream/55 leading-snug">{f.hint}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mb-7">
+                <p className="font-body text-xs uppercase tracking-wider text-cream/55 mb-3">Skin undertone</p>
+                <div className="grid grid-cols-2 sm:grid-cols-2 gap-2.5">
+                  {UNDERTONES.map((u) => (
+                    <button
+                      key={u.id}
+                      onClick={() => setUndertone(u.id)}
+                      className={cn(
+                        "rounded-lg border bg-charcoal/40 p-3 text-left transition-colors",
+                        undertone === u.id
+                          ? "border-gold bg-charcoal/70"
+                          : "border-border hover:border-gold/60"
+                      )}
+                    >
+                      <span className="block font-display text-sm text-cream">{u.label}</span>
+                      <span className="block font-body text-[11px] text-cream/55 leading-snug">{u.hint}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <button
+                  onClick={() => setStep("category")}
+                  className="btn-gold py-2.5 px-6 text-sm w-full sm:w-auto"
+                >
+                  Continue
+                </button>
+                <button
+                  onClick={() => { setFaceShape("unsure"); setUndertone("unsure"); setStep("category"); }}
+                  className="font-body text-sm text-cream/60 underline underline-offset-4 hover:text-gold"
+                >
+                  Skip — I'll let my stylist decide
+                </button>
+              </div>
+              <p className="mt-4 text-center font-body text-[11px] text-cream/45">
+                Your stylist always has the final say — this just helps us start you in the right direction.
+              </p>
+            </div>
+          )}
+
           {step === "category" && (
             <div>
               <h2 className="font-display text-2xl text-cream mb-1 text-center">Pick a direction</h2>
