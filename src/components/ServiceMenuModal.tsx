@@ -58,12 +58,16 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
   const [openAccordions, setOpenAccordions] = useState<string[]>([]);
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(category?.id ?? null);
   const [priceRange, setPriceRange] = useState<PriceRangeId>("all");
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+  const [allExpanded, setAllExpanded] = useState(false);
 
   // Sync active category when prop changes (modal reopened on a different card)
   useEffect(() => {
     if (category) {
       setActiveCategoryId(category.id);
       setPriceRange("all");
+      setExpandedItems(new Set());
+      setAllExpanded(false);
     }
   }, [category?.id]);
 
