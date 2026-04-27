@@ -284,10 +284,29 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
   const resetFaceAndUndertone = () => {
     setFaceShape(null);
     setUndertone(null);
+    try {
+      console.info("[try-on] features_reset", { sessionId });
+      sessionStorage.removeItem("hush_tryon_features");
+    } catch { /* noop */ }
     toast.success("Cleared — re-sorting styles & colors");
   };
 
   const hasFaceOrUndertone = faceShape !== null || undertone !== null;
+
+  const logFeatureSelections = useCallback((source: "continue" | "skip") => {
+    const payload = {
+      sessionId,
+      faceShape: faceShape ?? null,
+      undertone: undertone ?? null,
+      completed: source === "continue" && (faceShape !== null || undertone !== null) && faceShape !== "unsure" && undertone !== "unsure",
+      skipped: source === "skip",
+      at: new Date().toISOString(),
+    };
+    try {
+      console.info("[try-on] features_step", payload);
+      sessionStorage.setItem("hush_tryon_features", JSON.stringify(payload));
+    } catch { /* noop */ }
+  }, [faceShape, undertone, sessionId]);
 
   const modal = (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-charcoal/90 backdrop-blur-sm p-0 sm:p-6 animate-fade-in">
