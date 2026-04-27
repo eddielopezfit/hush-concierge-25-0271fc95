@@ -240,7 +240,15 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
       ? UNDERTONES.find((u) => u.id === undertone)?.label
       : null;
 
+    const headerParts: string[] = [];
+    if (faceLabel) headerParts.push(`face shape: ${faceLabel}`);
+    if (undertoneLabel) headerParts.push(`skin undertone: ${undertoneLabel}`);
+    const contextHeader = headerParts.length
+      ? `[My features → ${headerParts.join(" · ")}]`
+      : `[My features → not specified — happy for the stylist to assess in person]`;
+
     const lines = [
+      contextHeader,
       `I just tried on a look in the virtual try-on and want your take.`,
       styleMeta ? `• Style: ${styleMeta.name}${styleMeta.blurb ? ` — ${styleMeta.blurb}` : ""}` : null,
       colorMeta ? `• Color: ${colorMeta.name}${colorMeta.blurb ? ` — ${colorMeta.blurb}` : ""}` : `• Color: keeping my current color`,
@@ -248,7 +256,7 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
       undertoneLabel ? `• Skin undertone: ${undertoneLabel}` : null,
       renderSignedUrl ? `• Preview: ${renderSignedUrl}` : null,
       ``,
-      `Can you tell me which stylist would be a great fit and what to expect at my appointment?`,
+      `Please factor my face shape and undertone into your guidance, and tell me which stylist would be a great fit and what to expect at my appointment.`,
     ].filter(Boolean) as string[];
 
     try {
