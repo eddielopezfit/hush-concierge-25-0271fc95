@@ -560,36 +560,42 @@ export type Database = {
           chosen_styles: Json
           converted_to_lead: boolean
           created_at: string
+          face_shape: string | null
           guest_profile_id: string | null
           id: string
           last_color_id: string | null
           last_render_path: string | null
           last_style_id: string | null
           source_image_path: string | null
+          undertone: string | null
           updated_at: string
         }
         Insert: {
           chosen_styles?: Json
           converted_to_lead?: boolean
           created_at?: string
+          face_shape?: string | null
           guest_profile_id?: string | null
           id?: string
           last_color_id?: string | null
           last_render_path?: string | null
           last_style_id?: string | null
           source_image_path?: string | null
+          undertone?: string | null
           updated_at?: string
         }
         Update: {
           chosen_styles?: Json
           converted_to_lead?: boolean
           created_at?: string
+          face_shape?: string | null
           guest_profile_id?: string | null
           id?: string
           last_color_id?: string | null
           last_render_path?: string | null
           last_style_id?: string | null
           source_image_path?: string | null
+          undertone?: string | null
           updated_at?: string
         }
         Relationships: []
