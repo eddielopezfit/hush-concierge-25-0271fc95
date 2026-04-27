@@ -54,3 +54,30 @@ export const serviceDescriptionMotion = {
     transition: { duration: 0.35, ease: "easeOut" as const },
   },
 } as const;
+
+/**
+ * Staggered fade-in helper for lists of descriptions.
+ * Descriptions render synchronously (static data) so we don't need a real
+ * skeleton — instead we use a soft cascade so cards feel like they "land"
+ * one after the other rather than snapping in all at once.
+ *
+ * Usage:
+ *   <m.p {...staggeredDescription(index)} className={serviceDescriptionClass.inline}>
+ */
+export const staggeredDescription = (
+  index: number,
+  variant: "compact" | "inline" | "editorial" = "inline",
+) => {
+  const baseDelay = 0.04;
+  const maxDelay = 0.32; // cap so deep lists don't drag
+  const delay = Math.min(index * baseDelay, maxDelay);
+
+  const yOffset = variant === "editorial" ? 6 : 3;
+  const duration = variant === "editorial" ? 0.42 : 0.32;
+
+  return {
+    initial: { opacity: 0, y: yOffset },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration, delay, ease: "easeOut" as const },
+  };
+};
