@@ -12,22 +12,24 @@
 
 /** Base typography shared by every variant. */
 const BASE =
-  "font-body font-light text-cream/60 leading-[1.6] tracking-[0.005em] " +
-  "max-w-prose before:content-['—'] before:mr-1.5 before:text-gold/60";
+  "font-body font-light text-cream/60 leading-[1.55] md:leading-[1.6] " +
+  "tracking-[0.005em] max-w-[34ch] sm:max-w-[48ch] md:max-w-prose " +
+  "before:content-['—'] before:mr-1 md:before:mr-1.5 before:text-gold/60";
 
 /** Compact = ServiceMenuModal accordion + Luna Explore list. */
-const COMPACT_SIZE = "text-[12.5px] md:text-[13.5px]";
+const COMPACT_SIZE = "text-[12px] sm:text-[12.5px] md:text-[13.5px]";
 
 /** Editorial = full Knowledge Base cards. */
-const EDITORIAL_SIZE = "text-[13px] md:text-[14px] leading-[1.65] before:mr-2";
+const EDITORIAL_SIZE =
+  "text-[12.5px] sm:text-[13px] md:text-[14px] leading-[1.6] md:leading-[1.65] before:mr-1.5 md:before:mr-2";
 
 export const serviceDescriptionClass = {
   /** Used inside ServiceMenuModal expand/collapse. */
-  compact: `${BASE} ${COMPACT_SIZE} mt-1.5`,
+  compact: `${BASE} ${COMPACT_SIZE} mt-1 md:mt-1.5 pr-2 md:pr-3`,
   /** Used inline in Luna Explore tab list (clamped to 2 lines). */
-  inline: `${BASE} ${COMPACT_SIZE} mt-1.5 line-clamp-2`,
+  inline: `${BASE} ${COMPACT_SIZE} mt-1 md:mt-1.5 pr-1 line-clamp-3 sm:line-clamp-2`,
   /** Used as full body copy in Knowledge Base cards. */
-  editorial: `${BASE} ${EDITORIAL_SIZE} mb-4`,
+  editorial: `${BASE} ${EDITORIAL_SIZE} mb-3 md:mb-4 pr-1`,
 } as const;
 
 /** Framer Motion presets for description reveal/transitions. */
