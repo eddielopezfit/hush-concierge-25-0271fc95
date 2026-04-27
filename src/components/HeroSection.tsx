@@ -29,7 +29,7 @@ export const HeroSection = () => {
 
   const videoSrc = isMobile
     ? "/videos/Hush_Hero_v2_Mobile.mp4"
-    : "/videos/Hush_Hero_v2_Desktop.mp4";
+    : "/videos/hero-backdrop.mp4";
   const videoPoster = isMobile
     ? "https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Hero_v2_Mobile_Poster.jpg"
     : "https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Hero_v2_Desktop_Poster.jpg";
@@ -59,7 +59,7 @@ export const HeroSection = () => {
             className={
               isMobile
                 ? "absolute inset-0 w-full h-full object-cover [object-position:center_top]"
-                : "absolute inset-0 w-full h-full object-cover object-center"
+                : "absolute inset-0 w-full h-full object-cover object-center scale-[1.08]"
             }
           />
         </div>
