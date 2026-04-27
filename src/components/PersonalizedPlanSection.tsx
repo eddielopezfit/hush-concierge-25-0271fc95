@@ -5,7 +5,7 @@ import { categoryLabels, goalLabels, timingLabels } from "@/lib/conciergeLabels"
 
 import { getUpsells, UpsellItem } from "@/lib/upsellEngine";
 import { getCadenceRecommendations, CadenceRecommendation } from "@/lib/cadenceEngine";
-import { buildCategoryPlanItems, computePlanTotals } from "@/lib/experienceReveal";
+import { buildCategoryPlanItems, computePlanTotals, buildRevealData, deriveBookingMode } from "@/lib/experienceReveal";
 import { getEmotionalLine } from "@/lib/emotionalCopy";
 import { useMemo, useState, useEffect } from "react";
 
@@ -50,6 +50,19 @@ export const PersonalizedPlanSection = () => {
   const planTotals = useMemo(() => computePlanTotals(buildCategoryPlanItems(conciergeContext)), [conciergeContext]);
   const timeEstimate = planTotals?.timeRange || null;
   const emotionalLine = getEmotionalLine(goal);
+
+  // Derive booking mode so CTA + framing match the Experience card above.
+  const revealData = useMemo(() => buildRevealData(conciergeContext), [conciergeContext]);
+  const bookingMode = useMemo(
+    () => (revealData ? deriveBookingMode(revealData, conciergeContext) : "guided_front_desk"),
+    [revealData, conciergeContext],
+  );
+  const isConsultation = bookingMode === "consultation";
+  const reserveLabel = isConsultation
+    ? "Request Consultation"
+    : bookingMode === "direct_or_callback"
+    ? "Check Availability"
+    : "Reserve Your Experience";
 
   useEffect(() => {
     if (categories.length > 0) {
@@ -120,6 +133,11 @@ export const PersonalizedPlanSection = () => {
                     {emotionalLine}
                   </p>
                 )}
+                {isConsultation && (
+                  <p className="font-body text-[11px] uppercase tracking-widest text-gold/70 mt-3">
+                    Preview · finalized at consultation
+                  </p>
+                )}
               </m.div>
 
               {/* Service + context pills */}
@@ -179,7 +197,7 @@ export const PersonalizedPlanSection = () => {
                   <div className="flex items-center gap-2 mb-3">
                     <Plus className="w-4 h-4 text-gold" />
                     <span className="text-xs font-body uppercase tracking-wider text-gold">
-                      Enhance Your Visit
+                      {isConsultation ? "May Enhance Your Visit" : "Enhance Your Visit"}
                     </span>
                   </div>
                   <div className="space-y-2">
@@ -199,7 +217,9 @@ export const PersonalizedPlanSection = () => {
                     ))}
                   </div>
                   <p className="font-body text-[10px] text-muted-foreground/60 mt-3 text-center">
-                    Mention these add-ons when booking — your concierge will include them
+                    {isConsultation
+                      ? "We'll discuss whether these are right for you at your consultation"
+                      : "Mention these add-ons when booking — your concierge will include them"}
                   </p>
                 </m.div>
               )}
@@ -216,7 +236,7 @@ export const PersonalizedPlanSection = () => {
                   <div className="flex items-center gap-2 mb-3">
                     <CalendarClock className="w-4 h-4 text-gold" />
                     <span className="text-xs font-body uppercase tracking-wider text-gold">
-                      Your Ideal Cadence
+                      {isConsultation ? "Typical Cadence (Guideline)" : "Your Ideal Cadence"}
                     </span>
                   </div>
                   <div className="space-y-2">
@@ -246,31 +266,33 @@ export const PersonalizedPlanSection = () => {
                 className="rounded-xl border border-gold/10 bg-gold/[0.02] p-4 text-center"
               >
                 <p className="font-body text-sm text-cream/70 leading-relaxed">
-                  For this experience, our team will pair you with a stylist who specializes in exactly what you're looking for.
+                  {isConsultation
+                    ? "Your consultation will confirm the right stylist match for this service."
+                    : "For this experience, our team will pair you with a stylist who specializes in exactly what you're looking for."}
                 </p>
               </m.div>
 
-              {/* CTA */}
+              {/* CTA — Reserve dominates, Review with Luna is a secondary text link */}
               <m.div
                 initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.6 }}
-                className="grid gap-2 sm:grid-cols-2"
+                className="space-y-2.5"
               >
                 <button
-                  onClick={handleOpenPlanInLuna}
-                  className="flex min-h-[48px] items-center justify-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-6 py-3 font-body text-sm text-primary transition-colors hover:bg-primary/10"
+                  onClick={handleScrollToBooking}
+                  className="btn-gold py-3.5 px-8 text-sm w-full flex items-center justify-center gap-2"
                 >
-                  <MessageCircle className="w-4 h-4" />
-                  Review with Luna
+                  {reserveLabel}
+                  <ChevronRight className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={handleScrollToBooking}
-                  className="btn-gold py-3 px-8 text-sm w-full flex items-center justify-center gap-2"
+                  onClick={handleOpenPlanInLuna}
+                  className="w-full inline-flex items-center justify-center gap-1.5 font-body text-xs text-cream/60 hover:text-gold transition-colors"
                 >
-                  Reserve Your Experience
-                  <ChevronRight className="w-4 h-4" />
+                  <MessageCircle className="w-3.5 h-3.5" />
+                  Or review this plan with Luna first
                 </button>
               </m.div>
             </div>
