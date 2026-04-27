@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useLuna } from "@/contexts/LunaContext";
 import { ServiceCategoryId } from "@/types/concierge";
 import { trackServiceClick } from "@/lib/journeyTracker";
-import { serviceDescriptionClass, serviceDescriptionMotion } from "@/lib/serviceDescriptionTokens";
+import { serviceDescriptionClass, staggeredDescription } from "@/lib/serviceDescriptionTokens";
 
 // keywords let us narrow the displayed pricing list to what the user actually clicked
 const lookCategories = [
@@ -128,7 +128,11 @@ export const ExploreTab = ({ onSwitchTab }: ExploreTabProps) => {
           <p className="text-xs text-muted-foreground font-body">{selectedService.pricePreview}</p>
         </div>
         <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4">
-          {groupsToShow.map(group => (
+          {(() => {
+            // Running index across all rendered items so the fade-in cascades
+            // smoothly down the whole list, not per-group.
+            let runningIndex = -1;
+            return groupsToShow.map(group => (
             <div key={group.name}>
               <p className="text-[10px] font-body text-primary uppercase tracking-wider mb-2">{group.name}</p>
               <div className="space-y-1">
@@ -147,19 +151,23 @@ export const ExploreTab = ({ onSwitchTab }: ExploreTabProps) => {
                         <MessageSquare className="w-3 h-3 text-muted-foreground/60 group-hover:text-primary transition-colors" />
                       </span>
                     </div>
-                    {item.description && (
+                    {item.description && (() => {
+                      runningIndex += 1;
+                      return (
                       <m.p
-                        {...serviceDescriptionMotion.inline}
+                        {...staggeredDescription(runningIndex, "inline")}
                         className={serviceDescriptionClass.inline}
                       >
                         {item.description}
                       </m.p>
-                    )}
+                      );
+                    })()}
                   </button>
                 ))}
               </div>
             </div>
-          ))}
+            ));
+          })()}
 
           {selectedService.directContacts && selectedService.directContacts.length > 0 && (
             <div className="rounded-lg border border-primary/15 bg-primary/5 p-3">
