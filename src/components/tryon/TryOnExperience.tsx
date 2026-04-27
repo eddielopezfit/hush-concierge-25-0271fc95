@@ -42,7 +42,7 @@ function MatchBadge({ tier }: { tier: MatchTier }) {
   );
 }
 
-type Step = "intro" | "face" | "category" | "style" | "color" | "preview" | "convert";
+type Step = "intro" | "face" | "category" | "style" | "color" | "review" | "preview" | "convert";
 
 interface SavedLook {
   id: string;
