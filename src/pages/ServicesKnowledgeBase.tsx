@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { m } from "framer-motion";
 import { useSearchParams, Link } from "react-router-dom";
 import { MessageSquare, Phone, Search, ArrowLeft } from "lucide-react";
 import { Navigation } from "@/components/Navigation";
@@ -236,16 +237,20 @@ const ServicesKnowledgeBase = () => {
                       {group.items.map((item, idx) => {
                         const isConsult = item.price.toLowerCase().includes("consultation");
                         return (
-                          <article
+                          <m.article
                             key={`${item.name}-${idx}`}
-                            className="rounded-lg border border-secondary bg-card p-4 hover:border-gold/40 transition-colors"
+                            initial={{ opacity: 0, y: 6 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true, margin: "-40px" }}
+                            transition={{ duration: 0.4, ease: "easeOut", delay: idx * 0.03 }}
+                            className="rounded-lg border border-secondary/70 bg-card/80 p-5 hover:border-gold/40 hover:shadow-[0_4px_24px_-12px_hsl(38_50%_55%/0.25)] transition-all"
                           >
                             <div className="flex justify-between items-start gap-3 mb-2">
                               <h4 className="font-display text-base text-cream leading-snug">
                                 {item.name}
                               </h4>
                               <span
-                                className={`font-body text-sm whitespace-nowrap shrink-0 ${
+                                className={`font-body text-sm whitespace-nowrap shrink-0 tracking-wide ${
                                   isConsult ? "text-muted-foreground italic" : "text-gold font-medium"
                                 }`}
                               >
@@ -253,19 +258,19 @@ const ServicesKnowledgeBase = () => {
                               </span>
                             </div>
                             {item.description && (
-                              <p className="font-body text-[13px] text-muted-foreground/85 leading-relaxed mb-3">
+                              <p className="font-body font-light text-[13px] text-cream/60 leading-[1.65] tracking-[0.005em] mb-4 max-w-prose before:content-['—'] before:mr-2 before:text-gold/60">
                                 {item.description}
                               </p>
                             )}
                             <button
                               type="button"
                               onClick={() => handleAskLuna(filteredCategory, group.name, item)}
-                              className="inline-flex items-center gap-1.5 text-xs font-body text-gold hover:text-gold/80 transition-colors"
+                              className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.18em] font-body text-gold/80 hover:text-gold transition-colors"
                             >
                               <MessageSquare className="w-3.5 h-3.5" />
                               Ask Luna about this
                             </button>
-                          </article>
+                          </m.article>
                         );
                       })}
                     </div>
