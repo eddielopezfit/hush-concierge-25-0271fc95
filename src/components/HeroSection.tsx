@@ -62,7 +62,7 @@ export const HeroSection = () => {
             loop
             muted
             playsInline
-            preload="metadata"
+            preload="auto"
             poster={videoPoster}
             aria-hidden="true"
             src={videoSrc}
@@ -70,7 +70,7 @@ export const HeroSection = () => {
             className={
               isMobile
                 ? "absolute inset-0 w-full h-full object-cover [object-position:center_top]"
-                : "absolute inset-0 w-full h-full object-cover object-center scale-110"
+                : "absolute inset-0 w-full h-full object-cover object-center"
             }
           />
         </div>
