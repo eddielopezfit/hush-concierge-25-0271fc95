@@ -181,6 +181,40 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
     openChatWidget("chat");
   };
 
+  const sendLookToLuna = () => {
+    if (!styleId) return;
+    const styleMeta = getStyleMeta(styleId);
+    const colorMeta = colorId ? getColorMeta(colorId) : null;
+    const lookLabel = [styleMeta?.name, colorMeta?.name].filter(Boolean).join(" · ");
+
+    mergeConcierge({
+      source: `${source} · Try-On`,
+      categories: ["hair"],
+      primary_category: "hair",
+      category: "hair",
+      goal: lookLabel ? `Try-On: ${lookLabel}` : null,
+    });
+
+    const lines = [
+      `I just tried on a look in the virtual try-on and want your take.`,
+      styleMeta ? `• Style: ${styleMeta.name}${styleMeta.blurb ? ` — ${styleMeta.blurb}` : ""}` : null,
+      colorMeta ? `• Color: ${colorMeta.name}${colorMeta.blurb ? ` — ${colorMeta.blurb}` : ""}` : `• Color: keeping my current color`,
+      renderSignedUrl ? `• Preview: ${renderSignedUrl}` : null,
+      ``,
+      `Can you tell me which stylist would be a great fit and what to expect at my appointment?`,
+    ].filter(Boolean) as string[];
+
+    try {
+      sessionStorage.setItem("hush_chat_pending_prompt", lines.join("\n"));
+    } catch {
+      /* ignore — Luna will still open with context */
+    }
+
+    toast.success("Sent your look to Luna");
+    onClose();
+    openChatWidget("chat");
+  };
+
   const stepBack = () => {
     setError(null);
     if (step === "category") setStep("intro");
@@ -370,6 +404,18 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
                 </button>
               </div>
 
+              <div className="mt-3 max-w-2xl mx-auto">
+                <button
+                  onClick={sendLookToLuna}
+                  className="w-full inline-flex items-center justify-center gap-2 rounded-lg border border-primary/40 bg-primary/10 px-4 py-2.5 font-body text-sm text-primary hover:bg-primary/20"
+                >
+                  <MessageCircle className="h-4 w-4" /> Send to Luna for guidance
+                </button>
+                <p className="mt-2 text-center font-body text-[11px] text-cream/45">
+                  Shares your style, color, and preview link with Luna so she can match you to the right stylist.
+                </p>
+              </div>
+
               {savedLooks.length > 0 && (
                 <div className="mt-8">
                   <p className="font-body text-xs uppercase tracking-wider text-cream/45 mb-3 text-center">Your saved looks</p>
@@ -413,8 +459,11 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
                 <button onClick={goToBooking} className="btn-gold py-3 px-6 text-sm sm:text-base flex items-center justify-center gap-2">
                   <Camera className="h-4 w-4" /> Book this look
                 </button>
-                <button onClick={goToLuna} className="rounded-lg border border-primary/40 bg-primary/10 px-4 py-2.5 font-body text-sm text-primary hover:bg-primary/20 inline-flex items-center justify-center gap-2">
-                  <MessageCircle className="h-4 w-4" /> Get a stylist consultation
+                <button onClick={sendLookToLuna} className="rounded-lg border border-primary/40 bg-primary/10 px-4 py-2.5 font-body text-sm text-primary hover:bg-primary/20 inline-flex items-center justify-center gap-2">
+                  <MessageCircle className="h-4 w-4" /> Send to Luna for guidance
+                </button>
+                <button onClick={goToLuna} className="font-body text-xs text-cream/55 hover:text-gold underline underline-offset-4">
+                  Or just open chat without sharing
                 </button>
               </div>
 
