@@ -10,18 +10,37 @@ import {
   TRY_ON_COLORS,
   TRY_ON_STYLES,
   UNDERTONES,
-  colorFlattersUndertone,
+  colorMatchTier,
   getColorMeta,
   getStyleMeta,
   sortColorsByUndertone,
   sortStylesByFace,
-  styleFlattersFace,
+  styleMatchTier,
+  type MatchTier,
   type FaceShape,
   type TryOnStyleCategory,
   type Undertone,
 } from "@/data/tryOnStyleData";
 import { CompareSlider } from "./CompareSlider";
 import { cn } from "@/lib/utils";
+
+function MatchBadge({ tier }: { tier: MatchTier }) {
+  if (tier === "none") return null;
+  const isBest = tier === "best";
+  return (
+    <span
+      className={cn(
+        "inline-flex shrink-0 items-center gap-1 rounded-full border px-1.5 py-0.5 font-body text-[9px] uppercase tracking-wider leading-none",
+        isBest
+          ? "border-gold/60 bg-gold/15 text-gold"
+          : "border-cream/20 bg-cream/5 text-cream/70"
+      )}
+    >
+      <Sparkle className="h-2.5 w-2.5" />
+      {isBest ? "Best match" : "Good match"}
+    </span>
+  );
+}
 
 type Step = "intro" | "face" | "category" | "style" | "color" | "preview" | "convert";
 
