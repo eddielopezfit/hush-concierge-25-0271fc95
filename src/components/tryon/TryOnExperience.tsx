@@ -351,7 +351,14 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
           {step === "style" && (
             <div>
               <h2 className="font-display text-2xl text-cream mb-1 text-center">Choose a style</h2>
-              <p className="font-body text-sm text-cream/60 mb-6 text-center">Tap one to keep going. You can try others after.</p>
+              <p className="font-body text-sm text-cream/60 mb-6 text-center">
+                Tap one to keep going. You can try others after.
+                {faceShape && faceShape !== "unsure" && (
+                  <span className="block text-[11px] text-gold/80 mt-1">
+                    ✦ Sorted with {FACE_SHAPES.find((f) => f.id === faceShape)?.label.toLowerCase()}-face matches first
+                  </span>
+                )}
+              </p>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                 {styles.map((s) => (
                   <button
@@ -359,7 +366,12 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
                     onClick={() => handleStylePick(s.id)}
                     className="flex flex-col items-start gap-1 rounded-xl border border-border bg-charcoal/40 p-3 text-left transition-colors hover:border-gold/60 hover:bg-charcoal/60"
                   >
-                    <span className="font-display text-base text-cream">{s.name}</span>
+                    <span className="flex items-center gap-1.5 font-display text-base text-cream">
+                      {s.name}
+                      {styleFlattersFace(s.id, faceShape) && (
+                        <Sparkle className="h-3 w-3 text-gold" aria-label="Flattering for your face shape" />
+                      )}
+                    </span>
                     <span className="font-body text-[11px] text-cream/55">{s.blurb}</span>
                   </button>
                 ))}
@@ -370,9 +382,16 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
           {step === "color" && (
             <div>
               <h2 className="font-display text-2xl text-cream mb-1 text-center">Pick a color</h2>
-              <p className="font-body text-sm text-cream/60 mb-6 text-center">Or skip — we'll preview just the cut.</p>
+              <p className="font-body text-sm text-cream/60 mb-6 text-center">
+                Or skip — we'll preview just the cut.
+                {undertone && undertone !== "unsure" && (
+                  <span className="block text-[11px] text-gold/80 mt-1">
+                    ✦ Sorted with {UNDERTONES.find((u) => u.id === undertone)?.label.toLowerCase()}-undertone matches first
+                  </span>
+                )}
+              </p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {TRY_ON_COLORS.map((c) => (
+                {colors.map((c) => (
                   <button
                     key={c.id}
                     disabled={isGenerating}
@@ -381,7 +400,12 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
                   >
                     <span className="h-10 w-10 shrink-0 rounded-full border border-cream/15" style={{ backgroundColor: c.swatch }} />
                     <span className="min-w-0">
-                      <span className="block font-display text-base text-cream truncate">{c.name}</span>
+                      <span className="flex items-center gap-1.5 font-display text-base text-cream truncate">
+                        {c.name}
+                        {colorFlattersUndertone(c.id, undertone) && (
+                          <Sparkle className="h-3 w-3 shrink-0 text-gold" aria-label="Flatters your undertone" />
+                        )}
+                      </span>
                       <span className="block font-body text-[11px] text-cream/55 truncate">{c.blurb}</span>
                     </span>
                   </button>
