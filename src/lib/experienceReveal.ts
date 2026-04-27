@@ -119,7 +119,9 @@ function formatMinutes(mins: number): string {
   const h = mins / 60;
   // Round to nearest 0.5 for display
   const rounded = Math.round(h * 2) / 2;
-  return rounded === Math.floor(rounded) ? `${rounded} hr` : `${rounded} hrs`;
+  // Always pluralize for ranges so "1 hr–1.5 hrs" never appears.
+  // Use "hrs" any time the value is not exactly 1.
+  return rounded === 1 ? "1 hr" : `${rounded} hrs`;
 }
 
 export interface PlanTotals {
