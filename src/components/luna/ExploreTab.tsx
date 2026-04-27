@@ -147,9 +147,14 @@ export const ExploreTab = ({ onSwitchTab }: ExploreTabProps) => {
                       </span>
                     </div>
                     {item.description && (
-                      <p className="mt-1 text-[11px] text-muted-foreground/80 leading-snug line-clamp-2">
+                      <m.p
+                        initial={{ opacity: 0, y: 2 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, ease: "easeOut" }}
+                        className="mt-1.5 text-[11.5px] font-body font-light text-cream/55 leading-[1.55] tracking-[0.005em] line-clamp-2 before:content-['—'] before:mr-1.5 before:text-primary/60"
+                      >
                         {item.description}
-                      </p>
+                      </m.p>
                     )}
                   </button>
                 ))}
