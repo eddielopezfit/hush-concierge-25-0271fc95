@@ -12,12 +12,13 @@ interface TryOnEntryButtonProps {
 }
 
 /**
- * Reusable "Try Your New Look" CTA. Lazy-loads the heavy modal so it never
- * touches the eager hero bundle.
+ * Reusable "Preview a New Hairstyle" CTA. Lazy-loads the heavy modal so it
+ * never touches the eager hero bundle. Renamed from "Try Your New Look" so
+ * guests don't expect nail/lash/skincare previews — this is hair-only.
  */
 export const TryOnEntryButton = ({
   variant = "primary",
-  label = "Try Your New Look",
+  label = "Preview a New Hairstyle",
   source,
   className,
 }: TryOnEntryButtonProps) => {
