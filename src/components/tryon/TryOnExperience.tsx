@@ -314,13 +314,17 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
 
     setIsReadingFile(true);
     try {
-      const dataUrl = await fileToDataUrl(file);
-      // A fresh photo means a fresh face/vibe context. Clear any previously
-      // persisted refine chips so the guest starts from defaults — keeps the
-      // recommendations honest to the new selfie. We compare to the prior
-      // dataUrl so re-selecting the same image doesn't wipe deliberate picks.
-      setPhotoDataUrl((prev) => {
-        if (prev !== dataUrl) {
+      // Hash the raw bytes first so we can decide "truly new photo?" before
+      // any chip-clearing side effects fire. Run hashing and decoding in
+      // parallel — they're independent reads of the same File.
+      const [dataUrl, nextHash] = await Promise.all([
+        fileToDataUrl(file),
+        hashFile(file),
+      ]);
+      const isTrulyNewPhoto = photoHashRef.current !== nextHash;
+      photoHashRef.current = nextHash;
+      setPhotoDataUrl(() => {
+        if (isTrulyNewPhoto) {
           const hadActiveChips =
             faceShapeRef.current !== null ||
             undertoneRef.current !== null ||
