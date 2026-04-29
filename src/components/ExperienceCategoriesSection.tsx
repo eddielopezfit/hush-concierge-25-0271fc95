@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Scissors, Sparkles, Eye, Droplets, Heart, ChevronRight, MessageCircle } from "lucide-react";
 import { useLuna } from "@/contexts/LunaContext";
 import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
+import { TryOnEntryButton } from "@/components/tryon/TryOnEntryButton";
 
 interface Category {
   id: ServiceCategoryId;
@@ -140,6 +141,19 @@ export const ExperienceCategoriesSection = () => {
               </m.div>
             );
           })}
+        </div>
+
+        {/* Curiosity-driven secondary path — placed where category intent peaks.
+            Guests deciding on hair/color benefit most from previewing the look first. */}
+        <div className="mt-10 md:mt-14 flex flex-col items-center gap-2">
+          <p className="font-body text-xs text-cream/50 tracking-wide">
+            Curious how it would look on you?
+          </p>
+          <TryOnEntryButton
+            variant="ghost"
+            label="Try Your New Look"
+            source="ExperienceCategories"
+          />
         </div>
       </div>
     </section>
