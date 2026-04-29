@@ -980,6 +980,24 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
                     <p className="font-body text-[11px] text-cream/45">
                       Optional — helps us sort the most flattering looks first. Your stylist always has the final say.
                     </p>
+                    {/* Guest preference: do new uploads reset these chips, or keep them?
+                        Stored in localStorage so the choice persists across visits. */}
+                    <label className="mt-1 flex items-start gap-2 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={resetChipsOnUpload}
+                        onChange={(e) => setResetChipsOnUpload(e.target.checked)}
+                        className="mt-0.5 h-3.5 w-3.5 accent-[hsl(var(--gold))] cursor-pointer"
+                      />
+                      <span className="font-body text-[11px] text-cream/65 leading-relaxed">
+                        Reset these refinements when I upload a new photo
+                        <span className="block text-cream/40">
+                          {resetChipsOnUpload
+                            ? "On — uploads start fresh so the new face guides results."
+                            : "Off — your face shape, vibe, and undertone carry over to every upload."}
+                        </span>
+                      </span>
+                    </label>
                   </div>
                 )}
                 </>
