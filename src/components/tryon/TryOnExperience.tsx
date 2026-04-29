@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { ArrowLeft, Camera, Check, Image as ImageIcon, Loader2, MessageCircle, RotateCcw, Sparkles, Sparkle, Sun, Upload, User, Wand2, X } from "lucide-react";
+import { ArrowLeft, Camera, Check, Download, Image as ImageIcon, Loader2, MessageCircle, RotateCcw, Sparkles, Sparkle, Sun, Upload, User, Wand2, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useLuna } from "@/contexts/LunaContext";
@@ -497,6 +497,32 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
     ].slice(0, 4));
     trackFunnelEvent("hairstyle_preview", "saved_look", { metadata: { style_id: styleId, color_id: colorId } });
     toast.success("Look saved");
+  };
+
+  const downloadRender = () => {
+    if (!renderDataUrl) return;
+    try {
+      const styleMeta = styleId ? getStyleMeta(styleId) : null;
+      const colorMeta = colorId ? getColorMeta(colorId) : null;
+      const slug = [styleMeta?.name, colorMeta?.name]
+        .filter(Boolean)
+        .join("-")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "") || "look";
+      const a = document.createElement("a");
+      a.href = renderDataUrl;
+      a.download = `hush-tryon-${slug}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      trackFunnelEvent("hairstyle_preview", "downloaded_look", {
+        metadata: { style_id: styleId, color_id: colorId },
+      });
+      toast.success("Saved to your device");
+    } catch {
+      toast.error("Couldn't download — try long-pressing the image instead");
+    }
   };
 
   const goToBooking = () => {
@@ -1136,9 +1162,12 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
                 )}
               </div>
 
-              <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 max-w-2xl mx-auto">
+              <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4 max-w-2xl mx-auto">
                 <button onClick={saveLook} className="rounded-lg border border-gold/40 bg-gold/10 px-3 py-2.5 font-body text-sm text-gold hover:bg-gold/20">
                   <Check className="mr-1.5 inline h-4 w-4" /> Save look
+                </button>
+                <button onClick={downloadRender} className="rounded-lg border border-border bg-charcoal/40 px-3 py-2.5 font-body text-sm text-cream hover:border-gold/60">
+                  <Download className="mr-1.5 inline h-4 w-4" /> Download
                 </button>
                 <button onClick={() => setStep("style")} className="rounded-lg border border-border bg-charcoal/40 px-3 py-2.5 font-body text-sm text-cream hover:border-gold/60">
                   Try another style
@@ -1202,6 +1231,9 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
               <div className="flex flex-col gap-3">
                 <button onClick={goToBooking} className="btn-gold py-3 px-6 text-sm sm:text-base flex items-center justify-center gap-2">
                   <Camera className="h-4 w-4" /> Book this look
+                </button>
+                <button onClick={downloadRender} className="rounded-lg border border-border bg-charcoal/40 px-4 py-2.5 font-body text-sm text-cream hover:border-gold/60 inline-flex items-center justify-center gap-2">
+                  <Download className="h-4 w-4" /> Download photo
                 </button>
                 <button onClick={sendLookToLuna} className="rounded-lg border border-primary/40 bg-primary/10 px-4 py-2.5 font-body text-sm text-primary hover:bg-primary/20 inline-flex items-center justify-center gap-2">
                   <MessageCircle className="h-4 w-4" /> Send to Luna for guidance

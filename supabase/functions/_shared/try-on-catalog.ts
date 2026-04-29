@@ -41,12 +41,15 @@ export const TRY_ON_STYLES: TryOnStyle[] = [
 ];
 
 export const TRY_ON_COLORS: TryOnColor[] = [
-  { id: "ash_brown",          name: "Ash Brown",            prompt: "a cool, multidimensional ash brown with subtle smoky undertones" },
-  { id: "dark_chocolate",     name: "Dark Chocolate",       prompt: "a rich, glossy dark chocolate brown with warm depth" },
-  { id: "soft_black",         name: "Soft Black",           prompt: "a soft natural black with a subtle blue-violet sheen, never flat" },
-  { id: "caramel_highlights", name: "Caramel Highlights",   prompt: "warm caramel balayage highlights blended through a brunette base" },
-  { id: "honey_blonde",       name: "Honey Blonde",         prompt: "a warm honey blonde with buttery, sun-kissed dimension" },
-  { id: "cool_platinum",      name: "Cool Platinum",        prompt: "a cool icy platinum blonde with crisp pearl undertones" },
+  // IDs mirror the client catalog and map 1:1 to real Hush hair services.
+  { id: "balayage_caramel",   name: "Balayage · Caramel",   prompt: "a hand-painted balayage with warm caramel ribbons softly melting through a brunette base, lived-in seamless blending, no harsh lines" },
+  { id: "balayage_champagne", name: "Balayage · Champagne", prompt: "a hand-painted balayage in a soft champagne-beige tone, neutral and luminous, painted seamlessly from mid-shaft to ends" },
+  { id: "foilayage_honey",    name: "Foilayage · Honey",    prompt: "foilayage highlights in a warm honey blonde, brighter and more uniform than balayage, with buttery sun-kissed dimension throughout" },
+  { id: "foilayage_platinum", name: "Foilayage · Platinum", prompt: "foilayage highlights lifted to a cool icy platinum blonde with crisp pearl undertones and bright, even brightness from mid-lengths to ends" },
+  { id: "lived_in_brunette",  name: "Lived-In Brunette",    prompt: "a rich, glossy lived-in brunette with subtle warm depth and natural-looking root shadow, low-maintenance grow-out" },
+  { id: "money_piece",        name: "Money-Piece",          prompt: "bold contrasting money-piece highlights brightening the front face-framing pieces, with the rest of the hair kept in its natural tone" },
+  { id: "vivid_accent_rose",  name: "Vivid Accent · Rose",  prompt: "a statement vivid fashion-color accent in a soft rose-pink tone placed through the underlayer or face-frame, vibrant but salon-polished" },
+  { id: "soft_black_gloss",   name: "Soft Black Gloss",     prompt: "a soft natural black gloss with a luminous, never-flat sheen and subtle blue-violet shimmer in the light" },
 ];
 
 export function findStyle(id: string): TryOnStyle | undefined {

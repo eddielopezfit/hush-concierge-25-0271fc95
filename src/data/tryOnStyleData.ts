@@ -49,12 +49,15 @@ export const TRY_ON_STYLES: TryOnStyleMeta[] = [
 ];
 
 export const TRY_ON_COLORS: TryOnColorMeta[] = [
-  { id: "ash_brown",          name: "Ash Brown",          swatch: "#6b5a4f", blurb: "Cool, smoky depth",       flattersUndertones: ["cool", "neutral"] },
-  { id: "dark_chocolate",     name: "Dark Chocolate",     swatch: "#3a241c", blurb: "Rich, glossy warmth",     flattersUndertones: ["warm", "neutral", "cool"] },
-  { id: "soft_black",         name: "Soft Black",         swatch: "#1a1717", blurb: "Natural, never flat",     flattersUndertones: ["cool", "neutral"] },
-  { id: "caramel_highlights", name: "Caramel Highlights", swatch: "#a87148", blurb: "Sun-kissed dimension",    flattersUndertones: ["warm", "neutral"] },
-  { id: "honey_blonde",       name: "Honey Blonde",       swatch: "#c79a55", blurb: "Buttery, warm, soft",     flattersUndertones: ["warm", "neutral"] },
-  { id: "cool_platinum",      name: "Cool Platinum",      swatch: "#d8d4c9", blurb: "Icy, pearl undertones",   flattersUndertones: ["cool"] },
+  // Each color maps 1:1 to a real Hush hair service so the booking handoff is precise.
+  { id: "balayage_caramel",   name: "Balayage · Caramel",   swatch: "#a87148", blurb: "Hand-painted, sun-kissed warmth", flattersUndertones: ["warm", "neutral"] },
+  { id: "balayage_champagne", name: "Balayage · Champagne", swatch: "#c9a979", blurb: "Soft, hand-painted neutral lift", flattersUndertones: ["cool", "neutral"] },
+  { id: "foilayage_honey",    name: "Foilayage · Honey",    swatch: "#c79a55", blurb: "Foil-bright, buttery blonde",     flattersUndertones: ["warm", "neutral"] },
+  { id: "foilayage_platinum", name: "Foilayage · Platinum", swatch: "#d8d4c9", blurb: "Icy, pearl-cool brightness",      flattersUndertones: ["cool"] },
+  { id: "lived_in_brunette",  name: "Lived-In Brunette",    swatch: "#3a241c", blurb: "Rich, glossy, low-maintenance",   flattersUndertones: ["warm", "neutral", "cool"] },
+  { id: "money_piece",        name: "Money-Piece",          swatch: "#dcb87a", blurb: "Bright face-framing highlights",  flattersUndertones: ["cool", "warm", "neutral"] },
+  { id: "vivid_accent_rose",  name: "Vivid Accent · Rose",  swatch: "#b8526a", blurb: "Statement fashion color (Allison)", flattersUndertones: ["cool", "neutral"] },
+  { id: "soft_black_gloss",   name: "Soft Black Gloss",     swatch: "#1a1717", blurb: "Natural black with luminous gloss", flattersUndertones: ["cool", "neutral"] },
 ];
 
 export const FACE_SHAPES: { id: FaceShape; label: string; hint: string }[] = [
