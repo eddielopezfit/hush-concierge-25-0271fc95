@@ -285,7 +285,16 @@ GOOD: "The Classic Lash Set is one extension per natural lash — clean, polishe
     let pricingPrefix = "";
     if (lastUserMessage?.content && isPricingQuery(lastUserMessage.content)) {
       let cats = detectPricingCategories(lastUserMessage.content);
-      // Generic pricing question with no category → show all categories.
+      // Generic pricing question with no category in the message →
+      // try to infer from journeyContext (Experience Finder selection,
+      // services they explored, recommended service) before falling back
+      // to ALL categories. This prevents dumping the entire menu when
+      // the guest is clearly focused on one category (e.g. asks
+      // "What will it cost?" while exploring a hair Try-On look).
+      if (cats.length === 0 && journeyContext) {
+        const inferred = detectPricingCategories(journeyContext);
+        if (inferred.length > 0) cats = inferred;
+      }
       if (cats.length === 0) cats = PRICING_CATEGORIES;
       pricingPrefix = renderPricingBlock(cats);
 
