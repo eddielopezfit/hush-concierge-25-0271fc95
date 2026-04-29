@@ -172,6 +172,16 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
   // resolves and the style step mounts. Pure perception polish — signals to
   // guests "we're tailoring your refinements" before chips become tappable.
   const [chipsReady, setChipsReady] = useState(false);
+  // Guest preference: reset refine chips when a brand-new photo is uploaded?
+  // Defaults to true (better matches to the new face). Persisted across visits.
+  const [resetChipsOnUpload, setResetChipsOnUpload] = useState<boolean>(
+    () => readResetOnUploadPref()
+  );
+  const resetChipsOnUploadRef = useRef(resetChipsOnUpload);
+  useEffect(() => {
+    resetChipsOnUploadRef.current = resetChipsOnUpload;
+    writeResetOnUploadPref(resetChipsOnUpload);
+  }, [resetChipsOnUpload]);
   // Refs mirror the latest chip state so stable callbacks (e.g. handleFile,
   // wrapped in useCallback with [] deps) can read current values without
   // capturing stale closures.
