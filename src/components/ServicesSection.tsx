@@ -128,12 +128,28 @@ export const ServicesSection = () => {
               for horizontal space on narrow cards (mobile + 3-col desktop). */}
           {service.id === "hair" && (
             <div onClick={(e) => e.stopPropagation()}>
-              <TryOnEntryButton
-                variant="primary"
-                label="Preview a New Hairstyle"
-                source="Services Card"
-                className="!w-full !py-2.5 !px-3 text-sm whitespace-nowrap"
-              />
+              {/* Two labels render at different breakpoints so the gold CTA
+                  stays on a single line on 320–414px viewports (where the
+                  floating Luna bubble crowds the right edge) AND keeps the
+                  full marketing label on ≥sm screens. The button itself is
+                  rendered twice so each instance owns the correct `aria-label`
+                  for screen readers. Only one is ever visible at a time. */}
+              <div className="sm:hidden">
+                <TryOnEntryButton
+                  variant="primary"
+                  label="Preview Hairstyle"
+                  source="Services Card"
+                  className="!w-full !py-2.5 !px-3 !text-xs !tracking-normal whitespace-nowrap"
+                />
+              </div>
+              <div className="hidden sm:block">
+                <TryOnEntryButton
+                  variant="primary"
+                  label="Preview a New Hairstyle"
+                  source="Services Card"
+                  className="!w-full !py-2.5 !px-3 text-sm whitespace-nowrap"
+                />
+              </div>
             </div>
           )}
           {/* Secondary actions — always 2-up so labels stay on one line. */}
