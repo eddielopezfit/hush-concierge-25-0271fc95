@@ -71,7 +71,7 @@ function ChatActionButtons({
 }
 
 export const ChatTab = () => {
-  const { conciergeContext, clearConcierge } = useLuna();
+  const { conciergeContext, clearConcierge, mergeConcierge } = useLuna();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [userMessageCount, setUserMessageCount] = useState(0);
@@ -548,6 +548,25 @@ export const ChatTab = () => {
           });
           return;
         }
+        // Roll back the context fields produced by the stage we're undoing so
+        // the recomputed chips reflect the corrected (pre-answer) state, not
+        // the stale subtype/timing that was inferred from the answer we're
+        // throwing away.
+        //   Stage 1 → 0  : guest's answer set the look (service_subtype/goal)
+        //   Stage 2 → 1  : guest's answer set the timing
+        const undoingFromStage = qualifyingStage;
+        if (undoingFromStage === 1) {
+          mergeConcierge({ service_subtype: null, goal: null });
+        } else if (undoingFromStage === 2) {
+          mergeConcierge({ timing: null });
+        }
+        const nextCtx: typeof conciergeContext = conciergeContext
+          ? {
+              ...conciergeContext,
+              ...(undoingFromStage === 1 ? { service_subtype: null, goal: null } : {}),
+              ...(undoingFromStage === 2 ? { timing: null } : {}),
+            }
+          : conciergeContext;
         setMessages((prev) => {
           // Remove trailing assistant messages + the last user message so the
           // prior assistant question becomes the latest message again.
@@ -557,8 +576,11 @@ export const ChatTab = () => {
           const lastAssistant = [...next].reverse().find((m) => m.role === "assistant");
           const newStage = Math.max(0, qualifyingStage - 1);
           setQualifyingStage(newStage);
-          saveQualifyingStage(conciergeContext, newStage);
-          setQuickReplies(getQuickReplies(conciergeContext, lastAssistant?.content || "", newStage));
+          // Use the rolled-back context so chips match the corrected state
+          // (e.g. look chips re-appear instead of the inferred subtype's chips).
+          saveQualifyingStage(nextCtx, newStage);
+          setQuickReplies(getQuickReplies(nextCtx, lastAssistant?.content || "", newStage));
+          setContextPills(getContextPills(nextCtx));
           setUserMessageCount((c) => Math.max(0, c - 1));
           return next;
         });
@@ -586,7 +608,7 @@ export const ChatTab = () => {
       }
       handleSendInternal(reply);
     },
-    [handleSendInternal, isStreaming, qualifyingStage, conciergeContext, messages]
+    [handleSendInternal, isStreaming, qualifyingStage, conciergeContext, messages, mergeConcierge]
   );
 
   const handleSend = useCallback(
