@@ -224,6 +224,22 @@ export function getQuickReplies(
   }
 
   if (lower.includes("price") || lower.includes("cost") || lower.includes("pricing")) {
+    // If the guest's category is uncertain (none committed, OR Luna just
+    // surfaced multiple category menus at once), give them a one-tap way
+    // to narrow the scope so the next pricing answer is focused.
+    const committed = _ctx?.categories?.length === 1;
+    const mentionsMany =
+      [/\bhair\b/, /\bnails?\b/, /\blashes?\b/, /\bskincare\b|\bfacial\b|\besthetic/, /\bmassage\b/]
+        .filter((re) => re.test(lower)).length >= 2;
+    if (!committed || mentionsMany) {
+      return withUndo([
+        "Just hair pricing",
+        "Just nails pricing",
+        "Just skincare pricing",
+        "Just lashes pricing",
+        "Just massage pricing",
+      ]);
+    }
     return withUndo(["I'm ready to book", "Have someone call me", "Help me decide", "Connect me with the team"]);
   }
   if (lower.includes("stylist") || lower.includes("artist") || lower.includes("specialist")) {
