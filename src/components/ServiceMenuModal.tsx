@@ -88,10 +88,15 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
+      document.body.classList.add("service-menu-open");
     } else {
       document.body.style.overflow = "";
+      document.body.classList.remove("service-menu-open");
     }
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+      document.body.classList.remove("service-menu-open");
+    };
   }, [isOpen]);
 
   useEffect(() => {
@@ -177,7 +182,7 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="flex-shrink-0 p-6 md:p-8 border-b border-secondary">
+            <div className="flex-shrink-0 px-5 pt-5 pb-4 md:p-8 md:pb-6 border-b border-secondary">
               <button
                 onClick={onClose}
                 className="absolute top-4 right-4 w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-muted-foreground hover:text-cream hover:bg-gold/20 transition-all z-10"
@@ -186,19 +191,19 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
                 <X className="w-5 h-5" />
               </button>
 
-              <div className="flex items-center gap-4 mb-4 pr-10">
-                <div className="w-12 h-12 rounded-full bg-gold/20 flex items-center justify-center">
-                  <CategoryIcon className="w-6 h-6 text-gold" />
+              <div className="flex items-center gap-3 mb-3 pr-10">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gold/20 flex items-center justify-center flex-shrink-0">
+                  <CategoryIcon className="w-5 h-5 md:w-6 md:h-6 text-gold" />
                 </div>
-                <h2 className="font-display text-2xl md:text-3xl text-cream">
+                <h2 className="font-display text-xl md:text-3xl text-cream">
                   {baseCategory.title}
                 </h2>
               </div>
-              <p className="font-body text-muted-foreground text-sm md:text-base mb-3">
-                Explore services and pricing. Luna can help you choose the right artist and confirm details.
+              <p className="font-body text-muted-foreground text-xs md:text-sm mb-2 md:mb-3">
+                Explore services and pricing. Luna can help you choose the right artist.
               </p>
-              <p className="font-body text-muted-foreground/70 text-xs italic mb-4">
-                Prices shown are listed starting points. Some services are consultation-based.
+              <p className="font-body text-muted-foreground/70 text-[11px] md:text-xs italic mb-3 md:mb-4">
+                Starting prices shown. Some services are consultation-based.
               </p>
 
               {/* Quick filters */}
@@ -411,26 +416,23 @@ export const ServiceMenuModal = ({ isOpen, onClose, category }: ServiceMenuModal
               )}
             </div>
 
-            {/* Sticky Footer */}
-            <div className="flex-shrink-0 p-6 md:p-8 border-t border-secondary bg-card">
-              <div className="flex flex-col sm:flex-row gap-3">
-                <m.button
-                  onClick={handleChatWithLuna}
-                  className="btn-gold py-4 px-6 flex items-center justify-center gap-3 flex-1"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <MessageSquare className="w-5 h-5" />
-                  <span>Chat with Luna</span>
-                </m.button>
-              </div>
-
+            {/* Sticky Footer — compact: single primary action + subtle call link */}
+            <div className="flex-shrink-0 px-5 py-3 md:px-8 md:py-4 border-t border-secondary bg-card">
+              <m.button
+                onClick={handleChatWithLuna}
+                className="btn-gold w-full py-3 md:py-3.5 px-6 flex items-center justify-center gap-2"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <MessageSquare className="w-4 h-4 md:w-5 md:h-5" />
+                <span>Chat with Luna</span>
+              </m.button>
               <a
                 href="tel:+15203276753"
-                className="flex items-center justify-center gap-2 mt-4 text-muted-foreground hover:text-gold transition-colors font-body text-sm"
+                className="flex items-center justify-center gap-1.5 mt-2 text-muted-foreground hover:text-gold transition-colors font-body text-xs"
               >
-                <Phone className="w-4 h-4" />
-                <span>Call front desk (520) 327-6753</span>
+                <Phone className="w-3.5 h-3.5" />
+                <span>(520) 327-6753</span>
               </a>
             </div>
           </m.div>
