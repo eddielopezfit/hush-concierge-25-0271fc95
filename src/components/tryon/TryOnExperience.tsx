@@ -293,6 +293,53 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
     return () => { document.body.style.overflow = prev; };
   }, []);
 
+  // Refs for the modal shell + initial focus target. The dialog container
+  // is the boundary used by the focus trap; the close button receives
+  // initial focus so keyboard users immediately have a known landing spot
+  // (the upload buttons aren't always tappable, e.g. while a HEIC error is
+  // surfaced) and a one-key path back out via Enter.
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Escape-to-close + Tab focus trap. Mirrors native <dialog> semantics
+  // without pulling in a heavy library. The trap only activates when focus
+  // would otherwise escape the modal — inner Tab navigation between style
+  // cards, color radios, and action buttons keeps working naturally.
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        onClose();
+        return;
+      }
+      if (e.key !== "Tab" || !dialogRef.current) return;
+      const focusables = dialogRef.current.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+      if (e.shiftKey && (active === first || !dialogRef.current.contains(active))) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", handleKey, true);
+    // Move initial focus to the close button so screen readers announce
+    // the dialog and keyboard users have a predictable starting point.
+    const t = window.setTimeout(() => {
+      closeButtonRef.current?.focus({ preventScroll: true });
+    }, 0);
+    return () => {
+      document.removeEventListener("keydown", handleKey, true);
+      window.clearTimeout(t);
+    };
+  }, [onClose]);
+
   // Funnel tracking — fire "started" on mount, and on unmount fire either
   // "abandoned" (no preview reached) or nothing (preview was shown, which is
   // already tracked separately). Uses a ref so the latest value is read at
@@ -790,7 +837,15 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
 
   const modal = (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-charcoal/90 backdrop-blur-sm p-0 sm:p-6 animate-fade-in">
-      <div className="relative flex h-full w-full max-w-5xl flex-col overflow-hidden bg-card text-cream shadow-2xl sm:h-[92vh] sm:rounded-2xl sm:border sm:border-gold/20">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="tryon-dialog-title"
+        aria-describedby="tryon-dialog-subtitle"
+        aria-busy={isGenerating || undefined}
+        className="relative flex h-full w-full max-w-5xl flex-col overflow-hidden bg-card text-cream shadow-2xl sm:h-[92vh] sm:rounded-2xl sm:border sm:border-gold/20"
+      >
         {/* Mobile framing-guide overlay — fades in while the OS camera is
             active. Sits above modal content but below any toasts. Tapping
             anywhere dismisses it without affecting the camera flow. */}
@@ -847,13 +902,14 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
               </button>
             )}
             <div className="min-w-0">
-              <p className="font-display text-lg sm:text-xl text-cream truncate">Preview a New Hairstyle</p>
-              <p className="font-body text-[11px] text-cream/45 truncate">
+              <p id="tryon-dialog-title" className="font-display text-lg sm:text-xl text-cream truncate">Preview a New Hairstyle</p>
+              <p id="tryon-dialog-subtitle" className="font-body text-[11px] text-cream/45 truncate">
                 AI-generated preview · Your stylist tailors the final result
               </p>
             </div>
           </div>
           <button
+            ref={closeButtonRef}
             onClick={onClose}
             className="inline-flex h-9 w-9 items-center justify-center rounded-full text-cream/60 hover:bg-cream/5 hover:text-cream"
             aria-label="Close"
@@ -1218,13 +1274,20 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
               </div>
               )}
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              <div
+                role="radiogroup"
+                aria-label="Choose a hairstyle to preview"
+                className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3"
+              >
                 {styles.map((s) => (
                   <button
                     key={s.id}
+                    role="radio"
+                    aria-checked={styleId === s.id}
+                    aria-label={`${s.name} — ${s.blurb}`}
                     disabled={isGenerating}
                     onClick={() => handleStylePick(s.id)}
-                    className="flex flex-col items-start gap-1 rounded-xl border border-border bg-charcoal/40 p-3 text-left transition-colors hover:border-gold/60 hover:bg-charcoal/60 disabled:opacity-50"
+                    className="flex flex-col items-start gap-1 rounded-xl border border-border bg-charcoal/40 p-3 text-left transition-colors hover:border-gold/60 hover:bg-charcoal/60 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
                   >
                     <span className="font-display text-base text-cream">{s.name}</span>
                     <MatchBadge tier={styleMatchTier(s.id, faceShape)} />
