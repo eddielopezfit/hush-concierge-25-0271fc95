@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { ArrowLeft, Camera, Check, Loader2, MessageCircle, Sparkles, Sparkle, Upload, Wand2, X } from "lucide-react";
+import { ArrowLeft, Camera, Check, Image as ImageIcon, Loader2, MessageCircle, Sparkles, Sparkle, Sun, Upload, User, Wand2, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useLuna } from "@/contexts/LunaContext";
