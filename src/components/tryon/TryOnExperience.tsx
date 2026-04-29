@@ -68,6 +68,31 @@ const FILTER_KEYS = {
   category: "hush_tryon_category",
 } as const;
 
+// Long-lived guest preference: should a fresh photo upload reset the refine
+// chips, or should we preserve them? Stored in localStorage so the choice
+// follows the guest across visits. Default = reset (safer match to new face).
+const RESET_ON_UPLOAD_KEY = "hush_tryon_reset_on_upload";
+
+function readResetOnUploadPref(): boolean {
+  if (typeof window === "undefined") return true;
+  try {
+    const v = window.localStorage.getItem(RESET_ON_UPLOAD_KEY);
+    if (v === null) return true; // default
+    return v === "1";
+  } catch {
+    return true;
+  }
+}
+
+function writeResetOnUploadPref(value: boolean) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(RESET_ON_UPLOAD_KEY, value ? "1" : "0");
+  } catch {
+    /* ignore */
+  }
+}
+
 function readPersistedFilter<T extends string>(key: string): T | null {
   if (typeof window === "undefined") return null;
   try {
@@ -147,6 +172,16 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
   // resolves and the style step mounts. Pure perception polish — signals to
   // guests "we're tailoring your refinements" before chips become tappable.
   const [chipsReady, setChipsReady] = useState(false);
+  // Guest preference: reset refine chips when a brand-new photo is uploaded?
+  // Defaults to true (better matches to the new face). Persisted across visits.
+  const [resetChipsOnUpload, setResetChipsOnUpload] = useState<boolean>(
+    () => readResetOnUploadPref()
+  );
+  const resetChipsOnUploadRef = useRef(resetChipsOnUpload);
+  useEffect(() => {
+    resetChipsOnUploadRef.current = resetChipsOnUpload;
+    writeResetOnUploadPref(resetChipsOnUpload);
+  }, [resetChipsOnUpload]);
   // Refs mirror the latest chip state so stable callbacks (e.g. handleFile,
   // wrapped in useCallback with [] deps) can read current values without
   // capturing stale closures.
@@ -254,22 +289,27 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
       // dataUrl so re-selecting the same image doesn't wipe deliberate picks.
       setPhotoDataUrl((prev) => {
         if (prev !== dataUrl) {
-          // Capture how many chips were active *before* clearing so we only
-          // surface the reset toast when the guest actually loses prior
-          // selections — silent reset on first upload (nothing to confirm).
           const hadActiveChips =
             faceShapeRef.current !== null ||
             undertoneRef.current !== null ||
             categoryRef.current !== null;
-          setFaceShape(null);
-          setUndertone(null);
-          setCategory(null);
-          writePersistedFilter(FILTER_KEYS.faceShape, null);
-          writePersistedFilter(FILTER_KEYS.undertone, null);
-          writePersistedFilter(FILTER_KEYS.category, null);
-          if (hadActiveChips) {
-            toast("Refinements reset for your new photo", {
-              description: "Tap “Refine for my face & vibe” to retune.",
+          if (resetChipsOnUploadRef.current) {
+            // Reset behavior — clear chips and confirm if any were active.
+            setFaceShape(null);
+            setUndertone(null);
+            setCategory(null);
+            writePersistedFilter(FILTER_KEYS.faceShape, null);
+            writePersistedFilter(FILTER_KEYS.undertone, null);
+            writePersistedFilter(FILTER_KEYS.category, null);
+            if (hadActiveChips) {
+              toast("Refinements reset for your new photo", {
+                description: "Tap “Refine for my face & vibe” to retune.",
+              });
+            }
+          } else if (hadActiveChips) {
+            // Preserve behavior — let the guest know chips carried over.
+            toast("Kept your refinements", {
+              description: "Your face shape, vibe, and undertone still apply.",
             });
           }
           // Also clear any in-flight style/color picks tied to the old face.
@@ -940,6 +980,24 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
                     <p className="font-body text-[11px] text-cream/45">
                       Optional — helps us sort the most flattering looks first. Your stylist always has the final say.
                     </p>
+                    {/* Guest preference: do new uploads reset these chips, or keep them?
+                        Stored in localStorage so the choice persists across visits. */}
+                    <label className="mt-1 flex items-start gap-2 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={resetChipsOnUpload}
+                        onChange={(e) => setResetChipsOnUpload(e.target.checked)}
+                        className="mt-0.5 h-3.5 w-3.5 accent-[hsl(var(--gold))] cursor-pointer"
+                      />
+                      <span className="font-body text-[11px] text-cream/65 leading-relaxed">
+                        Reset these refinements when I upload a new photo
+                        <span className="block text-cream/40">
+                          {resetChipsOnUpload
+                            ? "On — uploads start fresh so the new face guides results."
+                            : "Off — your face shape, vibe, and undertone carry over to every upload."}
+                        </span>
+                      </span>
+                    </label>
                   </div>
                 )}
                 </>
