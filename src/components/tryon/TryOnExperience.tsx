@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { ArrowLeft, Camera, Check, Download, Image as ImageIcon, Loader2, MessageCircle, RotateCcw, Sparkles, Sparkle, Sun, Upload, User, Wand2, X } from "lucide-react";
+import { ArrowLeft, Camera, Check, Download, Heart, Image as ImageIcon, Loader2, MessageCircle, RotateCcw, Sparkles, Sparkle, Sun, Trash2, Upload, User, Wand2, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useLuna } from "@/contexts/LunaContext";
@@ -50,6 +50,10 @@ interface SavedLook {
   styleId: string;
   colorId: string | null;
   renderDataUrl: string;
+  /** Marked as a favorite by the guest (heart icon). */
+  favorite?: boolean;
+  /** Timestamp of when the look was generated, used for ordering. */
+  createdAt?: number;
 }
 
 interface TryOnExperienceProps {
