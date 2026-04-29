@@ -1030,6 +1030,15 @@ export const ChatTab = () => {
           </button>
         </div>
       </div>
+
+      {/* Lazy-mounted Try-On modal — surfaces only when a hair-context guest
+          taps the proactive chip. Renders via its own portal, so opening it
+          while Luna's panel stays mounted is fine. */}
+      {tryOnOpen && (
+        <Suspense fallback={null}>
+          <TryOnExperience source="Luna Chat" onClose={() => setTryOnOpen(false)} />
+        </Suspense>
+      )}
     </div>
   );
 };
