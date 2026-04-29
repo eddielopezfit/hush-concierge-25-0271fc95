@@ -2,6 +2,58 @@ import { ConciergeContext } from "@/types/concierge";
 import { formatCategoryList, categoryLabels, goalLabels, timingLabels } from "@/lib/conciergeLabels";
 import type { ChatAction } from "./types";
 
+// ── Per-service qualifying chips (the "look/goal" question, asked first) ────
+// These are surfaced when Luna's last message clearly contains a qualifying
+// question AND the guest hasn't yet locked in a service_subtype. Tapping a
+// chip sends a natural-language reply that lets Luna branch cleanly.
+const QUALIFYING_CHIPS: Record<string, string[]> = {
+  lashes: ["Subtle & natural", "Wispy hybrid", "Full volume", "Not sure — help me decide"],
+  hair_color: ["Refresh my current shade", "Going lighter", "Bold or vivid", "Corrective work"],
+  hair_cut: ["Trim & shape", "New style", "Big change", "Not sure yet"],
+  hair: ["Cut", "Color", "Cut + color", "Not sure yet"],
+  nails: ["Classic manicure", "Gel / long-lasting", "Nail art", "Pedicure too"],
+  skincare: ["Glow for an event", "Acne or clarity", "Anti-aging", "First-time facial"],
+  massage: ["Relaxation", "Deep tissue / tension", "60 minutes", "90 minutes"],
+};
+
+// Heuristic: does Luna's last message look like a qualifying question?
+// (i.e. she's trying to learn more before recommending)
+function looksLikeQualifyingTurn(msg: string): boolean {
+  const lower = (msg || "").toLowerCase();
+  if (!lower.includes("?")) return false;
+  const cues = [
+    "are you", "do you", "would you", "what are you",
+    "are you looking", "are you thinking",
+    "subtle", "natural", "volume", "fluff",
+    "trim", "fresh cut", "big change",
+    "gel", "regular", "manicure", "pedicure",
+    "glow", "acne", "anti-aging",
+    "60 or 90", "60, 90", "relaxation", "deep tissue",
+    "classic", "hybrid", "balayage", "highlights",
+  ];
+  return cues.some((c) => lower.includes(c));
+}
+
+function pickQualifyingChips(ctx: ConciergeContext | null, msg: string): string[] | null {
+  if (!ctx?.categories?.length) return null;
+  if (ctx.categories.length > 1) return null;       // multi-service handled by generic chips
+  if (ctx.service_subtype) return null;             // already past qualifying
+  if (!looksLikeQualifyingTurn(msg)) return null;
+
+  const cat = ctx.categories[0];
+  if (cat === "hair") {
+    const lower = msg.toLowerCase();
+    if (lower.includes("color") || lower.includes("balayage") || lower.includes("highlight")) {
+      return QUALIFYING_CHIPS.hair_color;
+    }
+    if (lower.includes("cut") || lower.includes("trim") || lower.includes("style")) {
+      return QUALIFYING_CHIPS.hair_cut;
+    }
+    return QUALIFYING_CHIPS.hair;
+  }
+  return QUALIFYING_CHIPS[cat] ?? null;
+}
+
 // ── Error detection ─────────────────────────────────────────────────────────
 export const ERROR_PHRASES = [
   "having trouble connecting",
@@ -116,6 +168,10 @@ export function buildContextTransition(ctx: ConciergeContext | null): string {
 // ── Persistent quick replies — shown after EVERY Luna response ──────────────
 export function getQuickReplies(_ctx: ConciergeContext | null, lastAssistantMsg: string): string[] {
   const lower = (lastAssistantMsg || "").toLowerCase();
+
+  // Service-specific qualifying chips take priority during the discovery turn
+  const qualifying = pickQualifyingChips(_ctx, lastAssistantMsg);
+  if (qualifying) return qualifying;
 
   if (lower.includes("price") || lower.includes("cost") || lower.includes("pricing")) {
     return ["I'm ready to book", "Have someone call me", "Help me decide", "Connect me with the team"];
