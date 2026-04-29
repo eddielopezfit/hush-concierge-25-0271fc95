@@ -659,6 +659,55 @@ export const ChatTab = () => {
 
   const lastAssistantMsg = [...messages].reverse().find((m) => m.role === "assistant");
 
+  // Mobile-friendly back affordances: a floating round Undo button and a
+  // swipe-left gesture on the chat scroll area. Both reuse the BACK_CHIP
+  // handler so behavior stays identical to the chip.
+  const canUndo =
+    !isStreaming &&
+    conciergeContext?.categories?.length === 1 &&
+    qualifyingStage > 0 &&
+    messages.some((m) => m.role === "user");
+
+  const triggerUndo = useCallback(() => {
+    handleQuickReply(BACK_CHIP);
+  }, [handleQuickReply]);
+
+  // Swipe-left to undo on the chat scroll area
+  useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    let startX = 0;
+    let startY = 0;
+    let startT = 0;
+    let active = false;
+    const onStart = (e: TouchEvent) => {
+      if (e.touches.length !== 1) return;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      startT = Date.now();
+      active = true;
+    };
+    const onEnd = (e: TouchEvent) => {
+      if (!active) return;
+      active = false;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - startX;
+      const dy = t.clientY - startY;
+      const dt = Date.now() - startT;
+      // Right-to-left swipe: at least 70px horizontal, mostly horizontal,
+      // and reasonably quick (under 600ms) so we don't conflict with scroll.
+      if (dx < -70 && Math.abs(dy) < 40 && dt < 600 && canUndo) {
+        triggerUndo();
+      }
+    };
+    el.addEventListener("touchstart", onStart, { passive: true });
+    el.addEventListener("touchend", onEnd, { passive: true });
+    return () => {
+      el.removeEventListener("touchstart", onStart);
+      el.removeEventListener("touchend", onEnd);
+    };
+  }, [canUndo, triggerUndo]);
+
   return (
     <div className="flex flex-col h-full">
       {(activeThreadOrigin === "other-tab" || crossTabThreadAvailable) && (
