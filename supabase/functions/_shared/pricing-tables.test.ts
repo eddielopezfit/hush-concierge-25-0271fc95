@@ -236,3 +236,21 @@ Deno.test("resolvePricingScope: undefined journeyContext → falls back to ALL",
   assertEquals(source, "all");
   assertEquals(categories.length, PRICING_CATEGORIES.length);
 });
+
+Deno.test("resolvePricingScope: journeyContext with multiple categories → returns those scopes only", () => {
+  // Guest's journey mentions both hair and nails — generic pricing question.
+  // Must return BOTH scopes (not empty, not all).
+  const { categories, source } = resolvePricingScope(
+    "what does it cost?",
+    "They used the Experience Finder and selected: hair, nails. Services they explored: Women's Cut, Manicure w/Gel.",
+  );
+  assertEquals(source, "journey");
+  const ids = categories.map((c) => c.id).sort();
+  assertEquals(ids, ["hair", "nails"]);
+  // Explicitly guard against the failure modes the runtime safeguard prevents:
+  assert(categories.length > 0, "must not be empty");
+  assert(categories.length < PRICING_CATEGORIES.length, "must not fall back to ALL");
+  assert(!ids.includes("massage"), "must not include unrelated categories");
+  assert(!ids.includes("skincare"), "must not include unrelated categories");
+  assert(!ids.includes("lashes"), "must not include unrelated categories");
+});
