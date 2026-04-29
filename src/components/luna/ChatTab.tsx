@@ -80,6 +80,10 @@ export const ChatTab = () => {
   const [contextPills, setContextPills] = useState<string[]>([]);
   const [smartChips, setSmartChips] = useState<string[]>([]);
   const [quickReplies, setQuickReplies] = useState<string[]>([]);
+  // Tracks the qualifying-flow stage for service-tap conversations.
+  // 0 = look chips, 1 = timing chips, 2+ = generic booking chips.
+  // Advances every time the user sends a message in single-category mode.
+  const [qualifyingStage, setQualifyingStage] = useState(0);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [firstUnreadId, setFirstUnreadId] = useState<string | null>(null);
@@ -112,7 +116,7 @@ export const ChatTab = () => {
       setLeadDismissed(persisted.leadDismissed || false);
       setShowLeadForm(false);
       const lastAssistant = [...persisted.messages].reverse().find((m) => m.role === "assistant");
-      setQuickReplies(getQuickReplies(conciergeContext, lastAssistant?.content || ""));
+      setQuickReplies(getQuickReplies(conciergeContext, lastAssistant?.content || "", qualifyingStage));
     }
 
     if (!options?.silent) {
@@ -134,6 +138,7 @@ export const ChatTab = () => {
     onMissingThread: handleMissingThreadFallback,
     conciergeContext,
     getQuickReplies,
+    qualifyingStage,
   });
 
   function handleMissingThreadFallback() {
@@ -162,7 +167,8 @@ export const ChatTab = () => {
     setLeadPhone("");
     setContextPills(getContextPills(ctx));
     setSmartChips(getSmartChips(ctx));
-    setQuickReplies(getQuickReplies(ctx, greeting));
+    setQualifyingStage(0);
+    setQuickReplies(getQuickReplies(ctx, greeting, 0));
     setActiveThreadOrigin("current-tab");
     setCrossTabThreadAvailable(null);
 
@@ -192,7 +198,8 @@ export const ChatTab = () => {
     setLeadPhone("");
     setContextPills(getContextPills(ctx));
     setSmartChips(getSmartChips(ctx));
-    setQuickReplies(getQuickReplies(ctx, greeting));
+    setQualifyingStage(0);
+    setQuickReplies(getQuickReplies(ctx, greeting, 0));
     setActiveThreadOrigin("current-tab");
     setCrossTabThreadAvailable(null);
     clearPersistedChat();
@@ -274,7 +281,7 @@ export const ChatTab = () => {
       setLeadCaptured(persisted.leadCaptured || false);
       setLeadDismissed(persisted.leadDismissed || false);
       const lastAssistant = [...persisted.messages].reverse().find((m) => m.role === "assistant");
-      setQuickReplies(getQuickReplies(ctx, lastAssistant?.content || ""));
+        setQuickReplies(getQuickReplies(ctx, lastAssistant?.content || "", qualifyingStage));
     } else if (initialized && previousFingerprint && previousFingerprint !== "none") {
       const transition = buildContextTransition(ctx);
       const transitionMsg: ChatMessage = {
@@ -283,14 +290,17 @@ export const ChatTab = () => {
         content: transition,
       };
       setMessages((prev) => [...prev, transitionMsg]);
-      setQuickReplies(getQuickReplies(ctx, transition));
+        // Context just changed → restart the qualifying flow at stage 0
+        setQualifyingStage(0);
+        setQuickReplies(getQuickReplies(ctx, transition, 0));
     } else {
       const greeting = buildContextGreeting(ctx);
       setMessages([{ id: "greeting", role: "assistant", content: greeting }]);
       setSuccessfulExchangeCount(0);
       setLeadCaptured(false);
       setLeadDismissed(false);
-      setQuickReplies(getQuickReplies(ctx, greeting));
+        setQualifyingStage(0);
+        setQuickReplies(getQuickReplies(ctx, greeting, 0));
     }
 
     setContextPills(getContextPills(ctx));
@@ -473,6 +483,12 @@ export const ChatTab = () => {
       const newCount = userMessageCount + 1;
       setUserMessageCount(newCount);
 
+      // Advance the qualifying-flow stage on every user reply when in
+      // single-category mode, so chips progress: look → timing → booking.
+      if (conciergeContext?.categories?.length === 1) {
+        setQualifyingStage((s) => Math.min(s + 1, 2));
+      }
+
       // Force-scroll to bottom on send so the user follows their own message
       // and Luna's incoming response — eliminates the "1 new" hidden-reply problem.
       requestAnimationFrame(() => {
@@ -490,7 +506,7 @@ export const ChatTab = () => {
         setTimeout(() => setShowLeadForm(true), 1500);
       }
     },
-    [input, isStreaming, messages, userMessageCount, successfulExchangeCount, leadCaptured, showLeadForm, leadDismissed, streamChat]
+    [input, isStreaming, messages, userMessageCount, successfulExchangeCount, leadCaptured, showLeadForm, leadDismissed, streamChat, conciergeContext]
   );
 
   // Quick reply chips — preserves full conversation context

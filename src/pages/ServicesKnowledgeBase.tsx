@@ -100,19 +100,8 @@ const ServicesKnowledgeBase = () => {
       item: item.name,
       price: item.price,
     });
-    const descriptionLine = item.description
-      ? `Here's the official description so you can read it back to me verbatim:\n"${item.description}"`
-      : `(No stored description — share what you know about this service.)`;
-    const prompt = [
-      `I'm reading the Services Knowledge Base and have a question about **${item.name}** (${service.title} › ${group}) — listed at ${item.price}.`,
-      "",
-      descriptionLine,
-      "",
-      "Please:",
-      "1. Confirm the description back to me in 1–2 sentences.",
-      "2. Ask 2–3 quick follow-ups to tailor your guidance.",
-      "3. Then suggest the best next step to book.",
-    ].join("\n");
+    // Short, natural prompt — concierge context carries the structured details.
+    const prompt = `Tell me about ${item.name} (${item.price}).`;
     try {
       sessionStorage.setItem("hush_chat_pending_prompt", prompt);
     } catch {

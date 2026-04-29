@@ -15,7 +15,8 @@ export interface StreamChatCallbacks {
   onInlineBookingDetected: () => void;
   onMissingThread: () => void;
   conciergeContext: ConciergeContext | null;
-  getQuickReplies: (ctx: ConciergeContext | null, msg: string) => string[];
+  getQuickReplies: (ctx: ConciergeContext | null, msg: string, qualifyingStage: number) => string[];
+  qualifyingStage: number;
 }
 
 /**
@@ -165,7 +166,7 @@ export function useChatStreaming(cbs: StreamChatCallbacks) {
             m.id === assistantId ? { ...m, content: assistantContent, actions, showInlineBooking } : m
           )
         );
-        cbs.setQuickReplies(cbs.getQuickReplies(cbs.conciergeContext, assistantContent));
+        cbs.setQuickReplies(cbs.getQuickReplies(cbs.conciergeContext, assistantContent, cbs.qualifyingStage));
 
         if (showInlineBooking) cbs.onInlineBookingDetected();
         cbs.onExchangeComplete();
