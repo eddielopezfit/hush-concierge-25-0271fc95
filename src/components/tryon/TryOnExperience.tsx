@@ -147,6 +147,15 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
   // resolves and the style step mounts. Pure perception polish — signals to
   // guests "we're tailoring your refinements" before chips become tappable.
   const [chipsReady, setChipsReady] = useState(false);
+  // Refs mirror the latest chip state so stable callbacks (e.g. handleFile,
+  // wrapped in useCallback with [] deps) can read current values without
+  // capturing stale closures.
+  const faceShapeRef = useRef<FaceShape | null>(null);
+  const undertoneRef = useRef<Undertone | null>(null);
+  const categoryRef = useRef<TryOnStyleCategory | null>(null);
+  useEffect(() => { faceShapeRef.current = faceShape; }, [faceShape]);
+  useEffect(() => { undertoneRef.current = undertone; }, [undertone]);
+  useEffect(() => { categoryRef.current = category; }, [category]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const cameraOpenedAtRef = useRef<number | null>(null);
@@ -245,12 +254,24 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
       // dataUrl so re-selecting the same image doesn't wipe deliberate picks.
       setPhotoDataUrl((prev) => {
         if (prev !== dataUrl) {
+          // Capture how many chips were active *before* clearing so we only
+          // surface the reset toast when the guest actually loses prior
+          // selections — silent reset on first upload (nothing to confirm).
+          const hadActiveChips =
+            faceShapeRef.current !== null ||
+            undertoneRef.current !== null ||
+            categoryRef.current !== null;
           setFaceShape(null);
           setUndertone(null);
           setCategory(null);
           writePersistedFilter(FILTER_KEYS.faceShape, null);
           writePersistedFilter(FILTER_KEYS.undertone, null);
           writePersistedFilter(FILTER_KEYS.category, null);
+          if (hadActiveChips) {
+            toast("Refinements reset for your new photo", {
+              description: "Tap “Refine for my face & vibe” to retune.",
+            });
+          }
           // Also clear any in-flight style/color picks tied to the old face.
           setStyleId(null);
           setColorId(null);
