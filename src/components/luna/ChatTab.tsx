@@ -782,17 +782,38 @@ export const ChatTab = () => {
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="flex flex-wrap gap-1.5 mt-1 pb-1"
+            className="flex flex-col gap-1.5 mt-1 pb-1"
           >
-            {quickReplies.map((reply) => (
-              <button
-                key={reply}
-                onClick={() => handleQuickReply(reply)}
-                className="px-3 py-2 rounded-full border border-primary/25 text-primary text-xs font-body font-medium hover:bg-primary/10 active:scale-95 transition-all"
-              >
-                {reply}
-              </button>
-            ))}
+            {/* Stage indicator — only shown for single-service qualifying flow */}
+            {conciergeContext?.categories?.length === 1 && (
+              <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-body text-muted-foreground/70">
+                <span className="inline-flex items-center gap-1">
+                  {[0, 1, 2].map((i) => (
+                    <span
+                      key={i}
+                      className={`h-1 w-3 rounded-full transition-colors ${
+                        i <= qualifyingStage ? "bg-primary/70" : "bg-primary/15"
+                      }`}
+                    />
+                  ))}
+                </span>
+                <span>
+                  Step {qualifyingStage + 1} of 3 ·{" "}
+                  {qualifyingStage === 0 ? "The look" : qualifyingStage === 1 ? "Timing" : "Booking"}
+                </span>
+              </div>
+            )}
+            <div className="flex flex-wrap gap-1.5">
+              {quickReplies.map((reply) => (
+                <button
+                  key={reply}
+                  onClick={() => handleQuickReply(reply)}
+                  className="px-3 py-2 rounded-full border border-primary/25 text-primary text-xs font-body font-medium hover:bg-primary/10 active:scale-95 transition-all"
+                >
+                  {reply}
+                </button>
+              ))}
+            </div>
           </m.div>
         )}
 
