@@ -205,6 +205,43 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [photoDataUrl, sessionId]);
 
+  // Camera permission fallback: when the user taps "Take a selfie" on mobile,
+  // we record a timestamp. If they return to the page without selecting a
+  // photo (likely because they denied the OS camera prompt or backed out),
+  // we surface a friendly help panel pointing them to "Upload a photo" and
+  // explaining how to grant camera permission in their browser.
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const onVisibility = () => {
+      if (document.visibilityState !== "visible") return;
+      const openedAt = cameraOpenedAtRef.current;
+      if (!openedAt) return;
+      // Only treat as "denied/cancelled" if the user came back fast AND no
+      // photo was set. >300ms guards against the flicker of opening the
+      // camera UI; isReadingFile=true means a photo is being processed.
+      const elapsed = Date.now() - openedAt;
+      cameraOpenedAtRef.current = null;
+      if (elapsed > 300 && !photoDataUrl && !isReadingFile) {
+        setCameraHelpOpen(true);
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, [photoDataUrl, isReadingFile]);
+
+  const openCamera = () => {
+    if (isReadingFile) return;
+    setCameraHelpOpen(false);
+    cameraOpenedAtRef.current = Date.now();
+    cameraInputRef.current?.click();
+  };
+
+  const openUpload = () => {
+    if (isReadingFile) return;
+    setCameraHelpOpen(false);
+    fileInputRef.current?.click();
+  };
+
   const handleStylePick = (id: string) => {
     setStyleId(id);
     setColorId(null);
