@@ -1122,19 +1122,21 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
 
               {/* Inline color iteration — moved here so guests get the wow first, then refine */}
               <div className="mx-auto mt-6 max-w-2xl">
-                <p className="font-body text-[11px] uppercase tracking-wider text-cream/55 mb-2 text-center">Try a color</p>
-                <div className="flex flex-wrap justify-center gap-2">
+                <p className="font-body text-[11px] uppercase tracking-wider text-cream/55 mb-1 text-center">Try a color · technique</p>
+                <p className="font-body text-[11px] text-cream/45 mb-3 text-center">Each option matches a real Hush service.</p>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                   <button
                     disabled={isGenerating}
                     onClick={() => handleColorPick(null)}
                     className={cn(
-                      "rounded-full border px-3 py-1.5 font-body text-xs transition-colors disabled:opacity-50",
+                      "flex flex-col items-start gap-1 rounded-lg border px-3 py-2 text-left font-body transition-colors disabled:opacity-50",
                       colorId === null
                         ? "border-gold bg-gold/15 text-gold"
                         : "border-border bg-charcoal/40 text-cream/75 hover:border-gold/60"
                     )}
                   >
-                    Cut only
+                    <span className="text-xs font-medium">Cut only</span>
+                    <span className="text-[10px] leading-snug text-cream/50">Keep your current color</span>
                   </button>
                   {colors.map((c) => (
                     <button
@@ -1142,15 +1144,18 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
                       disabled={isGenerating}
                       onClick={() => handleColorPick(c.id)}
                       className={cn(
-                        "inline-flex items-center gap-2 rounded-full border px-2.5 py-1.5 font-body text-xs transition-colors disabled:opacity-50",
+                        "flex flex-col gap-1 rounded-lg border px-3 py-2 text-left font-body transition-colors disabled:opacity-50",
                         colorId === c.id
                           ? "border-gold bg-gold/15 text-gold"
                           : "border-border bg-charcoal/40 text-cream/75 hover:border-gold/60"
                       )}
                     >
-                      <span className="h-4 w-4 rounded-full border border-cream/15" style={{ backgroundColor: c.swatch }} />
-                      {c.name}
-                      <MatchBadge tier={colorMatchTier(c.id, undertone)} />
+                      <span className="flex items-center gap-2">
+                        <span className="h-4 w-4 shrink-0 rounded-full border border-cream/15" style={{ backgroundColor: c.swatch }} />
+                        <span className="text-xs font-medium leading-tight">{c.name}</span>
+                        <MatchBadge tier={colorMatchTier(c.id, undertone)} />
+                      </span>
+                      <span className="text-[10px] leading-snug text-cream/50">{c.blurb}</span>
                     </button>
                   ))}
                 </div>
