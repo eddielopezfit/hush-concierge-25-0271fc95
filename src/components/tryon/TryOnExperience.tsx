@@ -1237,6 +1237,7 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
                         <span className="text-xs font-medium leading-tight">{c.name}</span>
                         <MatchBadge tier={colorMatchTier(c.id, undertone)} />
                       </span>
+                      <TechniqueBadge colorId={c.id} />
                       <span className="text-[10px] leading-snug text-cream/50">{c.blurb}</span>
                     </button>
                   ))}
