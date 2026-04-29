@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useLuna } from "@/contexts/LunaContext";
 import { useStartLuna } from "@/hooks/useStartLuna";
 import { useSeamlessVideoPlayback } from "@/hooks/useSeamlessVideoPlayback";
-import { TryOnEntryButton } from "@/components/tryon/TryOnEntryButton";
+import { getConciergeContext } from "@/lib/conciergeStore";
 
 /**
  * Hero — pure CSS animations (no framer-motion) so the eager bundle stays small.
@@ -14,6 +14,10 @@ export const HeroSection = () => {
   const startLuna = useStartLuna();
   const sectionRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  // Only show "Resume my plan" if a saved concierge context actually exists.
+  // First-time visitors should see a clean 2-CTA hero, not a dead-end link.
+  const [hasPlan, setHasPlan] = useState(false);
+  useEffect(() => { setHasPlan(!!getConciergeContext()); }, []);
   // Pick ONE viewport-appropriate video so we never download both masters
   // and compete with first paint. SSR-safe default = desktop.
   const [isMobile, setIsMobile] = useState<boolean>(() =>
@@ -110,12 +114,6 @@ export const HeroSection = () => {
             Find Your Experience
           </button>
 
-          <TryOnEntryButton
-            variant="ghost"
-            label="Try Your New Look"
-            source="Hero"
-          />
-
           <button
             onClick={openChatWidget}
             className="group inline-flex items-center gap-2 text-cream/60 hover:text-gold font-body text-sm transition-colors duration-200"
@@ -126,15 +124,17 @@ export const HeroSection = () => {
             </span>
           </button>
 
-          <button
-            onClick={startLuna}
-            className="group inline-flex items-center gap-2 text-cream/60 hover:text-gold font-body text-sm transition-colors duration-200"
-          >
-            <MessageSquare className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100 transition-opacity" />
-            <span className="border-b border-transparent group-hover:border-gold/40 transition-colors">
-              Resume my plan
-            </span>
-          </button>
+          {hasPlan && (
+            <button
+              onClick={startLuna}
+              className="group inline-flex items-center gap-2 text-cream/60 hover:text-gold font-body text-sm transition-colors duration-200"
+            >
+              <MessageSquare className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100 transition-opacity" />
+              <span className="border-b border-transparent group-hover:border-gold/40 transition-colors">
+                Resume my plan
+              </span>
+            </button>
+          )}
         </div>
 
         {/* Dynamic hours badge */}
