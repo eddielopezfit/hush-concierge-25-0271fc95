@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useSeamlessVideoPlayback } from "@/hooks/useSeamlessVideoPlayback";
 
 const DESKTOP_POSTER = "https://ltnjxrpicsgujxvfluwz.supabase.co/storage/v1/object/public/site-assets/Hush_Step_Inside_Poster_v3.webp";
-const DESKTOP_SRC = "/videos/hush-interior.mp4";
+const DESKTOP_SRC = "/videos/Hush_Step_Inside_Desktop_v2.mp4";
 const MOBILE_SRC = "/videos/Hush_Step_Inside_Mobile.mp4";
 
 /**
