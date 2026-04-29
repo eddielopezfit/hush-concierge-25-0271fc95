@@ -1206,7 +1206,7 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
               <div className="mx-auto mt-6 max-w-2xl">
                 <p className="font-body text-[11px] uppercase tracking-wider text-cream/55 mb-1 text-center">Try a color · technique</p>
                 <p className="font-body text-[11px] text-cream/45 mb-3 text-center">Each option matches a real Hush service.</p>
-                <div className="grid grid-cols-1 gap-2 xs:grid-cols-2 sm:grid-cols-3">
+                <div className="grid grid-cols-1 gap-2 [@media(min-width:400px)]:grid-cols-2 sm:grid-cols-3">
                   <button
                     disabled={isGenerating}
                     onClick={() => handleColorPick(null)}
