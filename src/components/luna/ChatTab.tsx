@@ -915,6 +915,24 @@ export const ChatTab = () => {
 
         <div ref={messagesEndRef} />
       </div>
+        {/* Floating Undo button — mobile-friendly back affordance (also keyboard-reachable) */}
+        <AnimatePresence>
+          {canUndo && (
+            <m.button
+              initial={{ opacity: 0, x: -8, scale: 0.9 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: -8, scale: 0.9 }}
+              transition={{ duration: 0.18 }}
+              onClick={triggerUndo}
+              className="absolute bottom-3 left-3 z-10 flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-card/95 backdrop-blur border border-primary/30 text-primary shadow-md text-[11px] font-body font-medium hover:bg-primary/10 active:scale-95 transition-colors"
+              aria-label="Undo last answer"
+              title="Undo last answer (or swipe left)"
+            >
+              <Undo2 className="w-3.5 h-3.5" />
+              <span>Undo</span>
+            </m.button>
+          )}
+        </AnimatePresence>
         <AnimatePresence>
           {showScrollToBottom && !isStreaming && (
             <m.button
