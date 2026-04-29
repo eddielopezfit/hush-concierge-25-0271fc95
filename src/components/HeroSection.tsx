@@ -1,4 +1,4 @@
-import { ArrowDown, Sparkles, MessageSquare, Wand2 } from "lucide-react";
+import { ArrowDown, Sparkles, MessageSquare } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useLuna } from "@/contexts/LunaContext";
 import { useStartLuna } from "@/hooks/useStartLuna";
