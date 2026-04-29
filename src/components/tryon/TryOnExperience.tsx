@@ -235,7 +235,26 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
     setIsReadingFile(true);
     try {
       const dataUrl = await fileToDataUrl(file);
-      setPhotoDataUrl(dataUrl);
+      // A fresh photo means a fresh face/vibe context. Clear any previously
+      // persisted refine chips so the guest starts from defaults — keeps the
+      // recommendations honest to the new selfie. We compare to the prior
+      // dataUrl so re-selecting the same image doesn't wipe deliberate picks.
+      setPhotoDataUrl((prev) => {
+        if (prev !== dataUrl) {
+          setFaceShape(null);
+          setUndertone(null);
+          setCategory(null);
+          writePersistedFilter(FILTER_KEYS.faceShape, null);
+          writePersistedFilter(FILTER_KEYS.undertone, null);
+          writePersistedFilter(FILTER_KEYS.category, null);
+          // Also clear any in-flight style/color picks tied to the old face.
+          setStyleId(null);
+          setColorId(null);
+          setRenderDataUrl(null);
+          setRenderSignedUrl(null);
+        }
+        return dataUrl;
+      });
       setStep("style");
       trackFunnelEvent("hairstyle_preview", "upload_success", {
         metadata: { file_type: file.type, size_kb: Math.round(file.size / 1024) },
