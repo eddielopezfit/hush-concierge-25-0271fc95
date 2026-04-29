@@ -502,7 +502,11 @@ export const ChatTab = () => {
       // Advance the qualifying-flow stage on every user reply when in
       // single-category mode, so chips progress: look → timing → booking.
       if (conciergeContext?.categories?.length === 1) {
-        setQualifyingStage((s) => Math.min(s + 1, 2));
+        setQualifyingStage((s) => {
+          const next = Math.min(s + 1, 2);
+          saveQualifyingStage(conciergeContext, next);
+          return next;
+        });
       }
 
       // Force-scroll to bottom on send so the user follows their own message
@@ -541,6 +545,7 @@ export const ChatTab = () => {
           const lastAssistant = [...next].reverse().find((m) => m.role === "assistant");
           const newStage = Math.max(0, qualifyingStage - 1);
           setQualifyingStage(newStage);
+          saveQualifyingStage(conciergeContext, newStage);
           setQuickReplies(getQuickReplies(conciergeContext, lastAssistant?.content || "", newStage));
           setUserMessageCount((c) => Math.max(0, c - 1));
           return next;
