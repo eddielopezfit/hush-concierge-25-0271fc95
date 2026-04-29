@@ -631,16 +631,34 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
       ? `[My features → ${headerParts.join(" · ")}]`
       : `[My features → not specified — happy for the stylist to assess in person]`;
 
+    // Derive the underlying Hush color technique from the chosen color ID so
+    // we can ask Luna to confirm balayage vs foilayage (vs single-process,
+    // money-piece, vivid accent, etc.) for this specific look.
+    const techniqueFromColorId = (id: string | null): string | null => {
+      if (!id) return null;
+      if (id.startsWith("balayage_")) return "Balayage (hand-painted, lived-in)";
+      if (id.startsWith("foilayage_")) return "Foilayage (foil-bright highlights)";
+      if (id === "money_piece") return "Money-Piece face-frame highlights";
+      if (id === "vivid_accent_rose") return "Vivid fashion-color accent";
+      if (id === "lived_in_brunette") return "Lived-In Brunette (gloss + root shadow)";
+      if (id === "soft_black_gloss") return "Gloss / single-process";
+      return null;
+    };
+    const technique = techniqueFromColorId(colorId);
+
     const lines = [
       contextHeader,
       `I just tried on a look in the virtual try-on and want your take.`,
       styleMeta ? `• Style: ${styleMeta.name}${styleMeta.blurb ? ` — ${styleMeta.blurb}` : ""}` : null,
       colorMeta ? `• Color: ${colorMeta.name}${colorMeta.blurb ? ` — ${colorMeta.blurb}` : ""}` : `• Color: keeping my current color`,
+      technique ? `• Technique I picked: ${technique}` : null,
       faceLabel ? `• Face shape: ${faceLabel}` : null,
       undertoneLabel ? `• Skin undertone: ${undertoneLabel}` : null,
       renderSignedUrl ? `• Preview: ${renderSignedUrl}` : null,
       ``,
-      `Please factor my face shape and undertone into your guidance, and tell me which stylist would be a great fit and what to expect at my appointment.`,
+      technique
+        ? `Can you confirm whether ${technique} is the right technique for this look on my hair, or if a different approach (e.g., ${technique.startsWith("Balayage") ? "foilayage for brighter, more uniform lift" : technique.startsWith("Foilayage") ? "balayage for a softer, more lived-in melt" : "balayage, foilayage, or a gloss"}) would actually deliver this result better? Then please factor my face shape and undertone into your guidance and tell me what to expect at my appointment.`
+        : `Please factor my face shape and undertone into your guidance, and tell me what to expect at my appointment.`,
     ].filter(Boolean) as string[];
 
     try {
