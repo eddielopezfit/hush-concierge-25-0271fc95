@@ -243,6 +243,8 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
   const openCamera = () => {
     if (isReadingFile) return;
     setCameraHelpOpen(false);
+    setError(null);
+    setErrorKind(null);
     cameraOpenedAtRef.current = Date.now();
     cameraInputRef.current?.click();
   };
@@ -250,6 +252,8 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
   const openUpload = () => {
     if (isReadingFile) return;
     setCameraHelpOpen(false);
+    setError(null);
+    setErrorKind(null);
     fileInputRef.current?.click();
   };
 
