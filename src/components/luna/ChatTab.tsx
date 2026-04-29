@@ -94,6 +94,20 @@ export const ChatTab = () => {
   // Proactive Try-On surfacing — opens the hairstyle preview modal directly
   // from chat for hair guests. Connects Luna ↔ Try-On (the audit's #1 fix).
   const [tryOnOpen, setTryOnOpen] = useState(false);
+  // Stash the exact chip element that opened the modal so focus returns
+  // there on close — keyboard / screen-reader users land back where they
+  // were instead of at the top of Luna.
+  const tryOnTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const openTryOn = useCallback((trigger: HTMLButtonElement | null) => {
+    tryOnTriggerRef.current = trigger;
+    setTryOnOpen(true);
+  }, []);
+  const closeTryOn = useCallback(() => {
+    setTryOnOpen(false);
+    requestAnimationFrame(() => {
+      tryOnTriggerRef.current?.focus({ preventScroll: true });
+    });
+  }, []);
   // Tracks the qualifying-flow stage for service-tap conversations.
   // 0 = look chips, 1 = timing chips, 2+ = generic booking chips.
   // Advances every time the user sends a message in single-category mode.
@@ -859,7 +873,7 @@ export const ChatTab = () => {
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05 }}
-                onClick={() => setTryOnOpen(true)}
+                onClick={(e) => openTryOn(e.currentTarget as HTMLButtonElement)}
                 className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full border border-gold/40 bg-gold/10 text-gold text-xs font-body font-medium hover:bg-gold/20 active:scale-95 transition-all"
               >
                 <Wand2 className="w-3 h-3" />
@@ -914,7 +928,7 @@ export const ChatTab = () => {
               {conciergeContext?.categories?.includes("hair") && (
                 <button
                   key="tryon-chip-quickreplies"
-                  onClick={() => setTryOnOpen(true)}
+                  onClick={(e) => openTryOn(e.currentTarget)}
                   className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full border border-gold/40 bg-gold/10 text-gold text-xs font-body font-medium hover:bg-gold/20 active:scale-95 transition-all"
                 >
                   <Wand2 className="w-3 h-3" />
@@ -1036,7 +1050,7 @@ export const ChatTab = () => {
           while Luna's panel stays mounted is fine. */}
       {tryOnOpen && (
         <Suspense fallback={null}>
-          <TryOnExperience source="Luna Chat" onClose={() => setTryOnOpen(false)} />
+          <TryOnExperience source="Luna Chat" onClose={closeTryOn} />
         </Suspense>
       )}
     </div>
