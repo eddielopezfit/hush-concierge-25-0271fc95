@@ -274,6 +274,36 @@ export type Database = {
         }
         Relationships: []
       }
+      funnel_events: {
+        Row: {
+          created_at: string
+          funnel: string
+          id: string
+          metadata: Json
+          session_id: string
+          source: string | null
+          step: string
+        }
+        Insert: {
+          created_at?: string
+          funnel: string
+          id?: string
+          metadata?: Json
+          session_id: string
+          source?: string | null
+          step: string
+        }
+        Update: {
+          created_at?: string
+          funnel?: string
+          id?: string
+          metadata?: Json
+          session_id?: string
+          source?: string | null
+          step?: string
+        }
+        Relationships: []
+      }
       guest_profiles: {
         Row: {
           created_at: string
