@@ -19,6 +19,7 @@ import {
   getContextPills,
   getContextFingerprint,
   userHasHighBookingIntent,
+  BACK_CHIP,
 } from "./chat/chatActionDetectors";
 import {
   loadPersistedChat,
@@ -512,6 +513,25 @@ export const ChatTab = () => {
   // Quick reply chips — preserves full conversation context
   const handleQuickReply = useCallback(
     (reply: string) => {
+      // "← Go back" — undo the last user turn and step the qualifying stage
+      // back so the previous chip set re-surfaces. Does not call Luna.
+      if (reply === BACK_CHIP) {
+        if (isStreaming) return;
+        setMessages((prev) => {
+          // Remove trailing assistant messages + the last user message so the
+          // prior assistant question becomes the latest message again.
+          const next = [...prev];
+          while (next.length && next[next.length - 1].role === "assistant") next.pop();
+          if (next.length && next[next.length - 1].role === "user") next.pop();
+          const lastAssistant = [...next].reverse().find((m) => m.role === "assistant");
+          const newStage = Math.max(0, qualifyingStage - 1);
+          setQualifyingStage(newStage);
+          setQuickReplies(getQuickReplies(conciergeContext, lastAssistant?.content || "", newStage));
+          setUserMessageCount((c) => Math.max(0, c - 1));
+          return next;
+        });
+        return;
+      }
       if (reply === "Connect me with the team" || reply === "Call the front desk" || reply === "Call (520) 327-6753") {
         const isTouchDevice = "ontouchstart" in window || navigator.maxTouchPoints > 0;
         if (isTouchDevice) {
@@ -534,7 +554,7 @@ export const ChatTab = () => {
       }
       handleSendInternal(reply);
     },
-    [handleSendInternal]
+    [handleSendInternal, isStreaming, qualifyingStage, conciergeContext]
   );
 
   const handleSend = useCallback(

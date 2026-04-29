@@ -22,6 +22,10 @@ const TIMING_CHIPS = ["This week", "Next 2 weeks", "Just exploring", "I'm flexib
 // Stage-3 chips (booking action) — high-intent close
 const BOOKING_ACTION_CHIPS = ["I'm ready to book", "Have someone call me", "Help me decide", "Connect me with the team"];
 
+// Universal "go back one step" chip — surfaced during qualifying stages 1+ so
+// guests can correct their previous answer without restarting the chat.
+export const BACK_CHIP = "← Go back";
+
 // Heuristic: does Luna's last message look like a qualifying question?
 // (i.e. she's trying to learn more before recommending)
 function looksLikeQualifyingTurn(msg: string): boolean {
@@ -58,7 +62,7 @@ function pickQualifyingChips(
 
   // Stage 1: guest already answered the look question — offer timing
   if (qualifyingStage === 1 && looksLikeQualifyingTurn(msg)) {
-    return TIMING_CHIPS;
+    return [BACK_CHIP, ...TIMING_CHIPS];
   }
 
   // Stage 0: Luna's first qualifying question — service-specific look chips
