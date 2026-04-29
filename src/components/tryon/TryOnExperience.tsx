@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { ArrowLeft, Camera, Check, Download, Image as ImageIcon, Loader2, MessageCircle, RotateCcw, Sparkles, Sparkle, Sun, Upload, User, Wand2, X } from "lucide-react";
+import { ArrowLeft, Camera, Check, Download, Heart, Image as ImageIcon, Loader2, MessageCircle, RotateCcw, Sparkles, Sparkle, Sun, Trash2, Upload, User, Wand2, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useLuna } from "@/contexts/LunaContext";
@@ -50,6 +50,10 @@ interface SavedLook {
   styleId: string;
   colorId: string | null;
   renderDataUrl: string;
+  /** Marked as a favorite by the guest (heart icon). */
+  favorite?: boolean;
+  /** Timestamp of when the look was generated, used for ordering. */
+  createdAt?: number;
 }
 
 interface TryOnExperienceProps {
@@ -353,6 +357,8 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
           setColorId(null);
           setRenderDataUrl(null);
           setRenderSignedUrl(null);
+          // Wipe the session gallery — looks belong to the previous photo.
+          setSavedLooks([]);
         }
         return dataUrl;
       });
@@ -405,6 +411,25 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
       setRenderSignedUrl(payload.renderSignedUrl);
       setStep("preview");
       reachedPreviewRef.current = true;
+      // Auto-add every successful render to the session gallery (dedupe on
+      // style+color, cap at 12, preserve favorite flag if it already existed).
+      setSavedLooks((prev) => {
+        const key = `${chosenStyleId}|${chosenColorId ?? ""}`;
+        const existingIdx = prev.findIndex(
+          (l) => `${l.styleId}|${l.colorId ?? ""}` === key,
+        );
+        const wasFavorite = existingIdx >= 0 ? !!prev[existingIdx].favorite : false;
+        const next: SavedLook = {
+          id: existingIdx >= 0 ? prev[existingIdx].id : crypto.randomUUID(),
+          styleId: chosenStyleId,
+          colorId: chosenColorId,
+          renderDataUrl: payload.renderDataUrl,
+          favorite: wasFavorite,
+          createdAt: Date.now(),
+        };
+        const without = prev.filter((_, i) => i !== existingIdx);
+        return [next, ...without].slice(0, 12);
+      });
       trackFunnelEvent("hairstyle_preview", "preview_shown", {
         metadata: { style_id: chosenStyleId, color_id: chosenColorId },
       });
@@ -486,18 +511,35 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
 
   const saveLook = () => {
     if (!styleId || !renderDataUrl) return;
-    const exists = savedLooks.some((l) => l.styleId === styleId && l.colorId === colorId);
-    if (exists) {
-      toast.info("Already in your saved looks");
-      return;
+    // Toggle favorite on the matching gallery entry. Every render is already
+    // captured into savedLooks automatically — this just marks/unmarks it.
+    let nowFavorite = false;
+    setSavedLooks((prev) =>
+      prev.map((l) => {
+        if (l.styleId === styleId && l.colorId === colorId) {
+          nowFavorite = !l.favorite;
+          return { ...l, favorite: nowFavorite };
+        }
+        return l;
+      }),
+    );
+    if (nowFavorite) {
+      trackFunnelEvent("hairstyle_preview", "saved_look", {
+        metadata: { style_id: styleId, color_id: colorId },
+      });
+      toast.success("Marked as favorite");
+    } else {
+      toast("Removed from favorites");
     }
-    setSavedLooks((prev) => [
-      { id: crypto.randomUUID(), styleId, colorId, renderDataUrl },
-      ...prev,
-    ].slice(0, 4));
-    trackFunnelEvent("hairstyle_preview", "saved_look", { metadata: { style_id: styleId, color_id: colorId } });
-    toast.success("Look saved");
   };
+
+  const removeLookFromGallery = (lookId: string) => {
+    setSavedLooks((prev) => prev.filter((l) => l.id !== lookId));
+  };
+
+  const currentLookIsFavorite = savedLooks.some(
+    (l) => l.styleId === styleId && l.colorId === colorId && l.favorite,
+  );
 
   const downloadRender = () => {
     if (!renderDataUrl) return;
@@ -1168,8 +1210,22 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
               </div>
 
               <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4 max-w-2xl mx-auto">
-                <button onClick={saveLook} className="rounded-lg border border-gold/40 bg-gold/10 px-3 py-2.5 font-body text-sm text-gold hover:bg-gold/20">
-                  <Check className="mr-1.5 inline h-4 w-4" /> Save look
+                <button
+                  onClick={saveLook}
+                  className={cn(
+                    "rounded-lg border px-3 py-2.5 font-body text-sm transition-colors",
+                    currentLookIsFavorite
+                      ? "border-gold bg-gold/20 text-gold"
+                      : "border-gold/40 bg-gold/10 text-gold hover:bg-gold/20",
+                  )}
+                >
+                  <Heart
+                    className={cn(
+                      "mr-1.5 inline h-4 w-4",
+                      currentLookIsFavorite && "fill-current",
+                    )}
+                  />{" "}
+                  {currentLookIsFavorite ? "Favorited" : "Favorite"}
                 </button>
                 <button onClick={downloadRender} className="rounded-lg border border-border bg-charcoal/40 px-3 py-2.5 font-body text-sm text-cream hover:border-gold/60">
                   <Download className="mr-1.5 inline h-4 w-4" /> Download
@@ -1196,25 +1252,74 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
 
               {savedLooks.length > 0 && (
                 <div className="mt-8">
-                  <p className="font-body text-xs uppercase tracking-wider text-cream/45 mb-3 text-center">Your saved looks</p>
-                  <div className="flex flex-wrap justify-center gap-3">
-                    {savedLooks.map((l) => (
-                      <button
-                        key={l.id}
-                        onClick={() => {
-                          setStyleId(l.styleId);
-                          setColorId(l.colorId);
-                          setRenderDataUrl(l.renderDataUrl);
-                        }}
-                        className="group flex flex-col items-center gap-1"
-                        title={`${getStyleMeta(l.styleId)?.name}${l.colorId ? ` · ${getColorMeta(l.colorId)?.name}` : ""}`}
-                      >
-                        <img src={l.renderDataUrl} alt="" className="h-16 w-16 rounded-lg border border-border object-cover transition-all group-hover:border-gold" />
-                        <span className="font-body text-[10px] text-cream/55 max-w-[64px] truncate">
-                          {getStyleMeta(l.styleId)?.name}
-                        </span>
-                      </button>
-                    ))}
+                  <div className="mb-3 flex items-center justify-between gap-3 max-w-2xl mx-auto">
+                    <div>
+                      <p className="font-body text-xs uppercase tracking-wider text-cream/55">Your session gallery</p>
+                      <p className="font-body text-[11px] text-cream/40">
+                        Tap any look to revisit it · {savedLooks.length}/12 saved this session
+                      </p>
+                    </div>
+                    <span className="font-body text-[10px] text-cream/40 hidden sm:inline">
+                      Cleared when you upload a new photo
+                    </span>
+                  </div>
+                  <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap sm:justify-center">
+                    {savedLooks.map((l) => {
+                      const isActive =
+                        l.styleId === styleId && l.colorId === colorId;
+                      const styleMeta = getStyleMeta(l.styleId);
+                      const colorMeta = l.colorId ? getColorMeta(l.colorId) : null;
+                      const label = `${styleMeta?.name ?? "Look"}${colorMeta ? ` · ${colorMeta.name}` : ""}`;
+                      return (
+                        <div
+                          key={l.id}
+                          className="group relative flex shrink-0 flex-col items-center gap-1"
+                        >
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setStyleId(l.styleId);
+                              setColorId(l.colorId);
+                              setRenderDataUrl(l.renderDataUrl);
+                            }}
+                            className="relative block"
+                            title={label}
+                            aria-label={`Revisit ${label}`}
+                          >
+                            <img
+                              src={l.renderDataUrl}
+                              alt={label}
+                              className={cn(
+                                "h-20 w-20 rounded-lg border-2 object-cover transition-all",
+                                isActive
+                                  ? "border-gold ring-2 ring-gold/40"
+                                  : "border-border group-hover:border-gold/60",
+                              )}
+                            />
+                            {l.favorite && (
+                              <span className="absolute -top-1 -right-1 rounded-full bg-charcoal/90 p-1 ring-1 ring-gold/40">
+                                <Heart className="h-3 w-3 fill-gold text-gold" />
+                              </span>
+                            )}
+                          </button>
+                          <span className="font-body text-[10px] text-cream/55 max-w-[80px] truncate text-center">
+                            {styleMeta?.name}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeLookFromGallery(l.id);
+                            }}
+                            className="absolute -top-1 -left-1 rounded-full bg-charcoal/90 p-1 text-cream/60 ring-1 ring-border opacity-0 transition-opacity hover:text-rose-300 group-hover:opacity-100 focus:opacity-100"
+                            aria-label={`Remove ${label} from gallery`}
+                            title="Remove from gallery"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
