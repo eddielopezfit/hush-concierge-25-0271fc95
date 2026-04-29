@@ -515,7 +515,41 @@ export const ChatTab = () => {
       const msg = text || input.trim();
       if (!msg || isStreaming) return;
 
-      const userMsg: ChatMessage = { id: `user-${Date.now()}`, role: "user", content: msg };
+      // ── Try-On context auto-injection ────────────────────────────────────
+      // If the guest just generated a hairstyle preview and this is their
+      // FIRST message after the modal closed (no prior user turn yet, and
+      // the preview hasn't been "consumed" by an explicit Send-to-Luna
+      // handoff), prefix their message with a structured try-on summary so
+      // Luna can acknowledge the preview by name on her very next reply.
+      // This is the P0 fix from the test-thread audit: the chip flow now
+      // carries the same context as the "Send Look to Luna" button.
+      let outgoing = msg;
+      const tryOn = conciergeContext?.lastTryOn;
+      const hasUserTurnAlready = messages.some((m) => m.role === "user");
+      const shouldInjectTryOn =
+        !!tryOn &&
+        !tryOn.consumed &&
+        !hasUserTurnAlready &&
+        // Don't double-prefix if the chip text itself already has the bracketed header.
+        !msg.startsWith("[My features →") &&
+        !msg.startsWith("[My recent try-on →");
+      if (shouldInjectTryOn && tryOn) {
+        const headerBits = [
+          tryOn.styleName ? `style: ${tryOn.styleName}` : null,
+          tryOn.colorName ? `color: ${tryOn.colorName}` : null,
+          tryOn.technique ? `technique I picked: ${tryOn.technique}` : null,
+          tryOn.faceShape ? `face shape: ${tryOn.faceShape}` : null,
+          tryOn.undertone ? `skin undertone: ${tryOn.undertone}` : null,
+        ].filter(Boolean) as string[];
+        const header = headerBits.length
+          ? `[My recent try-on → ${headerBits.join(" · ")}]`
+          : `[My recent try-on → look details on file]`;
+        outgoing = `${header}\n${msg}`;
+        // Mark consumed immediately so a second chip tap doesn't re-prefix.
+        mergeConcierge({ lastTryOn: { ...tryOn, consumed: true } });
+      }
+
+      const userMsg: ChatMessage = { id: `user-${Date.now()}`, role: "user", content: outgoing };
       const newMessages = [...messages, userMsg];
       setMessages(newMessages);
       setFirstUnreadId(null);
@@ -550,7 +584,7 @@ export const ChatTab = () => {
         setTimeout(() => setShowLeadForm(true), 1500);
       }
     },
-    [input, isStreaming, messages, userMessageCount, successfulExchangeCount, leadCaptured, showLeadForm, leadDismissed, streamChat, conciergeContext]
+    [input, isStreaming, messages, userMessageCount, successfulExchangeCount, leadCaptured, showLeadForm, leadDismissed, streamChat, conciergeContext, mergeConcierge]
   );
 
   // Quick reply chips — preserves full conversation context

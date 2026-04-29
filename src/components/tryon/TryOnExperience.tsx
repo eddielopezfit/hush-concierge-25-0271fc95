@@ -55,6 +55,20 @@ function techniqueFamilyLabel(id: string): string | null {
   return null;
 }
 
+// Long-form technique label used to seed Luna with the exact Hush color lane
+// the guest just previewed. Hoisted so every handoff path (chip flow, "Send
+// Look to Luna", booking) speaks the same vocabulary.
+function techniqueLongLabel(id: string | null): string | null {
+  if (!id) return null;
+  if (id.startsWith("balayage_")) return "Balayage (hand-painted, lived-in)";
+  if (id.startsWith("foilayage_")) return "Foilayage (foil-bright highlights)";
+  if (id === "money_piece") return "Money-Piece face-frame highlights";
+  if (id === "vivid_accent_rose") return "Vivid fashion-color accent";
+  if (id === "lived_in_brunette") return "Lived-In Brunette (gloss + root shadow)";
+  if (id === "soft_black_gloss") return "Gloss / single-process";
+  return null;
+}
+
 function TechniqueBadge({ colorId }: { colorId: string }) {
   const label = techniqueFamilyLabel(colorId);
   if (!label) return null;
@@ -455,6 +469,38 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
       trackFunnelEvent("hairstyle_preview", "preview_shown", {
         metadata: { style_id: chosenStyleId, color_id: chosenColorId },
       });
+
+      // Persist the freshly-previewed look into the concierge context so any
+      // subsequent Luna message (chip OR free-text) can be auto-prefixed
+      // with "[My recent try-on → ...]" — Luna then acknowledges the preview
+      // by name on her very next reply, even if the guest never tapped
+      // "Send Look to Luna" explicitly.
+      try {
+        const styleMeta = chosenStyleId ? getStyleMeta(chosenStyleId) : null;
+        const colorMeta = chosenColorId ? getColorMeta(chosenColorId) : null;
+        const faceLabel = faceShape && faceShape !== "unsure"
+          ? FACE_SHAPES.find((f) => f.id === faceShape)?.label ?? null
+          : null;
+        const undertoneLabel = undertone && undertone !== "unsure"
+          ? UNDERTONES.find((u) => u.id === undertone)?.label ?? null
+          : null;
+        mergeConcierge({
+          lastTryOn: {
+            styleId: chosenStyleId,
+            styleName: styleMeta?.name ?? null,
+            colorId: chosenColorId,
+            colorName: colorMeta?.name ?? null,
+            technique: techniqueLongLabel(chosenColorId),
+            faceShape: faceLabel,
+            undertone: undertoneLabel,
+            previewUrl: payload.renderSignedUrl ?? null,
+            capturedAt: Date.now(),
+            consumed: false,
+          },
+        });
+      } catch {
+        /* swallow — never block the preview UX on context plumbing */
+      }
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Something went wrong.";
       setError(msg);
@@ -631,20 +677,36 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
     const colorMeta = colorId ? getColorMeta(colorId) : null;
     const lookLabel = [styleMeta?.name, colorMeta?.name].filter(Boolean).join(" · ");
 
-    mergeConcierge({
-      source: `${source} · Try-On`,
-      categories: ["hair"],
-      primary_category: "hair",
-      category: "hair",
-      goal: lookLabel ? `Try-On: ${lookLabel}` : null,
-    });
-
     const faceLabel = faceShape && faceShape !== "unsure"
       ? FACE_SHAPES.find((f) => f.id === faceShape)?.label
       : null;
     const undertoneLabel = undertone && undertone !== "unsure"
       ? UNDERTONES.find((u) => u.id === undertone)?.label
       : null;
+
+    // Mark the try-on context consumed — the explicit message we're about to
+    // send already carries the full preview details, so the chip-flow
+    // auto-prefix (in ChatTab) must NOT fire on top of it and double-quote
+    // the look.
+    mergeConcierge({
+      source: `${source} · Try-On`,
+      categories: ["hair"],
+      primary_category: "hair",
+      category: "hair",
+      goal: lookLabel ? `Try-On: ${lookLabel}` : null,
+      lastTryOn: {
+        styleId,
+        styleName: styleMeta?.name ?? null,
+        colorId,
+        colorName: colorMeta?.name ?? null,
+        technique: techniqueLongLabel(colorId),
+        faceShape: faceLabel ?? null,
+        undertone: undertoneLabel ?? null,
+        previewUrl: renderSignedUrl ?? null,
+        capturedAt: Date.now(),
+        consumed: true,
+      },
+    });
 
     const headerParts: string[] = [];
     if (faceLabel) headerParts.push(`face shape: ${faceLabel}`);
@@ -656,17 +718,7 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
     // Derive the underlying Hush color technique from the chosen color ID so
     // we can ask Luna to confirm balayage vs foilayage (vs single-process,
     // money-piece, vivid accent, etc.) for this specific look.
-    const techniqueFromColorId = (id: string | null): string | null => {
-      if (!id) return null;
-      if (id.startsWith("balayage_")) return "Balayage (hand-painted, lived-in)";
-      if (id.startsWith("foilayage_")) return "Foilayage (foil-bright highlights)";
-      if (id === "money_piece") return "Money-Piece face-frame highlights";
-      if (id === "vivid_accent_rose") return "Vivid fashion-color accent";
-      if (id === "lived_in_brunette") return "Lived-In Brunette (gloss + root shadow)";
-      if (id === "soft_black_gloss") return "Gloss / single-process";
-      return null;
-    };
-    const technique = techniqueFromColorId(colorId);
+    const technique = techniqueLongLabel(colorId);
 
     const lines = [
       contextHeader,

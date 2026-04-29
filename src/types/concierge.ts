@@ -47,4 +47,20 @@ export interface ConciergeContext {
 
   // Quiz freshness — set when user completes Find My Look this session
   quizCompletedAt?: number | null;
+
+  // Try-On handoff — set when guest generates a hairstyle preview, so any
+  // subsequent Luna message (chip OR free text) can carry the look context
+  // and Luna acknowledges the preview by name on her very next reply.
+  lastTryOn?: {
+    styleId: string | null;
+    styleName: string | null;
+    colorId: string | null;
+    colorName: string | null;
+    technique: string | null;
+    faceShape: string | null;
+    undertone: string | null;
+    previewUrl: string | null;
+    capturedAt: number;
+    consumed?: boolean; // true once the prefix has been injected into a Luna turn
+  } | null;
 }

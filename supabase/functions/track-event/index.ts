@@ -35,6 +35,7 @@ const ALLOWED_STEPS: Record<string, Set<string>> = {
     "preview_failed",   // generation errored
     "color_iterated",   // guest tried a different color on the preview
     "saved_look",       // guest saved a look
+    "downloaded_look",  // guest downloaded the rendered look as PNG
     "converted",        // guest tapped "I love it" / "Book this look"
     "abandoned",        // modal closed before preview
   ]),
