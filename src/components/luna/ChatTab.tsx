@@ -546,7 +546,21 @@ export const ChatTab = () => {
           : `[My recent try-on → look details on file]`;
         outgoing = `${header}\n${msg}`;
         // Mark consumed immediately so a second chip tap doesn't re-prefix.
-        mergeConcierge({ lastTryOn: { ...tryOn, consumed: true } });
+        const consumedTryOn = { ...tryOn, consumed: true };
+        mergeConcierge({ lastTryOn: consumedTryOn });
+        // Refresh the vibe pill so the Cut/Cut+Color demotion (driven by
+        // lastTryOn.colorId in getContextPills) reflects what the guest
+        // actually previewed — not what an earlier intake captured.
+        setContextPills(getContextPills({ ...conciergeContext!, lastTryOn: consumedTryOn }));
+        // Reset the qualifying stepper to "the look" (stage 0). A fresh
+        // try-on means the goal has shifted — the guest is comparing a new
+        // preview, not progressing toward booking. Without this reset, a
+        // second try-on mid-conversation pushes the stepper to "Booking"
+        // before the guest has confirmed they want to book this look.
+        if (conciergeContext?.categories?.length === 1) {
+          setQualifyingStage(0);
+          saveQualifyingStage(conciergeContext, 0);
+        }
       }
 
       const userMsg: ChatMessage = { id: `user-${Date.now()}`, role: "user", content: outgoing };
