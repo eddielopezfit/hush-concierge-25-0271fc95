@@ -210,6 +210,10 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
     resetChipsOnUploadRef.current = resetChipsOnUpload;
     writeResetOnUploadPref(resetChipsOnUpload);
   }, [resetChipsOnUpload]);
+  // Hash of the most recently accepted photo. Drives "truly different photo?"
+  // detection so re-uploading the same shot (even after a re-encode or EXIF
+  // strip) doesn't wipe deliberate chip selections.
+  const photoHashRef = useRef<string | null>(null);
   // Refs mirror the latest chip state so stable callbacks (e.g. handleFile,
   // wrapped in useCallback with [] deps) can read current values without
   // capturing stale closures.
