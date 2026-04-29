@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Send, Loader2, Phone, Calendar, ChevronRight, RotateCcw, ArrowDown, X, MessageSquare, Link2 } from "lucide-react";
+import { Send, Loader2, Phone, Calendar, ChevronRight, RotateCcw, ArrowDown, X, MessageSquare, Link2, Undo2 } from "lucide-react";
 import { m, AnimatePresence } from "framer-motion";
 import { saveLead } from "@/lib/saveSession";
 import { getConversationId, startSession, clearConversation } from "@/lib/sessionManager";
@@ -659,6 +659,55 @@ export const ChatTab = () => {
 
   const lastAssistantMsg = [...messages].reverse().find((m) => m.role === "assistant");
 
+  // Mobile-friendly back affordances: a floating round Undo button and a
+  // swipe-left gesture on the chat scroll area. Both reuse the BACK_CHIP
+  // handler so behavior stays identical to the chip.
+  const canUndo =
+    !isStreaming &&
+    conciergeContext?.categories?.length === 1 &&
+    qualifyingStage > 0 &&
+    messages.some((m) => m.role === "user");
+
+  const triggerUndo = useCallback(() => {
+    handleQuickReply(BACK_CHIP);
+  }, [handleQuickReply]);
+
+  // Swipe-left to undo on the chat scroll area
+  useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    let startX = 0;
+    let startY = 0;
+    let startT = 0;
+    let active = false;
+    const onStart = (e: TouchEvent) => {
+      if (e.touches.length !== 1) return;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      startT = Date.now();
+      active = true;
+    };
+    const onEnd = (e: TouchEvent) => {
+      if (!active) return;
+      active = false;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - startX;
+      const dy = t.clientY - startY;
+      const dt = Date.now() - startT;
+      // Right-to-left swipe: at least 70px horizontal, mostly horizontal,
+      // and reasonably quick (under 600ms) so we don't conflict with scroll.
+      if (dx < -70 && Math.abs(dy) < 40 && dt < 600 && canUndo) {
+        triggerUndo();
+      }
+    };
+    el.addEventListener("touchstart", onStart, { passive: true });
+    el.addEventListener("touchend", onEnd, { passive: true });
+    return () => {
+      el.removeEventListener("touchstart", onStart);
+      el.removeEventListener("touchend", onEnd);
+    };
+  }, [canUndo, triggerUndo]);
+
   return (
     <div className="flex flex-col h-full">
       {(activeThreadOrigin === "other-tab" || crossTabThreadAvailable) && (
@@ -866,6 +915,24 @@ export const ChatTab = () => {
 
         <div ref={messagesEndRef} />
       </div>
+        {/* Floating Undo button — mobile-friendly back affordance (also keyboard-reachable) */}
+        <AnimatePresence>
+          {canUndo && (
+            <m.button
+              initial={{ opacity: 0, x: -8, scale: 0.9 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: -8, scale: 0.9 }}
+              transition={{ duration: 0.18 }}
+              onClick={triggerUndo}
+              className="absolute bottom-3 left-3 z-10 flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-card/95 backdrop-blur border border-primary/30 text-primary shadow-md text-[11px] font-body font-medium hover:bg-primary/10 active:scale-95 transition-colors"
+              aria-label="Undo last answer"
+              title="Undo last answer (or swipe left)"
+            >
+              <Undo2 className="w-3.5 h-3.5" />
+              <span>Undo</span>
+            </m.button>
+          )}
+        </AnimatePresence>
         <AnimatePresence>
           {showScrollToBottom && !isStreaming && (
             <m.button
