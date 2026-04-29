@@ -23,6 +23,7 @@ import {
 } from "@/data/tryOnStyleData";
 import { CompareSlider } from "./CompareSlider";
 import { cn } from "@/lib/utils";
+import { trackFunnelEvent } from "@/lib/funnelTracker";
 
 function MatchBadge({ tier }: { tier: MatchTier }) {
   if (tier === "none") return null;
@@ -126,6 +127,27 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
     return () => { document.body.style.overflow = prev; };
   }, []);
 
+  // Funnel tracking — fire "started" on mount, and on unmount fire either
+  // "abandoned" (no preview reached) or nothing (preview was shown, which is
+  // already tracked separately). Uses a ref so the latest value is read at
+  // unmount time even though the effect itself only runs once.
+  const reachedPreviewRef = useRef(false);
+  useEffect(() => {
+    trackFunnelEvent("hairstyle_preview", "started", {
+      metadata: { source },
+    });
+    return () => {
+      if (!reachedPreviewRef.current) {
+        trackFunnelEvent("hairstyle_preview", "abandoned", {
+          beacon: true, // survives tab close
+          metadata: { source },
+        });
+      }
+    };
+  // Run exactly once per modal lifetime.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const styles = useMemo(() => {
     const filtered = TRY_ON_STYLES.filter((s) => !category || s.category === category);
     return sortStylesByFace(filtered, faceShape);
@@ -147,17 +169,20 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
       setError(msg);
       setErrorKind("heic");
       toast.error(msg);
+      trackFunnelEvent("hairstyle_preview", "upload_failed", { metadata: { reason: "heic" } });
       return;
     }
 
     if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
       setError("That file type isn't supported. Please upload a JPEG, PNG, or WEBP photo.");
       setErrorKind("format");
+      trackFunnelEvent("hairstyle_preview", "upload_failed", { metadata: { reason: "format", file_type: file.type } });
       return;
     }
     if (file.size > MAX_FILE_BYTES) {
       setError("That photo is larger than 6 MB. Try a smaller version or take a fresh selfie.");
       setErrorKind("too_large");
+      trackFunnelEvent("hairstyle_preview", "upload_failed", { metadata: { reason: "too_large", size_kb: Math.round(file.size / 1024) } });
       return;
     }
 
@@ -166,11 +191,15 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
       const dataUrl = await fileToDataUrl(file);
       setPhotoDataUrl(dataUrl);
       setStep("style");
+      trackFunnelEvent("hairstyle_preview", "upload_success", {
+        metadata: { file_type: file.type, size_kb: Math.round(file.size / 1024) },
+      });
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Couldn't read that photo. Try another.";
       setError(msg);
       setErrorKind("read_failed");
       toast.error(msg);
+      trackFunnelEvent("hairstyle_preview", "upload_failed", { metadata: { reason: "read_failed" } });
     } finally {
       setIsReadingFile(false);
     }
@@ -195,6 +224,9 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
         const msg = fnErr.message || "Could not generate that look.";
         setError(msg);
         toast.error(msg);
+        trackFunnelEvent("hairstyle_preview", "preview_failed", {
+          metadata: { reason: "edge_error", style_id: chosenStyleId, color_id: chosenColorId },
+        });
         return;
       }
       const payload = data as {
@@ -206,10 +238,17 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
       setRenderDataUrl(payload.renderDataUrl);
       setRenderSignedUrl(payload.renderSignedUrl);
       setStep("preview");
+      reachedPreviewRef.current = true;
+      trackFunnelEvent("hairstyle_preview", "preview_shown", {
+        metadata: { style_id: chosenStyleId, color_id: chosenColorId },
+      });
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Something went wrong.";
       setError(msg);
       toast.error(msg);
+      trackFunnelEvent("hairstyle_preview", "preview_failed", {
+        metadata: { reason: "exception", style_id: chosenStyleId, color_id: chosenColorId },
+      });
     } finally {
       setIsGenerating(false);
     }
@@ -260,11 +299,13 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
   const handleStylePick = (id: string) => {
     setStyleId(id);
     setColorId(null);
+    trackFunnelEvent("hairstyle_preview", "style_selected", { metadata: { style_id: id } });
     void generate(id, null);
   };
 
   const handleColorPick = async (id: string | null) => {
     setColorId(id);
+    trackFunnelEvent("hairstyle_preview", "color_iterated", { metadata: { color_id: id } });
     if (styleId) await generate(styleId, id);
   };
 
@@ -279,6 +320,7 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
       { id: crypto.randomUUID(), styleId, colorId, renderDataUrl },
       ...prev,
     ].slice(0, 4));
+    trackFunnelEvent("hairstyle_preview", "saved_look", { metadata: { style_id: styleId, color_id: colorId } });
     toast.success("Look saved");
   };
 
@@ -287,6 +329,10 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
     const styleMeta = getStyleMeta(styleId);
     const colorMeta = colorId ? getColorMeta(colorId) : null;
     const lookLabel = [styleMeta?.name, colorMeta?.name].filter(Boolean).join(" · ");
+    trackFunnelEvent("hairstyle_preview", "converted", {
+      beacon: true,
+      metadata: { style_id: styleId, color_id: colorId },
+    });
     mergeConcierge({
       source: `${source} · Try-On`,
       categories: ["hair"],
