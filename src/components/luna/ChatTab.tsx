@@ -851,6 +851,21 @@ export const ChatTab = () => {
         {/* Smart Chips — shown after greeting only */}
         {messages.length === 1 && !isStreaming && (
           <div className="flex flex-wrap gap-1.5 mt-1">
+            {/* Hair-only proactive Try-On chip — surfaces the hairstyle
+                preview without making the guest hunt for it. */}
+            {conciergeContext?.categories?.includes("hair") && (
+              <m.button
+                key="tryon-chip-greeting"
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.05 }}
+                onClick={() => setTryOnOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full border border-gold/40 bg-gold/10 text-gold text-xs font-body font-medium hover:bg-gold/20 active:scale-95 transition-all"
+              >
+                <Wand2 className="w-3 h-3" />
+                Preview a New Hairstyle
+              </m.button>
+            )}
             {smartChips.map((chip) => (
               <m.button
                 key={chip}
@@ -895,6 +910,17 @@ export const ChatTab = () => {
               </div>
             )}
             <div className="flex flex-wrap gap-1.5">
+              {/* Persistent hair-only Try-On chip alongside quick replies. */}
+              {conciergeContext?.categories?.includes("hair") && (
+                <button
+                  key="tryon-chip-quickreplies"
+                  onClick={() => setTryOnOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full border border-gold/40 bg-gold/10 text-gold text-xs font-body font-medium hover:bg-gold/20 active:scale-95 transition-all"
+                >
+                  <Wand2 className="w-3 h-3" />
+                  Preview a New Hairstyle
+                </button>
+              )}
               {quickReplies.map((reply) => (
                 <button
                   key={reply}
