@@ -537,6 +537,10 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
     setSavedLooks((prev) => prev.filter((l) => l.id !== lookId));
   };
 
+  const currentLookIsFavorite = savedLooks.some(
+    (l) => l.styleId === styleId && l.colorId === colorId && l.favorite,
+  );
+
   const downloadRender = () => {
     if (!renderDataUrl) return;
     try {
