@@ -947,9 +947,11 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
                   {hasFilters && (
                     <button
                       onClick={resetFilters}
-                      className="font-body text-[11px] text-cream/55 underline underline-offset-4 hover:text-gold"
+                      aria-label="Reset face shape, vibe, and undertone filters"
+                      className="inline-flex items-center gap-1.5 rounded-full border border-cream/25 bg-charcoal/40 px-2.5 py-1 font-body text-[11px] text-cream/85 transition-colors hover:border-gold/60 hover:text-gold"
                     >
-                      Clear filters
+                      <RotateCcw className="h-3 w-3" />
+                      Reset refine filters
                     </button>
                   )}
                 </div>
