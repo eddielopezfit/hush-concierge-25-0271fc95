@@ -584,7 +584,7 @@ export const ChatTab = () => {
         setTimeout(() => setShowLeadForm(true), 1500);
       }
     },
-    [input, isStreaming, messages, userMessageCount, successfulExchangeCount, leadCaptured, showLeadForm, leadDismissed, streamChat, conciergeContext]
+    [input, isStreaming, messages, userMessageCount, successfulExchangeCount, leadCaptured, showLeadForm, leadDismissed, streamChat, conciergeContext, mergeConcierge]
   );
 
   // Quick reply chips — preserves full conversation context
