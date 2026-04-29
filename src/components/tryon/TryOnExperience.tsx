@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { ArrowLeft, Camera, Check, Image as ImageIcon, Loader2, MessageCircle, RotateCcw, Sparkles, Sparkle, Sun, Upload, User, Wand2, X } from "lucide-react";
+import { ArrowLeft, Camera, Check, Download, Image as ImageIcon, Loader2, MessageCircle, RotateCcw, Sparkles, Sparkle, Sun, Upload, User, Wand2, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useLuna } from "@/contexts/LunaContext";
@@ -497,6 +497,32 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
     ].slice(0, 4));
     trackFunnelEvent("hairstyle_preview", "saved_look", { metadata: { style_id: styleId, color_id: colorId } });
     toast.success("Look saved");
+  };
+
+  const downloadRender = () => {
+    if (!renderDataUrl) return;
+    try {
+      const styleMeta = styleId ? getStyleMeta(styleId) : null;
+      const colorMeta = colorId ? getColorMeta(colorId) : null;
+      const slug = [styleMeta?.name, colorMeta?.name]
+        .filter(Boolean)
+        .join("-")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "") || "look";
+      const a = document.createElement("a");
+      a.href = renderDataUrl;
+      a.download = `hush-tryon-${slug}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      trackFunnelEvent("hairstyle_preview", "downloaded_look", {
+        metadata: { style_id: styleId, color_id: colorId },
+      });
+      toast.success("Saved to your device");
+    } catch {
+      toast.error("Couldn't download — try long-pressing the image instead");
+    }
   };
 
   const goToBooking = () => {
