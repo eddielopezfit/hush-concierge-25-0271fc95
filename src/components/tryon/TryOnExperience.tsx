@@ -1036,6 +1036,21 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
                         </span>
                       </span>
                     </label>
+                    {/* On-demand reset inside the open panel — mirrors the
+                        compact pill in the header so guests can always wipe
+                        chips without first hunting for a small link. */}
+                    {hasFilters && (
+                      <div className="pt-1">
+                        <button
+                          onClick={resetFilters}
+                          aria-label="Reset face shape, vibe, and undertone filters"
+                          className="inline-flex items-center gap-1.5 rounded-full border border-cream/25 bg-charcoal/40 px-3 py-1.5 font-body text-xs text-cream/85 transition-colors hover:border-gold/60 hover:text-gold"
+                        >
+                          <RotateCcw className="h-3.5 w-3.5" />
+                          Reset refine filters
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
                 </>
