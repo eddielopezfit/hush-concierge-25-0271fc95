@@ -416,9 +416,56 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
         {/* Body */}
         <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-8 sm:py-8">
           {error && (
-            <div className="mb-5 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 font-body text-sm text-destructive">
-              {error}
-            </div>
+            step === "intro" && errorKind ? (
+              <div className="mb-5 rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-left">
+                <p className="font-body text-sm text-destructive mb-1">
+                  {errorKind === "heic" && "We can't read iPhone HEIC photos yet"}
+                  {errorKind === "format" && "That file type isn't supported"}
+                  {errorKind === "too_large" && "That photo is too large"}
+                  {errorKind === "read_failed" && "We couldn't read that photo"}
+                  {errorKind === "generic" && "Something went wrong"}
+                </p>
+                <p className="font-body text-xs text-cream/70 leading-relaxed mb-3">
+                  {errorKind === "heic" &&
+                    "Open Settings → Camera → Formats → Most Compatible on your iPhone, then take a fresh selfie below — or pick a JPEG from your library."}
+                  {errorKind === "format" &&
+                    "We accept JPEG, PNG, or WEBP. Pick a different photo or take a new selfie."}
+                  {errorKind === "too_large" &&
+                    "The file must be under 6 MB. A fresh selfie from your camera is usually well under the limit."}
+                  {errorKind === "read_failed" &&
+                    "The file may be corrupt or partially downloaded. Try a different photo or take a fresh selfie."}
+                  {errorKind === "generic" && error}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={openCamera}
+                    disabled={isReadingFile}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-gold/60 bg-gold/15 px-3 py-1.5 font-body text-xs text-gold hover:bg-gold/25 disabled:opacity-50"
+                  >
+                    <Camera className="h-3.5 w-3.5" />
+                    {device.isMobile ? "Take a fresh selfie" : "Use webcam"}
+                  </button>
+                  <button
+                    onClick={openUpload}
+                    disabled={isReadingFile}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-cream/25 bg-charcoal/40 px-3 py-1.5 font-body text-xs text-cream/85 hover:border-gold/60 hover:text-cream disabled:opacity-50"
+                  >
+                    <Upload className="h-3.5 w-3.5" />
+                    Pick a different photo
+                  </button>
+                  <button
+                    onClick={() => { setError(null); setErrorKind(null); }}
+                    className="ml-auto font-body text-[11px] text-cream/55 underline underline-offset-4 hover:text-gold"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="mb-5 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 font-body text-sm text-destructive">
+                {error}
+              </div>
+            )
           )}
 
           {step === "intro" && (
