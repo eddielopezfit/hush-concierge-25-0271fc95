@@ -169,17 +169,20 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
       setError(msg);
       setErrorKind("heic");
       toast.error(msg);
+      trackFunnelEvent("hairstyle_preview", "upload_failed", { metadata: { reason: "heic" } });
       return;
     }
 
     if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
       setError("That file type isn't supported. Please upload a JPEG, PNG, or WEBP photo.");
       setErrorKind("format");
+      trackFunnelEvent("hairstyle_preview", "upload_failed", { metadata: { reason: "format", file_type: file.type } });
       return;
     }
     if (file.size > MAX_FILE_BYTES) {
       setError("That photo is larger than 6 MB. Try a smaller version or take a fresh selfie.");
       setErrorKind("too_large");
+      trackFunnelEvent("hairstyle_preview", "upload_failed", { metadata: { reason: "too_large", size_kb: Math.round(file.size / 1024) } });
       return;
     }
 
@@ -188,11 +191,15 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
       const dataUrl = await fileToDataUrl(file);
       setPhotoDataUrl(dataUrl);
       setStep("style");
+      trackFunnelEvent("hairstyle_preview", "upload_success", {
+        metadata: { file_type: file.type, size_kb: Math.round(file.size / 1024) },
+      });
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Couldn't read that photo. Try another.";
       setError(msg);
       setErrorKind("read_failed");
       toast.error(msg);
+      trackFunnelEvent("hairstyle_preview", "upload_failed", { metadata: { reason: "read_failed" } });
     } finally {
       setIsReadingFile(false);
     }
