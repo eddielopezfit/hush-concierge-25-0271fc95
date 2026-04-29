@@ -445,6 +445,49 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
   const modal = (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-charcoal/90 backdrop-blur-sm p-0 sm:p-6 animate-fade-in">
       <div className="relative flex h-full w-full max-w-5xl flex-col overflow-hidden bg-card text-cream shadow-2xl sm:h-[92vh] sm:rounded-2xl sm:border sm:border-gold/20">
+        {/* Mobile framing-guide overlay — fades in while the OS camera is
+            active. Sits above modal content but below any toasts. Tapping
+            anywhere dismisses it without affecting the camera flow. */}
+        {cameraActive && device.isMobile && (
+          <div
+            className="pointer-events-auto absolute inset-0 z-[110] flex flex-col items-center justify-center bg-charcoal/80 backdrop-blur-sm animate-fade-in"
+            onClick={() => setCameraActive(false)}
+            role="dialog"
+            aria-label="Selfie framing guide"
+          >
+            {/* Centered oval framing guide */}
+            <div className="relative flex items-center justify-center" aria-hidden="true">
+              <svg
+                viewBox="0 0 220 280"
+                className="h-[60vh] max-h-[420px] w-auto text-gold/80 drop-shadow-[0_0_24px_rgba(201,168,76,0.35)]"
+                fill="none"
+              >
+                {/* Soft outer glow ring */}
+                <ellipse cx="110" cy="140" rx="98" ry="128" stroke="currentColor" strokeOpacity="0.25" strokeWidth="2" strokeDasharray="2 6" />
+                {/* Primary oval */}
+                <ellipse cx="110" cy="140" rx="84" ry="112" stroke="currentColor" strokeWidth="2.5" />
+                {/* Crosshair — eye-line + center axis to encourage centering */}
+                <line x1="110" y1="20" x2="110" y2="60" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.6" />
+                <line x1="110" y1="220" x2="110" y2="260" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.6" />
+                <line x1="20" y1="125" x2="42" y2="125" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.6" />
+                <line x1="178" y1="125" x2="200" y2="125" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.6" />
+              </svg>
+            </div>
+
+            <div className="mt-6 max-w-xs px-6 text-center">
+              <p className="font-display text-lg text-cream mb-1">Frame your face</p>
+              <ul className="font-body text-xs text-cream/75 leading-relaxed space-y-1">
+                <li>Center your face inside the oval</li>
+                <li>Hold your phone about an arm's length away</li>
+                <li>Show your full hairline and shoulders</li>
+              </ul>
+              <p className="mt-4 font-body text-[11px] text-cream/45">
+                Tap anywhere to hide this guide
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <header className="flex items-center justify-between border-b border-border/60 px-4 py-3 sm:px-6">
           <div className="flex items-center gap-3 min-w-0">
