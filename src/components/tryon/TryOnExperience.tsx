@@ -511,17 +511,30 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
 
   const saveLook = () => {
     if (!styleId || !renderDataUrl) return;
-    const exists = savedLooks.some((l) => l.styleId === styleId && l.colorId === colorId);
-    if (exists) {
-      toast.info("Already in your saved looks");
-      return;
+    // Toggle favorite on the matching gallery entry. Every render is already
+    // captured into savedLooks automatically — this just marks/unmarks it.
+    let nowFavorite = false;
+    setSavedLooks((prev) =>
+      prev.map((l) => {
+        if (l.styleId === styleId && l.colorId === colorId) {
+          nowFavorite = !l.favorite;
+          return { ...l, favorite: nowFavorite };
+        }
+        return l;
+      }),
+    );
+    if (nowFavorite) {
+      trackFunnelEvent("hairstyle_preview", "saved_look", {
+        metadata: { style_id: styleId, color_id: colorId },
+      });
+      toast.success("Marked as favorite");
+    } else {
+      toast("Removed from favorites");
     }
-    setSavedLooks((prev) => [
-      { id: crypto.randomUUID(), styleId, colorId, renderDataUrl },
-      ...prev,
-    ].slice(0, 4));
-    trackFunnelEvent("hairstyle_preview", "saved_look", { metadata: { style_id: styleId, color_id: colorId } });
-    toast.success("Look saved");
+  };
+
+  const removeLookFromGallery = (lookId: string) => {
+    setSavedLooks((prev) => prev.filter((l) => l.id !== lookId));
   };
 
   const downloadRender = () => {
