@@ -8,6 +8,7 @@ import {
   isPricingQuery,
   renderCategoryMarkdown,
   renderPricingBlock,
+  resolvePricingScope,
 } from "./pricing-tables.ts";
 
 /**
@@ -179,4 +180,59 @@ Deno.test("renderPricingBlock(all categories) preserves every source row", () =>
       );
     }
   }
+});
+
+// ── resolvePricingScope: runtime safeguard ──────────────────────────────────
+// Critical regression: a generic pricing question ("what will it cost?") with
+// a journey-context like "selected: hair" must scope to Hair only and MUST
+// NOT fall back to all categories.
+Deno.test("resolvePricingScope: explicit category in message wins", () => {
+  const { categories, source } = resolvePricingScope(
+    "what's nail pricing?",
+    "They used the Experience Finder and selected: hair.",
+  );
+  assertEquals(source, "message");
+  assertEquals(categories.map((c) => c.id), ["nails"]);
+});
+
+Deno.test("resolvePricingScope: generic ask + hair journey → hair only", () => {
+  const { categories, source } = resolvePricingScope(
+    "What will it cost?",
+    "They used the Experience Finder and selected: hair. Services they explored: Women's Cut.",
+  );
+  assertEquals(source, "journey");
+  assertEquals(categories.map((c) => c.id), ["hair"]);
+});
+
+Deno.test("resolvePricingScope: generic ask + nails journey → nails only", () => {
+  const { categories, source } = resolvePricingScope(
+    "how much?",
+    "Services they explored: Manicure w/Gel.",
+  );
+  assertEquals(source, "journey");
+  assert(categories.some((c) => c.id === "nails"));
+  assert(!categories.some((c) => c.id === "massage"));
+});
+
+Deno.test("resolvePricingScope: NEVER dumps all categories when journeyContext is present", () => {
+  // Journey context exists but contains no recognizable category keywords.
+  // The safeguard MUST return [] (so caller asks the guest), not ALL.
+  const { categories, source } = resolvePricingScope(
+    "what does it cost?",
+    "User has been browsing for 1 minute(s).",
+  );
+  assertEquals(source, "none");
+  assertEquals(categories.length, 0);
+});
+
+Deno.test("resolvePricingScope: no journeyContext at all → falls back to ALL", () => {
+  const { categories, source } = resolvePricingScope("what does it cost?", "");
+  assertEquals(source, "all");
+  assertEquals(categories.length, PRICING_CATEGORIES.length);
+});
+
+Deno.test("resolvePricingScope: undefined journeyContext → falls back to ALL", () => {
+  const { categories, source } = resolvePricingScope("price?", undefined);
+  assertEquals(source, "all");
+  assertEquals(categories.length, PRICING_CATEGORIES.length);
 });
