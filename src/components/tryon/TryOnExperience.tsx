@@ -597,7 +597,7 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
     setFaceShape(null);
     setUndertone(null);
     setCategory(null);
-    toast.success("Filters cleared");
+    toast.success("Refine filters reset");
   };
 
   // Sync filter selections to sessionStorage so they survive step navigation
