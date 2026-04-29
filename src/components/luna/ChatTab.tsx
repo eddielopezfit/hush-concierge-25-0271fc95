@@ -29,6 +29,10 @@ import {
   setVisitThreadId,
   clearVisitThreadId,
 } from "./chat/useChatPersistence";
+import {
+  loadQualifyingStage,
+  saveQualifyingStage,
+} from "./chat/qualifyingStageStore";
 import { useChatStreaming } from "./chat/useChatStreaming";
 import { LeadCaptureForm } from "./chat/LeadCaptureForm";
 
@@ -282,7 +286,11 @@ export const ChatTab = () => {
       setLeadCaptured(persisted.leadCaptured || false);
       setLeadDismissed(persisted.leadDismissed || false);
       const lastAssistant = [...persisted.messages].reverse().find((m) => m.role === "assistant");
-        setQuickReplies(getQuickReplies(ctx, lastAssistant?.content || "", qualifyingStage));
+        {
+          const restoredStage = loadQualifyingStage(ctx);
+          setQualifyingStage(restoredStage);
+          setQuickReplies(getQuickReplies(ctx, lastAssistant?.content || "", restoredStage));
+        }
     } else if (initialized && previousFingerprint && previousFingerprint !== "none") {
       const transition = buildContextTransition(ctx);
       const transitionMsg: ChatMessage = {
@@ -291,17 +299,24 @@ export const ChatTab = () => {
         content: transition,
       };
       setMessages((prev) => [...prev, transitionMsg]);
-        // Context just changed → restart the qualifying flow at stage 0
-        setQualifyingStage(0);
-        setQuickReplies(getQuickReplies(ctx, transition, 0));
+        // Context changed → restore this service's saved stage if we've seen
+        // it before in this visit; otherwise start fresh at stage 0.
+        {
+          const restoredStage = loadQualifyingStage(ctx);
+          setQualifyingStage(restoredStage);
+          setQuickReplies(getQuickReplies(ctx, transition, restoredStage));
+        }
     } else {
       const greeting = buildContextGreeting(ctx);
       setMessages([{ id: "greeting", role: "assistant", content: greeting }]);
       setSuccessfulExchangeCount(0);
       setLeadCaptured(false);
       setLeadDismissed(false);
-        setQualifyingStage(0);
-        setQuickReplies(getQuickReplies(ctx, greeting, 0));
+        {
+          const restoredStage = loadQualifyingStage(ctx);
+          setQualifyingStage(restoredStage);
+          setQuickReplies(getQuickReplies(ctx, greeting, restoredStage));
+        }
     }
 
     setContextPills(getContextPills(ctx));
