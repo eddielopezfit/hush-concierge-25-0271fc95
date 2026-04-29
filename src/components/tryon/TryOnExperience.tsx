@@ -480,6 +480,19 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
     toast.success("Filters cleared");
   };
 
+  // Sync filter selections to sessionStorage so they survive step navigation
+  // (back/forward), step refreshes from style → preview → style, and even a
+  // brief tab switch — without leaking across browser sessions.
+  useEffect(() => {
+    writePersistedFilter(FILTER_KEYS.faceShape, faceShape);
+  }, [faceShape]);
+  useEffect(() => {
+    writePersistedFilter(FILTER_KEYS.undertone, undertone);
+  }, [undertone]);
+  useEffect(() => {
+    writePersistedFilter(FILTER_KEYS.category, category);
+  }, [category]);
+
   const hasFilters = faceShape !== null || undertone !== null || category !== null;
   const activeFilterCount = (faceShape ? 1 : 0) + (undertone ? 1 : 0) + (category ? 1 : 0);
 
