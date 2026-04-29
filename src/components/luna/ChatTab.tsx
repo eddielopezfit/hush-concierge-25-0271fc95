@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Send, Loader2, Phone, Calendar, ChevronRight, RotateCcw, ArrowDown, X, MessageSquare, Link2 } from "lucide-react";
+import { Send, Loader2, Phone, Calendar, ChevronRight, RotateCcw, ArrowDown, X, MessageSquare, Link2, Undo2 } from "lucide-react";
 import { m, AnimatePresence } from "framer-motion";
 import { saveLead } from "@/lib/saveSession";
 import { getConversationId, startSession, clearConversation } from "@/lib/sessionManager";
