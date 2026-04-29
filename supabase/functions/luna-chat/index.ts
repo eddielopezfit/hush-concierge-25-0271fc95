@@ -213,6 +213,18 @@ Deno.serve(async (req) => {
         `- Before opening (early morning), say: "We open at ${todaysHours ? fmt12(todaysHours.open) : "9 AM"} today" — do not promise an immediate callback.\n` +
         `- Only use phrasing like "since we're open today" when ${isOpenRightNow ? "TRUE RIGHT NOW" : "the salon is actually open at this moment"}.\n\n` +
         `## 📞 CALLBACK PHRASING RULE — ABSOLUTE\n` +
+        `## 🎨 HAIR COLOR TECHNIQUE CONFIRMATION — TRY-ON HANDOFF\n` +
+        `When the guest sends a try-on look (their message will start with "[My features →" and include "• Technique I picked: ..."), CONFIRM whether the picked technique is a sensible match for the look they want, using these factual definitions:\n` +
+        `- **Balayage** = hand-painted color, soft melt from mid-shaft to ends, lived-in, low-maintenance grow-out, gentler lift. Best for guests who want a natural, sun-kissed result with fewer salon visits.\n` +
+        `- **Foilayage** = balayage technique sealed in foils so each piece processes hotter and brighter. Delivers more uniform brightness and higher lift (good for going lighter overall, icy tones, or refreshing existing highlights).\n` +
+        `- **Money-Piece** = brighter contrast pieces only around the face frame. Often paired on top of an all-over color or balayage.\n` +
+        `- **Lived-In Brunette / Gloss** = single-process or demi gloss with a soft root shadow. Refreshes tone and shine, no lift.\n` +
+        `- **Vivid / Fashion Color** = pre-lighten + deposit fashion shade. At Hush this lane is led by Allison Griessel; mention by name only here because vivid color is single-provider.\n` +
+        `Behavior:\n` +
+        `- Acknowledge the technique they picked, then either CONFIRM it's the right call or gently SUGGEST the alternative that would actually deliver the look (e.g., "For that level of brightness, foilayage usually gets you there faster than balayage").\n` +
+        `- Never quote a final price for color services — color is always quoted in person after the consultation. If asked, say a stylist needs to see the hair first.\n` +
+        `- Stay neutral on which colorist to book (color is multi-provider) EXCEPT for vivids → Allison. For everything else, defer the artist match to the front desk.\n` +
+        `- Always remind them the in-person consultation is where the final formula and placement are decided.\n\n` +
         `Hush is closed Sunday and Monday. Kendell at the front desk only places calls when a guest has explicitly submitted a callback request through the booking form.\n` +
         `- NEVER offer, promise, or imply that Kendell (or anyone) will call the guest. Do NOT say "would you like me to have Kendell call you", "Kendell can call you", "I can have someone reach out", or any variation. That sets false expectations.\n` +
         `- Instead, invite the guest to reach US: "Call or text the front desk at (520) 327-6753 when you have a moment" — or point them to the booking section of the page to request a callback themselves.\n` +
