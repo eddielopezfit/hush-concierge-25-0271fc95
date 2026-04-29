@@ -44,6 +44,7 @@ export type HairstylePreviewStep =
   | "preview_failed"
   | "color_iterated"
   | "saved_look"
+  | "downloaded_look"
   | "converted"
   | "abandoned";
 
