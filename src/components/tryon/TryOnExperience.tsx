@@ -94,6 +94,12 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isReadingFile, setIsReadingFile] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Tags the source/type of the most recent error so the recovery UI can
+  // tailor its "Try again" affordances. Only set for errors that happen on
+  // the intro/upload step — generation errors are handled inline elsewhere.
+  const [errorKind, setErrorKind] = useState<
+    null | "heic" | "format" | "too_large" | "read_failed" | "generic"
+  >(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -132,22 +138,26 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
 
   const handleFile = useCallback(async (file: File) => {
     setError(null);
+    setErrorKind(null);
 
     // HEIC isn't browser-renderable — give a clear, friendly message instead of silent fail
     const name = file.name?.toLowerCase() ?? "";
     if (name.endsWith(".heic") || name.endsWith(".heif") || file.type === "image/heic" || file.type === "image/heif") {
       const msg = "iPhone HEIC photos aren't supported yet. In your camera settings switch to 'Most Compatible' or share the photo as JPEG, then try again.";
       setError(msg);
+      setErrorKind("heic");
       toast.error(msg);
       return;
     }
 
     if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-      setError("Please upload a JPEG, PNG, or WEBP photo.");
+      setError("That file type isn't supported. Please upload a JPEG, PNG, or WEBP photo.");
+      setErrorKind("format");
       return;
     }
     if (file.size > MAX_FILE_BYTES) {
-      setError("Photo is larger than 6 MB. Try a smaller version.");
+      setError("That photo is larger than 6 MB. Try a smaller version or take a fresh selfie.");
+      setErrorKind("too_large");
       return;
     }
 
@@ -159,6 +169,7 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Couldn't read that photo. Try another.";
       setError(msg);
+      setErrorKind("read_failed");
       toast.error(msg);
     } finally {
       setIsReadingFile(false);
