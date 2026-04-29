@@ -357,6 +357,8 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
           setColorId(null);
           setRenderDataUrl(null);
           setRenderSignedUrl(null);
+          // Wipe the session gallery — looks belong to the previous photo.
+          setSavedLooks([]);
         }
         return dataUrl;
       });
