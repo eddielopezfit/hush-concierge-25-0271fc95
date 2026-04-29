@@ -6,6 +6,7 @@ import {
   renderPricingBlock,
   PRICING_CATEGORIES,
   renderServiceDescriptionsCatalog,
+  resolvePricingScope,
 } from "../_shared/pricing-tables.ts";
 // ── Environment ─────────────────────────────────────────────────────────────
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
@@ -284,29 +285,40 @@ GOOD: "The Classic Lash Set is one extension per natural lash — clean, polishe
     // (via a one-shot rule) NOT to re-render the same table.
     let pricingPrefix = "";
     if (lastUserMessage?.content && isPricingQuery(lastUserMessage.content)) {
-      let cats = detectPricingCategories(lastUserMessage.content);
-      // Generic pricing question with no category in the message →
-      // try to infer from journeyContext (Experience Finder selection,
-      // services they explored, recommended service) before falling back
-      // to ALL categories. This prevents dumping the entire menu when
-      // the guest is clearly focused on one category (e.g. asks
-      // "What will it cost?" while exploring a hair Try-On look).
-      if (cats.length === 0 && journeyContext) {
-        const inferred = detectPricingCategories(journeyContext);
-        if (inferred.length > 0) cats = inferred;
-      }
-      if (cats.length === 0) cats = PRICING_CATEGORIES;
-      pricingPrefix = renderPricingBlock(cats);
+      const { categories: cats, source } = resolvePricingScope(
+        lastUserMessage.content,
+        journeyContext,
+      );
 
-      const titles = cats.map((c) => c.title).join(", ");
-      systemPrompt =
-        `## ⛔ DETERMINISTIC PRICING TABLE ALREADY DELIVERED ⛔\n` +
-        `A short "Here's the quick read" summary paragraph AND the complete, authoritative pricing table for: ${titles} have ALREADY been shown to the guest immediately above your reply. ` +
-        `You MUST NOT re-render the table, restate any row, list prices again, or repeat the summary range. ` +
-        `Do NOT output a markdown table. Do NOT bullet the services. Do NOT start with "Here's…" or restate the price range. ` +
-        `Skip straight to ONE concrete next step: a tailored recommendation, a clarifying question, or a booking nudge. Keep it under 2 sentences.\n\n` +
-        `═══════════════════════════════════════════════════════════════════\n\n` +
-        systemPrompt;
+      if (cats.length === 0) {
+        // Journey context exists but no scope could be inferred. Do NOT dump
+        // every category. Tell the LLM to ask the guest which scope they want
+        // (the front-end also surfaces "Just hair / nails / …" chips).
+        systemPrompt =
+          `## ⛔ PRICING SCOPE UNCLEAR — ASK BEFORE QUOTING ⛔\n` +
+          `The guest asked about pricing but their scope is ambiguous. ` +
+          `Do NOT list any prices or render any tables. ` +
+          `Reply with ONE short, warm sentence asking which area they'd like to see pricing for ` +
+          `(hair, nails, lashes, skincare, or massage). The UI will offer one-tap chips alongside your reply.\n\n` +
+          `═══════════════════════════════════════════════════════════════════\n\n` +
+          systemPrompt;
+      } else {
+        pricingPrefix = renderPricingBlock(cats);
+        const titles = cats.map((c) => c.title).join(", ");
+        const scopeNote = source === "journey"
+          ? ` (Scope was inferred from the guest's current journey: ${titles}.)`
+          : source === "all"
+          ? ` (No journey scope available — full menu shown.)`
+          : "";
+        systemPrompt =
+          `## ⛔ DETERMINISTIC PRICING TABLE ALREADY DELIVERED ⛔\n` +
+          `A short "Here's the quick read" summary paragraph AND the complete, authoritative pricing table for: ${titles} have ALREADY been shown to the guest immediately above your reply.${scopeNote} ` +
+          `You MUST NOT re-render the table, restate any row, list prices again, or repeat the summary range. ` +
+          `Do NOT output a markdown table. Do NOT bullet the services. Do NOT start with "Here's…" or restate the price range. ` +
+          `Skip straight to ONE concrete next step: a tailored recommendation, a clarifying question, or a booking nudge. Keep it under 2 sentences.\n\n` +
+          `═══════════════════════════════════════════════════════════════════\n\n` +
+          systemPrompt;
+      }
     }
 
     // Call AI gateway
