@@ -124,7 +124,7 @@ export const ServicesSection = () => {
         </p>
         {service.id === "hair" && (
           <div className="mb-3" onClick={(e) => e.stopPropagation()}>
-            <TryOnEntryButton variant="chip" label="Try Your New Look" source="Services Card" />
+            <TryOnEntryButton variant="chip" label="Preview a New Hairstyle" source="Services Card" />
           </div>
         )}
         <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
