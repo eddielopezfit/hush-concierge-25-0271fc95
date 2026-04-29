@@ -224,6 +224,9 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
         const msg = fnErr.message || "Could not generate that look.";
         setError(msg);
         toast.error(msg);
+        trackFunnelEvent("hairstyle_preview", "preview_failed", {
+          metadata: { reason: "edge_error", style_id: chosenStyleId, color_id: chosenColorId },
+        });
         return;
       }
       const payload = data as {
@@ -235,10 +238,17 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
       setRenderDataUrl(payload.renderDataUrl);
       setRenderSignedUrl(payload.renderSignedUrl);
       setStep("preview");
+      reachedPreviewRef.current = true;
+      trackFunnelEvent("hairstyle_preview", "preview_shown", {
+        metadata: { style_id: chosenStyleId, color_id: chosenColorId },
+      });
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Something went wrong.";
       setError(msg);
       toast.error(msg);
+      trackFunnelEvent("hairstyle_preview", "preview_failed", {
+        metadata: { reason: "exception", style_id: chosenStyleId, color_id: chosenColorId },
+      });
     } finally {
       setIsGenerating(false);
     }
