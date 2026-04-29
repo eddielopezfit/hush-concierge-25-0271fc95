@@ -873,7 +873,7 @@ export const ChatTab = () => {
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05 }}
-                onClick={() => setTryOnOpen(true)}
+                onClick={(e) => openTryOn(e.currentTarget as HTMLButtonElement)}
                 className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full border border-gold/40 bg-gold/10 text-gold text-xs font-body font-medium hover:bg-gold/20 active:scale-95 transition-all"
               >
                 <Wand2 className="w-3 h-3" />
@@ -928,7 +928,7 @@ export const ChatTab = () => {
               {conciergeContext?.categories?.includes("hair") && (
                 <button
                   key="tryon-chip-quickreplies"
-                  onClick={() => setTryOnOpen(true)}
+                  onClick={(e) => openTryOn(e.currentTarget)}
                   className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full border border-gold/40 bg-gold/10 text-gold text-xs font-body font-medium hover:bg-gold/20 active:scale-95 transition-all"
                 >
                   <Wand2 className="w-3 h-3" />
@@ -1050,7 +1050,7 @@ export const ChatTab = () => {
           while Luna's panel stays mounted is fine. */}
       {tryOnOpen && (
         <Suspense fallback={null}>
-          <TryOnExperience source="Luna Chat" onClose={() => setTryOnOpen(false)} />
+          <TryOnExperience source="Luna Chat" onClose={closeTryOn} />
         </Suspense>
       )}
     </div>
