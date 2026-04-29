@@ -97,6 +97,7 @@ export const LunaProvider = ({ children }: { children: ReactNode }) => {
         item:               partial.item               !== undefined ? partial.item               : (prev?.item               ?? null),
         price:              partial.price              !== undefined ? partial.price              : (prev?.price              ?? null),
         quizCompletedAt:    partial.quizCompletedAt    !== undefined ? partial.quizCompletedAt    : (prev?.quizCompletedAt    ?? null),
+        lastTryOn:          partial.lastTryOn          !== undefined ? partial.lastTryOn          : (prev?.lastTryOn          ?? null),
       };
       writeToStorage(merged);
       // Persist the last meaningful service category for one-tap "Start Luna".
