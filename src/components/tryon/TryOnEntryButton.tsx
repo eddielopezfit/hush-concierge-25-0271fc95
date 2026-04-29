@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useRef, useState } from "react";
 import { Wand2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +23,21 @@ export const TryOnEntryButton = ({
   className,
 }: TryOnEntryButtonProps) => {
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
+  // Restore focus to the exact trigger the guest clicked when the modal
+  // closes. Wait one frame so the modal's own focus traps fully tear down
+  // before we steal focus back — prevents the browser dropping focus to
+  // <body> and skipping the visible focus ring.
+  const handleClose = () => {
+    setOpen(false);
+    requestAnimationFrame(() => {
+      // preventScroll keeps the page steady — the trigger is already in
+      // view since the guest just clicked it. Without this the browser
+      // would scroll the trigger into the default position.
+      triggerRef.current?.focus({ preventScroll: true });
+    });
+  };
 
   const base = "inline-flex items-center justify-center gap-2 font-body transition-colors";
   const styles = {
@@ -34,6 +49,7 @@ export const TryOnEntryButton = ({
   return (
     <>
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setOpen(true)}
         className={cn(base, styles[variant], className)}
@@ -44,7 +60,7 @@ export const TryOnEntryButton = ({
       </button>
       {open && (
         <Suspense fallback={null}>
-          <TryOnExperience source={source} onClose={() => setOpen(false)} />
+          <TryOnExperience source={source} onClose={handleClose} />
         </Suspense>
       )}
     </>
