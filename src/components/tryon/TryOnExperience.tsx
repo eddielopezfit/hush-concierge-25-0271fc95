@@ -59,6 +59,35 @@ interface TryOnExperienceProps {
 
 const MAX_FILE_BYTES = 6 * 1024 * 1024;
 
+// Session-scoped persistence for refine filters. Stored as plain string IDs;
+// readers validate that the persisted value still matches a known option
+// before applying it (defends against stale IDs after a deploy).
+const FILTER_KEYS = {
+  faceShape: "hush_tryon_face_shape",
+  undertone: "hush_tryon_undertone",
+  category: "hush_tryon_category",
+} as const;
+
+function readPersistedFilter<T extends string>(key: string): T | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const v = window.sessionStorage.getItem(key);
+    return v ? (v as T) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writePersistedFilter(key: string, value: string | null) {
+  if (typeof window === "undefined") return;
+  try {
+    if (value) window.sessionStorage.setItem(key, value);
+    else window.sessionStorage.removeItem(key);
+  } catch {
+    /* ignore — persistence is best-effort */
+  }
+}
+
 function fileToDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -83,9 +112,21 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
   const { mergeConcierge, openChatWidget } = useLuna();
   const [step, setStep] = useState<Step>("intro");
   const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null);
-  const [faceShape, setFaceShape] = useState<FaceShape | null>(null);
-  const [undertone, setUndertone] = useState<Undertone | null>(null);
-  const [category, setCategory] = useState<TryOnStyleCategory | null>(null);
+  // Refine-filter selections persist for the duration of the browser session
+  // (sessionStorage) so guests who tap back/forth after upload don't lose
+  // their chip choices. Cleared via "Clear filters" or when the tab closes.
+  const [faceShape, setFaceShape] = useState<FaceShape | null>(() => {
+    const v = readPersistedFilter<FaceShape>(FILTER_KEYS.faceShape);
+    return v && FACE_SHAPES.some((f) => f.id === v) ? v : null;
+  });
+  const [undertone, setUndertone] = useState<Undertone | null>(() => {
+    const v = readPersistedFilter<Undertone>(FILTER_KEYS.undertone);
+    return v && UNDERTONES.some((u) => u.id === v) ? v : null;
+  });
+  const [category, setCategory] = useState<TryOnStyleCategory | null>(() => {
+    const v = readPersistedFilter<TryOnStyleCategory>(FILTER_KEYS.category);
+    return v && TRY_ON_CATEGORIES.some((c) => c.id === v) ? v : null;
+  });
   const [styleId, setStyleId] = useState<string | null>(null);
   const [colorId, setColorId] = useState<string | null>(null);
   const [renderDataUrl, setRenderDataUrl] = useState<string | null>(null);
@@ -438,6 +479,19 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
     setCategory(null);
     toast.success("Filters cleared");
   };
+
+  // Sync filter selections to sessionStorage so they survive step navigation
+  // (back/forward), step refreshes from style → preview → style, and even a
+  // brief tab switch — without leaking across browser sessions.
+  useEffect(() => {
+    writePersistedFilter(FILTER_KEYS.faceShape, faceShape);
+  }, [faceShape]);
+  useEffect(() => {
+    writePersistedFilter(FILTER_KEYS.undertone, undertone);
+  }, [undertone]);
+  useEffect(() => {
+    writePersistedFilter(FILTER_KEYS.category, category);
+  }, [category]);
 
   const hasFilters = faceShape !== null || undertone !== null || category !== null;
   const activeFilterCount = (faceShape ? 1 : 0) + (undertone ? 1 : 0) + (category ? 1 : 0);
