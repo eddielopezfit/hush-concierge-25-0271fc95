@@ -143,6 +143,10 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
     null | "heic" | "format" | "too_large" | "read_failed" | "generic"
   >(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  // Brief skeleton shimmer for the refine chips immediately after the upload
+  // resolves and the style step mounts. Pure perception polish — signals to
+  // guests "we're tailoring your refinements" before chips become tappable.
+  const [chipsReady, setChipsReady] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const cameraOpenedAtRef = useRef<number | null>(null);
@@ -512,6 +516,18 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
     writePersistedFilter(FILTER_KEYS.category, category);
   }, [category]);
 
+  // Arm the chip skeleton each time we land on the style step with a fresh
+  // photo. ~550ms feels intentional without holding back interaction.
+  useEffect(() => {
+    if (step !== "style" || !photoDataUrl) {
+      setChipsReady(false);
+      return;
+    }
+    setChipsReady(false);
+    const t = window.setTimeout(() => setChipsReady(true), 550);
+    return () => window.clearTimeout(t);
+  }, [step, photoDataUrl]);
+
   const hasFilters = faceShape !== null || undertone !== null || category !== null;
   const activeFilterCount = (faceShape ? 1 : 0) + (undertone ? 1 : 0) + (category ? 1 : 0);
 
@@ -804,6 +820,16 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
                   is uploaded so guests aren't asked to refine looks they can't preview yet. */}
               {photoDataUrl && (
               <div className="mx-auto mb-5 max-w-3xl">
+                {!chipsReady ? (
+                  <div
+                    className="flex items-center justify-center gap-2 animate-fade-in"
+                    aria-hidden="true"
+                  >
+                    <span className="h-7 w-44 rounded-full bg-cream/5 animate-pulse" />
+                    <span className="h-7 w-20 rounded-full bg-cream/5 animate-pulse" />
+                  </div>
+                ) : (
+                <>
                 <div className="flex items-center justify-center gap-3 flex-wrap">
                   <button
                     onClick={() => setFiltersOpen((v) => !v)}
@@ -894,6 +920,8 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
                       Optional — helps us sort the most flattering looks first. Your stylist always has the final say.
                     </p>
                   </div>
+                )}
+                </>
                 )}
               </div>
               )}
