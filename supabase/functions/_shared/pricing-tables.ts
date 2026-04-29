@@ -192,6 +192,41 @@ export function detectPricingCategories(message: string): PricingCategory[] {
   return matched;
 }
 
+/**
+ * Runtime safeguard for pricing scope. Resolves the categories Luna should
+ * answer about for a pricing inquiry, in this strict priority order:
+ *
+ *   1. Categories explicitly named in the user's current message.
+ *   2. Categories inferred from the guest's `journeyContext` string
+ *      (Experience Finder selection, services explored, recommended service).
+ *   3. ALL categories — but ONLY when journeyContext is empty/unavailable.
+ *
+ * Critically, when journeyContext is provided we NEVER fall back to all
+ * categories: if no scope can be inferred we still keep the user's
+ * (possibly empty) match rather than dumping every menu, then the caller
+ * decides what to do (typically: ask the guest to choose a scope via the
+ * front-end "Just hair / Just nails…" chips).
+ */
+export function resolvePricingScope(
+  userMessage: string,
+  journeyContext: string | null | undefined,
+): { categories: PricingCategory[]; source: "message" | "journey" | "all" | "none" } {
+  const fromMessage = detectPricingCategories(userMessage || "");
+  if (fromMessage.length > 0) return { categories: fromMessage, source: "message" };
+
+  const ctx = (journeyContext ?? "").trim();
+  if (ctx) {
+    const inferred = detectPricingCategories(ctx);
+    if (inferred.length > 0) return { categories: inferred, source: "journey" };
+    // Journey context exists but yields no signal → DO NOT dump everything.
+    // Return empty so the caller can prompt the guest to pick a scope.
+    return { categories: [], source: "none" };
+  }
+
+  // No journey context at all → safe to show the full menu.
+  return { categories: PRICING_CATEGORIES, source: "all" };
+}
+
 /** Render a single category as a deterministic markdown block. */
 export function renderCategoryMarkdown(cat: PricingCategory): string {
   const lines: string[] = [];
