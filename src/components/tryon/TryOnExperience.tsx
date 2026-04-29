@@ -1206,8 +1206,22 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
               </div>
 
               <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4 max-w-2xl mx-auto">
-                <button onClick={saveLook} className="rounded-lg border border-gold/40 bg-gold/10 px-3 py-2.5 font-body text-sm text-gold hover:bg-gold/20">
-                  <Check className="mr-1.5 inline h-4 w-4" /> Save look
+                <button
+                  onClick={saveLook}
+                  className={cn(
+                    "rounded-lg border px-3 py-2.5 font-body text-sm transition-colors",
+                    currentLookIsFavorite
+                      ? "border-gold bg-gold/20 text-gold"
+                      : "border-gold/40 bg-gold/10 text-gold hover:bg-gold/20",
+                  )}
+                >
+                  <Heart
+                    className={cn(
+                      "mr-1.5 inline h-4 w-4",
+                      currentLookIsFavorite && "fill-current",
+                    )}
+                  />{" "}
+                  {currentLookIsFavorite ? "Favorited" : "Favorite"}
                 </button>
                 <button onClick={downloadRender} className="rounded-lg border border-border bg-charcoal/40 px-3 py-2.5 font-body text-sm text-cream hover:border-gold/60">
                   <Download className="mr-1.5 inline h-4 w-4" /> Download
@@ -1234,25 +1248,74 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
 
               {savedLooks.length > 0 && (
                 <div className="mt-8">
-                  <p className="font-body text-xs uppercase tracking-wider text-cream/45 mb-3 text-center">Your saved looks</p>
-                  <div className="flex flex-wrap justify-center gap-3">
-                    {savedLooks.map((l) => (
-                      <button
-                        key={l.id}
-                        onClick={() => {
-                          setStyleId(l.styleId);
-                          setColorId(l.colorId);
-                          setRenderDataUrl(l.renderDataUrl);
-                        }}
-                        className="group flex flex-col items-center gap-1"
-                        title={`${getStyleMeta(l.styleId)?.name}${l.colorId ? ` · ${getColorMeta(l.colorId)?.name}` : ""}`}
-                      >
-                        <img src={l.renderDataUrl} alt="" className="h-16 w-16 rounded-lg border border-border object-cover transition-all group-hover:border-gold" />
-                        <span className="font-body text-[10px] text-cream/55 max-w-[64px] truncate">
-                          {getStyleMeta(l.styleId)?.name}
-                        </span>
-                      </button>
-                    ))}
+                  <div className="mb-3 flex items-center justify-between gap-3 max-w-2xl mx-auto">
+                    <div>
+                      <p className="font-body text-xs uppercase tracking-wider text-cream/55">Your session gallery</p>
+                      <p className="font-body text-[11px] text-cream/40">
+                        Tap any look to revisit it · {savedLooks.length}/12 saved this session
+                      </p>
+                    </div>
+                    <span className="font-body text-[10px] text-cream/40 hidden sm:inline">
+                      Cleared when you upload a new photo
+                    </span>
+                  </div>
+                  <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap sm:justify-center">
+                    {savedLooks.map((l) => {
+                      const isActive =
+                        l.styleId === styleId && l.colorId === colorId;
+                      const styleMeta = getStyleMeta(l.styleId);
+                      const colorMeta = l.colorId ? getColorMeta(l.colorId) : null;
+                      const label = `${styleMeta?.name ?? "Look"}${colorMeta ? ` · ${colorMeta.name}` : ""}`;
+                      return (
+                        <div
+                          key={l.id}
+                          className="group relative flex shrink-0 flex-col items-center gap-1"
+                        >
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setStyleId(l.styleId);
+                              setColorId(l.colorId);
+                              setRenderDataUrl(l.renderDataUrl);
+                            }}
+                            className="relative block"
+                            title={label}
+                            aria-label={`Revisit ${label}`}
+                          >
+                            <img
+                              src={l.renderDataUrl}
+                              alt={label}
+                              className={cn(
+                                "h-20 w-20 rounded-lg border-2 object-cover transition-all",
+                                isActive
+                                  ? "border-gold ring-2 ring-gold/40"
+                                  : "border-border group-hover:border-gold/60",
+                              )}
+                            />
+                            {l.favorite && (
+                              <span className="absolute -top-1 -right-1 rounded-full bg-charcoal/90 p-1 ring-1 ring-gold/40">
+                                <Heart className="h-3 w-3 fill-gold text-gold" />
+                              </span>
+                            )}
+                          </button>
+                          <span className="font-body text-[10px] text-cream/55 max-w-[80px] truncate text-center">
+                            {styleMeta?.name}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeLookFromGallery(l.id);
+                            }}
+                            className="absolute -top-1 -left-1 rounded-full bg-charcoal/90 p-1 text-cream/60 ring-1 ring-border opacity-0 transition-opacity hover:text-rose-300 group-hover:opacity-100 focus:opacity-100"
+                            aria-label={`Remove ${label} from gallery`}
+                            title="Remove from gallery"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
