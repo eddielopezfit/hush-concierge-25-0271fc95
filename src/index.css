@@ -9,6 +9,12 @@ html {
 @tailwind components;
 @tailwind utilities;
 
+/* Hide floating Luna bubble + nudge while a service menu modal is open
+   to reduce visual clutter (modal already has its own Chat with Luna CTA). */
+body.service-menu-open .luna-floating {
+  display: none !important;
+}
+
 /* HUSH SALON & DAY SPA - Premium Beauty Destination Design System */
 
 @layer base {
