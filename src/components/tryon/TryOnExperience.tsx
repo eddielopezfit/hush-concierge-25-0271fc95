@@ -299,11 +299,13 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
   const handleStylePick = (id: string) => {
     setStyleId(id);
     setColorId(null);
+    trackFunnelEvent("hairstyle_preview", "style_selected", { metadata: { style_id: id } });
     void generate(id, null);
   };
 
   const handleColorPick = async (id: string | null) => {
     setColorId(id);
+    trackFunnelEvent("hairstyle_preview", "color_iterated", { metadata: { color_id: id } });
     if (styleId) await generate(styleId, id);
   };
 
@@ -318,6 +320,7 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
       { id: crypto.randomUUID(), styleId, colorId, renderDataUrl },
       ...prev,
     ].slice(0, 4));
+    trackFunnelEvent("hairstyle_preview", "saved_look", { metadata: { style_id: styleId, color_id: colorId } });
     toast.success("Look saved");
   };
 
@@ -326,6 +329,10 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
     const styleMeta = getStyleMeta(styleId);
     const colorMeta = colorId ? getColorMeta(colorId) : null;
     const lookLabel = [styleMeta?.name, colorMeta?.name].filter(Boolean).join(" · ");
+    trackFunnelEvent("hairstyle_preview", "converted", {
+      beacon: true,
+      metadata: { style_id: styleId, color_id: colorId },
+    });
     mergeConcierge({
       source: `${source} · Try-On`,
       categories: ["hair"],
