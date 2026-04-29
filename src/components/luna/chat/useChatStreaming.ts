@@ -38,14 +38,21 @@ export function useChatStreaming(cbs: StreamChatCallbacks) {
       setIsStreaming(true);
       abortRef.current = new AbortController();
 
-      const journeyContext = getJourneyContextString();
+      const conversationId = getConversationId();
+      // Stamp the journey context with the current conversation id so the
+      // edge function can verify it belongs to THIS session and ignore any
+      // stale/cross-session payload (e.g. context cached in localStorage
+      // from an earlier conversation on the same browser).
+      const rawJourney = getJourneyContextString();
+      const journeyContext = conversationId
+        ? `[session:${conversationId}]\n${rawJourney}`
+        : rawJourney;
       const apiMessages = allMessages.map((m) => ({
         role: m.role === "assistant" ? "assistant" : "user",
         content: m.content,
       }));
 
       try {
-        const conversationId = getConversationId();
         const resp = await fetch(CHAT_URL, {
           method: "POST",
           headers: {
