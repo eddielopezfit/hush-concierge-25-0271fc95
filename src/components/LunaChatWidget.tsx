@@ -225,7 +225,7 @@ export const LunaChatWidget = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed bottom-[10.5rem] md:bottom-24 right-6 z-[9999] max-w-[260px]"
+            className="luna-floating fixed bottom-[10.5rem] md:bottom-24 right-6 z-[9999] max-w-[260px]"
             role="dialog"
             aria-label="Luna concierge suggestion"
           >
@@ -270,7 +270,7 @@ export const LunaChatWidget = () => {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
             transition={{ type: "spring", stiffness: 260, damping: 20 }}
-            className="fixed bottom-[6.5rem] md:bottom-6 right-6 z-[9999] flex flex-col items-center gap-1.5"
+            className="luna-floating fixed bottom-[6.5rem] md:bottom-6 right-6 z-[9999] flex flex-col items-center gap-1.5"
           >
             <m.button
               onClick={handleOpen}
