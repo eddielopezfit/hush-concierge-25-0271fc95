@@ -94,6 +94,20 @@ export const ChatTab = () => {
   // Proactive Try-On surfacing — opens the hairstyle preview modal directly
   // from chat for hair guests. Connects Luna ↔ Try-On (the audit's #1 fix).
   const [tryOnOpen, setTryOnOpen] = useState(false);
+  // Stash the exact chip element that opened the modal so focus returns
+  // there on close — keyboard / screen-reader users land back where they
+  // were instead of at the top of Luna.
+  const tryOnTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const openTryOn = useCallback((trigger: HTMLButtonElement | null) => {
+    tryOnTriggerRef.current = trigger;
+    setTryOnOpen(true);
+  }, []);
+  const closeTryOn = useCallback(() => {
+    setTryOnOpen(false);
+    requestAnimationFrame(() => {
+      tryOnTriggerRef.current?.focus({ preventScroll: true });
+    });
+  }, []);
   // Tracks the qualifying-flow stage for service-tap conversations.
   // 0 = look chips, 1 = timing chips, 2+ = generic booking chips.
   // Advances every time the user sends a message in single-category mode.
