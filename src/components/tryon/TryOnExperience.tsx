@@ -43,6 +43,28 @@ function MatchBadge({ tier }: { tier: MatchTier }) {
   );
 }
 
+// Maps a try-on color ID to its short technique-family label so guests
+// can see the Hush service technique (Foilayage, Balayage, etc.) on each card.
+function techniqueFamilyLabel(id: string): string | null {
+  if (id.startsWith("balayage_")) return "Balayage";
+  if (id.startsWith("foilayage_")) return "Foilayage";
+  if (id === "money_piece") return "Money-Piece";
+  if (id === "vivid_accent_rose") return "Vivid Accent";
+  if (id === "lived_in_brunette") return "Gloss + Root Shadow";
+  if (id === "soft_black_gloss") return "Gloss";
+  return null;
+}
+
+function TechniqueBadge({ colorId }: { colorId: string }) {
+  const label = techniqueFamilyLabel(colorId);
+  if (!label) return null;
+  return (
+    <span className="inline-flex shrink-0 items-center rounded-full border border-gold/40 bg-gold/10 px-1.5 py-0.5 font-body text-[9px] uppercase tracking-wider leading-none text-gold/90">
+      {label}
+    </span>
+  );
+}
+
 type Step = "intro" | "style" | "preview" | "convert";
 
 interface SavedLook {
