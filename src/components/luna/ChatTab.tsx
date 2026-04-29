@@ -537,6 +537,17 @@ export const ChatTab = () => {
       // back so the previous chip set re-surfaces. Does not call Luna.
       if (reply === BACK_CHIP) {
         if (isStreaming) return;
+        // Guard: nothing to undo if the guest hasn't replied yet, or we're
+        // already sitting on Luna's first qualifying question (stage 0 with
+        // no user turns between the greeting and now).
+        const hasUserTurn = messages.some((m) => m.role === "user");
+        if (!hasUserTurn || qualifyingStage <= 0) {
+          toast.message("Nothing to undo yet", {
+            description: "You're on Luna's first question — pick an option to get started.",
+            duration: 2400,
+          });
+          return;
+        }
         setMessages((prev) => {
           // Remove trailing assistant messages + the last user message so the
           // prior assistant question becomes the latest message again.
@@ -575,7 +586,7 @@ export const ChatTab = () => {
       }
       handleSendInternal(reply);
     },
-    [handleSendInternal, isStreaming, qualifyingStage, conciergeContext]
+    [handleSendInternal, isStreaming, qualifyingStage, conciergeContext, messages]
   );
 
   const handleSend = useCallback(
