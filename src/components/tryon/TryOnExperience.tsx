@@ -115,15 +115,18 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
   // Refine-filter selections persist for the duration of the browser session
   // (sessionStorage) so guests who tap back/forth after upload don't lose
   // their chip choices. Cleared via "Clear filters" or when the tab closes.
-  const [faceShape, setFaceShape] = useState<FaceShape | null>(
-    () => readPersistedFilter<FaceShape>("hush_tryon_face_shape")
-  );
-  const [undertone, setUndertone] = useState<Undertone | null>(
-    () => readPersistedFilter<Undertone>("hush_tryon_undertone")
-  );
-  const [category, setCategory] = useState<TryOnStyleCategory | null>(
-    () => readPersistedFilter<TryOnStyleCategory>("hush_tryon_category")
-  );
+  const [faceShape, setFaceShape] = useState<FaceShape | null>(() => {
+    const v = readPersistedFilter<FaceShape>(FILTER_KEYS.faceShape);
+    return v && FACE_SHAPES.some((f) => f.id === v) ? v : null;
+  });
+  const [undertone, setUndertone] = useState<Undertone | null>(() => {
+    const v = readPersistedFilter<Undertone>(FILTER_KEYS.undertone);
+    return v && UNDERTONES.some((u) => u.id === v) ? v : null;
+  });
+  const [category, setCategory] = useState<TryOnStyleCategory | null>(() => {
+    const v = readPersistedFilter<TryOnStyleCategory>(FILTER_KEYS.category);
+    return v && TRY_ON_CATEGORIES.some((c) => c.id === v) ? v : null;
+  });
   const [styleId, setStyleId] = useState<string | null>(null);
   const [colorId, setColorId] = useState<string | null>(null);
   const [renderDataUrl, setRenderDataUrl] = useState<string | null>(null);
