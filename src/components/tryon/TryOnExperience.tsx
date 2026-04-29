@@ -68,6 +68,31 @@ const FILTER_KEYS = {
   category: "hush_tryon_category",
 } as const;
 
+// Long-lived guest preference: should a fresh photo upload reset the refine
+// chips, or should we preserve them? Stored in localStorage so the choice
+// follows the guest across visits. Default = reset (safer match to new face).
+const RESET_ON_UPLOAD_KEY = "hush_tryon_reset_on_upload";
+
+function readResetOnUploadPref(): boolean {
+  if (typeof window === "undefined") return true;
+  try {
+    const v = window.localStorage.getItem(RESET_ON_UPLOAD_KEY);
+    if (v === null) return true; // default
+    return v === "1";
+  } catch {
+    return true;
+  }
+}
+
+function writeResetOnUploadPref(value: boolean) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(RESET_ON_UPLOAD_KEY, value ? "1" : "0");
+  } catch {
+    /* ignore */
+  }
+}
+
 function readPersistedFilter<T extends string>(key: string): T | null {
   if (typeof window === "undefined") return null;
   try {
