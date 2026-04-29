@@ -97,6 +97,21 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+  const cameraOpenedAtRef = useRef<number | null>(null);
+  const [cameraHelpOpen, setCameraHelpOpen] = useState(false);
+
+  // Device detection — drives copy, button order, and platform-specific guidance.
+  // SSR-safe: defaults to false on server, hydrates on first client render.
+  const device = useMemo(() => {
+    if (typeof navigator === "undefined") {
+      return { isMobile: false, isIOS: false, isAndroid: false };
+    }
+    const ua = navigator.userAgent || "";
+    const isIOS = /iPad|iPhone|iPod/.test(ua) || (ua.includes("Mac") && "ontouchend" in document);
+    const isAndroid = /Android/i.test(ua);
+    const isMobile = isIOS || isAndroid || /Mobi|Mobile/i.test(ua);
+    return { isMobile, isIOS, isAndroid };
+  }, []);
 
   // Lock body scroll while modal is open
   useEffect(() => {
