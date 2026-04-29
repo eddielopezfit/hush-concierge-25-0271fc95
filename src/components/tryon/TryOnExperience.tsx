@@ -83,9 +83,18 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
   const { mergeConcierge, openChatWidget } = useLuna();
   const [step, setStep] = useState<Step>("intro");
   const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null);
-  const [faceShape, setFaceShape] = useState<FaceShape | null>(null);
-  const [undertone, setUndertone] = useState<Undertone | null>(null);
-  const [category, setCategory] = useState<TryOnStyleCategory | null>(null);
+  // Refine-filter selections persist for the duration of the browser session
+  // (sessionStorage) so guests who tap back/forth after upload don't lose
+  // their chip choices. Cleared via "Clear filters" or when the tab closes.
+  const [faceShape, setFaceShape] = useState<FaceShape | null>(
+    () => readPersistedFilter<FaceShape>("hush_tryon_face_shape")
+  );
+  const [undertone, setUndertone] = useState<Undertone | null>(
+    () => readPersistedFilter<Undertone>("hush_tryon_undertone")
+  );
+  const [category, setCategory] = useState<TryOnStyleCategory | null>(
+    () => readPersistedFilter<TryOnStyleCategory>("hush_tryon_category")
+  );
   const [styleId, setStyleId] = useState<string | null>(null);
   const [colorId, setColorId] = useState<string | null>(null);
   const [renderDataUrl, setRenderDataUrl] = useState<string | null>(null);
