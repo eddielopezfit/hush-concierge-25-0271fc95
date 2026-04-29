@@ -124,6 +124,34 @@ function fileToDataUrl(file: File): Promise<string> {
 }
 
 /**
+ * SHA-256 hash of the raw file bytes, returned as a hex string. Used to
+ * detect "is this truly a different photo?" — far more reliable than
+ * comparing data URLs, which can differ across re-encodes / EXIF strips
+ * even when the visual content is identical, and which can also collide
+ * across different files of the same MIME type after a base64 round-trip.
+ *
+ * Falls back to a cheap composite key (name|size|lastModified) if the
+ * SubtleCrypto API is unavailable (very old browsers, insecure context).
+ */
+async function hashFile(file: File): Promise<string> {
+  try {
+    if (typeof crypto !== "undefined" && crypto.subtle) {
+      const buf = await file.arrayBuffer();
+      const digest = await crypto.subtle.digest("SHA-256", buf);
+      const bytes = new Uint8Array(digest);
+      let hex = "";
+      for (let i = 0; i < bytes.length; i++) {
+        hex += bytes[i].toString(16).padStart(2, "0");
+      }
+      return `sha256:${hex}`;
+    }
+  } catch {
+    /* fall through to fallback */
+  }
+  return `meta:${file.name}|${file.size}|${(file as File).lastModified ?? 0}`;
+}
+
+/**
  * Phase 2 — Transformation Engine.
  *
  * AI-generated visualization. Real stylist still tailors the final result —
@@ -182,6 +210,10 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
     resetChipsOnUploadRef.current = resetChipsOnUpload;
     writeResetOnUploadPref(resetChipsOnUpload);
   }, [resetChipsOnUpload]);
+  // Hash of the most recently accepted photo. Drives "truly different photo?"
+  // detection so re-uploading the same shot (even after a re-encode or EXIF
+  // strip) doesn't wipe deliberate chip selections.
+  const photoHashRef = useRef<string | null>(null);
   // Refs mirror the latest chip state so stable callbacks (e.g. handleFile,
   // wrapped in useCallback with [] deps) can read current values without
   // capturing stale closures.
@@ -282,13 +314,17 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
 
     setIsReadingFile(true);
     try {
-      const dataUrl = await fileToDataUrl(file);
-      // A fresh photo means a fresh face/vibe context. Clear any previously
-      // persisted refine chips so the guest starts from defaults — keeps the
-      // recommendations honest to the new selfie. We compare to the prior
-      // dataUrl so re-selecting the same image doesn't wipe deliberate picks.
-      setPhotoDataUrl((prev) => {
-        if (prev !== dataUrl) {
+      // Hash the raw bytes first so we can decide "truly new photo?" before
+      // any chip-clearing side effects fire. Run hashing and decoding in
+      // parallel — they're independent reads of the same File.
+      const [dataUrl, nextHash] = await Promise.all([
+        fileToDataUrl(file),
+        hashFile(file),
+      ]);
+      const isTrulyNewPhoto = photoHashRef.current !== nextHash;
+      photoHashRef.current = nextHash;
+      setPhotoDataUrl(() => {
+        if (isTrulyNewPhoto) {
           const hadActiveChips =
             faceShapeRef.current !== null ||
             undertoneRef.current !== null ||
