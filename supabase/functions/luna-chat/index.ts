@@ -190,6 +190,43 @@ If the guest explicitly asks "are you AI?" or "are you real?", you may briefly c
       systemPrompt = override + systemPrompt;
     }
 
+    // ── One-question-per-turn enforcement (PREPENDED) ───────────────────
+    // The model has been violating Section 5's "ONE question per turn" rule by
+    // stacking 2-3 qualifiers in a single message — especially after a service
+    // tap from the Explore tab. This runtime override makes the rule absolute
+    // and gives the model the exact phrasing pattern it must follow.
+    const oneQuestionOverride = `## ⛔ ABSOLUTE RUNTIME RULE — ONE QUESTION PER TURN ⛔
+You MUST ask AT MOST ONE question in this reply. Not two. Not three. ONE.
+
+If you feel the urge to ask multiple things (look + timing + first-visit + extensions, etc.),
+pick the SINGLE most important qualifier for this moment and ask only that one.
+The follow-up questions come on LATER turns, after the guest answers.
+
+Priority order for the first qualifying turn (use the FIRST one that's not yet known):
+1. The look / goal — what outcome they want (subtle vs volume, refresh vs change, etc.)
+2. Timing — when they want to come in
+3. First visit vs returning — only if not already obvious
+4. Logistics (existing extensions, color history, etc.) — usually save for after the look is decided
+
+REQUIRED FORMAT for a qualifying turn:
+- 1–2 short sentences confirming the service or acknowledging their tap
+- ONE clear question (ends with a single "?")
+- That's it. Stop. Do not stack a second question.
+
+FORBIDDEN on a qualifying turn:
+- Multiple "?" marks
+- Sentences like "Also, do you..." / "And one more thing..." / "Quick question — ..." after the first question
+- Bulleted lists of questions
+- Asking about extensions/history before the look is decided
+
+EXAMPLE — Guest just tapped "Classic Lash Set":
+BAD: "Are you looking for subtle, or more volume? Do you currently have extensions from another salon? Is this your first time at Hush?"
+GOOD: "The Classic Lash Set is one extension per natural lash — clean, polished, mascara-free. Quick question to make sure it's the right fit: are you after a really subtle look, or do you want a bit more fluff?"
+
+═══════════════════════════════════════════════════════════════════
+`;
+    systemPrompt = oneQuestionOverride + systemPrompt;
+
 
     // Find the latest user message for persistence + booking-intent detection
     const lastUserMessage = [...messages].reverse().find((m) => m.role === "user");
