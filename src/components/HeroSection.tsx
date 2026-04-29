@@ -4,6 +4,7 @@ import { useLuna } from "@/contexts/LunaContext";
 import { useStartLuna } from "@/hooks/useStartLuna";
 import { useSeamlessVideoPlayback } from "@/hooks/useSeamlessVideoPlayback";
 import { getConciergeContext } from "@/lib/conciergeStore";
+import { TryOnEntryButton } from "@/components/tryon/TryOnEntryButton";
 
 /**
  * Hero — pure CSS animations (no framer-motion) so the eager bundle stays small.
@@ -123,6 +124,11 @@ export const HeroSection = () => {
               or talk to our AI concierge
             </span>
           </button>
+
+          {/* Persistent Try-On entry — fixes the audit's "appears on first
+              video frame only" perception. Ghost variant stays quieter than
+              the gold primary so "Find Your Experience" remains dominant. */}
+          <TryOnEntryButton variant="ghost" source="Hero" />
 
           {hasPlan && (
             <button

@@ -4,6 +4,7 @@ import { RevealData, deriveBookingMode } from "@/lib/experienceReveal";
 import { useLuna } from "@/contexts/LunaContext";
 import { BookingDecisionCard } from "@/components/BookingDecisionCard";
 import { PriceConfidenceAccordion } from "@/components/PriceConfidenceAccordion";
+import { TryOnEntryButton } from "@/components/tryon/TryOnEntryButton";
 
 interface ExperienceRevealCardProps {
   data: RevealData;
@@ -13,6 +14,7 @@ interface ExperienceRevealCardProps {
 export const ExperienceRevealCard = ({ data, onBook: _onBook }: ExperienceRevealCardProps) => {
   const { conciergeContext } = useLuna();
   const bookingMode = deriveBookingMode(data, conciergeContext);
+  const isHair = !!conciergeContext?.categories?.includes("hair");
   const planLinkLabel =
     bookingMode === "consultation"
       ? "See what your visit may include"
@@ -107,6 +109,23 @@ export const ExperienceRevealCard = ({ data, onBook: _onBook }: ExperienceReveal
               <ChevronDown className="w-3.5 h-3.5 group-hover:translate-y-0.5 transition-transform" />
             </button>
           </m.div>
+
+          {/* Hair-only bridge into the Try-On Studio so guests can preview
+              the look before they commit. Connects two flagship features
+              that previously lived in parallel. */}
+          {isHair && (
+            <m.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.7 }}
+              className="text-center"
+            >
+              <p className="font-body text-xs text-cream/60 mb-2">
+                Curious how it would look on you?
+              </p>
+              <TryOnEntryButton variant="ghost" source="Experience Reveal" />
+            </m.div>
+          )}
         </div>
       </div>
     </m.div>

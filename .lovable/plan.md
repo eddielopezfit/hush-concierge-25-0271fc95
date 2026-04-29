@@ -1,70 +1,64 @@
-## Why simplify the hero
+## Goal
 
-The hero currently shows **four** competing actions stacked vertically:
+Address the audit's #1 finding: the hairstyle preview is the salon's most differentiated feature but is functionally invisible. Surface it across the three flagship surfaces (Hero → Intake results → Luna chat) and strengthen its in-card placement — without violating the Hero's "single primary decision" rule.
 
-```text
-[ FIND YOUR EXPERIENCE ]   ← primary gold button (the real conversion path)
-[ Try Your New Look    ]   ← novelty/discovery feature
-  or talk to our AI concierge   ← redundant with floating Luna + nav "Start Luna"
-  Resume my plan              ← shown to everyone, even first-time visitors with no plan
+## Changes
+
+### 1. Hero — persistent secondary "Preview a New Hairstyle" link
+File: `src/components/HeroSection.tsx`
+
+Add a single ghost-style entry point under "or talk to our AI concierge", using the existing reusable `TryOnEntryButton` (variant `ghost`). This replaces the audit's "appears on first video frame only" perception — it will now be permanently visible, not tied to any video cycle.
+
+Final hero CTA stack (still respects the single-primary rule):
+```
+[ FIND YOUR EXPERIENCE ]            ← primary gold (unchanged)
+or talk to our AI concierge          ← existing secondary link
+✨ Preview a New Hairstyle           ← NEW — ghost link, always visible
+Resume my plan                       ← existing, only if hasPlan
+[ Open Today badge ]
 ```
 
-This breaks our **single-decision principle** for the hero. Each extra option:
-- Dilutes "Find Your Experience" (the conversion north star)
-- Pushes the Open Today badge further down on mobile
-- Creates choice paralysis in the first 5 seconds
+The ghost variant is visually quieter than the gold primary, so "Find Your Experience" remains dominant.
 
-"Try Your New Look" especially doesn't belong here — it's a **mid-funnel discovery moment** ("I'm curious what I'd look like with…"), not a top-of-funnel intent signal. A guest who hasn't even decided on a service shouldn't be invited to virtually try one on yet.
+### 2. Intake results — bridge into Try-On for hair guests
+File: `src/components/ExperienceRevealCard.tsx`
 
-## Proposed hero (final state)
+When `conciergeContext.categories` includes `"hair"`, render a soft bridge row above the "See your full personalized plan" link:
 
-```text
-[ FIND YOUR EXPERIENCE ]      ← single primary CTA
-or talk to our AI concierge    ← kept as one quiet secondary text link
-Resume my plan                  ← ONLY shown if a saved plan exists
-[ Open Today · 9 AM – 7 PM ]
+> Curious how it would look? **Preview a New Hairstyle →**
+
+Uses `TryOnEntryButton variant="ghost" source="Experience Reveal"`. Only renders for hair-relevant reveals so non-hair guests aren't confused.
+
+### 3. Luna chat — proactive Try-On chip when hair is the category
+File: `src/components/luna/chat/types.ts` (and the chat component that renders quick replies — locate during implementation, likely `ChatTab.tsx` or a quick-reply config)
+
+Add a contextual quick-reply chip "🪄 Preview a New Hairstyle" that appears in Luna's chat when `conciergeContext.primary_category === "hair"` (or `categories.includes("hair")`). Tapping it closes Luna's panel and opens the Try-On modal (`source: "Luna Chat"`), so the two flagship features finally connect.
+
+This is the audit's most strategic fix: "Luna never proactively surfaces the hairstyle preview."
+
+### 4. Services hair card — promote the entry button
+File: `src/components/ServicesSection.tsx`
+
+Change the hair card's `<TryOnEntryButton>` from `variant="chip"` to `variant="primary"` (gold button) and move it into the action row alongside "Let Luna guide you" / "View full menu & pricing". This makes it scan as a real CTA, not an afterthought tag — the audit specifically called this out: "should be a PRIMARY CTA."
+
+Action row becomes a 3-button stack on mobile, 3-column on desktop:
+```
+[ ✨ Preview Hairstyle ]  [ 💬 Let Luna guide ]  [ View menu ]
 ```
 
-Three reasons to keep "talk to our AI concierge" (and drop the others):
-1. It's the **alternative path** for guests who don't know what they want — complements the quiz
-2. The floating bottom-right Luna button is easy to miss on first paint
-3. The "Start Luna" nav button is small and lives among nav items — not a clear hero alternative
+### 5. Funnel tracking touch-up
+The `source` prop is already wired through `TryOnEntryButton` → `TryOnExperience` → `trackFunnelEvent("hairstyle_preview", "started", { source })`. New entry points use distinct `source` strings (`"Hero"`, `"Experience Reveal"`, `"Luna Chat"`) so we can measure which surface drives the most preview starts after this ships.
 
-## Where "Try Your New Look" goes instead
+## Out of scope (intentional)
 
-It already lives in two strong contextual spots:
-- **ServicesSection** — guests browsing services see it inline ✓
-- **FooterSection** — final-scroll catch-all ✓
-
-I'll add **one more high-intent placement**:
-- **ExperienceCategoriesSection** — right when a guest is picking a hair/color category, "Try Your New Look" becomes a natural companion CTA ("Not sure? See it on you first"). This is where curiosity peaks.
-
-If the existing two placements feel sufficient after testing, we can skip the third — but adding it where intent is highest is the right move.
-
-## Conditional "Resume my plan"
-
-Wrap the Resume link in a check:
-
-```tsx
-const [hasPlan, setHasPlan] = useState(false);
-useEffect(() => { setHasPlan(!!getConciergeContext()); }, []);
-// ...render Resume link only when hasPlan
-```
-
-First-time visitors get a cleaner 2-CTA hero. Returning visitors with a saved plan still get the fast-path link.
+- **Sticky "Book Now" in nav** — the mobile sticky bar already has a primary "Book a Visit" button; adding it to the desktop nav would compete with "Find Your Experience" and "Start Luna." Revisit only if analytics show desktop drop-off.
+- **Face shape / undertone questions in the intake quiz** — already supported as optional refine chips inside the Try-On modal itself; adding them to the upstream quiz would lengthen it and was previously simplified for a reason. Defer until we have data showing the modal chips are under-used.
+- **Replacing video-cycle CTA logic** — once the hero shows the persistent ghost link, the rotating-video CTA-visibility issue is moot. No video logic changes needed.
+- **Post-preview booking CTA** — already exists as the gold "Book this look" button on the `convert` step (verified in `TryOnExperience.tsx` line 1410). The audit missed this; no change required.
 
 ## Files changed
 
-1. **`src/components/HeroSection.tsx`**
-   - Remove `<TryOnEntryButton>` from hero CTA stack (and unused import)
-   - Gate "Resume my plan" behind `getConciergeContext()` check
-   - Result: 1 primary button + 1-2 secondary text links (vs 4 stacked CTAs)
-
-2. **`src/components/ExperienceCategoriesSection.tsx`** *(if it makes sense after viewing — confirming during implementation)*
-   - Add a single `<TryOnEntryButton variant="ghost" source="ExperienceCategories" />` at the section footer with copy like "Curious how it would look? Try it on first."
-
-## Out of scope (leaving alone)
-
-- Floating bottom-right Luna guide button (different surface, doesn't compete with hero stack)
-- "Start Luna" nav button (small, lives in nav, not a hero CTA)
-- TryOn placements in ServicesSection and FooterSection (already optimal)
+1. `src/components/HeroSection.tsx` — add `<TryOnEntryButton variant="ghost" source="Hero" />`
+2. `src/components/ExperienceRevealCard.tsx` — add hair-only Try-On bridge link
+3. `src/components/ServicesSection.tsx` — promote chip to primary, integrate into action row
+4. Luna chat quick-replies (file located during implementation) — add contextual hair chip

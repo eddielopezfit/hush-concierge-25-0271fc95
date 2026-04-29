@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { Send, Loader2, Phone, Calendar, ChevronRight, RotateCcw, ArrowDown, X, MessageSquare, Link2, Undo2 } from "lucide-react";
+import { useState, useEffect, useRef, useCallback, lazy, Suspense } from "react";
+import { Send, Loader2, Phone, Calendar, ChevronRight, RotateCcw, ArrowDown, X, MessageSquare, Link2, Undo2, Wand2 } from "lucide-react";
 import { m, AnimatePresence } from "framer-motion";
 import { saveLead } from "@/lib/saveSession";
 import { getConversationId, startSession, clearConversation } from "@/lib/sessionManager";
@@ -35,6 +35,12 @@ import {
 } from "./chat/qualifyingStageStore";
 import { useChatStreaming } from "./chat/useChatStreaming";
 import { LeadCaptureForm } from "./chat/LeadCaptureForm";
+
+// Lazy-load the heavy Try-On modal — only when a guest taps the proactive
+// "Preview a New Hairstyle" chip. Keeps it out of the Luna chat bundle.
+const TryOnExperience = lazy(() =>
+  import("@/components/tryon/TryOnExperience").then((m) => ({ default: m.TryOnExperience }))
+);
 
 // ── In-Chat Action Button Component ─────────────────────────────────────────
 function ChatActionButtons({
@@ -85,6 +91,9 @@ export const ChatTab = () => {
   const [contextPills, setContextPills] = useState<string[]>([]);
   const [smartChips, setSmartChips] = useState<string[]>([]);
   const [quickReplies, setQuickReplies] = useState<string[]>([]);
+  // Proactive Try-On surfacing — opens the hairstyle preview modal directly
+  // from chat for hair guests. Connects Luna ↔ Try-On (the audit's #1 fix).
+  const [tryOnOpen, setTryOnOpen] = useState(false);
   // Tracks the qualifying-flow stage for service-tap conversations.
   // 0 = look chips, 1 = timing chips, 2+ = generic booking chips.
   // Advances every time the user sends a message in single-category mode.
@@ -842,6 +851,21 @@ export const ChatTab = () => {
         {/* Smart Chips — shown after greeting only */}
         {messages.length === 1 && !isStreaming && (
           <div className="flex flex-wrap gap-1.5 mt-1">
+            {/* Hair-only proactive Try-On chip — surfaces the hairstyle
+                preview without making the guest hunt for it. */}
+            {conciergeContext?.categories?.includes("hair") && (
+              <m.button
+                key="tryon-chip-greeting"
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.05 }}
+                onClick={() => setTryOnOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full border border-gold/40 bg-gold/10 text-gold text-xs font-body font-medium hover:bg-gold/20 active:scale-95 transition-all"
+              >
+                <Wand2 className="w-3 h-3" />
+                Preview a New Hairstyle
+              </m.button>
+            )}
             {smartChips.map((chip) => (
               <m.button
                 key={chip}
@@ -886,6 +910,17 @@ export const ChatTab = () => {
               </div>
             )}
             <div className="flex flex-wrap gap-1.5">
+              {/* Persistent hair-only Try-On chip alongside quick replies. */}
+              {conciergeContext?.categories?.includes("hair") && (
+                <button
+                  key="tryon-chip-quickreplies"
+                  onClick={() => setTryOnOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full border border-gold/40 bg-gold/10 text-gold text-xs font-body font-medium hover:bg-gold/20 active:scale-95 transition-all"
+                >
+                  <Wand2 className="w-3 h-3" />
+                  Preview a New Hairstyle
+                </button>
+              )}
               {quickReplies.map((reply) => (
                 <button
                   key={reply}
@@ -995,6 +1030,15 @@ export const ChatTab = () => {
           </button>
         </div>
       </div>
+
+      {/* Lazy-mounted Try-On modal — surfaces only when a hair-context guest
+          taps the proactive chip. Renders via its own portal, so opening it
+          while Luna's panel stays mounted is fine. */}
+      {tryOnOpen && (
+        <Suspense fallback={null}>
+          <TryOnExperience source="Luna Chat" onClose={() => setTryOnOpen(false)} />
+        </Suspense>
+      )}
     </div>
   );
 };
