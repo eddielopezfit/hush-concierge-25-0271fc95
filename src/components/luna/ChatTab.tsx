@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { Send, Loader2, Phone, Calendar, ChevronRight, RotateCcw, ArrowDown, X, MessageSquare, Link2, Undo2 } from "lucide-react";
+import { useState, useEffect, useRef, useCallback, lazy, Suspense } from "react";
+import { Send, Loader2, Phone, Calendar, ChevronRight, RotateCcw, ArrowDown, X, MessageSquare, Link2, Undo2, Wand2 } from "lucide-react";
 import { m, AnimatePresence } from "framer-motion";
 import { saveLead } from "@/lib/saveSession";
 import { getConversationId, startSession, clearConversation } from "@/lib/sessionManager";
@@ -35,6 +35,12 @@ import {
 } from "./chat/qualifyingStageStore";
 import { useChatStreaming } from "./chat/useChatStreaming";
 import { LeadCaptureForm } from "./chat/LeadCaptureForm";
+
+// Lazy-load the heavy Try-On modal — only when a guest taps the proactive
+// "Preview a New Hairstyle" chip. Keeps it out of the Luna chat bundle.
+const TryOnExperience = lazy(() =>
+  import("@/components/tryon/TryOnExperience").then((m) => ({ default: m.TryOnExperience }))
+);
 
 // ── In-Chat Action Button Component ─────────────────────────────────────────
 function ChatActionButtons({
@@ -85,6 +91,9 @@ export const ChatTab = () => {
   const [contextPills, setContextPills] = useState<string[]>([]);
   const [smartChips, setSmartChips] = useState<string[]>([]);
   const [quickReplies, setQuickReplies] = useState<string[]>([]);
+  // Proactive Try-On surfacing — opens the hairstyle preview modal directly
+  // from chat for hair guests. Connects Luna ↔ Try-On (the audit's #1 fix).
+  const [tryOnOpen, setTryOnOpen] = useState(false);
   // Tracks the qualifying-flow stage for service-tap conversations.
   // 0 = look chips, 1 = timing chips, 2+ = generic booking chips.
   // Advances every time the user sends a message in single-category mode.
