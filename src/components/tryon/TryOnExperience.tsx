@@ -94,6 +94,12 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isReadingFile, setIsReadingFile] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Tags the source/type of the most recent error so the recovery UI can
+  // tailor its "Try again" affordances. Only set for errors that happen on
+  // the intro/upload step — generation errors are handled inline elsewhere.
+  const [errorKind, setErrorKind] = useState<
+    null | "heic" | "format" | "too_large" | "read_failed" | "generic"
+  >(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -132,22 +138,26 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
 
   const handleFile = useCallback(async (file: File) => {
     setError(null);
+    setErrorKind(null);
 
     // HEIC isn't browser-renderable — give a clear, friendly message instead of silent fail
     const name = file.name?.toLowerCase() ?? "";
     if (name.endsWith(".heic") || name.endsWith(".heif") || file.type === "image/heic" || file.type === "image/heif") {
       const msg = "iPhone HEIC photos aren't supported yet. In your camera settings switch to 'Most Compatible' or share the photo as JPEG, then try again.";
       setError(msg);
+      setErrorKind("heic");
       toast.error(msg);
       return;
     }
 
     if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-      setError("Please upload a JPEG, PNG, or WEBP photo.");
+      setError("That file type isn't supported. Please upload a JPEG, PNG, or WEBP photo.");
+      setErrorKind("format");
       return;
     }
     if (file.size > MAX_FILE_BYTES) {
-      setError("Photo is larger than 6 MB. Try a smaller version.");
+      setError("That photo is larger than 6 MB. Try a smaller version or take a fresh selfie.");
+      setErrorKind("too_large");
       return;
     }
 
@@ -159,6 +169,7 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Couldn't read that photo. Try another.";
       setError(msg);
+      setErrorKind("read_failed");
       toast.error(msg);
     } finally {
       setIsReadingFile(false);
@@ -232,6 +243,8 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
   const openCamera = () => {
     if (isReadingFile) return;
     setCameraHelpOpen(false);
+    setError(null);
+    setErrorKind(null);
     cameraOpenedAtRef.current = Date.now();
     cameraInputRef.current?.click();
   };
@@ -239,6 +252,8 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
   const openUpload = () => {
     if (isReadingFile) return;
     setCameraHelpOpen(false);
+    setError(null);
+    setErrorKind(null);
     fileInputRef.current?.click();
   };
 
@@ -401,9 +416,56 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
         {/* Body */}
         <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-8 sm:py-8">
           {error && (
-            <div className="mb-5 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 font-body text-sm text-destructive">
-              {error}
-            </div>
+            step === "intro" && errorKind ? (
+              <div className="mb-5 rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-left">
+                <p className="font-body text-sm text-destructive mb-1">
+                  {errorKind === "heic" && "We can't read iPhone HEIC photos yet"}
+                  {errorKind === "format" && "That file type isn't supported"}
+                  {errorKind === "too_large" && "That photo is too large"}
+                  {errorKind === "read_failed" && "We couldn't read that photo"}
+                  {errorKind === "generic" && "Something went wrong"}
+                </p>
+                <p className="font-body text-xs text-cream/70 leading-relaxed mb-3">
+                  {errorKind === "heic" &&
+                    "Open Settings → Camera → Formats → Most Compatible on your iPhone, then take a fresh selfie below — or pick a JPEG from your library."}
+                  {errorKind === "format" &&
+                    "We accept JPEG, PNG, or WEBP. Pick a different photo or take a new selfie."}
+                  {errorKind === "too_large" &&
+                    "The file must be under 6 MB. A fresh selfie from your camera is usually well under the limit."}
+                  {errorKind === "read_failed" &&
+                    "The file may be corrupt or partially downloaded. Try a different photo or take a fresh selfie."}
+                  {errorKind === "generic" && error}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={openCamera}
+                    disabled={isReadingFile}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-gold/60 bg-gold/15 px-3 py-1.5 font-body text-xs text-gold hover:bg-gold/25 disabled:opacity-50"
+                  >
+                    <Camera className="h-3.5 w-3.5" />
+                    {device.isMobile ? "Take a fresh selfie" : "Use webcam"}
+                  </button>
+                  <button
+                    onClick={openUpload}
+                    disabled={isReadingFile}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-cream/25 bg-charcoal/40 px-3 py-1.5 font-body text-xs text-cream/85 hover:border-gold/60 hover:text-cream disabled:opacity-50"
+                  >
+                    <Upload className="h-3.5 w-3.5" />
+                    Pick a different photo
+                  </button>
+                  <button
+                    onClick={() => { setError(null); setErrorKind(null); }}
+                    className="ml-auto font-body text-[11px] text-cream/55 underline underline-offset-4 hover:text-gold"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="mb-5 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 font-body text-sm text-destructive">
+                {error}
+              </div>
+            )
           )}
 
           {step === "intro" && (
