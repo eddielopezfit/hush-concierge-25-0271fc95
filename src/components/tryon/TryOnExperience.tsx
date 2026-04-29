@@ -829,6 +829,7 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
                     <span className="h-7 w-20 rounded-full bg-cream/5 animate-pulse" />
                   </div>
                 ) : (
+                <>
                 <div className="flex items-center justify-center gap-3 flex-wrap">
                   <button
                     onClick={() => setFiltersOpen((v) => !v)}
