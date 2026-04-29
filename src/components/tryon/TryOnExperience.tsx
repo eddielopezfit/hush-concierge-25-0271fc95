@@ -23,6 +23,7 @@ import {
 } from "@/data/tryOnStyleData";
 import { CompareSlider } from "./CompareSlider";
 import { cn } from "@/lib/utils";
+import { trackFunnelEvent } from "@/lib/funnelTracker";
 
 function MatchBadge({ tier }: { tier: MatchTier }) {
   if (tier === "none") return null;
