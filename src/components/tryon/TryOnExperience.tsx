@@ -1204,14 +1204,23 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
 
               {/* Inline color iteration — moved here so guests get the wow first, then refine */}
               <div className="mx-auto mt-6 max-w-2xl">
-                <p className="font-body text-[11px] uppercase tracking-wider text-cream/55 mb-1 text-center">Try a color · technique</p>
-                <p className="font-body text-[11px] text-cream/45 mb-3 text-center">Each option matches a real Hush service.</p>
-                <div className="grid grid-cols-1 gap-2 [@media(min-width:400px)]:grid-cols-2 sm:grid-cols-3">
+                <p id="tryon-color-label" className="font-body text-[11px] uppercase tracking-wider text-cream/55 mb-1 text-center">Try a color · technique</p>
+                <p id="tryon-color-help" className="font-body text-[11px] text-cream/45 mb-3 text-center">Each option matches a real Hush service.</p>
+                <div
+                  role="radiogroup"
+                  aria-labelledby="tryon-color-label"
+                  aria-describedby="tryon-color-help"
+                  className="grid grid-cols-1 gap-2 [@media(min-width:400px)]:grid-cols-2 sm:grid-cols-3"
+                >
                   <button
+                    type="button"
+                    role="radio"
+                    aria-checked={colorId === null}
+                    aria-label="Cut only — keep your current color"
                     disabled={isGenerating}
                     onClick={() => handleColorPick(null)}
                     className={cn(
-                      "flex flex-col items-start gap-1 rounded-lg border px-3 py-2.5 text-left font-body transition-colors disabled:opacity-50 min-h-[64px]",
+                      "flex flex-col items-start gap-1 rounded-lg border px-3 py-2.5 text-left font-body transition-colors disabled:opacity-50 min-h-[64px] focus:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal",
                       colorId === null
                         ? "border-gold bg-gold/15 text-gold"
                         : "border-border bg-charcoal/40 text-cream/75 hover:border-gold/60"
@@ -1220,27 +1229,44 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
                     <span className="text-[13px] sm:text-xs font-medium">Cut only</span>
                     <span className="text-[11px] sm:text-[10px] leading-snug text-cream/55 line-clamp-2">Keep your current color</span>
                   </button>
-                  {colors.map((c) => (
+                  {colors.map((c) => {
+                    const techniqueLabel = techniqueFamilyLabel(c.id);
+                    const matchTier = colorMatchTier(c.id, undertone);
+                    const matchLabel =
+                      matchTier === "best" ? "best match for your undertone" :
+                      matchTier === "good" ? "good match for your undertone" : null;
+                    const ariaLabel = [
+                      c.name,
+                      techniqueLabel ? `${techniqueLabel} technique` : null,
+                      c.blurb,
+                      matchLabel,
+                    ].filter(Boolean).join(" — ");
+                    return (
                     <button
                       key={c.id}
+                      type="button"
+                      role="radio"
+                      aria-checked={colorId === c.id}
+                      aria-label={ariaLabel}
                       disabled={isGenerating}
                       onClick={() => handleColorPick(c.id)}
                       className={cn(
-                        "flex flex-col gap-1 rounded-lg border px-3 py-2.5 text-left font-body transition-colors disabled:opacity-50 min-h-[64px]",
+                        "flex flex-col gap-1 rounded-lg border px-3 py-2.5 text-left font-body transition-colors disabled:opacity-50 min-h-[64px] focus:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal",
                         colorId === c.id
                           ? "border-gold bg-gold/15 text-gold"
                           : "border-border bg-charcoal/40 text-cream/75 hover:border-gold/60"
                       )}
                     >
                       <span className="flex items-center gap-2">
-                        <span className="h-4 w-4 shrink-0 rounded-full border border-cream/15" style={{ backgroundColor: c.swatch }} />
+                        <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-full border border-cream/15" style={{ backgroundColor: c.swatch }} />
                         <span className="text-[13px] sm:text-xs font-medium leading-tight">{c.name}</span>
                         <MatchBadge tier={colorMatchTier(c.id, undertone)} />
                       </span>
                       <TechniqueBadge colorId={c.id} />
                       <span className="text-[11px] sm:text-[10px] leading-snug text-cream/55 line-clamp-2">{c.blurb}</span>
                     </button>
-                  ))}
+                    );
+                  })}
                 </div>
                 {isGenerating && (
                   <div className="mt-4 flex items-center justify-center gap-2 text-cream/70">
