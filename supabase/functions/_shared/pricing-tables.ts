@@ -215,7 +215,68 @@ export function renderCategoryMarkdown(cat: PricingCategory): string {
 
 /** Build the full pre-message block for one or more categories. */
 export function renderPricingBlock(categories: PricingCategory[]): string {
-  return categories.map(renderCategoryMarkdown).join("\n\n");
+  const summary = renderPricingSummary(categories);
+  const tables = categories.map(renderCategoryMarkdown).join("\n\n");
+  return summary ? `${summary}\n\n${tables}` : tables;
+}
+
+/** Parse a "$60+", "$60", "Based on consultation", "Call for pricing" into a number or null. */
+function parsePrice(price: string): number | null {
+  const m = /\$([0-9]+(?:\.[0-9]+)?)/.exec(price);
+  return m ? parseFloat(m[1]) : null;
+}
+
+/**
+ * Build a single short paragraph that summarizes the price range across the
+ * rendered categories. Surfaces the lowest starting price and the highest
+ * listed price per category so the guest can scan the answer in one glance
+ * before diving into the detailed tables below.
+ */
+export function renderPricingSummary(categories: PricingCategory[]): string {
+  if (!categories.length) return "";
+
+  const parts: string[] = [];
+  let hasConsultRow = false;
+
+  for (const cat of categories) {
+    const prices: number[] = [];
+    for (const group of cat.groups) {
+      for (const item of group.items) {
+        const n = parsePrice(item.price);
+        if (n != null) prices.push(n);
+        else hasConsultRow = true;
+      }
+    }
+    if (!prices.length) {
+      parts.push(`${cat.title.toLowerCase()} is quoted based on a quick consultation`);
+      continue;
+    }
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+    if (min === max) {
+      parts.push(`${cat.title.toLowerCase()} runs $${min}`);
+    } else {
+      parts.push(`${cat.title.toLowerCase()} ranges from $${min} to $${max}+`);
+    }
+  }
+
+  if (!parts.length) return "";
+
+  // Format: "Here's the quick read — hair ranges from $18 to $275+, and nails ranges from $30 to $110+."
+  let summaryList: string;
+  if (parts.length === 1) {
+    summaryList = parts[0];
+  } else if (parts.length === 2) {
+    summaryList = `${parts[0]}, and ${parts[1]}`;
+  } else {
+    summaryList = `${parts.slice(0, -1).join(", ")}, and ${parts[parts.length - 1]}`;
+  }
+
+  const consultNote = hasConsultRow
+    ? " A few specialty services (like balayage or corrective color) are quoted after a quick consultation."
+    : "";
+
+  return `**Here's the quick read:** ${summaryList}.${consultNote} Full breakdown below 👇`;
 }
 
 /**
