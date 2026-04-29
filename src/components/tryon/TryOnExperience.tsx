@@ -677,20 +677,36 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
     const colorMeta = colorId ? getColorMeta(colorId) : null;
     const lookLabel = [styleMeta?.name, colorMeta?.name].filter(Boolean).join(" · ");
 
-    mergeConcierge({
-      source: `${source} · Try-On`,
-      categories: ["hair"],
-      primary_category: "hair",
-      category: "hair",
-      goal: lookLabel ? `Try-On: ${lookLabel}` : null,
-    });
-
     const faceLabel = faceShape && faceShape !== "unsure"
       ? FACE_SHAPES.find((f) => f.id === faceShape)?.label
       : null;
     const undertoneLabel = undertone && undertone !== "unsure"
       ? UNDERTONES.find((u) => u.id === undertone)?.label
       : null;
+
+    // Mark the try-on context consumed — the explicit message we're about to
+    // send already carries the full preview details, so the chip-flow
+    // auto-prefix (in ChatTab) must NOT fire on top of it and double-quote
+    // the look.
+    mergeConcierge({
+      source: `${source} · Try-On`,
+      categories: ["hair"],
+      primary_category: "hair",
+      category: "hair",
+      goal: lookLabel ? `Try-On: ${lookLabel}` : null,
+      lastTryOn: {
+        styleId,
+        styleName: styleMeta?.name ?? null,
+        colorId,
+        colorName: colorMeta?.name ?? null,
+        technique: techniqueLongLabel(colorId),
+        faceShape: faceLabel ?? null,
+        undertone: undertoneLabel ?? null,
+        previewUrl: renderSignedUrl ?? null,
+        capturedAt: Date.now(),
+        consumed: true,
+      },
+    });
 
     const headerParts: string[] = [];
     if (faceLabel) headerParts.push(`face shape: ${faceLabel}`);
