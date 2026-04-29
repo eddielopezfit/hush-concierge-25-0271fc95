@@ -660,12 +660,19 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
 
           {step === "style" && (
             <div>
-              <h2 className="font-display text-2xl text-cream mb-1 text-center">Choose a style</h2>
+              <div className="mb-1 flex items-center justify-center gap-2">
+                <span className="rounded-full border border-gold/40 bg-gold/10 px-2 py-0.5 font-body text-[10px] uppercase tracking-wider text-gold">
+                  Hair
+                </span>
+              </div>
+              <h2 className="font-display text-2xl text-cream mb-1 text-center">Choose a hairstyle</h2>
               <p className="font-body text-sm text-cream/60 mb-4 text-center">
                 Tap any look to see it on you. You can try as many as you want.
               </p>
 
-              {/* Optional refinement: face shape, undertone, category — collapsed by default */}
+              {/* Optional refinement: face shape, undertone, category — only shown after a photo
+                  is uploaded so guests aren't asked to refine looks they can't preview yet. */}
+              {photoDataUrl && (
               <div className="mx-auto mb-5 max-w-3xl">
                 <div className="flex items-center justify-center gap-3 flex-wrap">
                   <button
@@ -759,6 +766,7 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
                   </div>
                 )}
               </div>
+              )}
 
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                 {styles.map((s) => (
