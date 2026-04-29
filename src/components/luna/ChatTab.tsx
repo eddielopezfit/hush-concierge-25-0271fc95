@@ -29,6 +29,10 @@ import {
   setVisitThreadId,
   clearVisitThreadId,
 } from "./chat/useChatPersistence";
+import {
+  loadQualifyingStage,
+  saveQualifyingStage,
+} from "./chat/qualifyingStageStore";
 import { useChatStreaming } from "./chat/useChatStreaming";
 import { LeadCaptureForm } from "./chat/LeadCaptureForm";
 
@@ -170,6 +174,7 @@ export const ChatTab = () => {
     setSmartChips(getSmartChips(ctx));
     setQualifyingStage(0);
     setQuickReplies(getQuickReplies(ctx, greeting, 0));
+    saveQualifyingStage(ctx, 0);
     setActiveThreadOrigin("current-tab");
     setCrossTabThreadAvailable(null);
 
@@ -282,7 +287,11 @@ export const ChatTab = () => {
       setLeadCaptured(persisted.leadCaptured || false);
       setLeadDismissed(persisted.leadDismissed || false);
       const lastAssistant = [...persisted.messages].reverse().find((m) => m.role === "assistant");
-        setQuickReplies(getQuickReplies(ctx, lastAssistant?.content || "", qualifyingStage));
+        {
+          const restoredStage = loadQualifyingStage(ctx);
+          setQualifyingStage(restoredStage);
+          setQuickReplies(getQuickReplies(ctx, lastAssistant?.content || "", restoredStage));
+        }
     } else if (initialized && previousFingerprint && previousFingerprint !== "none") {
       const transition = buildContextTransition(ctx);
       const transitionMsg: ChatMessage = {
@@ -291,17 +300,24 @@ export const ChatTab = () => {
         content: transition,
       };
       setMessages((prev) => [...prev, transitionMsg]);
-        // Context just changed → restart the qualifying flow at stage 0
-        setQualifyingStage(0);
-        setQuickReplies(getQuickReplies(ctx, transition, 0));
+        // Context changed → restore this service's saved stage if we've seen
+        // it before in this visit; otherwise start fresh at stage 0.
+        {
+          const restoredStage = loadQualifyingStage(ctx);
+          setQualifyingStage(restoredStage);
+          setQuickReplies(getQuickReplies(ctx, transition, restoredStage));
+        }
     } else {
       const greeting = buildContextGreeting(ctx);
       setMessages([{ id: "greeting", role: "assistant", content: greeting }]);
       setSuccessfulExchangeCount(0);
       setLeadCaptured(false);
       setLeadDismissed(false);
-        setQualifyingStage(0);
-        setQuickReplies(getQuickReplies(ctx, greeting, 0));
+        {
+          const restoredStage = loadQualifyingStage(ctx);
+          setQualifyingStage(restoredStage);
+          setQuickReplies(getQuickReplies(ctx, greeting, restoredStage));
+        }
     }
 
     setContextPills(getContextPills(ctx));
@@ -487,7 +503,11 @@ export const ChatTab = () => {
       // Advance the qualifying-flow stage on every user reply when in
       // single-category mode, so chips progress: look → timing → booking.
       if (conciergeContext?.categories?.length === 1) {
-        setQualifyingStage((s) => Math.min(s + 1, 2));
+        setQualifyingStage((s) => {
+          const next = Math.min(s + 1, 2);
+          saveQualifyingStage(conciergeContext, next);
+          return next;
+        });
       }
 
       // Force-scroll to bottom on send so the user follows their own message
@@ -526,6 +546,7 @@ export const ChatTab = () => {
           const lastAssistant = [...next].reverse().find((m) => m.role === "assistant");
           const newStage = Math.max(0, qualifyingStage - 1);
           setQualifyingStage(newStage);
+          saveQualifyingStage(conciergeContext, newStage);
           setQuickReplies(getQuickReplies(conciergeContext, lastAssistant?.content || "", newStage));
           setUserMessageCount((c) => Math.max(0, c - 1));
           return next;
