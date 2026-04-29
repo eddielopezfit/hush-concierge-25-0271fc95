@@ -76,12 +76,14 @@ export const ServicesSection = () => {
   const handleStartLuna = (serviceId: ServiceCategoryId, e?: React.MouseEvent) => {
     e?.stopPropagation();
     mergeConcierge({
-      source: "Services Section",
+      source: `Services Section: ${serviceId}`,
       categories: [serviceId],
       primary_category: serviceId,
       category: serviceId,
     });
-    openChatWidget("explore");
+    // Open directly into Chat so Luna guides the guest for THIS service,
+    // instead of dumping them on the generic Explore category list.
+    openChatWidget("chat");
   };
 
   const getPricePreview = (serviceId: string): string => {
