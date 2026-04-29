@@ -409,6 +409,25 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
       setRenderSignedUrl(payload.renderSignedUrl);
       setStep("preview");
       reachedPreviewRef.current = true;
+      // Auto-add every successful render to the session gallery (dedupe on
+      // style+color, cap at 12, preserve favorite flag if it already existed).
+      setSavedLooks((prev) => {
+        const key = `${chosenStyleId}|${chosenColorId ?? ""}`;
+        const existingIdx = prev.findIndex(
+          (l) => `${l.styleId}|${l.colorId ?? ""}` === key,
+        );
+        const wasFavorite = existingIdx >= 0 ? !!prev[existingIdx].favorite : false;
+        const next: SavedLook = {
+          id: existingIdx >= 0 ? prev[existingIdx].id : crypto.randomUUID(),
+          styleId: chosenStyleId,
+          colorId: chosenColorId,
+          renderDataUrl: payload.renderDataUrl,
+          favorite: wasFavorite,
+          createdAt: Date.now(),
+        };
+        const without = prev.filter((_, i) => i !== existingIdx);
+        return [next, ...without].slice(0, 12);
+      });
       trackFunnelEvent("hairstyle_preview", "preview_shown", {
         metadata: { style_id: chosenStyleId, color_id: chosenColorId },
       });
