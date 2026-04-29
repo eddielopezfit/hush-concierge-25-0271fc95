@@ -55,6 +55,20 @@ function techniqueFamilyLabel(id: string): string | null {
   return null;
 }
 
+// Long-form technique label used to seed Luna with the exact Hush color lane
+// the guest just previewed. Hoisted so every handoff path (chip flow, "Send
+// Look to Luna", booking) speaks the same vocabulary.
+function techniqueLongLabel(id: string | null): string | null {
+  if (!id) return null;
+  if (id.startsWith("balayage_")) return "Balayage (hand-painted, lived-in)";
+  if (id.startsWith("foilayage_")) return "Foilayage (foil-bright highlights)";
+  if (id === "money_piece") return "Money-Piece face-frame highlights";
+  if (id === "vivid_accent_rose") return "Vivid fashion-color accent";
+  if (id === "lived_in_brunette") return "Lived-In Brunette (gloss + root shadow)";
+  if (id === "soft_black_gloss") return "Gloss / single-process";
+  return null;
+}
+
 function TechniqueBadge({ colorId }: { colorId: string }) {
   const label = techniqueFamilyLabel(colorId);
   if (!label) return null;
