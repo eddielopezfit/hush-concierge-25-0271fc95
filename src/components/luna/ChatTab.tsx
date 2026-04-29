@@ -537,6 +537,17 @@ export const ChatTab = () => {
       // back so the previous chip set re-surfaces. Does not call Luna.
       if (reply === BACK_CHIP) {
         if (isStreaming) return;
+        // Guard: nothing to undo if the guest hasn't replied yet, or we're
+        // already sitting on Luna's first qualifying question (stage 0 with
+        // no user turns between the greeting and now).
+        const hasUserTurn = messages.some((m) => m.role === "user");
+        if (!hasUserTurn || qualifyingStage <= 0) {
+          toast.message("Nothing to undo yet", {
+            description: "You're on Luna's first question — pick an option to get started.",
+            duration: 2400,
+          });
+          return;
+        }
         setMessages((prev) => {
           // Remove trailing assistant messages + the last user message so the
           // prior assistant question becomes the latest message again.
@@ -575,7 +586,7 @@ export const ChatTab = () => {
       }
       handleSendInternal(reply);
     },
-    [handleSendInternal, isStreaming, qualifyingStage, conciergeContext]
+    [handleSendInternal, isStreaming, qualifyingStage, conciergeContext, messages]
   );
 
   const handleSend = useCallback(
@@ -782,17 +793,38 @@ export const ChatTab = () => {
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="flex flex-wrap gap-1.5 mt-1 pb-1"
+            className="flex flex-col gap-1.5 mt-1 pb-1"
           >
-            {quickReplies.map((reply) => (
-              <button
-                key={reply}
-                onClick={() => handleQuickReply(reply)}
-                className="px-3 py-2 rounded-full border border-primary/25 text-primary text-xs font-body font-medium hover:bg-primary/10 active:scale-95 transition-all"
-              >
-                {reply}
-              </button>
-            ))}
+            {/* Stage indicator — only shown for single-service qualifying flow */}
+            {conciergeContext?.categories?.length === 1 && (
+              <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-body text-muted-foreground/70">
+                <span className="inline-flex items-center gap-1">
+                  {[0, 1, 2].map((i) => (
+                    <span
+                      key={i}
+                      className={`h-1 w-3 rounded-full transition-colors ${
+                        i <= qualifyingStage ? "bg-primary/70" : "bg-primary/15"
+                      }`}
+                    />
+                  ))}
+                </span>
+                <span>
+                  Step {qualifyingStage + 1} of 3 ·{" "}
+                  {qualifyingStage === 0 ? "The look" : qualifyingStage === 1 ? "Timing" : "Booking"}
+                </span>
+              </div>
+            )}
+            <div className="flex flex-wrap gap-1.5">
+              {quickReplies.map((reply) => (
+                <button
+                  key={reply}
+                  onClick={() => handleQuickReply(reply)}
+                  className="px-3 py-2 rounded-full border border-primary/25 text-primary text-xs font-body font-medium hover:bg-primary/10 active:scale-95 transition-all"
+                >
+                  {reply}
+                </button>
+              ))}
+            </div>
           </m.div>
         )}
 
