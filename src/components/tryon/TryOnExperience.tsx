@@ -42,7 +42,7 @@ function MatchBadge({ tier }: { tier: MatchTier }) {
   );
 }
 
-type Step = "intro" | "face" | "category" | "style" | "color" | "preview" | "convert";
+type Step = "intro" | "style" | "preview" | "convert";
 
 interface SavedLook {
   id: string;
@@ -62,7 +62,8 @@ function fileToDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result));
-    reader.onerror = reject;
+    reader.onerror = () => reject(new Error("Couldn't read that photo. Try another."));
+    reader.onabort = () => reject(new Error("Photo upload was cancelled."));
     reader.readAsDataURL(file);
   });
 }
@@ -72,6 +73,10 @@ function fileToDataUrl(file: File): Promise<string> {
  *
  * AI-generated visualization. Real stylist still tailors the final result —
  * surfaced explicitly in copy so guests don't expect a perfect match.
+ *
+ * Streamlined flow: Upload → Style (with optional face/undertone/category filters)
+ * → Preview (with inline color iteration). Collapsed from 5 steps to 3 to reduce
+ * friction before the wow moment.
  */
 export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
   const { mergeConcierge, openChatWidget } = useLuna();
@@ -87,8 +92,11 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [savedLooks, setSavedLooks] = useState<SavedLook[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isReadingFile, setIsReadingFile] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   // Lock body scroll while modal is open
   useEffect(() => {
@@ -109,6 +117,16 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
 
   const handleFile = useCallback(async (file: File) => {
     setError(null);
+
+    // HEIC isn't browser-renderable — give a clear, friendly message instead of silent fail
+    const name = file.name?.toLowerCase() ?? "";
+    if (name.endsWith(".heic") || name.endsWith(".heif") || file.type === "image/heic" || file.type === "image/heif") {
+      const msg = "iPhone HEIC photos aren't supported yet. In your camera settings switch to 'Most Compatible' or share the photo as JPEG, then try again.";
+      setError(msg);
+      toast.error(msg);
+      return;
+    }
+
     if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
       setError("Please upload a JPEG, PNG, or WEBP photo.");
       return;
@@ -117,9 +135,19 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
       setError("Photo is larger than 6 MB. Try a smaller version.");
       return;
     }
-    const dataUrl = await fileToDataUrl(file);
-    setPhotoDataUrl(dataUrl);
-    setStep("face");
+
+    setIsReadingFile(true);
+    try {
+      const dataUrl = await fileToDataUrl(file);
+      setPhotoDataUrl(dataUrl);
+      setStep("style");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Couldn't read that photo. Try another.";
+      setError(msg);
+      toast.error(msg);
+    } finally {
+      setIsReadingFile(false);
+    }
   }, []);
 
   const generate = useCallback(async (chosenStyleId: string, chosenColorId: string | null) => {
@@ -159,13 +187,13 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
     } finally {
       setIsGenerating(false);
     }
-  }, [photoDataUrl, sessionId]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // (faceShape/undertone are read at call time and don't need to invalidate the callback)
+  }, [photoDataUrl, sessionId]);
 
   const handleStylePick = (id: string) => {
     setStyleId(id);
-    setStep("color");
+    setColorId(null);
+    void generate(id, null);
   };
 
   const handleColorPick = async (id: string | null) => {
@@ -272,21 +300,20 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
 
   const stepBack = () => {
     setError(null);
-    if (step === "face") setStep("intro");
-    else if (step === "category") setStep("face");
-    else if (step === "style") setStep("category");
-    else if (step === "color") setStep("style");
-    else if (step === "preview") setStep("color");
+    if (step === "style") setStep("intro");
+    else if (step === "preview") setStep("style");
     else if (step === "convert") setStep("preview");
   };
 
-  const resetFaceAndUndertone = () => {
+  const resetFilters = () => {
     setFaceShape(null);
     setUndertone(null);
-    toast.success("Cleared — re-sorting styles & colors");
+    setCategory(null);
+    toast.success("Filters cleared");
   };
 
-  const hasFaceOrUndertone = faceShape !== null || undertone !== null;
+  const hasFilters = faceShape !== null || undertone !== null || category !== null;
+  const activeFilterCount = (faceShape ? 1 : 0) + (undertone ? 1 : 0) + (category ? 1 : 0);
 
   const modal = (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-charcoal/90 backdrop-blur-sm p-0 sm:p-6 animate-fade-in">
@@ -304,9 +331,9 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
               </button>
             )}
             <div className="min-w-0">
-              <p className="font-display text-lg sm:text-xl text-cream truncate">Try Your New Look</p>
+              <p className="font-display text-lg sm:text-xl text-cream truncate">Preview a New Hairstyle</p>
               <p className="font-body text-[11px] text-cream/45 truncate">
-                AI-generated preview · Your stylist will tailor the final result
+                AI-generated preview · Your stylist tailors the final result
               </p>
             </div>
           </div>
@@ -332,17 +359,30 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
               <Wand2 className="mx-auto mb-4 h-10 w-10 text-gold" />
               <h2 className="font-display text-3xl text-cream mb-3">See yourself transformed</h2>
               <p className="font-body text-sm text-cream/70 mb-7 leading-relaxed">
-                Upload a clear, front-facing selfie. We'll preview different styles and colors so you can walk into your appointment knowing exactly what you want.
+                Upload a clear, front-facing selfie and we'll preview a new hairstyle in seconds — so you can walk into your appointment knowing exactly what you want.
               </p>
 
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="group flex w-full flex-col items-center gap-3 rounded-xl border-2 border-dashed border-gold/40 bg-charcoal/40 px-6 py-10 text-cream/80 transition-colors hover:border-gold hover:bg-charcoal/60"
-              >
-                <Upload className="h-8 w-8 text-gold transition-transform group-hover:scale-110" />
-                <span className="font-body text-base text-cream">Upload a selfie</span>
-                <span className="font-body text-xs text-cream/55">JPEG, PNG, or WEBP · up to 6 MB</span>
-              </button>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button
+                  onClick={() => !isReadingFile && cameraInputRef.current?.click()}
+                  disabled={isReadingFile}
+                  className="group flex flex-col items-center gap-2 rounded-xl border-2 border-dashed border-gold/40 bg-charcoal/40 px-6 py-8 text-cream/80 transition-colors hover:border-gold hover:bg-charcoal/60 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Camera className="h-7 w-7 text-gold transition-transform group-hover:scale-110" />
+                  <span className="font-body text-base text-cream">Take a selfie</span>
+                  <span className="font-body text-xs text-cream/55">Use your camera</span>
+                </button>
+                <button
+                  onClick={() => !isReadingFile && fileInputRef.current?.click()}
+                  disabled={isReadingFile}
+                  className="group flex flex-col items-center gap-2 rounded-xl border-2 border-dashed border-gold/40 bg-charcoal/40 px-6 py-8 text-cream/80 transition-colors hover:border-gold hover:bg-charcoal/60 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Upload className="h-7 w-7 text-gold transition-transform group-hover:scale-110" />
+                  <span className="font-body text-base text-cream">Upload a photo</span>
+                  <span className="font-body text-xs text-cream/55">JPEG, PNG, WEBP · up to 6 MB</span>
+                </button>
+              </div>
+
               <input
                 ref={fileInputRef}
                 type="file"
@@ -354,199 +394,150 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
                   e.currentTarget.value = "";
                 }}
               />
+              <input
+                ref={cameraInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                capture="user"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) void handleFile(f);
+                  e.currentTarget.value = "";
+                }}
+              />
 
-              <p className="mt-6 font-body text-[11px] text-cream/45 leading-relaxed">
-                Your photo is used only to generate your preview and is automatically removed after 7 days. We never share it.
-              </p>
-            </div>
-          )}
-
-          {step === "face" && (
-            <div className="mx-auto max-w-2xl">
-              <h2 className="font-display text-2xl text-cream mb-1 text-center">A little about your features</h2>
-              <p className="font-body text-sm text-cream/60 mb-6 text-center">
-                Optional — helps us sort the most flattering looks first and gives Luna better context. Tap <em className="not-italic text-cream/80">Not sure</em> for either to skip.
-              </p>
-
-              <div className="mb-7">
-                <p className="font-body text-xs uppercase tracking-wider text-cream/55 mb-3">Face shape</p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                  {FACE_SHAPES.map((f) => (
-                    <button
-                      key={f.id}
-                      onClick={() => setFaceShape(f.id)}
-                      className={cn(
-                        "rounded-lg border bg-charcoal/40 p-3 text-left transition-colors",
-                        faceShape === f.id
-                          ? "border-gold bg-charcoal/70"
-                          : "border-border hover:border-gold/60"
-                      )}
-                    >
-                      <span className="block font-display text-sm text-cream">{f.label}</span>
-                      <span className="block font-body text-[11px] text-cream/55 leading-snug">{f.hint}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mb-7">
-                <p className="font-body text-xs uppercase tracking-wider text-cream/55 mb-3">Skin undertone</p>
-                <div className="grid grid-cols-2 sm:grid-cols-2 gap-2.5">
-                  {UNDERTONES.map((u) => (
-                    <button
-                      key={u.id}
-                      onClick={() => setUndertone(u.id)}
-                      className={cn(
-                        "rounded-lg border bg-charcoal/40 p-3 text-left transition-colors",
-                        undertone === u.id
-                          ? "border-gold bg-charcoal/70"
-                          : "border-border hover:border-gold/60"
-                      )}
-                    >
-                      <span className="block font-display text-sm text-cream">{u.label}</span>
-                      <span className="block font-body text-[11px] text-cream/55 leading-snug">{u.hint}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                <button
-                  onClick={() => setStep("category")}
-                  className="btn-gold py-2.5 px-6 text-sm w-full sm:w-auto"
-                >
-                  Continue
-                </button>
-                <button
-                  onClick={() => { setFaceShape("unsure"); setUndertone("unsure"); setStep("category"); }}
-                  className="font-body text-sm text-cream/60 underline underline-offset-4 hover:text-gold"
-                >
-                  Skip — I'll let my stylist decide
-                </button>
-              </div>
-              {hasFaceOrUndertone && (
-                <div className="mt-4 text-center">
-                  <button
-                    onClick={resetFaceAndUndertone}
-                    className="font-body text-xs text-cream/55 underline underline-offset-4 hover:text-gold"
-                  >
-                    Reset my face & undertone
-                  </button>
+              {isReadingFile && (
+                <div className="mt-6 flex items-center justify-center gap-2 text-cream/70">
+                  <Loader2 className="h-4 w-4 animate-spin text-gold" />
+                  <span className="font-body text-sm">Reading your photo…</span>
                 </div>
               )}
-              <p className="mt-4 text-center font-body text-[11px] text-cream/45">
-                Your stylist always has the final say — this just helps us start you in the right direction.
-              </p>
-            </div>
-          )}
 
-          {step === "category" && (
-            <div>
-              <h2 className="font-display text-2xl text-cream mb-1 text-center">Pick a direction</h2>
-              <p className="font-body text-sm text-cream/60 mb-6 text-center">Choose a vibe — you can try as many as you want.</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {TRY_ON_CATEGORIES.map((c) => (
-                  <button
-                    key={c.id}
-                    onClick={() => { setCategory(c.id); setStep("style"); }}
-                    className={cn(
-                      "flex flex-col items-start gap-1 rounded-xl border border-border bg-charcoal/40 p-4 text-left transition-colors",
-                      "hover:border-gold/60 hover:bg-charcoal/60"
-                    )}
-                  >
-                    <span className="font-display text-lg text-cream">{c.label}</span>
-                    <span className="font-body text-xs text-cream/60">{c.description}</span>
-                  </button>
-                ))}
-              </div>
+              <p className="mt-6 font-body text-[11px] text-cream/45 leading-relaxed">
+                iPhone users: if upload fails, switch your camera setting to "Most Compatible" (HEIC photos aren't supported yet).
+              </p>
+              <p className="mt-3 font-body text-[11px] text-cream/45 leading-relaxed">
+                Your photo is used only to generate your preview and is automatically removed after 7 days. We never share it.
+              </p>
             </div>
           )}
 
           {step === "style" && (
             <div>
               <h2 className="font-display text-2xl text-cream mb-1 text-center">Choose a style</h2>
-              <p className="font-body text-sm text-cream/60 mb-6 text-center">
-                Tap one to keep going. You can try others after.
-                {faceShape && faceShape !== "unsure" && (
-                  <span className="block text-[11px] text-gold/80 mt-1">
-                    ✦ Sorted with {FACE_SHAPES.find((f) => f.id === faceShape)?.label.toLowerCase()}-face matches first
-                  </span>
-                )}
-                {hasFaceOrUndertone && (
-                  <span className="block mt-2">
+              <p className="font-body text-sm text-cream/60 mb-4 text-center">
+                Tap any look to see it on you. You can try as many as you want.
+              </p>
+
+              {/* Optional refinement: face shape, undertone, category — collapsed by default */}
+              <div className="mx-auto mb-5 max-w-3xl">
+                <div className="flex items-center justify-center gap-3 flex-wrap">
+                  <button
+                    onClick={() => setFiltersOpen((v) => !v)}
+                    className={cn(
+                      "rounded-full border px-3 py-1.5 font-body text-xs transition-colors",
+                      filtersOpen || hasFilters
+                        ? "border-gold/60 bg-gold/10 text-gold"
+                        : "border-border bg-charcoal/40 text-cream/70 hover:border-gold/60"
+                    )}
+                  >
+                    {filtersOpen ? "Hide refinements" : "Refine for my face & vibe"}
+                    {activeFilterCount > 0 && !filtersOpen && (
+                      <span className="ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-gold/20 px-1 text-[10px] text-gold">
+                        {activeFilterCount}
+                      </span>
+                    )}
+                  </button>
+                  {hasFilters && (
                     <button
-                      onClick={() => { resetFaceAndUndertone(); setStep("face"); }}
+                      onClick={resetFilters}
                       className="font-body text-[11px] text-cream/55 underline underline-offset-4 hover:text-gold"
                     >
-                      Reset my face & undertone
+                      Clear filters
                     </button>
-                  </span>
+                  )}
+                </div>
+
+                {filtersOpen && (
+                  <div className="mt-4 rounded-xl border border-border/60 bg-charcoal/30 p-4 space-y-4">
+                    <div>
+                      <p className="font-body text-[11px] uppercase tracking-wider text-cream/55 mb-2">Vibe</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {TRY_ON_CATEGORIES.map((c) => (
+                          <button
+                            key={c.id}
+                            onClick={() => setCategory(category === c.id ? null : c.id)}
+                            className={cn(
+                              "rounded-full border px-2.5 py-1 font-body text-xs transition-colors",
+                              category === c.id
+                                ? "border-gold bg-gold/15 text-gold"
+                                : "border-border bg-charcoal/40 text-cream/75 hover:border-gold/60"
+                            )}
+                          >
+                            {c.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <p className="font-body text-[11px] uppercase tracking-wider text-cream/55 mb-2">Face shape <span className="normal-case text-cream/40">(optional)</span></p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {FACE_SHAPES.filter((f) => f.id !== "unsure").map((f) => (
+                          <button
+                            key={f.id}
+                            onClick={() => setFaceShape(faceShape === f.id ? null : f.id)}
+                            className={cn(
+                              "rounded-full border px-2.5 py-1 font-body text-xs transition-colors",
+                              faceShape === f.id
+                                ? "border-gold bg-gold/15 text-gold"
+                                : "border-border bg-charcoal/40 text-cream/75 hover:border-gold/60"
+                            )}
+                          >
+                            {f.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <p className="font-body text-[11px] uppercase tracking-wider text-cream/55 mb-2">Skin undertone <span className="normal-case text-cream/40">(optional)</span></p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {UNDERTONES.filter((u) => u.id !== "unsure").map((u) => (
+                          <button
+                            key={u.id}
+                            onClick={() => setUndertone(undertone === u.id ? null : u.id)}
+                            className={cn(
+                              "rounded-full border px-2.5 py-1 font-body text-xs transition-colors",
+                              undertone === u.id
+                                ? "border-gold bg-gold/15 text-gold"
+                                : "border-border bg-charcoal/40 text-cream/75 hover:border-gold/60"
+                            )}
+                          >
+                            {u.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <p className="font-body text-[11px] text-cream/45">
+                      Optional — helps us sort the most flattering looks first. Your stylist always has the final say.
+                    </p>
+                  </div>
                 )}
-              </p>
+              </div>
+
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                 {styles.map((s) => (
                   <button
                     key={s.id}
+                    disabled={isGenerating}
                     onClick={() => handleStylePick(s.id)}
-                    className="flex flex-col items-start gap-1 rounded-xl border border-border bg-charcoal/40 p-3 text-left transition-colors hover:border-gold/60 hover:bg-charcoal/60"
+                    className="flex flex-col items-start gap-1 rounded-xl border border-border bg-charcoal/40 p-3 text-left transition-colors hover:border-gold/60 hover:bg-charcoal/60 disabled:opacity-50"
                   >
-                <span className="font-display text-base text-cream">{s.name}</span>
+                    <span className="font-display text-base text-cream">{s.name}</span>
                     <MatchBadge tier={styleMatchTier(s.id, faceShape)} />
                     <span className="font-body text-[11px] text-cream/55">{s.blurb}</span>
                   </button>
                 ))}
-              </div>
-            </div>
-          )}
-
-          {step === "color" && (
-            <div>
-              <h2 className="font-display text-2xl text-cream mb-1 text-center">Pick a color</h2>
-              <p className="font-body text-sm text-cream/60 mb-6 text-center">
-                Or skip — we'll preview just the cut.
-                {undertone && undertone !== "unsure" && (
-                  <span className="block text-[11px] text-gold/80 mt-1">
-                    ✦ Sorted with {UNDERTONES.find((u) => u.id === undertone)?.label.toLowerCase()}-undertone matches first
-                  </span>
-                )}
-                {hasFaceOrUndertone && (
-                  <span className="block mt-2">
-                    <button
-                      onClick={() => { resetFaceAndUndertone(); setStep("face"); }}
-                      className="font-body text-[11px] text-cream/55 underline underline-offset-4 hover:text-gold"
-                    >
-                      Reset my face & undertone
-                    </button>
-                  </span>
-                )}
-              </p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {colors.map((c) => (
-                  <button
-                    key={c.id}
-                    disabled={isGenerating}
-                    onClick={() => handleColorPick(c.id)}
-                    className="flex items-center gap-3 rounded-xl border border-border bg-charcoal/40 p-3 text-left transition-colors hover:border-gold/60 hover:bg-charcoal/60 disabled:opacity-50"
-                  >
-                    <span className="h-10 w-10 shrink-0 rounded-full border border-cream/15" style={{ backgroundColor: c.swatch }} />
-                <span className="min-w-0 flex-1">
-                      <span className="flex items-center gap-1.5">
-                        <span className="font-display text-base text-cream truncate">{c.name}</span>
-                        <MatchBadge tier={colorMatchTier(c.id, undertone)} />
-                      </span>
-                      <span className="block font-body text-[11px] text-cream/55 truncate">{c.blurb}</span>
-                    </span>
-                  </button>
-                ))}
-              </div>
-              <div className="mt-5 text-center">
-                <button
-                  disabled={isGenerating}
-                  onClick={() => handleColorPick(null)}
-                  className="font-body text-sm text-cream/60 underline underline-offset-4 hover:text-gold disabled:opacity-50"
-                >
-                  Skip color — preview the cut only
-                </button>
               </div>
 
               {isGenerating && (
@@ -570,15 +561,54 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
                 <CompareSlider beforeSrc={photoDataUrl} afterSrc={renderDataUrl} />
               </div>
 
-              <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4 max-w-2xl mx-auto">
+              {/* Inline color iteration — moved here so guests get the wow first, then refine */}
+              <div className="mx-auto mt-6 max-w-2xl">
+                <p className="font-body text-[11px] uppercase tracking-wider text-cream/55 mb-2 text-center">Try a color</p>
+                <div className="flex flex-wrap justify-center gap-2">
+                  <button
+                    disabled={isGenerating}
+                    onClick={() => handleColorPick(null)}
+                    className={cn(
+                      "rounded-full border px-3 py-1.5 font-body text-xs transition-colors disabled:opacity-50",
+                      colorId === null
+                        ? "border-gold bg-gold/15 text-gold"
+                        : "border-border bg-charcoal/40 text-cream/75 hover:border-gold/60"
+                    )}
+                  >
+                    Cut only
+                  </button>
+                  {colors.map((c) => (
+                    <button
+                      key={c.id}
+                      disabled={isGenerating}
+                      onClick={() => handleColorPick(c.id)}
+                      className={cn(
+                        "inline-flex items-center gap-2 rounded-full border px-2.5 py-1.5 font-body text-xs transition-colors disabled:opacity-50",
+                        colorId === c.id
+                          ? "border-gold bg-gold/15 text-gold"
+                          : "border-border bg-charcoal/40 text-cream/75 hover:border-gold/60"
+                      )}
+                    >
+                      <span className="h-4 w-4 rounded-full border border-cream/15" style={{ backgroundColor: c.swatch }} />
+                      {c.name}
+                      <MatchBadge tier={colorMatchTier(c.id, undertone)} />
+                    </button>
+                  ))}
+                </div>
+                {isGenerating && (
+                  <div className="mt-4 flex items-center justify-center gap-2 text-cream/70">
+                    <Loader2 className="h-4 w-4 animate-spin text-gold" />
+                    <span className="font-body text-xs">Updating preview…</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 max-w-2xl mx-auto">
                 <button onClick={saveLook} className="rounded-lg border border-gold/40 bg-gold/10 px-3 py-2.5 font-body text-sm text-gold hover:bg-gold/20">
                   <Check className="mr-1.5 inline h-4 w-4" /> Save look
                 </button>
-                <button onClick={() => setStep("color")} className="rounded-lg border border-border bg-charcoal/40 px-3 py-2.5 font-body text-sm text-cream hover:border-gold/60">
-                  Try a color
-                </button>
-                <button onClick={() => setStep("category")} className="rounded-lg border border-border bg-charcoal/40 px-3 py-2.5 font-body text-sm text-cream hover:border-gold/60">
-                  Try a style
+                <button onClick={() => setStep("style")} className="rounded-lg border border-border bg-charcoal/40 px-3 py-2.5 font-body text-sm text-cream hover:border-gold/60">
+                  Try another style
                 </button>
                 <button onClick={() => setStep("convert")} className="btn-gold py-2.5 px-3 text-sm">
                   <Sparkles className="mr-1.5 inline h-4 w-4" /> I love it
