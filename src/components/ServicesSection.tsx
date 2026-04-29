@@ -122,34 +122,36 @@ export const ServicesSection = () => {
         <p className="font-body text-[11px] text-gold/60 leading-relaxed mb-3">
           Loved by 315+ guests · 4.7★ on Google
         </p>
-        <div
-          className={`mt-4 grid grid-cols-1 gap-2 ${
-            service.id === "hair" ? "sm:grid-cols-3" : "sm:grid-cols-2"
-          }`}
-        >
+        <div className="mt-4 flex flex-col gap-2">
+          {/* Hair-only primary: full-width gold CTA on its own row so it
+              never wraps awkwardly or competes with the secondary actions
+              for horizontal space on narrow cards (mobile + 3-col desktop). */}
           {service.id === "hair" && (
-            <div onClick={(e) => e.stopPropagation()} className="contents">
+            <div onClick={(e) => e.stopPropagation()}>
               <TryOnEntryButton
                 variant="primary"
-                label="Preview Hairstyle"
+                label="Preview a New Hairstyle"
                 source="Services Card"
-                className="min-h-[42px] !py-2 !px-3 text-sm"
+                className="!w-full !py-2.5 !px-3 text-sm whitespace-nowrap"
               />
             </div>
           )}
-          <button
-            onClick={(e) => handleStartLuna(service.id as ServiceCategoryId, e)}
-            className="inline-flex min-h-[42px] items-center justify-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-4 py-2 text-center font-body text-sm text-primary transition-colors hover:bg-primary/10"
-          >
-            <MessageCircle className="h-4 w-4" />
-            Let Luna guide you
-          </button>
-          <button
-            onClick={(e) => handleViewMenu(service.id, e)}
-            className="min-h-[42px] font-body text-sm text-muted-foreground hover:text-gold transition-colors underline underline-offset-4 w-full text-center block"
-          >
-            View full menu & pricing
-          </button>
+          {/* Secondary actions — always 2-up so labels stay on one line. */}
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <button
+              onClick={(e) => handleStartLuna(service.id as ServiceCategoryId, e)}
+              className="inline-flex min-h-[42px] items-center justify-center gap-1.5 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-center font-body text-sm text-primary transition-colors hover:bg-primary/10 whitespace-nowrap"
+            >
+              <MessageCircle className="h-4 w-4 shrink-0" />
+              <span className="truncate">Let Luna guide you</span>
+            </button>
+            <button
+              onClick={(e) => handleViewMenu(service.id, e)}
+              className="min-h-[42px] font-body text-sm text-muted-foreground hover:text-gold transition-colors underline underline-offset-4 w-full text-center block"
+            >
+              View full menu
+            </button>
+          </div>
         </div>
       </div>
     </m.div>
