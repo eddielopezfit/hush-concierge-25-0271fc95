@@ -920,6 +920,8 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
                     </p>
                   </div>
                 )}
+                </>
+                )}
               </div>
               )}
 
