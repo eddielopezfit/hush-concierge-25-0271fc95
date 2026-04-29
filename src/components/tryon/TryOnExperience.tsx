@@ -820,6 +820,15 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
                   is uploaded so guests aren't asked to refine looks they can't preview yet. */}
               {photoDataUrl && (
               <div className="mx-auto mb-5 max-w-3xl">
+                {!chipsReady ? (
+                  <div
+                    className="flex items-center justify-center gap-2 animate-fade-in"
+                    aria-hidden="true"
+                  >
+                    <span className="h-7 w-44 rounded-full bg-cream/5 animate-pulse" />
+                    <span className="h-7 w-20 rounded-full bg-cream/5 animate-pulse" />
+                  </div>
+                ) : (
                 <div className="flex items-center justify-center gap-3 flex-wrap">
                   <button
                     onClick={() => setFiltersOpen((v) => !v)}
