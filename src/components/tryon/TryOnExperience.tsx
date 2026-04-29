@@ -59,6 +59,35 @@ interface TryOnExperienceProps {
 
 const MAX_FILE_BYTES = 6 * 1024 * 1024;
 
+// Session-scoped persistence for refine filters. Stored as plain string IDs;
+// readers validate that the persisted value still matches a known option
+// before applying it (defends against stale IDs after a deploy).
+const FILTER_KEYS = {
+  faceShape: "hush_tryon_face_shape",
+  undertone: "hush_tryon_undertone",
+  category: "hush_tryon_category",
+} as const;
+
+function readPersistedFilter<T extends string>(key: string): T | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const v = window.sessionStorage.getItem(key);
+    return v ? (v as T) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writePersistedFilter(key: string, value: string | null) {
+  if (typeof window === "undefined") return;
+  try {
+    if (value) window.sessionStorage.setItem(key, value);
+    else window.sessionStorage.removeItem(key);
+  } catch {
+    /* ignore — persistence is best-effort */
+  }
+}
+
 function fileToDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
