@@ -396,7 +396,24 @@ export function getContextPills(ctx: ConciergeContext | null): string[] {
   if (ctx.categories?.length) {
     ctx.categories.forEach((c) => pills.push(categoryLabels[c] || c));
   }
-  if (ctx.service_subtype && ctx.service_subtype !== "unsure") {
+  // If the guest just previewed a hair look in the Try-On with no color
+  // applied, the most truthful subtype label is "Cut" — even if the
+  // earlier Find-My-Look intake had captured "both" (Cut + Color). Demote
+  // here so the vibe pill matches what they actually previewed.
+  let effectiveSubtype = ctx.service_subtype;
+  const lastTryOn = ctx.lastTryOn;
+  if (lastTryOn && lastTryOn.styleName && !lastTryOn.colorId) {
+    if (effectiveSubtype === "both" || effectiveSubtype === "color") {
+      effectiveSubtype = "cut";
+    }
+  } else if (lastTryOn && lastTryOn.styleName && lastTryOn.colorId) {
+    // Conversely, if they previewed a color but the intake was "cut only",
+    // promote to "Cut + Color" so the pill reflects current intent.
+    if (effectiveSubtype === "cut") {
+      effectiveSubtype = "both";
+    }
+  }
+  if (effectiveSubtype && effectiveSubtype !== "unsure") {
     const subtypeDisplay: Record<string, string> = {
       cut: "Cut", color: "Color", both: "Cut + Color",
       manicure: "Manicure", pedicure: "Pedicure", full_set: "Full Set", nail_art: "Nail Art",
@@ -404,7 +421,7 @@ export function getContextPills(ctx: ConciergeContext | null): string[] {
       relaxation: "Relaxation", deep_tissue: "Deep Tissue", pain_relief: "Pain Relief",
       facial: "Facial", acne: "Acne Treatment", glow: "Glow Treatment",
     };
-    pills.push(subtypeDisplay[ctx.service_subtype] || ctx.service_subtype);
+    pills.push(subtypeDisplay[effectiveSubtype] || effectiveSubtype);
   }
   if (ctx.goal) pills.push(goalLabels[ctx.goal] || ctx.goal);
   if (ctx.timing) pills.push(timingLabels[ctx.timing] || ctx.timing);
