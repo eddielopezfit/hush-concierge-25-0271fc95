@@ -137,6 +137,40 @@ Deno.serve(async (req) => {
       const isClosedToday = closedDays.has(dayName);
       const isClosedTomorrow = closedDays.has(tomorrowName);
 
+      // ── Hour-of-day awareness ────────────────────────────────────────
+      // Variable schedule: Tue/Thu 9–7, Wed/Fri 9–5, Sat 9–4. Closed Sun/Mon.
+      const hoursByDay: Record<string, { open: number; close: number } | null> = {
+        Sunday: null,
+        Monday: null,
+        Tuesday: { open: 9, close: 19 },
+        Wednesday: { open: 9, close: 17 },
+        Thursday: { open: 9, close: 19 },
+        Friday: { open: 9, close: 17 },
+        Saturday: { open: 9, close: 16 },
+      };
+      const fmt12 = (h24: number): string => {
+        const period = h24 >= 12 ? "PM" : "AM";
+        const h = h24 % 12 === 0 ? 12 : h24 % 12;
+        return `${h} ${period}`;
+      };
+      // Current hour + minute in Tucson
+      const tucsonParts = new Intl.DateTimeFormat("en-US", {
+        hour: "numeric", minute: "numeric", hour12: false, timeZone: tz,
+      }).formatToParts(now);
+      const curHour = parseInt(tucsonParts.find((p) => p.type === "hour")?.value || "0", 10);
+      const curMin = parseInt(tucsonParts.find((p) => p.type === "minute")?.value || "0", 10);
+      const currentTimeStr = new Intl.DateTimeFormat("en-US", {
+        hour: "numeric", minute: "2-digit", hour12: true, timeZone: tz,
+      }).format(now);
+      const todaysHours = hoursByDay[dayName] ?? null;
+      const tomorrowsHours = hoursByDay[tomorrowName] ?? null;
+      // "Open right now" = within today's open window (and today isn't a closed day)
+      const minutesNow = curHour * 60 + curMin;
+      const isOpenRightNow = !!todaysHours && minutesNow >= todaysHours.open * 60 && minutesNow < todaysHours.close * 60;
+      const isAfterHoursToday = !!todaysHours && minutesNow >= todaysHours.close * 60;
+      const todaysHoursStr = todaysHours ? `${fmt12(todaysHours.open)}–${fmt12(todaysHours.close)}` : "Closed";
+      const tomorrowsHoursStr = tomorrowsHours ? `${fmt12(tomorrowsHours.open)}–${fmt12(tomorrowsHours.close)}` : "Closed";
+
       const nextOpenDayFrom = (start: Date): string => {
         for (let i = 0; i < 7; i++) {
           const d = new Date(start.getTime() + i * 24 * 60 * 60 * 1000);
@@ -150,14 +184,21 @@ Deno.serve(async (req) => {
 
       const liveContext =
         `## ⏰ LIVE DATE & SCHEDULING CONTEXT (Tucson time)\n` +
-        `Today is ${dateStr}. Tomorrow is ${tomorrowName}.\n` +
-        `Salon status today: ${isClosedToday ? "CLOSED" : "OPEN"}.\n` +
-        `Salon status tomorrow: ${isClosedTomorrow ? "CLOSED" : "OPEN"}.\n` +
+        `Today is ${dateStr}. Current Tucson time is ${currentTimeStr}.\n` +
+        `Today's hours: ${todaysHoursStr}. Tomorrow (${tomorrowName}): ${tomorrowsHoursStr}.\n` +
+        `Salon status RIGHT NOW: ${isOpenRightNow ? "OPEN" : (isAfterHoursToday ? "CLOSED FOR THE DAY (after hours)" : (isClosedToday ? "CLOSED (closed day)" : "NOT YET OPEN (before opening time)"))}.\n` +
+        `Salon status tomorrow: ${isClosedTomorrow ? "CLOSED" : "OPEN " + tomorrowsHoursStr}.\n` +
         `Next open day from today: ${nextOpenAfterToday}.\n` +
         `Next open day from tomorrow: ${nextOpenAfterTomorrow}.\n\n` +
+        `## 🕘 OPEN/CLOSED PHRASING — ABSOLUTE\n` +
+        `- NEVER say "we're open today" or "since we are open today" if the salon is not open RIGHT NOW. At ${currentTimeStr}, the salon is ${isOpenRightNow ? "OPEN" : "CLOSED"}.\n` +
+        `- If after hours (${isAfterHoursToday ? "WHICH IS THE CASE NOW" : "not currently"}), say: "We're closed for the day — we reopen ${tomorrowsHours ? tomorrowName + " at " + fmt12(tomorrowsHours.open) : nextOpenAfterTomorrow + " at 9 AM"}." Offer the callback for the next OPEN morning, never tonight.\n` +
+        `- Before opening (early morning), say: "We open at ${todaysHours ? fmt12(todaysHours.open) : "9 AM"} today" — do not promise an immediate callback.\n` +
+        `- Only use phrasing like "since we're open today" when ${isOpenRightNow ? "TRUE RIGHT NOW" : "the salon is actually open at this moment"}.\n\n` +
         `## 📞 CALLBACK SCHEDULING RULE — ABSOLUTE\n` +
         `Hush is closed Sunday and Monday. Kendell at the front desk only returns calls during open hours.\n` +
         `- If today is closed, you MUST tell the guest the earliest callback is the morning of ${nextOpenAfterToday} at 9 AM. Never imply a same-day callback.\n` +
+        `- If today is open BUT we are after closing time (${isAfterHoursToday ? "THIS IS THE CASE NOW" : "not currently"}), the earliest callback is ${tomorrowsHours ? tomorrowName + " at " + fmt12(tomorrowsHours.open) : nextOpenAfterTomorrow + " at 9 AM"}. Never promise a same-evening callback.\n` +
         `- If the guest asks about "tomorrow" and tomorrow is closed (Sunday or Monday), you MUST say tomorrow is closed and offer ${nextOpenAfterTomorrow} at 9 AM as the next available day. Never promise a Monday callback.\n` +
         `- Preferred phrasing: "We're closed ${isClosedTomorrow ? tomorrowName : "Sunday and Monday"} — the earliest Kendell can call you back is ${nextOpenAfterTomorrow} morning at 9 AM."\n` +
         `- This rule overrides any other scheduling language. Never invent a callback time outside open hours.\n\n` +
