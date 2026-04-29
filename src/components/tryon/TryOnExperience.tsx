@@ -410,30 +410,73 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
             <div className="mx-auto max-w-xl text-center">
               <Wand2 className="mx-auto mb-4 h-10 w-10 text-gold" />
               <h2 className="font-display text-3xl text-cream mb-3">See yourself transformed</h2>
-              <p className="font-body text-sm text-cream/70 mb-7 leading-relaxed">
-                Upload a clear, front-facing selfie and we'll preview a new hairstyle in seconds — so you can walk into your appointment knowing exactly what you want.
+              <p className="font-body text-sm text-cream/70 mb-6 leading-relaxed">
+                {device.isMobile
+                  ? "Snap a quick selfie and we'll preview a new hairstyle in seconds — so you walk into your appointment knowing exactly what you want."
+                  : "Upload a clear, front-facing selfie and we'll preview a new hairstyle in seconds — so you walk into your appointment knowing exactly what you want."}
               </p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <button
-                  onClick={() => !isReadingFile && cameraInputRef.current?.click()}
-                  disabled={isReadingFile}
-                  className="group flex flex-col items-center gap-2 rounded-xl border-2 border-dashed border-gold/40 bg-charcoal/40 px-6 py-8 text-cream/80 transition-colors hover:border-gold hover:bg-charcoal/60 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Camera className="h-7 w-7 text-gold transition-transform group-hover:scale-110" />
-                  <span className="font-body text-base text-cream">Take a selfie</span>
-                  <span className="font-body text-xs text-cream/55">Use your camera</span>
-                </button>
-                <button
-                  onClick={() => !isReadingFile && fileInputRef.current?.click()}
-                  disabled={isReadingFile}
-                  className="group flex flex-col items-center gap-2 rounded-xl border-2 border-dashed border-gold/40 bg-charcoal/40 px-6 py-8 text-cream/80 transition-colors hover:border-gold hover:bg-charcoal/60 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Upload className="h-7 w-7 text-gold transition-transform group-hover:scale-110" />
-                  <span className="font-body text-base text-cream">Upload a photo</span>
-                  <span className="font-body text-xs text-cream/55">JPEG, PNG, WEBP · up to 6 MB</span>
-                </button>
+              {/* Quick selfie quality tips — proven to dramatically improve render quality */}
+              <div className="mb-6 grid grid-cols-3 gap-2 text-left">
+                <div className="rounded-lg border border-border/50 bg-charcoal/30 p-2.5">
+                  <Sun className="mb-1 h-4 w-4 text-gold" />
+                  <p className="font-body text-[11px] leading-snug text-cream/75">Bright, even light — face the window</p>
+                </div>
+                <div className="rounded-lg border border-border/50 bg-charcoal/30 p-2.5">
+                  <User className="mb-1 h-4 w-4 text-gold" />
+                  <p className="font-body text-[11px] leading-snug text-cream/75">Look straight ahead, neutral expression</p>
+                </div>
+                <div className="rounded-lg border border-border/50 bg-charcoal/30 p-2.5">
+                  <Sparkle className="mb-1 h-4 w-4 text-gold" />
+                  <p className="font-body text-[11px] leading-snug text-cream/75">Hairline fully visible — no hat or tie-back</p>
+                </div>
               </div>
+
+              {/* Mobile: camera primary, upload secondary. Desktop: upload primary, camera hidden. */}
+              {device.isMobile ? (
+                <div className="space-y-3">
+                  <button
+                    onClick={openCamera}
+                    disabled={isReadingFile}
+                    className="group flex w-full flex-col items-center gap-2 rounded-xl border-2 border-gold bg-gold/10 px-6 py-7 text-cream transition-colors hover:bg-gold/15 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Camera className="h-8 w-8 text-gold transition-transform group-hover:scale-110" />
+                    <span className="font-body text-base text-cream">Take a selfie</span>
+                    <span className="font-body text-xs text-cream/65">
+                      {device.isIOS ? "Opens your front camera — allow access when iOS asks" : "Opens your front camera — tap allow when prompted"}
+                    </span>
+                  </button>
+                  <button
+                    onClick={openUpload}
+                    disabled={isReadingFile}
+                    className="group flex w-full flex-col items-center gap-1.5 rounded-xl border border-dashed border-cream/25 bg-charcoal/30 px-6 py-4 text-cream/75 transition-colors hover:border-gold/60 hover:text-cream disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ImageIcon className="h-5 w-5 text-cream/60" />
+                    <span className="font-body text-sm">Or pick a photo from your library</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button
+                    onClick={openUpload}
+                    disabled={isReadingFile}
+                    className="group flex flex-col items-center gap-2 rounded-xl border-2 border-dashed border-gold/40 bg-charcoal/40 px-6 py-8 text-cream/80 transition-colors hover:border-gold hover:bg-charcoal/60 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Upload className="h-7 w-7 text-gold transition-transform group-hover:scale-110" />
+                    <span className="font-body text-base text-cream">Upload a photo</span>
+                    <span className="font-body text-xs text-cream/55">JPEG, PNG, WEBP · up to 6 MB</span>
+                  </button>
+                  <button
+                    onClick={openCamera}
+                    disabled={isReadingFile}
+                    className="group flex flex-col items-center gap-2 rounded-xl border-2 border-dashed border-gold/40 bg-charcoal/40 px-6 py-8 text-cream/80 transition-colors hover:border-gold hover:bg-charcoal/60 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Camera className="h-7 w-7 text-gold transition-transform group-hover:scale-110" />
+                    <span className="font-body text-base text-cream">Use webcam</span>
+                    <span className="font-body text-xs text-cream/55">If your computer has a camera</span>
+                  </button>
+                </div>
+              )}
 
               <input
                 ref={fileInputRef}
@@ -466,10 +509,42 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
                 </div>
               )}
 
-              <p className="mt-6 font-body text-[11px] text-cream/45 leading-relaxed">
-                iPhone users: if upload fails, switch your camera setting to "Most Compatible" (HEIC photos aren't supported yet).
-              </p>
-              <p className="mt-3 font-body text-[11px] text-cream/45 leading-relaxed">
+              {/* Camera permission fallback — appears if guest taps camera then comes back without a photo */}
+              {cameraHelpOpen && (
+                <div className="mt-6 rounded-lg border border-gold/40 bg-gold/5 p-4 text-left">
+                  <p className="font-body text-sm text-cream mb-2">Didn't see the camera open?</p>
+                  <p className="font-body text-xs text-cream/70 leading-relaxed mb-3">
+                    Your browser may have blocked camera access. You can either:
+                  </p>
+                  <ul className="font-body text-xs text-cream/70 leading-relaxed mb-3 list-disc pl-5 space-y-1">
+                    <li>
+                      <button onClick={openUpload} className="text-gold underline underline-offset-2">
+                        Pick a photo from your library
+                      </button>{" "}
+                      instead — works every time.
+                    </li>
+                    {device.isIOS && (
+                      <li>Or open <span className="text-cream">Settings → Safari → Camera → Allow</span>, then tap "Take a selfie" again.</li>
+                    )}
+                    {device.isAndroid && (
+                      <li>Or tap the lock icon left of the address bar → <span className="text-cream">Permissions → Camera → Allow</span>, then refresh.</li>
+                    )}
+                  </ul>
+                  <button
+                    onClick={() => setCameraHelpOpen(false)}
+                    className="font-body text-[11px] text-cream/55 underline underline-offset-4 hover:text-gold"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              )}
+
+              {device.isIOS && (
+                <p className="mt-6 font-body text-[11px] text-cream/45 leading-relaxed">
+                  iPhone tip: if "Upload a photo" gives a HEIC error, open <span className="text-cream/65">Settings → Camera → Formats → Most Compatible</span>, then take a fresh photo.
+                </p>
+              )}
+              <p className={cn("font-body text-[11px] text-cream/45 leading-relaxed", device.isIOS ? "mt-3" : "mt-6")}>
                 Your photo is used only to generate your preview and is automatically removed after 7 days. We never share it.
               </p>
             </div>
