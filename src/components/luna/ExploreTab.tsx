@@ -73,20 +73,10 @@ export const ExploreTab = ({ onSwitchTab }: ExploreTabProps) => {
     });
     trackServiceClick(item.name, service.id);
 
-    const descriptionLine = item.description
-      ? `Here's the official description so you can read it back to me verbatim before asking follow-ups:\n"${item.description}"`
-      : `(No stored description — share what you know about this service from the Hush knowledge base.)`;
-
-    const prompt = [
-      `I'm interested in **${item.name}** (${service.title} › ${group}) — listed at ${item.price}.`,
-      "",
-      descriptionLine,
-      "",
-      "Please:",
-      "1. Read the description back to me in 1–2 sentences so I know we're aligned.",
-      "2. Ask me 2–3 quick follow-up questions to tailor the recommendation (e.g. hair length / current state, goal, timing, first visit or returning).",
-      "3. Once I answer, suggest the best next step to book — front desk number, direct specialist, or a callback.",
-    ].join("\n");
+    // Short, natural prompt — Luna's system prompt + concierge context handle the rest.
+    // (The leaked scaffold previously sent here exposed internal phrasing AND
+    // overrode the one-question-per-turn rule.)
+    const prompt = `Tell me about ${item.name} (${item.price}).`;
 
     try {
       sessionStorage.setItem("hush_chat_pending_prompt", prompt);
