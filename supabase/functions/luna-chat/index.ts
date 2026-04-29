@@ -301,10 +301,10 @@ GOOD: "The Classic Lash Set is one extension per natural lash — clean, polishe
       const titles = cats.map((c) => c.title).join(", ");
       systemPrompt =
         `## ⛔ DETERMINISTIC PRICING TABLE ALREADY DELIVERED ⛔\n` +
-        `The complete, authoritative pricing table for: ${titles} has ALREADY been shown to the guest immediately above your reply. ` +
-        `You MUST NOT re-render the table, restate any row, or list prices again. ` +
-        `Do NOT output a markdown table. Do NOT bullet the services. ` +
-        `Begin your reply with a single short, warm sentence (e.g., "Here's the full ${titles.toLowerCase()} menu — anything you'd like me to break down?") and then offer ONE concrete next step (a recommendation, a question, or a booking nudge). Keep it under 3 sentences.\n\n` +
+        `A short "Here's the quick read" summary paragraph AND the complete, authoritative pricing table for: ${titles} have ALREADY been shown to the guest immediately above your reply. ` +
+        `You MUST NOT re-render the table, restate any row, list prices again, or repeat the summary range. ` +
+        `Do NOT output a markdown table. Do NOT bullet the services. Do NOT start with "Here's…" or restate the price range. ` +
+        `Skip straight to ONE concrete next step: a tailored recommendation, a clarifying question, or a booking nudge. Keep it under 2 sentences.\n\n` +
         `═══════════════════════════════════════════════════════════════════\n\n` +
         systemPrompt;
     }
