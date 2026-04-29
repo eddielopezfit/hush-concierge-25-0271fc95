@@ -22,9 +22,12 @@ const TIMING_CHIPS = ["This week", "Next 2 weeks", "Just exploring", "I'm flexib
 // Stage-3 chips (booking action) — high-intent close
 const BOOKING_ACTION_CHIPS = ["I'm ready to book", "Have someone call me", "Help me decide", "Connect me with the team"];
 
-// Universal "go back one step" chip — surfaced during qualifying stages 1+ so
-// guests can correct their previous answer without restarting the chat.
-export const BACK_CHIP = "← Go back";
+// Universal undo chip — surfaced whenever the guest has at least one reply
+// in the current single-service flow so they can correct their previous
+// answer without losing the rest of the conversation. The ChatTab handler
+// pops the trailing user + assistant turn(s), decrements the qualifying
+// stage, and re-surfaces the prior chip set.
+export const BACK_CHIP = "↶ Undo last answer";
 
 // Heuristic: does Luna's last message look like a qualifying question?
 // (i.e. she's trying to learn more before recommending)
@@ -209,31 +212,37 @@ export function getQuickReplies(
   const qualifying = pickQualifyingChips(_ctx, lastAssistantMsg, qualifyingStage);
   if (qualifying) return qualifying;
 
+  // Once the guest has committed to a single service AND sent at least one
+  // reply (stage >= 1), surface Undo on every subsequent chip set so they can
+  // always step back one turn.
+  const canUndo = (_ctx?.categories?.length === 1) && qualifyingStage >= 1;
+  const withUndo = (chips: string[]) => (canUndo ? [BACK_CHIP, ...chips] : chips);
+
   // Once we're past the qualifying flow, prefer the high-intent booking chips
   if (qualifyingStage >= 2 && _ctx?.categories?.length === 1) {
-    return BOOKING_ACTION_CHIPS;
+    return withUndo(BOOKING_ACTION_CHIPS);
   }
 
   if (lower.includes("price") || lower.includes("cost") || lower.includes("pricing")) {
-    return ["I'm ready to book", "Have someone call me", "Help me decide", "Connect me with the team"];
+    return withUndo(["I'm ready to book", "Have someone call me", "Help me decide", "Connect me with the team"]);
   }
   if (lower.includes("stylist") || lower.includes("artist") || lower.includes("specialist")) {
-    return ["I'm ready to book", "Have someone call me", "Help me find the right service", "Connect me with the team"];
+    return withUndo(["I'm ready to book", "Have someone call me", "Help me find the right service", "Connect me with the team"]);
   }
   if (lower.includes("event") || lower.includes("wedding") || lower.includes("occasion")) {
-    return ["Let's plan my full look", "I'm ready to book", "Have someone call me", "Connect me with the team"];
+    return withUndo(["Let's plan my full look", "I'm ready to book", "Have someone call me", "Connect me with the team"]);
   }
   if (lower.includes("option") || lower.includes("explore") || lower.includes("browse")) {
-    return ["Walk me through options", "I'm ready to book", "Have someone call me", "Connect me with the team"];
+    return withUndo(["Walk me through options", "I'm ready to book", "Have someone call me", "Connect me with the team"]);
   }
   if (lower.includes("recommend") || lower.includes("suggest")) {
-    return ["That sounds perfect — book it", "Have someone call me", "Tell me more about that", "Connect me with the team"];
+    return withUndo(["That sounds perfect — book it", "Have someone call me", "Tell me more about that", "Connect me with the team"]);
   }
   if (lower.includes("ready") || lower.includes("lock") || lower.includes("reserve") || lower.includes("book")) {
-    return ["Let's lock it in", "Have someone call me", "Help me decide", "What will it cost?"];
+    return withUndo(["Let's lock it in", "Have someone call me", "Help me decide", "What will it cost?"]);
   }
 
-  return ["I'm ready to book", "Have someone call me", "Help me decide", "Connect me with the team"];
+  return withUndo(["I'm ready to book", "Have someone call me", "Help me decide", "Connect me with the team"]);
 }
 
 // ── Detect intent from assistant message for in-chat CTAs ───────────────────
