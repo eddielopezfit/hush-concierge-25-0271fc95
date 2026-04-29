@@ -212,13 +212,14 @@ Deno.serve(async (req) => {
         `- If after hours (${isAfterHoursToday ? "WHICH IS THE CASE NOW" : "not currently"}), say: "We're closed for the day — we reopen ${tomorrowsHours ? tomorrowName + " at " + fmt12(tomorrowsHours.open) : nextOpenAfterTomorrow + " at 9 AM"}." Offer the callback for the next OPEN morning, never tonight.\n` +
         `- Before opening (early morning), say: "We open at ${todaysHours ? fmt12(todaysHours.open) : "9 AM"} today" — do not promise an immediate callback.\n` +
         `- Only use phrasing like "since we're open today" when ${isOpenRightNow ? "TRUE RIGHT NOW" : "the salon is actually open at this moment"}.\n\n` +
-        `## 📞 CALLBACK SCHEDULING RULE — ABSOLUTE\n` +
-        `Hush is closed Sunday and Monday. Kendell at the front desk only returns calls during open hours.\n` +
-        `- If today is closed, you MUST tell the guest the earliest callback is the morning of ${nextOpenAfterToday} at 9 AM. Never imply a same-day callback.\n` +
-        `- If today is open BUT we are after closing time (${isAfterHoursToday ? "THIS IS THE CASE NOW" : "not currently"}), the earliest callback is ${tomorrowsHours ? tomorrowName + " at " + fmt12(tomorrowsHours.open) : nextOpenAfterTomorrow + " at 9 AM"}. Never promise a same-evening callback.\n` +
-        `- If the guest asks about "tomorrow" and tomorrow is closed (Sunday or Monday), you MUST say tomorrow is closed and offer ${nextOpenAfterTomorrow} at 9 AM as the next available day. Never promise a Monday callback.\n` +
-        `- Preferred phrasing: "We're closed ${isClosedTomorrow ? tomorrowName : "Sunday and Monday"} — the earliest Kendell can call you back is ${nextOpenAfterTomorrow} morning at 9 AM."\n` +
-        `- This rule overrides any other scheduling language. Never invent a callback time outside open hours.\n\n` +
+        `## 📞 CALLBACK PHRASING RULE — ABSOLUTE\n` +
+        `Hush is closed Sunday and Monday. Kendell at the front desk only places calls when a guest has explicitly submitted a callback request through the booking form.\n` +
+        `- NEVER offer, promise, or imply that Kendell (or anyone) will call the guest. Do NOT say "would you like me to have Kendell call you", "Kendell can call you", "I can have someone reach out", or any variation. That sets false expectations.\n` +
+        `- Instead, invite the guest to reach US: "Call or text the front desk at (520) 327-6753 when you have a moment" — or point them to the booking section of the page to request a callback themselves.\n` +
+        `- When stating availability, use neutral phrasing focused on when WE'RE OPEN, not when someone will call: "We reopen ${tomorrowsHours ? tomorrowName + " at " + fmt12(tomorrowsHours.open) : nextOpenAfterTomorrow + " at 9 AM"} — feel free to call or text us then."\n` +
+        `- If today is closed: "We're closed today and reopen ${nextOpenAfterToday} at 9 AM. You can call or text (520) 327-6753 once we're open, or use the booking form below to request a callback."\n` +
+        `- If after closing time (${isAfterHoursToday ? "THIS IS THE CASE NOW" : "not currently"}): "We're closed for the day — reopen ${tomorrowsHours ? tomorrowName + " at " + fmt12(tomorrowsHours.open) : nextOpenAfterTomorrow + " at 9 AM"}. Reach out then or drop your number through the booking form and the team will follow up."\n` +
+        `- This rule overrides any other scheduling language. Never invent a callback time, and never put words in Kendell's mouth.\n\n` +
         `═══════════════════════════════════════════════════════════════════\n\n`;
 
       systemPrompt = liveContext + systemPrompt;
