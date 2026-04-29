@@ -106,6 +106,11 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const cameraOpenedAtRef = useRef<number | null>(null);
   const [cameraHelpOpen, setCameraHelpOpen] = useState(false);
+  // True while the user has tapped "Take a selfie" on mobile and we're waiting
+  // for them to either confirm a shot or come back without one. Drives the
+  // fading framing-guide overlay so guests have a visual reference for face
+  // centering and distance both before and immediately after the OS camera UI.
+  const [cameraActive, setCameraActive] = useState(false);
 
   // Device detection — drives copy, button order, and platform-specific guidance.
   // SSR-safe: defaults to false on server, hydrates on first client render.
@@ -274,9 +279,17 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
       if (elapsed > 300 && !photoDataUrl && !isReadingFile) {
         setCameraHelpOpen(true);
       }
+      // Either way, the OS camera sheet has closed — drop the framing overlay
+      // unless a photo is still being read in (handled below).
+      if (!isReadingFile) setCameraActive(false);
     };
     document.addEventListener("visibilitychange", onVisibility);
     return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, [photoDataUrl, isReadingFile]);
+
+  // Once a photo lands (or a file is being read), the overlay is no longer useful.
+  useEffect(() => {
+    if (photoDataUrl || isReadingFile) setCameraActive(false);
   }, [photoDataUrl, isReadingFile]);
 
   const openCamera = () => {
@@ -285,6 +298,7 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
     setError(null);
     setErrorKind(null);
     cameraOpenedAtRef.current = Date.now();
+    if (device.isMobile) setCameraActive(true);
     cameraInputRef.current?.click();
   };
 
