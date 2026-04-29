@@ -245,12 +245,22 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
       // dataUrl so re-selecting the same image doesn't wipe deliberate picks.
       setPhotoDataUrl((prev) => {
         if (prev !== dataUrl) {
+          // Capture how many chips were active *before* clearing so we only
+          // surface the reset toast when the guest actually loses prior
+          // selections — silent reset on first upload (nothing to confirm).
+          const hadActiveChips =
+            faceShape !== null || undertone !== null || category !== null;
           setFaceShape(null);
           setUndertone(null);
           setCategory(null);
           writePersistedFilter(FILTER_KEYS.faceShape, null);
           writePersistedFilter(FILTER_KEYS.undertone, null);
           writePersistedFilter(FILTER_KEYS.category, null);
+          if (hadActiveChips) {
+            toast("Refinements reset for your new photo", {
+              description: "Tap “Refine for my face & vibe” to retune.",
+            });
+          }
           // Also clear any in-flight style/color picks tied to the old face.
           setStyleId(null);
           setColorId(null);
