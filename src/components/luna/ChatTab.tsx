@@ -174,6 +174,7 @@ export const ChatTab = () => {
     setSmartChips(getSmartChips(ctx));
     setQualifyingStage(0);
     setQuickReplies(getQuickReplies(ctx, greeting, 0));
+    saveQualifyingStage(ctx, 0);
     setActiveThreadOrigin("current-tab");
     setCrossTabThreadAvailable(null);
 
