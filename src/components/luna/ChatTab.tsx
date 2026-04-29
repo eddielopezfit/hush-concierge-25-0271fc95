@@ -483,6 +483,12 @@ export const ChatTab = () => {
       const newCount = userMessageCount + 1;
       setUserMessageCount(newCount);
 
+      // Advance the qualifying-flow stage on every user reply when in
+      // single-category mode, so chips progress: look → timing → booking.
+      if (conciergeContext?.categories?.length === 1) {
+        setQualifyingStage((s) => Math.min(s + 1, 2));
+      }
+
       // Force-scroll to bottom on send so the user follows their own message
       // and Luna's incoming response — eliminates the "1 new" hidden-reply problem.
       requestAnimationFrame(() => {
