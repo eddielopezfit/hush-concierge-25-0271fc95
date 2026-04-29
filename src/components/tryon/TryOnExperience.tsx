@@ -127,6 +127,27 @@ export const TryOnExperience = ({ source, onClose }: TryOnExperienceProps) => {
     return () => { document.body.style.overflow = prev; };
   }, []);
 
+  // Funnel tracking — fire "started" on mount, and on unmount fire either
+  // "abandoned" (no preview reached) or nothing (preview was shown, which is
+  // already tracked separately). Uses a ref so the latest value is read at
+  // unmount time even though the effect itself only runs once.
+  const reachedPreviewRef = useRef(false);
+  useEffect(() => {
+    trackFunnelEvent("hairstyle_preview", "started", {
+      metadata: { source },
+    });
+    return () => {
+      if (!reachedPreviewRef.current) {
+        trackFunnelEvent("hairstyle_preview", "abandoned", {
+          beacon: true, // survives tab close
+          metadata: { source },
+        });
+      }
+    };
+  // Run exactly once per modal lifetime.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const styles = useMemo(() => {
     const filtered = TRY_ON_STYLES.filter((s) => !category || s.category === category);
     return sortStylesByFace(filtered, faceShape);
