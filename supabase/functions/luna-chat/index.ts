@@ -8,6 +8,7 @@ import {
   renderServiceDescriptionsCatalog,
   resolvePricingScope,
 } from "../_shared/pricing-tables.ts";
+import { verifyJourneyContext } from "./journeyContextVerifier.ts";
 // ── Environment ─────────────────────────────────────────────────────────────
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -81,7 +82,22 @@ Deno.serve(async (req) => {
 
   try {
     const body = (await req.json()) as ChatBody;
-    const { messages, journeyContext, conversation_id } = body;
+    const { messages, journeyContext: rawJourneyContext, conversation_id } = body;
+
+    // ── Cross-session leakage safeguard ─────────────────────────────────
+    // Only trust journeyContext when its embedded `[session:<id>]` tag
+    // matches the current conversation_id. Otherwise drop it entirely so
+    // a stale cached context from a previous conversation can't bleed
+    // into the new one (e.g. wrong category scope, wrong recommendation).
+    const { journeyContext, status: journeyStatus } = verifyJourneyContext(
+      rawJourneyContext,
+      conversation_id,
+    );
+    if (journeyStatus === "mismatch" || journeyStatus === "missing_tag") {
+      console.warn("[luna-chat] dropped journeyContext:", journeyStatus, {
+        conversation_id: conversation_id ?? null,
+      });
+    }
 
     if (conversation_id) {
       const { data: existingConversation, error: conversationError } = await supabase
