@@ -39,6 +39,11 @@ const matchesCategory = (member: TeamMember, category: string): boolean => {
 
 const ArtistAvatar = ({ artist }: { artist: TeamMember }) => {
   const photo = photoMap[artist.id];
+  // Founder portraits already have "FOUNDING / CO-OWNER" labelling baked into
+  // the photograph itself — adding our own pill on top creates three competing
+  // labels (audit P0 #3). Suppress the pill for founders; keep it for educators
+  // or others whose photos don't carry the title.
+  const showBadge = artist.badge && artist.department !== "founders";
   if (photo) {
     const initial = artist.name.charAt(0).toUpperCase();
     return (
@@ -48,7 +53,9 @@ const ArtistAvatar = ({ artist }: { artist: TeamMember }) => {
           alt={artist.name}
           loading="eager"
           decoding="async"
-          className="w-full h-full object-cover"
+          className={`w-full h-full object-cover ${
+            artist.department === "founders" ? "object-[center_20%]" : "object-center"
+          }`}
           onError={(e) => {
             // Graceful fallback: hide broken image so the gold initial behind it shows.
             (e.currentTarget as HTMLImageElement).style.display = "none";
@@ -60,7 +67,7 @@ const ArtistAvatar = ({ artist }: { artist: TeamMember }) => {
         >
           {initial}
         </span>
-        {artist.badge && (
+        {showBadge && (
           <span className="absolute top-3 left-3 text-[10px] font-body uppercase tracking-wider bg-gold/15 text-gold border border-gold/25 px-2 py-0.5 rounded-full backdrop-blur-sm">
             {artist.badge}
           </span>
@@ -72,7 +79,7 @@ const ArtistAvatar = ({ artist }: { artist: TeamMember }) => {
   return (
     <div className="w-full h-full bg-secondary flex items-center justify-center relative">
       <span className="font-display text-5xl md:text-6xl text-gold select-none">{initial}</span>
-      {artist.badge && (
+      {showBadge && (
         <span className="absolute top-3 left-3 text-[10px] font-body uppercase tracking-wider bg-gold/15 text-gold border border-gold/25 px-2 py-0.5 rounded-full">
           {artist.badge}
         </span>
