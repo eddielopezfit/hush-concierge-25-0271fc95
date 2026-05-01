@@ -1,4 +1,4 @@
-import { ArrowDown, Sparkles, MessageSquare } from "lucide-react";
+import { ArrowDown, Sparkles, MessageSquare, Star } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useLuna } from "@/contexts/LunaContext";
 import { useStartLuna } from "@/hooks/useStartLuna";
@@ -107,6 +107,20 @@ export const HeroSection = () => {
           className="flex flex-col items-center justify-center gap-3 mb-8 px-4 opacity-0 animate-fade-up-sm"
           style={{ animationDelay: "0.6s" }}
         >
+          {/* Above-the-fold social proof — minimal, link to Google reviews */}
+          <a
+            href="https://www.google.com/maps/place/Hush+Salon+%26+Day+Spa/@32.2537155,-110.8837433,17z/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-cream/70 hover:text-gold transition-colors mb-1"
+            aria-label="4.7 stars from 315 plus Google reviews"
+          >
+            <Star className="w-3.5 h-3.5 text-gold fill-gold" aria-hidden="true" />
+            <span className="font-body text-xs tracking-wide">
+              4.7★ <span className="text-cream/40">·</span> 315+ reviews
+            </span>
+          </a>
+
           <button
             onClick={handleDiscoverClick}
             className="btn-gold py-3.5 px-8 sm:py-4 sm:px-10 text-sm sm:text-base flex items-center gap-2.5 sm:gap-3 transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]"
