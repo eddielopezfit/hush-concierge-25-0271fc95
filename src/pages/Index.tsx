@@ -84,7 +84,10 @@ const Index = () => {
           <ExperienceFinderSection />
         </Suspense>
         <StepInsideSection />
-        <Suspense fallback={<Skeleton h="min-h-[520px]" />}>
+        {/* PersonalizedPlanSection returns null for fresh visitors, so reserving
+            520px would leave a dead gap on first paint (audit P1 #6). Use min-h-0
+            and accept a tiny shift only for users who completed the Experience Finder. */}
+        <Suspense fallback={<Skeleton h="min-h-0" />}>
           <PersonalizedPlanSection />
         </Suspense>
         <Suspense fallback={<Skeleton h="min-h-[900px]" />}>
