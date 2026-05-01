@@ -1,5 +1,5 @@
 import { m, AnimatePresence } from "framer-motion";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, forwardRef } from "react";
 import { X, Sparkles, Scissors, Hand, Eye, Heart, Phone, MessageSquare, Instagram } from "lucide-react";
 import { useLuna } from "@/contexts/LunaContext";
 import { ConciergeContext, ServiceCategoryId } from "@/types/concierge";
@@ -37,7 +37,7 @@ const matchesCategory = (member: TeamMember, category: string): boolean => {
 
 // ── Artist Avatar ─────────────────────────────────────────────────────────────
 
-const ArtistAvatar = ({ artist }: { artist: TeamMember }) => {
+const ArtistAvatar = forwardRef<HTMLDivElement, { artist: TeamMember }>(({ artist }, ref) => {
   const photo = photoMap[artist.id];
   // Founder portraits already have "FOUNDING / CO-OWNER" labelling baked into
   // the photograph itself — adding our own pill on top creates three competing
@@ -47,7 +47,7 @@ const ArtistAvatar = ({ artist }: { artist: TeamMember }) => {
   if (photo) {
     const initial = artist.name.charAt(0).toUpperCase();
     return (
-      <div className="w-full h-full relative bg-secondary">
+      <div ref={ref} className="w-full h-full relative bg-secondary">
         <img
           src={photo}
           alt={artist.name}
@@ -77,7 +77,7 @@ const ArtistAvatar = ({ artist }: { artist: TeamMember }) => {
   }
   const initial = artist.name.charAt(0).toUpperCase();
   return (
-    <div className="w-full h-full bg-secondary flex items-center justify-center relative">
+    <div ref={ref} className="w-full h-full bg-secondary flex items-center justify-center relative">
       <span className="font-display text-5xl md:text-6xl text-gold select-none">{initial}</span>
       {showBadge && (
         <span className="absolute top-3 left-3 text-[10px] font-body uppercase tracking-wider bg-gold/15 text-gold border border-gold/25 px-2 py-0.5 rounded-full">
@@ -86,7 +86,8 @@ const ArtistAvatar = ({ artist }: { artist: TeamMember }) => {
       )}
     </div>
   );
-};
+});
+ArtistAvatar.displayName = "ArtistAvatar";
 
 // ── Smart Matching Card ───────────────────────────────────────────────────────
 
