@@ -72,8 +72,10 @@ export const HeroSection = () => {
 
         {/* Gradient overlays — vertical for legibility + horizontal vignette
             to soften the desktop video's narrower framing on widescreen.
-            Vignette kept very subtle (/25) so it never reads as black bars. */}
-        <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/30 to-background/90" />
+            Vignette kept very subtle (/25) so it never reads as black bars.
+            Mobile gets a stronger mid-band scrim because the headline + subtitle
+            often sit on top of a person in the video (audit P0 #1). */}
+        <div className="absolute inset-0 bg-gradient-to-b from-background/65 via-background/55 to-background/95 md:from-background/50 md:via-background/30 md:to-background/90" />
         <div className="absolute inset-0 hidden md:block bg-gradient-to-r from-background/25 via-transparent to-background/25" />
       </div>
 
@@ -157,9 +159,11 @@ export const HeroSection = () => {
           )}
         </div>
 
-        {/* Dynamic hours badge */}
+        {/* Dynamic hours badge — hidden on mobile because TrustBar directly
+            below already shows a richer "Open Now · Closes 5 PM" indicator
+            (audit P1 #7). Kept on desktop where vertical real estate isn't tight. */}
         <div
-          className="flex justify-center opacity-0 animate-fade-only"
+          className="hidden md:flex justify-center opacity-0 animate-fade-only"
           style={{ animationDelay: "0.8s" }}
         >
           {(() => {
