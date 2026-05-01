@@ -83,8 +83,9 @@ describe("getQuickReplies", () => {
 
   it("specializes when the assistant mentions pricing", () => {
     const replies = getQuickReplies(null, "Pricing typically starts at $200.");
-    expect(replies[0]).toBe("I'm ready to book");
-    expect(replies).toContain("Help me decide");
+    // When no category is committed, Luna narrows the scope before quoting prices.
+    expect(replies[0]).toBe("Just hair pricing");
+    expect(replies).toContain("Just nails pricing");
   });
 
   it("specializes for stylist mentions", () => {
