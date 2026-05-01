@@ -48,17 +48,29 @@ function getLiveStatus(): { open: boolean; label: string } {
 export const TrustBar = () => {
   const [index, setIndex] = useState(0);
   const [status, setStatus] = useState(() => getLiveStatus());
+  const [paused, setPaused] = useState(false);
 
   useEffect(() => {
+    if (paused) return;
     const timer = setInterval(() => setIndex(i => (i + 1) % miniReviews.length), 5000);
+    return () => clearInterval(timer);
+  }, [paused]);
+
+  useEffect(() => {
     const statusTimer = setInterval(() => setStatus(getLiveStatus()), 60000);
-    return () => { clearInterval(timer); clearInterval(statusTimer); };
+    return () => clearInterval(statusTimer);
   }, []);
 
   const review = miniReviews[index];
 
   return (
-    <section className="py-6 px-6 bg-card/50 border-y border-border">
+    <section
+      className="py-6 px-6 bg-card/50 border-y border-border"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocusCapture={() => setPaused(true)}
+      onBlurCapture={() => setPaused(false)}
+    >
       <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5">
         {/* Rating badge */}
         <a
@@ -93,6 +105,7 @@ export const TrustBar = () => {
         <p
           key={index}
           className="font-body text-sm text-cream/60 italic text-center sm:text-left opacity-0 animate-fade-up-mini"
+          aria-live="polite"
         >
           "{review.text}" — <span className="text-gold/70 not-italic">{review.author}</span>
         </p>
