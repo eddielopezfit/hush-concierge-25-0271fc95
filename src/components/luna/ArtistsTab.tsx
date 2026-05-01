@@ -249,6 +249,21 @@ export const ArtistsTab = ({ onSwitchTab, onClosePanel }: ArtistsTabProps) => {
                 </div>
               </div>
               <p className="text-xs text-muted-foreground font-body">Best for: {artist.bestFor}</p>
+              {/* Specificity trust chips — top specialties surface what they
+                  actually do so guests don't have to open Full Profile to
+                  feel confident. Caps at 3 to stay visually quiet. */}
+              {artist.specialties && artist.specialties.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {artist.specialties.slice(0, 3).map((s) => (
+                    <span
+                      key={s}
+                      className="text-[10px] font-body text-primary/80 bg-primary/8 border border-primary/15 px-2 py-0.5 rounded-full"
+                    >
+                      {s}
+                    </span>
+                  ))}
+                </div>
+              )}
               <div className="flex gap-2">
                 <button
                   onClick={() => handleBookArtist(artist)}
