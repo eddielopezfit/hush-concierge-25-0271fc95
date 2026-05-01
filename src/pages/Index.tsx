@@ -34,7 +34,10 @@ const Index = () => {
     initJourneyTracking();
   }, []);
 
-  // Resolve hash anchors after lazy sections mount (initial load + nav clicks)
+  // Resolve hash anchors after lazy sections mount (initial load + nav clicks).
+  // Lazy chunks + image decode can exceed 3s on slower networks, so we keep
+  // polling for ~6s and schedule a second scroll after layout settles to
+  // correct for late-shifting Suspense fallbacks (audit P1 #5).
   useEffect(() => {
     const scrollToHash = (smooth: boolean) => {
       const hash = window.location.hash.slice(1);
@@ -43,11 +46,19 @@ const Index = () => {
       const tick = () => {
         const el = document.getElementById(hash);
         if (el) {
-          // Use rAF to ensure layout is settled
           requestAnimationFrame(() => {
             el.scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "start" });
           });
-        } else if (tries++ < 30) {
+          // Second pass once the browser is idle — corrects for sections
+          // below the target hydrating and shifting layout downward.
+          const idle =
+            (window as unknown as { requestIdleCallback?: (cb: () => void) => void })
+              .requestIdleCallback || ((cb: () => void) => setTimeout(cb, 400));
+          idle(() => {
+            const target = document.getElementById(hash);
+            if (target) target.scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "start" });
+          });
+        } else if (tries++ < 60) {
           setTimeout(tick, 100);
         }
       };
@@ -62,7 +73,7 @@ const Index = () => {
 
   return (
     <div className="bg-background min-h-screen overflow-x-hidden pb-24 md:pb-0">
-      <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:bg-primary focus:text-primary-foreground focus:px-4 focus:py-2 focus:rounded-lg font-body text-sm">
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-20 md:focus:top-4 focus:left-4 focus:z-[9999] focus:bg-primary focus:text-primary-foreground focus:px-4 focus:py-2 focus:rounded-lg font-body text-sm">
         Skip to main content
       </a>
       <Navigation />
@@ -73,7 +84,10 @@ const Index = () => {
           <ExperienceFinderSection />
         </Suspense>
         <StepInsideSection />
-        <Suspense fallback={<Skeleton h="min-h-[520px]" />}>
+        {/* PersonalizedPlanSection returns null for fresh visitors, so reserving
+            520px would leave a dead gap on first paint (audit P1 #6). Use min-h-0
+            and accept a tiny shift only for users who completed the Experience Finder. */}
+        <Suspense fallback={<Skeleton h="min-h-0" />}>
           <PersonalizedPlanSection />
         </Suspense>
         <Suspense fallback={<Skeleton h="min-h-[900px]" />}>

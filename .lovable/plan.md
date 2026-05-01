@@ -1,64 +1,97 @@
-## Goal
 
-Address the audit's #1 finding: the hairstyle preview is the salon's most differentiated feature but is functionally invisible. Surface it across the three flagship surfaces (Hero → Intake results → Luna chat) and strengthen its in-card placement — without violating the Hero's "single primary decision" rule.
+# Hush Hub — Production-Readiness UI/UX Audit
 
-## Changes
+I walked the live preview at desktop (1280) and mobile (375), inspected hero / Experience Finder / Services / Artists / About / Contact / Footer / Luna 5-tab panel / mobile sticky bar, and cross-checked the code. The Hub is in strong shape — narrative, Luna concierge, and CTA hierarchy are all working. Below are the issues I'd fix before calling this production-ready, in priority order.
 
-### 1. Hero — persistent secondary "Preview a New Hairstyle" link
-File: `src/components/HeroSection.tsx`
+---
 
-Add a single ghost-style entry point under "or talk to our AI concierge", using the existing reusable `TryOnEntryButton` (variant `ghost`). This replaces the audit's "appears on first video frame only" perception — it will now be permanently visible, not tied to any video cycle.
+## P0 — Visible bugs (fix first)
 
-Final hero CTA stack (still respects the single-primary rule):
-```
-[ FIND YOUR EXPERIENCE ]            ← primary gold (unchanged)
-or talk to our AI concierge          ← existing secondary link
-✨ Preview a New Hairstyle           ← NEW — ghost link, always visible
-Resume my plan                       ← existing, only if hasPlan
-[ Open Today badge ]
-```
+### 1. Mobile hero is unreadable — text overlaps the human in the video
+On 375px width the hero subtitle line *"Five departments · Three founders still behind the chair · 24 years of transformations"* sits directly on top of the model's body, and the *"4.7★ · 315+ reviews"* line is half-blended into her shirt. The vertical gradient overlay is too weak in the mid-band where text lives.
 
-The ghost variant is visually quieter than the gold primary, so "Find Your Experience" remains dominant.
+Fix in `src/components/HeroSection.tsx` + `src/index.css`:
+- Strengthen the mid-band of the gradient overlay on mobile only: e.g. `from-background/65 via-background/55 to-background/95` under `md:` keep current.
+- Add a localized text scrim behind the headline + subtitle (radial or soft black backdrop with `backdrop-blur-[2px]`) sized to the text bounds.
+- Optionally swap the mobile master to a tighter-cropped variant so the subject sits behind text rather than in front of it.
 
-### 2. Intake results — bridge into Try-On for hair guests
-File: `src/components/ExperienceRevealCard.tsx`
+### 2. Mobile sticky bar collides with the Luna floating bubble label
+On every mobile screen "Your Hush Guide" caption under the bubble overlaps the top edge of the **Book a Visit / Call / Luna** sticky bar. Looks broken.
 
-When `conciergeContext.categories` includes `"hair"`, render a soft bridge row above the "See your full personalized plan" link:
+Fix:
+- Hide the floating Luna bubble on mobile (the sticky bar already has a Luna entry point).
+- Or raise `bottom` of `.luna-floating` above the sticky-bar height (`bottom: calc(76px + env(safe-area-inset-bottom))`) and drop the "Your Hush Guide" caption on mobile.
 
-> Curious how it would look? **Preview a New Hairstyle →**
+### 3. Founder cards have three competing labels
+`ArtistsSection.tsx` puts a code-rendered "FOUNDING" pill top-left **and** the artist's name + "CO-OWNER" are baked into the photograph itself, **and** the name appears again at the bottom. "CHRIS" reads as cut off because the photo was shot for a different aspect ratio.
 
-Uses `TryOnEntryButton variant="ghost" source="Experience Reveal"`. Only renders for hair-relevant reveals so non-hair guests aren't confused.
+Fix in `src/components/ArtistsSection.tsx` (founders row + `SmartCard`):
+- Drop the "FOUNDING" pill for founders whose photos already carry the title; rely on the photo + bottom name.
+- OR replace the in-photo titles with clean portraits (cleanest long-term).
+- Re-frame founder photos with `object-position: center 20%` so the baked-in headline isn't clipped.
 
-### 3. Luna chat — proactive Try-On chip when hair is the category
-File: `src/components/luna/chat/types.ts` (and the chat component that renders quick replies — locate during implementation, likely `ChatTab.tsx` or a quick-reply config)
+### 4. Console warnings: `forwardRef` missing on motion children
+Two dev-mode warnings firing on every render:
+- `ArtistAvatar` (src/components/ArtistsSection.tsx) used inside `m.div` motion children path
+- `ChatActionButtons` (src/components/luna/ChatTab.tsx) inside `AnimatePresence`
 
-Add a contextual quick-reply chip "🪄 Preview a New Hairstyle" that appears in Luna's chat when `conciergeContext.primary_category === "hair"` (or `categories.includes("hair")`). Tapping it closes Luna's panel and opens the Try-On modal (`source: "Luna Chat"`), so the two flagship features finally connect.
+Fix: wrap both component definitions in `React.forwardRef<HTMLDivElement, Props>` and forward the ref onto the root element. Silences warnings and prevents future motion-layout bugs.
 
-This is the audit's most strategic fix: "Luna never proactively surfaces the hairstyle preview."
+---
 
-### 4. Services hair card — promote the entry button
-File: `src/components/ServicesSection.tsx`
+## P1 — Polish (do in same pass)
 
-Change the hair card's `<TryOnEntryButton>` from `variant="chip"` to `variant="primary"` (gold button) and move it into the action row alongside "Let Luna guide you" / "View full menu & pricing". This makes it scan as a real CTA, not an afterthought tag — the audit specifically called this out: "should be a PRIMARY CTA."
+### 5. Hash anchors don't always scroll on first load after lazy hydration
+`/#artists` and `/#about` sometimes leave the user near the top of the page. The retry loop in `src/pages/Index.tsx` runs 30× × 100ms but the lazy chunk + image decode can exceed 3s.
 
-Action row becomes a 3-button stack on mobile, 3-column on desktop:
-```
-[ ✨ Preview Hairstyle ]  [ 💬 Let Luna guide ]  [ View menu ]
-```
+Fix: extend the retry budget (60 × 100ms), and once the element is found, schedule a second `scrollIntoView` after `requestIdleCallback` fires to correct for late-shifting Suspense fallbacks.
 
-### 5. Funnel tracking touch-up
-The `source` prop is already wired through `TryOnEntryButton` → `TryOnExperience` → `trackFunnelEvent("hairstyle_preview", "started", { source })`. New entry points use distinct `source` strings (`"Hero"`, `"Experience Reveal"`, `"Luna Chat"`) so we can measure which surface drives the most preview starts after this ships.
+### 6. `PersonalizedPlanSection` reserves 520px even when it returns null
+For first-time visitors the section renders nothing but the Suspense fallback held vertical space. Net result: a brief invisible gap on first paint.
 
-## Out of scope (intentional)
+Fix: short-circuit the lazy import or render an empty placeholder of `min-h-0` until `conciergeContext.categories.length > 0` is known. Tiny CLS win.
 
-- **Sticky "Book Now" in nav** — the mobile sticky bar already has a primary "Book a Visit" button; adding it to the desktop nav would compete with "Find Your Experience" and "Start Luna." Revisit only if analytics show desktop drop-off.
-- **Face shape / undertone questions in the intake quiz** — already supported as optional refine chips inside the Try-On modal itself; adding them to the upstream quiz would lengthen it and was previously simplified for a reason. Defer until we have data showing the modal chips are under-used.
-- **Replacing video-cycle CTA logic** — once the hero shows the persistent ghost link, the rotating-video CTA-visibility issue is moot. No video logic changes needed.
-- **Post-preview booking CTA** — already exists as the gold "Book this look" button on the `convert` step (verified in `TryOnExperience.tsx` line 1410). The audit missed this; no change required.
+### 7. TrustBar live status — "Open Today · 9 AM – 5 PM" appears twice
+The hero badge ("Open Today · 9 AM – 5 PM") and the TrustBar ("Open Now · Closes 5 PM") repeat the same info one section apart.
 
-## Files changed
+Fix: drop the hero badge on mobile (where vertical real estate matters) and keep TrustBar as the single source of truth, OR vary the language so they read as complementary (hero = "Open today", TrustBar = "Closes at 5 PM").
 
-1. `src/components/HeroSection.tsx` — add `<TryOnEntryButton variant="ghost" source="Hero" />`
-2. `src/components/ExperienceRevealCard.tsx` — add hair-only Try-On bridge link
-3. `src/components/ServicesSection.tsx` — promote chip to primary, integrate into action row
-4. Luna chat quick-replies (file located during implementation) — add contextual hair chip
+### 8. "Your Hush Guide" label adds no value
+The floating bubble label says "Your Hush Guide" — invisible-on-dark, often clipped by the sticky bar, and the icon is already universally recognized. Either remove or move to a tooltip on hover only (desktop).
+
+---
+
+## P2 — Nice-to-haves (skip if time-boxed)
+
+- TrustBar testimonial carousel auto-rotates every 5s with no pause-on-hover; users mid-read get yanked. Add `aria-live="polite"` and pause-on-hover.
+- Footer keyboard focus ring on the small social links is barely visible against dark bg — bump to gold/60.
+- Skip-link "Skip to main content" works but `focus:top-4` lands behind the sticky nav on small viewports; add `focus:top-20`.
+
+---
+
+## Technical Summary
+
+| File | Change |
+|---|---|
+| `src/components/HeroSection.tsx` | Mobile overlay + scrim, drop duplicate hours badge on mobile |
+| `src/index.css` | Stronger mid-band gradient utility for mobile hero |
+| `src/components/MobileStickyBar.tsx` + `LunaChatWidget.tsx` (.luna-floating) | Hide floating bubble or raise above sticky bar; drop label on mobile |
+| `src/components/ArtistsSection.tsx` | Remove redundant "FOUNDING" pill on founders, adjust `object-position`, wrap `ArtistAvatar` in `forwardRef` |
+| `src/components/luna/ChatTab.tsx` | Wrap `ChatActionButtons` in `forwardRef` |
+| `src/pages/Index.tsx` | Extend hash-resolve retry budget + post-idle correction |
+| `src/components/PersonalizedPlanSection.tsx` (or `Index.tsx` Suspense fallback) | Avoid reserving 520px when section is empty |
+| `src/components/TrustBar.tsx` | Pause-on-hover, `aria-live`, deduplicate hours copy with hero |
+
+No data-model, schema, or backend changes. No new dependencies. Everything is presentation-layer.
+
+---
+
+## What's working — leave alone
+
+- Narrative flow (Hero → TrustBar → Experience Finder → Plan → Services → Artists → Testimonials → About → Join → Booking → Footer)
+- Luna 5-tab concierge architecture and the chat quick-reply chips
+- 4-step Experience Finder pacing and the consultation/direct/callback decision branching
+- Brand palette + Playfair/DM Sans typography contrast (AA)
+- The `/#anchor` redirect SPA pattern itself
+
+After this pass the Hub is production-shippable.

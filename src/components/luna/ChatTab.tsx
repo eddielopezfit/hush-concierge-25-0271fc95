@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, lazy, Suspense } from "react";
+import { useState, useEffect, useRef, useCallback, lazy, Suspense, forwardRef } from "react";
 import { Send, Loader2, Phone, Calendar, ChevronRight, RotateCcw, ArrowDown, X, MessageSquare, Link2, Undo2, Wand2 } from "lucide-react";
 import { m, AnimatePresence } from "framer-motion";
 import { saveLead } from "@/lib/saveSession";
@@ -43,16 +43,14 @@ const TryOnExperience = lazy(() =>
 );
 
 // ── In-Chat Action Button Component ─────────────────────────────────────────
-function ChatActionButtons({
-  actions,
-  onAction,
-}: {
-  actions: ChatAction[];
-  onAction: (action: ChatAction) => void;
-}) {
+const ChatActionButtons = forwardRef<
+  HTMLDivElement,
+  { actions: ChatAction[]; onAction: (action: ChatAction) => void }
+>(({ actions, onAction }, ref) => {
   if (!actions.length) return null;
   return (
     <m.div
+      ref={ref}
       initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3 }}
@@ -74,7 +72,8 @@ function ChatActionButtons({
       ))}
     </m.div>
   );
-}
+});
+ChatActionButtons.displayName = "ChatActionButtons";
 
 export const ChatTab = () => {
   const { conciergeContext, clearConcierge, mergeConcierge } = useLuna();
