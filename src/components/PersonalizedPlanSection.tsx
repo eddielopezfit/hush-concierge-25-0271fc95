@@ -185,6 +185,18 @@ export const PersonalizedPlanSection = () => {
                 </m.p>
               )}
 
+              {/* Pricing consistency microcopy — explains why card price ($60+)
+                  and reveal range ($140–$390+) can both be true. */}
+              <m.p
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.32 }}
+                className="font-body text-[11px] text-cream/45 italic text-center max-w-md mx-auto leading-relaxed -mt-2"
+              >
+                Final pricing depends on hair length, starting point, and technique — your stylist confirms everything during your complimentary consultation.
+              </m.p>
+
               {/* Enhance Your Visit (Upsells) */}
               {upsells.length > 0 && (
                 <m.div

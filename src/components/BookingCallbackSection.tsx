@@ -191,6 +191,9 @@ export const BookingCallbackSection = () => {
             <p className="font-body text-cream/60 text-sm">
               Drop your info and our front desk will reach out personally.
             </p>
+            <p className="font-body text-xs text-cream/45 italic mt-2 max-w-md mx-auto leading-relaxed">
+              Most color and transformation services begin with a quick consultation — no charge, no pressure — so we can match the right plan, time, and stylist before you book.
+            </p>
             {(() => {
               const day = new Date().getDay();
               const closed = day === 0 || day === 1;

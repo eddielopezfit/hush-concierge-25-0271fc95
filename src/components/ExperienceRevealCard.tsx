@@ -15,6 +15,13 @@ export const ExperienceRevealCard = ({ data, onBook: _onBook }: ExperienceReveal
   const { conciergeContext } = useLuna();
   const bookingMode = deriveBookingMode(data, conciergeContext);
   const isHair = !!conciergeContext?.categories?.includes("hair");
+  // Low-intent guests (browsing OR not sure on subtype) get inspiration-led
+  // framing instead of a hard price/time pitch — keeps them curious instead
+  // of cornered into a decision. Audit Part 3.
+  const isLowIntent =
+    conciergeContext?.timing === "browsing" ||
+    conciergeContext?.service_subtype === "unsure" ||
+    conciergeContext?.multi_service_mode === "unsure";
   const planLinkLabel =
     bookingMode === "consultation"
       ? "See what your visit may include"
@@ -50,8 +57,13 @@ export const ExperienceRevealCard = ({ data, onBook: _onBook }: ExperienceReveal
               <span className="text-[11px] font-body uppercase tracking-widest text-gold">Your Experience</span>
             </div>
             <h3 className="font-display text-2xl md:text-3xl text-cream">
-              {data.experienceLabel}
+              {isLowIntent ? "Explore What's Possible" : data.experienceLabel}
             </h3>
+            {isLowIntent && (
+              <p className="font-body text-sm text-cream/60 mt-2 max-w-md mx-auto leading-relaxed">
+                No pressure to decide today — here's a starting point you can shape with us whenever you're ready.
+              </p>
+            )}
           </m.div>
 
           {/* Info pills */}
