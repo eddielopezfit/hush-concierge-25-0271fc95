@@ -572,7 +572,13 @@ export const ChatTab = () => {
 
       // Advance the qualifying-flow stage on every user reply when in
       // single-category mode, so chips progress: look → timing → booking.
-      if (conciergeContext?.categories?.length === 1) {
+      // Exception: a Try-On "Send to Luna" handoff carries its own rich
+      // bracketed header (`[My features → …]`) and asks Luna a substantive
+      // question about technique/fit. We must NOT auto-advance the stepper
+      // to "timing" on top of that — it hijacks Luna's reply with timing
+      // chips before she can address the guest's actual question.
+      const isTryOnHandoff = msg.startsWith("[My features →");
+      if (conciergeContext?.categories?.length === 1 && !isTryOnHandoff) {
         setQualifyingStage((s) => {
           const next = Math.min(s + 1, 2);
           saveQualifyingStage(conciergeContext, next);
