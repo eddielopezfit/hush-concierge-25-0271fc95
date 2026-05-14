@@ -17,6 +17,8 @@ const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 // ── CORS ────────────────────────────────────────────────────────────────────
 const allowedOrigins = [
   "https://hush-salon.lovable.app",
+  "https://hushsalonandspamvp.life",
+  "https://www.hushsalonandspamvp.life",
   "http://localhost:5173",
 ];
 
